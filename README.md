@@ -3,12 +3,15 @@
 ## This project is under development
 
 ## Architecure | 4-layer Architecture
+
 ![Alt text](image-2.png)
 
 ## Entitiy Relationship Diagram (ERD)
-![Alt text](image-1.png)
 
-## Prisma Schema 
+![Alt text](image-3.png)
+
+## Prisma Schema
+
 ```prisma
 model User {
   id           String   @id
@@ -100,7 +103,7 @@ model CourseVideo {
   youtubeLink   String  @map("youtube_link")
 
   coursePlaylist   CoursePlaylist @relation(fields: [coursePlaylistId], references: [id])
-  coursePlaylistId String @map("course_playlist_id")
+  coursePlaylistId String         @map("course_playlist_id")
 
   @@map("course_video")
 }
