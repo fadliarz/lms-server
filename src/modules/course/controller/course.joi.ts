@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { CreateCourseDto } from "../course.type";
+import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 
 const CreateCourse = Joi.object<CreateCourseDto>({
   image: Joi.string(),
@@ -7,4 +7,10 @@ const CreateCourse = Joi.object<CreateCourseDto>({
   description: Joi.string(),
 });
 
-export { CreateCourse };
+const UpdateCourse = Joi.object<UpdateCourseDto>({
+  image: Joi.string(),
+  title: Joi.string(),
+  description: Joi.string(),
+});
+
+export { CreateCourse, UpdateCourse };

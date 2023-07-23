@@ -21,7 +21,6 @@ export enum userUrls {
 /**
  * Dto
  */
-
 export type SignUpDto = Omit<
   UserModel,
   "id" | "role" | "accessToken" | "refreshToken" | UserDateKeys

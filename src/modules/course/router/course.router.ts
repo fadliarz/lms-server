@@ -4,7 +4,7 @@ import { CourseDITypes } from "../course.type";
 import { courseUrls } from "../course.type";
 import { Role } from "@prisma/client";
 import { ICourseController } from "../controller/course.controller";
-import { CreateCourse } from "../controller/course.joi";
+import { CreateCourse, UpdateCourse } from "../controller/course.joi";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 
 export default function CourseRouter(authorizationMiddleware: any) {
@@ -19,6 +19,12 @@ export default function CourseRouter(authorizationMiddleware: any) {
     validationMiddleware(CreateCourse),
     authorizationMiddleware([Role.INSTRUCTOR]),
     courseControllerInstance.createCourse.bind(courseControllerInstance)
+  );
+
+  router.put(
+    courseUrls.update,
+    validationMiddleware(UpdateCourse),
+    courseControllerInstance.updateCourse.bind(courseControllerInstance)
   );
 
   return router;
