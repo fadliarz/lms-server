@@ -2,8 +2,15 @@ import { User } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
 export type UserModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<User>;
-export type UserDateKeys = "createdAt" | "updatedAt";
 export type PublicUser = Omit<UserModel, "password">;
+
+export type UserDateKeys = "createdAt" | "updatedAt";
+export type ExcludeFromDto =
+  | "id"
+  | "role"
+  | "accessToken"
+  | "refreshToken"
+  | UserDateKeys;
 
 export const UserDITypes = {
   USER_REPOSITORY: Symbol.for("USER_REPOSITORY"),
@@ -21,8 +28,5 @@ export enum userUrls {
 /**
  * Dto
  */
-export type SignUpDto = Omit<
-  UserModel,
-  "id" | "role" | "accessToken" | "refreshToken" | UserDateKeys
->;
+export type SignUpDto = Omit<UserModel, ExcludeFromDto>;
 export type SignInDto = SignUpDto;

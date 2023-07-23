@@ -6,8 +6,14 @@ export interface GenericObject<K> {
 }
 
 export interface AuthenticatedRequest extends Request {
-  user: UserModel | null | undefined
+  user: UserModel | null | undefined;
 }
+
+export type MakePropertiesOptional<T extends object, K extends keyof T> = Omit<
+  T,
+  K
+> &
+  Partial<Pick<T, K>>;
 
 export type Valuable<T> = {
   [K in keyof T as T[K] extends null | undefined ? never : K]: T[K];
@@ -21,8 +27,16 @@ export type Api = {
 /**
  * Modifying Prisma Model
  */
-export type ChangeNullToUndefined<T> = T extends null ? undefined : T;
+export type PickNullable<T> = {
+  [P in keyof T as null extends T[P] ? P : never]: T[P]
+}
 
-export type ModifyFieldWithNullToBeOptionalAndRemoveNull<T extends object> = {
-  [K in keyof T]: ChangeNullToUndefined<T[K]>;
-};
+export type PickNotNullable<T> = {
+  [P in keyof T as null extends T[P] ? never : P]: T[P]
+}
+
+export type ModifyFieldWithNullToBeOptionalAndRemoveNull<T> = {
+  [K in keyof PickNullable<T>]?: Exclude<T[K], null>
+} & {
+  [K in keyof PickNotNullable<T>]: T[K]
+}

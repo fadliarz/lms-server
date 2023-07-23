@@ -1,8 +1,19 @@
 import { Course } from "@prisma/client";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import {
+  ModifyFieldWithNullToBeOptionalAndRemoveNull,
+  MakePropertiesOptional,
+} from "../../common/types";
 
 export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
+
 export type CourseDateKeys = "createdAt" | "updatedAt";
+export type CourseHasDefaultValue = "image";
+export type ExcludeFromDto =
+  | "id"
+  | "totalStudents"
+  | "totalPlaylists"
+  | "totalHours"
+  | CourseDateKeys;
 
 export const CourseDITypes = {
   COURSE_REPOSITORY: Symbol.for("COURSE_REPOSITORY"),
@@ -13,14 +24,14 @@ export const CourseDITypes = {
 export enum courseUrls {
   root = "/course",
   create = "/create",
-  update = "/update/:courseId"
+  update = "/update/:courseId",
 }
 
 /**
  * Dto
  */
-export type CreateCourseDto = Omit<
-  CourseModel,
-  "id" | "authorId" | "studentsCount" | CourseDateKeys
+export type CreateCourseDto = MakePropertiesOptional<
+  Omit<CourseModel, ExcludeFromDto>,
+  CourseHasDefaultValue
 >;
 export type UpdateCourseDto = Partial<CreateCourseDto>;

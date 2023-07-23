@@ -5,12 +5,14 @@ const CreateCourse = Joi.object<CreateCourseDto>({
   image: Joi.string(),
   title: Joi.string().required(),
   description: Joi.string(),
+  material: Joi.string()
 });
 
 const UpdateCourse = Joi.object<UpdateCourseDto>({
   image: Joi.string(),
   title: Joi.string(),
   description: Joi.string(),
+  material: Joi.string()
 });
 
 export { CreateCourse, UpdateCourse };
