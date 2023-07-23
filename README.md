@@ -2,6 +2,9 @@
 
 ## This project is under development
 
+## Architecure | 4-layer Architecture
+![Alt text](image-2.png)
+
 ## Entitiy Relationship Diagram (ERD)
 ![Alt text](image-1.png)
 
