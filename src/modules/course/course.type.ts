@@ -24,6 +24,8 @@ export const CourseDITypes = {
 export enum courseUrls {
   root = "/course",
   create = "/create",
+  getAll = "/get",
+  getOne = "/get/:courseId",
   update = "/update/:courseId",
 }
 

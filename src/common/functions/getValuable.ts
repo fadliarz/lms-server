@@ -12,3 +12,7 @@ export function getValuable<T extends {}, V = Valuable<T>>(obj: T): V {
     )
   ) as V;
 }
+
+type Test<T> = T extends null | undefined ? never : T;
+
+type Coeg = Test<null | string>

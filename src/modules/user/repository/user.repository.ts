@@ -5,6 +5,7 @@ import { PrismaClient, User } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import HttpException from "../../../common/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
+import { handlePrismaError } from "../../../common/exceptions/handlePrismaError";
 
 export interface IUserRepository {
   createNewUser: (
@@ -75,13 +76,7 @@ export class UserRepository implements IUserRepository {
 
       return updatedUserDetails;
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === "P2015") {
-          throw new HttpException(StatusCode.BAD_REQUEST, "User not found");
-        }
-      }
-
-      throw error;
+      throw handlePrismaError(error);
     }
   }
 }

@@ -50,7 +50,7 @@ model CourseEnrollment {
   courseId String @map("course_id")
   role     Role   @default(STUDENT)
 
-  @@unique([id, userId, role])
+  @@unique([userId, courseId])
   @@map("course_enrollment")
 }
 

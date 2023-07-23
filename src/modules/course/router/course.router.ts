@@ -14,6 +14,22 @@ export default function CourseRouter(authorizationMiddleware: any) {
     CourseDITypes.COURSE_CONTROLLER
   );
 
+  router.get(
+    "/student".concat(courseUrls.getAll),
+    authorizationMiddleware([Role.STUDENT, Role.INSTRUCTOR]),
+    courseControllerInstance.getAllCourses(Role.STUDENT).bind(
+      courseControllerInstance
+    )
+  );
+
+  router.get(
+    "instructor".concat(courseUrls.getAll),
+    authorizationMiddleware([Role.INSTRUCTOR]),
+    courseControllerInstance.getAllCourses(Role.INSTRUCTOR).bind(
+      courseControllerInstance
+    )
+  );
+
   router.post(
     courseUrls.create,
     validationMiddleware(CreateCourse),
