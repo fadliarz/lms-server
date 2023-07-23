@@ -1,0 +1,78 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id
+  email        String   @unique
+  password     String
+  accessToken  String?  @map("access_token")
+  refreshToken String?  @map("refresh_token")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  role         Role     @default(STUDENT)
+
+  profile Profile?
+
+  courses Course[]
+
+  courseEnrollments CourseEnrollment[]
+
+  @@map("user")
+}
+
+model Profile {
+  id          String   @id
+  phoneNumber String?  @map("phone_number")
+  name        String?  @default("")
+  avatar      String?  @default("default_avatar_url")
+  about       String?  @default("")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique @map("user_id")
+
+  @@map("profile")
+}
+
+model CourseEnrollment {
+  id String @id
+
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String
+  role     Role   @default(STUDENT)
+
+  @@map("course_enrollment")
+}
+
+model Course {
+  id            String   @id
+  image         String?  @default("default_course_image_url")
+  title         String
+  description   String?  @default("")
+  studentsCount Int      @default(0) @map("students_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  author        User     @relation(fields: [authorId], references: [id])
+  authorId      String
+
+  courseEnrollments CourseEnrollment[]
+
+  @@map("course")
+}
+
+enum Role {
+  OWNER
+  INSTRUCTOR
+  STUDENT
+}
+
+// Notes:
+// 1. studentsCount in Course related to CourseStudent
