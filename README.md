@@ -97,6 +97,7 @@ model CourseVideo {
   name          String
   description   String?
   totalDuration Int
+  youtubeLink   String  @map("youtube_link")
 
   coursePlaylist   CoursePlaylist @relation(fields: [coursePlaylistId], references: [id])
   coursePlaylistId String @map("course_playlist_id")
