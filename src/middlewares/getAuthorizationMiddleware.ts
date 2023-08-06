@@ -2,6 +2,7 @@ import { Role } from "@prisma/client";
 
 import { NextFunction } from "express";
 import { AuthorizationException } from "../common/exceptions/AuthorizationException";
+import { AuthenticationException } from "../common/exceptions/AuthenticationException";
 
 export const getAuthorizationMiddleware = () => {
   return (enumRoles: Role[]) => {

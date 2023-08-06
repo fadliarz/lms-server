@@ -1,9 +1,13 @@
 class HttpException extends Error {
+  public status: number;
+  public message: string;
+
   constructor(
-    public readonly statusCode: number,
-    public readonly customMessage: string | string[]
+    status: number,
+    customMessage: string | string[]
   ) {
-    super();
+    super(customMessage.toString());
+    this.status = status
   }
 }
 

@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import HttpException from "../common/exceptions/HttpException";
 import { StatusCode } from "../common/constants/statusCode";
 
-export function validationMiddleware(schema: Joi.Schema) {
+export function validationMiddleware(schema: Joi.Schema, objectToValidate: "body" | "query") {
   return async (
     req: Request,
     res: Response,
@@ -17,7 +17,7 @@ export function validationMiddleware(schema: Joi.Schema) {
 
     try {
       const validation = await schema.validateAsync(
-        req.body,
+        objectToValidate === "body" ? req.body : req.query,
         validationOptions
       );
 

@@ -1,4 +1,4 @@
-import { Course } from "@prisma/client";
+import { Course, User } from "@prisma/client";
 import {
   ModifyFieldWithNullToBeOptionalAndRemoveNull,
   MakePropertiesOptional,
@@ -11,8 +11,11 @@ export type CourseHasDefaultValue = "image";
 export type ExcludeFromDto =
   | "id"
   | "totalStudents"
-  | "totalPlaylists"
-  | "totalHours"
+  | "totalInstructors"
+  | "totalLessons"
+  | "totalDurations"
+  | "totalLikes"
+  | "authorId"
   | CourseDateKeys;
 
 export const CourseDITypes = {
@@ -22,11 +25,9 @@ export const CourseDITypes = {
 };
 
 export enum courseUrls {
-  root = "/course",
-  create = "/create",
-  getAll = "/get",
-  getOne = "/get/:courseId",
-  update = "/update/:courseId",
+  root = "/courses",
+  course = "/:courseId",
+  likes = "/:courseId/likes",
 }
 
 /**
@@ -37,3 +38,34 @@ export type CreateCourseDto = MakePropertiesOptional<
   CourseHasDefaultValue
 >;
 export type UpdateCourseDto = Partial<CreateCourseDto>;
+
+/**
+ * Query
+ */
+export type GetAllCoursesQuery = {
+  role: "OWNER" | "INSTRUCTOR" | "STUDENT";
+  include_students: boolean;
+  include_instructors: boolean;
+};
+
+export type GetOneCourseQuery = {
+  include_students: boolean;
+  include_instructors: boolean;
+};
+
+/**
+ * Return
+ */
+export type GetOneCourse<T = Enroller> = Course & {
+  author?: T;
+  students?: T[];
+  instructors?: T[];
+};
+
+export type Enroller = {
+  id: string;
+  profile: {
+    name: string;
+    NIM: string;
+  } | null;
+};

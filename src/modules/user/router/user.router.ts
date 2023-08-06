@@ -15,13 +15,13 @@ export default function UserRouter(authMiddleware: any) {
 
   router.post(
     userUrls.signUp,
-    validationMiddleware(SignIn),
+    validationMiddleware(SignIn, "body"),
     userControllerInstance.signUp.bind(userControllerInstance)
   );
 
   router.post(
     userUrls.signIn,
-    validationMiddleware(SignUp),
+    validationMiddleware(SignUp, "body"),
     userControllerInstance.signIn.bind(userControllerInstance)
   );
 

@@ -7,5 +7,5 @@ export function handleError(error: any, next: NextFunction) {
     next(new InternalServerException());
   }
 
-  next(error as HttpException);
+  next(error);
 }

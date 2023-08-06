@@ -6,6 +6,7 @@ import { UserDITypes } from "../user.type";
 import { AuthenticatedRequest } from "../../../common/types";
 import HttpException from "../../../common/exceptions/HttpException";
 import { handleError } from "../../../common/exceptions/handleError";
+import { getResponseJson } from "../../../common/response/getResponseJson";
 
 export interface IUserController {
   signIn: (
@@ -49,7 +50,7 @@ export class UserController implements IUserController {
           sameSite: "strict",
         })
         .status(StatusCode.RESOURCE_CREATED)
-        .json(newUser);
+        .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, newUser));
     } catch (error) {
       handleError(error, next);
     }
@@ -74,7 +75,14 @@ export class UserController implements IUserController {
           sameSite: "strict",
         })
         .status(StatusCode.SUCCESS)
-        .json(user);
+        .json(
+          getResponseJson(true, StatusCode.SUCCESS, {
+            userId: user.id,
+            token: user.accessToken,
+            type: "USER",
+            expires_at: "30d",
+          })
+        );
     } catch (error) {
       handleError(error, next);
     }
@@ -99,7 +107,7 @@ export class UserController implements IUserController {
         .status(StatusCode.SUCCESS)
         .json({});
     } catch (error) {
-      handleError(error, next)
+      handleError(error, next);
     }
   }
 }

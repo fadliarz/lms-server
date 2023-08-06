@@ -23,7 +23,7 @@ const userApi = {
 };
 
 const courseApi = {
-  router: CourseRouter(getAuthorizationMiddleware()),
+  router: CourseRouter(getAuthorizationMiddleware(), getAuthMiddleWare()),
   path: courseUrls.root,
 };
 

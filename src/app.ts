@@ -5,7 +5,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
-import errorMiddleware from "./middlewares/errrorMiddleware";
+import errorMiddleware from "./middlewares/errorMiddleware";
 import { Api } from "./common/types";
 
 class App {
@@ -31,7 +31,13 @@ class App {
    * Middlewares
    */
   private initialiseMiddlewares(): void {
-    this._express.use(cors());
+    this._express.use(
+      cors({
+        origin: "http://localhost:4444",
+        credentials: true, //access-control-allow-credentials:true
+        optionsSuccessStatus: 200,
+      })
+    );
     this._express.use(morgan('"dev'));
     this._express.use(helmet());
     this._express.use(compression());
@@ -62,14 +68,14 @@ class App {
   /**
    * Make database connection
    */
-  private initialiseDatabaseConnection(): void {}
+  private initialiseDatabaseConnection(): void { }
 
   /**
    * Listen to app to a port
    */
   public listen(): void {
     this._express.listen(this._port, () => {
-      console.log(`App is listening on the port ${this._port}`);
+      console.log("App is listening on port ", this._port);
     });
   }
 }
