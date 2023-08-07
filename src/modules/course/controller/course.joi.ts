@@ -1,8 +1,8 @@
 import Joi from "joi";
 import {
   CreateCourseDto,
-  GetAllCoursesQuery,
-  GetOneCourseQuery,
+  GetCoursesQuery,
+  GetCourseQuery,
   UpdateCourseDto,
 } from "../course.type";
 
@@ -20,23 +20,19 @@ const UpdateCourse = Joi.object<UpdateCourseDto>({
   material: Joi.string(),
 });
 
-const GetAllCoursesQueryJoi = Joi.object<GetAllCoursesQuery>({
-  role: Joi.string()
-    .valid("OWNER", "INSTRUCTOR", "STUDENT")
-    .insensitive()
-    .required(),
-  include_students: Joi.boolean(),
-  include_instructors: Joi.boolean(),
+const GetCoursesQueryJoi = Joi.object<GetCoursesQuery>({
+  role: Joi.string().valid("OWNER", "INSTRUCTOR", "STUDENT").insensitive().required(),
 });
 
-const GetOneCourseQueryJoi = Joi.object<GetOneCourseQuery>({
-  include_students: Joi.boolean(),
-  include_instructors: Joi.boolean(),
+const GetCourseQueryJoi = Joi.object<GetCourseQuery>({
+  include_students: Joi.string().valid("true", "false").insensitive(),
+  include_instructors: Joi.string().valid("true", false).insensitive(),
+  include_lessons: Joi.string().valid("true", "false").insensitive(),
 });
 
 export {
   CreateCourse,
   UpdateCourse,
-  GetAllCoursesQueryJoi,
-  GetOneCourseQueryJoi,
+  GetCoursesQueryJoi,
+  GetCourseQueryJoi,
 };

@@ -1,11 +1,17 @@
 import { inject, injectable } from "inversify";
-import { CourseModel, GetOneCourse, GetOneCourseQuery } from "../course.type";
+import {
+  CourseModel,
+  GetCourseQuery,
+  GetCoursesQuery,
+  GetOneCourse,
+} from "../course.type";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { CourseDITypes } from "../course.type";
 import { getValuable } from "../../../common/functions/getValuable";
 import { ICourseRepository } from "../repository/course.repository";
 import { Course, Role } from "@prisma/client";
 import { CourseLessonModel } from "../../lesson/lesson.type";
+import { AuthorizationException } from "../../../common/exceptions/AuthorizationException";
 
 export interface ICourseService {
   createCourse: (
@@ -17,45 +23,41 @@ export interface ICourseService {
     courseId: string,
     courseDetails: UpdateCourseDto
   ) => Promise<CourseModel>;
-  getAllCourses: (userId: string, role: Role) => Promise<CourseModel[]>;
-  getOneCourse: (
+  getEnrolledCourses: (
+    userId: string,
+    query: GetCoursesQuery
+  ) => Promise<CourseModel[]>;
+  getCourseById: (
     courseId: string,
-    query: GetOneCourseQuery
+    query: GetCourseQuery
   ) => Promise<GetOneCourse>;
-  getAllOwnedCourses: (userId: string) => Promise<CourseModel[]>;
+  getOwnedCourses: (userId: string) => Promise<CourseModel[]>;
   setLike: (
     userId: string,
+    role: Role,
     courseId: string
   ) => Promise<Pick<Course, "totalLikes">>;
-  getCourseLessonsById: (courseId: string) => Promise<CourseLessonModel[]>;
 }
 
 @injectable()
 export class CourseService implements ICourseService {
-  @inject(CourseDITypes.COURSE_REPOSITORY) private readonly courseRepository: ICourseRepository;
+  @inject(CourseDITypes.COURSE_REPOSITORY)
+  private readonly courseRepository: ICourseRepository;
 
-  public async getCourseLessonsById(
-    courseId: string
-  ): Promise<CourseLessonModel[]> {
-    try {
-      const lessons = await this.courseRepository.getCourseLessonsById(
-        courseId
-      );
-
-      return getValuable(lessons);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async setLike(
+  private async isEnrolledAndCanLikeOrThrow(
     userId: string,
+    role: Role,
     courseId: string
-  ): Promise<Pick<Course, "totalLikes">> {
-    try {
-      return await this.courseRepository.setLike(userId, courseId);
-    } catch (error) {
-      throw error;
+  ) {
+    const userRole = await this.courseRepository.getUserRoleInCourseOrThrow(
+      userId,
+      courseId
+    );
+
+    if (userRole.toString() !== role.toString()) {
+      throw new AuthorizationException(
+        "Unathorized! You are not allowed to like this course!"
+      );
     }
   }
 
@@ -93,12 +95,15 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async getAllCourses(
+  public async getEnrolledCourses(
     userId: string,
-    role: Role
+    query: GetCoursesQuery
   ): Promise<CourseModel[]> {
     try {
-      const courses = await this.courseRepository.getAllCourses(userId, role);
+      const courses = await this.courseRepository.getEnrolledCourses(
+        userId,
+        query
+      );
 
       return getValuable(courses) as CourseModel[];
     } catch (error) {
@@ -106,9 +111,9 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async getOneCourse(
+  public async getCourseById(
     userId: string,
-    query: GetOneCourseQuery
+    query: GetCourseQuery
   ): Promise<GetOneCourse> {
     try {
       const course = await this.courseRepository.getCourseById(userId, query);
@@ -119,15 +124,25 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async getAllOwnedCourses(userId: string): Promise<CourseModel[]> {
+  public async getOwnedCourses(userId: string): Promise<CourseModel[]> {
     try {
-      const courses = await this.courseRepository.getAllOwnedCourses(userId);
+      const courses = await this.courseRepository.getOwnedCourses(userId);
 
-      const nonNullCourses = courses.map(
-        (course) => getValuable(course) as CourseModel
-      );
+      return getValuable(courses);
+    } catch (error) {
+      throw error;
+    }
+  }
 
-      return nonNullCourses;
+  public async setLike(
+    userId: string,
+    role: Role,
+    courseId: string
+  ): Promise<Pick<Course, "totalLikes">> {
+    try {
+      await this.isEnrolledAndCanLikeOrThrow(userId, role, courseId);
+
+      return await this.courseRepository.setLike(userId, courseId);
     } catch (error) {
       throw error;
     }

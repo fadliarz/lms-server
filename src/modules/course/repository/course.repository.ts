@@ -1,8 +1,9 @@
 import {
   CreateCourseDto,
   Enroller,
+  GetCourseQuery,
+  GetCoursesQuery,
   GetOneCourse,
-  GetOneCourseQuery,
   UpdateCourseDto,
 } from "../course.type";
 import { Course, CourseLesson, PrismaClient, Role, User } from "@prisma/client";
@@ -14,6 +15,10 @@ import { handlePrismaError } from "../../../common/exceptions/handlePrismaError"
 import { AuthorizationException } from "../../../common/exceptions/AuthorizationException";
 
 export interface ICourseRepository {
+  getUserRoleInCourseOrThrow: (
+    userId: string,
+    courseId: string
+  ) => Promise<Role>;
   createCourse: (
     userId: string,
     courseDetails: CreateCourseDto
@@ -23,17 +28,19 @@ export interface ICourseRepository {
     courseId: string,
     courseDetails: UpdateCourseDto
   ) => Promise<Course>;
-  getAllCourses: (userId: string, role: Role) => Promise<Course[]>;
+  getEnrolledCourses: (
+    userId: string,
+    query: GetCoursesQuery
+  ) => Promise<Course[]>;
   getCourseById: (
     courseId: string,
-    query: GetOneCourseQuery
+    query: GetCourseQuery
   ) => Promise<GetOneCourse>;
-  getAllOwnedCourses: (userId: string) => Promise<Course[]>;
+  getOwnedCourses: (userId: string) => Promise<Course[]>;
   setLike: (
     userId: string,
     courseId: string
   ) => Promise<Pick<Course, "totalLikes">>;
-  getCourseLessonsById: (courseId: string) => Promise<CourseLesson[]>;
 }
 
 @injectable()
@@ -74,43 +81,24 @@ export class CourseRepository implements ICourseRepository {
     return enrollers;
   }
 
-  public async getCourseLessonsById(courseId: string): Promise<CourseLesson[]> {
-    try {
-      const { lessons } = await this.courseTable.findUniqueOrThrow({
-        where: {
-          id: courseId,
-        },
-        select: {
-          lessons: true,
-        },
-      });
-
-      return lessons;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async setLike(
+  public async getUserRoleInCourseOrThrow(
     userId: string,
     courseId: string
-  ): Promise<Pick<Course, "totalLikes">> {
+  ): Promise<Role> {
     try {
-      const courseLike = await this.courseLikeTable.findUniqueOrThrow({
+      const { role } = await this.courseEnrollmentTable.findUniqueOrThrow({
         where: {
-          courseId_userId: {
-            courseId,
+          userId_courseId: {
             userId,
+            courseId,
           },
+        },
+        select: {
+          role: true,
         },
       });
 
-      const course = await this.courseTable.update({
-        where: { id: courseId },
-        data: { totalLikes: { [!courseLike ? "increment" : "decrement"]: 1 } },
-      });
-
-      return { totalLikes: course.totalLikes };
+      return role;
     } catch (error) {
       throw error;
     }
@@ -169,12 +157,15 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async getAllCourses(userId: string, role: Role): Promise<Course[]> {
+  public async getEnrolledCourses(
+    userId: string,
+    query: GetCoursesQuery
+  ): Promise<Course[]> {
     try {
       const courseEnrollments = await this.courseEnrollmentTable.findMany({
         where: {
           userId,
-          role,
+          role: query.role,
         },
         select: {
           course: true,
@@ -193,7 +184,7 @@ export class CourseRepository implements ICourseRepository {
 
   public async getCourseById(
     courseId: string,
-    query: GetOneCourseQuery
+    query: GetCourseQuery
   ): Promise<GetOneCourse> {
     try {
       let course = (await this.courseTable.findUniqueOrThrow({
@@ -212,16 +203,25 @@ export class CourseRepository implements ICourseRepository {
               },
             },
           },
+          lessons: query.include_lessons
+            ? /true/i.test(query.include_lessons)
+            : false,
         },
       })) as GetOneCourse;
 
-      if (query.include_students) {
+      if (
+        query.include_students ? /true/i.test(query.include_students) : false
+      ) {
         const students = await this.getCourseEnrollers(courseId, Role.STUDENT);
 
         course = { ...course, students };
       }
 
-      if (query.include_instructors) {
+      if (
+        query.include_instructors
+          ? /true/i.test(query.include_instructors)
+          : false
+      ) {
         const instructors = await this.getCourseEnrollers(
           courseId,
           Role.INSTRUCTOR
@@ -236,7 +236,7 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async getAllOwnedCourses(userId: string): Promise<Course[]> {
+  public async getOwnedCourses(userId: string): Promise<Course[]> {
     try {
       const courses = await this.courseTable.findMany({
         where: {
@@ -247,6 +247,31 @@ export class CourseRepository implements ICourseRepository {
       return courses;
     } catch (error) {
       throw handlePrismaError(error);
+    }
+  }
+
+  public async setLike(
+    userId: string,
+    courseId: string
+  ): Promise<Pick<Course, "totalLikes">> {
+    try {
+      const courseLike = await this.courseLikeTable.findUniqueOrThrow({
+        where: {
+          courseId_userId: {
+            courseId,
+            userId,
+          },
+        },
+      });
+
+      const course = await this.courseTable.update({
+        where: { id: courseId },
+        data: { totalLikes: { [!courseLike ? "increment" : "decrement"]: 1 } },
+      });
+
+      return { totalLikes: course.totalLikes };
+    } catch (error) {
+      throw error;
     }
   }
 }

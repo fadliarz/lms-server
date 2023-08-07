@@ -1,124 +1,151 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { Prisma, PrismaClient, Role } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import sha256Encrypt from "../src/utils/encrypt";
+import { faker } from "@faker-js/faker";
 
 const prisma = new PrismaClient();
 
-const userTable = prisma.user;
-const courseTable = prisma.course;
+const courseLikeTable = prisma.courseLike;
 const courseEnrollmentTable = prisma.courseEnrollment;
 const courseLessonTable = prisma.courseLesson;
+const courseLessonVideoTable = prisma.courseLessonVideo;
+const courseTable = prisma.course;
+const profileTable = prisma.profile;
+const userTable = prisma.user;
 
-async function deleteAllUsers() {
+async function cleanTables() {
+  await courseLikeTable.deleteMany();
+  await courseEnrollmentTable.deleteMany();
+  await courseLessonTable.deleteMany();
+  await courseLessonVideoTable.deleteMany();
+  await courseTable.deleteMany();
+  await profileTable.deleteMany();
   await userTable.deleteMany();
 }
 
-async function deleteAllCourses() {
-  await courseTable.deleteMany();
+function getIds(totalIds: number) {
+  const ids: string[] = [];
+
+  for (let index = 0; index < totalIds; index++) {
+    ids.push(uuidv4());
+  }
+
+  return ids;
 }
 
-async function deleteAllCoursesEnrollments() {
-  await courseEnrollmentTable.deleteMany();
+function generateProfileObject() {
+  return {
+    id: uuidv4(),
+    name: faker.internet.displayName(),
+    NIM: faker.number.toString(),
+  };
 }
 
 async function main() {
-  await deleteAllCoursesEnrollments();
-  await deleteAllCourses();
-  await deleteAllUsers();
+  await cleanTables();
 
-  const owner = await userTable.create({
-    data: {
-      id: uuidv4(),
-      email: "owner@gmail.com",
-      password: sha256Encrypt("owner123"),
-      role: Role.OWNER,
-    },
+  /**
+   * Create Students
+   */
+  let studentIds = getIds(3);
+
+  let students: Prisma.UserCreateInput[];
+
+  students = studentIds.map((studentId) => {
+    return {
+      id: studentId,
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      profile: {
+        create: generateProfileObject(),
+      },
+    };
   });
 
-  const courseIds = [uuidv4(), uuidv4()];
-  const instructor = await userTable.create({
-    data: {
-      id: uuidv4(),
-      email: "instructor@gmail.com",
-      password: sha256Encrypt("instructor123"),
+  students.forEach(async (student) => {
+    await userTable.create({ data: student });
+  });
+
+  /**
+   * Create First 3 Instructors
+   */
+  let instructorIdsOne = getIds(3);
+
+  let instructors: Prisma.UserCreateInput[];
+
+  instructors = instructorIdsOne.map((instructorId) => {
+    return {
+      id: instructorId,
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      profile: {
+        create: generateProfileObject(),
+      },
       role: Role.INSTRUCTOR,
+    };
+  });
+
+  instructors.map(async (instructor) => {
+    await userTable.create({ data: instructor });
+  });
+
+  /**
+   * Create Second 3 Instructors
+   */
+  let instructorIdsTwo = getIds(3);
+
+  instructors = instructorIdsTwo.map((instructorId) => {
+    return {
+      id: instructorId,
+      email: faker.internet.email(),
+      password: sha256Encrypt(faker.internet.password()),
+      profile: {
+        create: generateProfileObject(),
+      },
       courses: {
-        create: [
-          {
-            id: courseIds[0],
-            title: "Fundamentals of Networking Engineering",
-          },
-          {
-            id: courseIds[1],
-            title: "Fundamentals of Database Engineering",
-          },
-        ],
+        create: getIds(3).map((courseId) => {
+          return {
+            id: courseId,
+            title: faker.lorem.words(3),
+            description: faker.lorem.paragraph(),
+            enrollments: {
+              create: [
+                ...studentIds.map((studentId) => {
+                  return {
+                    id: uuidv4(),
+                    userId: studentId,
+                  };
+                }),
+                ...instructorIdsOne.map((instructorId) => {
+                  return {
+                    id: uuidv4(),
+                    userId: instructorId,
+                    role: Role.INSTRUCTOR,
+                  };
+                }),
+              ],
+            },
+            lessons: {
+              create: getIds(3).map((lessonId) => {
+                return {
+                  id: lessonId,
+                  title: faker.lorem.words(3),
+                  description: faker.lorem.paragraph(),
+                };
+              }),
+            },
+          };
+        }),
       },
-    },
+      role: Role.INSTRUCTOR,
+    };
   });
 
-  const student1 = await userTable.create({
-    data: {
-      id: uuidv4(),
-      email: "student1@gmail.com",
-      password: sha256Encrypt("student123"),
-      courseEnrollments: {
-        create: [
-          {
-            id: uuidv4(),
-            courseId: courseIds[0],
-          },
-          {
-            id: uuidv4(),
-            courseId: courseIds[1],
-          },
-        ],
-      },
-    },
+  instructors.forEach(async (instructor) => {
+    await userTable.create({
+      data: instructor,
+    });
   });
-  const student2 = await userTable.create({
-    data: {
-      id: uuidv4(),
-      email: "student2@gmail.com",
-      password: sha256Encrypt("student123"),
-      courseEnrollments: {
-        create: [
-          {
-            id: uuidv4(),
-            courseId: courseIds[0],
-          },
-          {
-            id: uuidv4(),
-            courseId: courseIds[1],
-          },
-        ],
-      },
-    },
-  });
-
-  // await courseLessonTable.create({
-  //   data: {
-  //     id: uuidv4(),
-  //     title: "Introduction",
-  //     courseId: courseIds[0],
-  //     videos: {
-  //       create: [
-  //         {
-  //           id: uuidv4(),
-  //           name: "Why we study networking?",
-  //           totalDuration: 3,
-  //           youtubeLink: "",
-  //         },
-  //         {
-  //           id: uuidv4(),
-  //           name: "Learning approaches",
-  //           totalDuration: 5.1,
-  //           youtubeLink: "",
-  //         },
-  //       ],
-  //     },
-  //   },
-  // });
 }
 
 main()

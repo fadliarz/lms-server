@@ -6,8 +6,9 @@ import { Role } from "@prisma/client";
 import { ICourseController } from "../controller/course.controller";
 import {
   CreateCourse,
-  GetAllCoursesQueryJoi,
+  GetCourseQueryJoi,
   UpdateCourse,
+  GetCoursesQueryJoi,
 } from "../controller/course.joi";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import { getAuthMiddleWare } from "../../../middlewares/getAuthMiddleware";
@@ -24,12 +25,14 @@ export default function CourseRouter(
 
   router.get(
     "",
-    validationMiddleware(GetAllCoursesQueryJoi, "query"),
-    courseControllerInstance.getAllCourses.bind(courseControllerInstance)
+    authenticationMiddleware,
+    validationMiddleware(GetCoursesQueryJoi, "query"),
+    courseControllerInstance.getCourses.bind(courseControllerInstance)
   );
 
   router.get(
     courseUrls.course,
+    validationMiddleware(GetCourseQueryJoi, "query"),
     courseControllerInstance.getCourseById.bind(courseControllerInstance)
   );
 

@@ -42,15 +42,14 @@ export type UpdateCourseDto = Partial<CreateCourseDto>;
 /**
  * Query
  */
-export type GetAllCoursesQuery = {
+export type GetCoursesQuery = {
   role: "OWNER" | "INSTRUCTOR" | "STUDENT";
-  include_students: boolean;
-  include_instructors: boolean;
 };
 
-export type GetOneCourseQuery = {
-  include_students: boolean;
-  include_instructors: boolean;
+export type GetCourseQuery = {
+  include_students?: string;
+  include_instructors?: string;
+  include_lessons?: string;
 };
 
 /**

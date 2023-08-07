@@ -1,16 +1,19 @@
 import { injectable, inject } from "inversify";
-import { CourseDITypes, GetOneCourse, GetOneCourseQuery } from "../course.type";
+import {
+  CourseDITypes,
+  CourseModel,
+  GetCourseQuery,
+  GetCoursesQuery,
+} from "../course.type";
 import { Request, Response, NextFunction } from "express-serve-static-core";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ICourseService } from "../service/course.service";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { getRequestUserOrThrowAuthenticationException } from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import { handleError } from "../../../common/exceptions/handleError";
-import { Role, User } from "@prisma/client";
 import { getResponseJson } from "../../../common/response/getResponseJson";
-import { InternalServerException } from "../../../common/exceptions/InternalServerException";
-import { getRequestQuery } from "../../../common/functions/getRequestQuery";
-import { AuthenticatedRequest } from "../../../common/types";
+import { Role } from "@prisma/client";
+import { doMinimumRoleAuthorization } from "../../../common/functions/doMinimumRoleAuthorization";
 
 export interface ICourseController {
   createCourse: (
@@ -23,7 +26,7 @@ export interface ICourseController {
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  getAllCourses: (
+  getCourses: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -33,17 +36,7 @@ export interface ICourseController {
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  getAllOwnedCourses: (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<Response | void>;
   setLike: (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<Response | void>;
-  getCourseLessonsById: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -54,40 +47,6 @@ export interface ICourseController {
 export class CourseController implements ICourseController {
   @inject(CourseDITypes.COURSE_SERVICE)
   private readonly courseService: ICourseService;
-
-  public async getCourseLessonsById(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const lessons = await this.courseService.getCourseLessonsById(
-        req.params.courseId
-      );
-    } catch (error) {}
-  }
-
-  public async setLike(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(
-          getResponseJson(
-            true,
-            StatusCode.SUCCESS,
-            await this.courseService.setLike(user.id, req.params.courseId)
-          )
-        );
-    } catch (error) {
-      handleError(error, next);
-    }
-  }
 
   public async createCourse(
     req: Request,
@@ -132,7 +91,7 @@ export class CourseController implements ICourseController {
     }
   }
 
-  public async getAllCourses(
+  public async getCourses(
     req: Request,
     res: Response,
     next: NextFunction
@@ -140,30 +99,17 @@ export class CourseController implements ICourseController {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
 
-      const role = req.query.role as string;
+      const query = req.query as GetCoursesQuery;
 
-      const courses = await this.courseService.getAllCourses(
-        user.id,
-        role.toUpperCase() as Role
-      );
+      let courses: CourseModel[];
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, courses));
-    } catch (error) {
-      handleError(error, next);
-    }
-  }
+      if (new RegExp(Role.OWNER, "i").test(user.role)) {
+        doMinimumRoleAuthorization(user.role, Role.OWNER);
 
-  public async getAllOwnedCourses(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
-      const courses = this.courseService.getAllOwnedCourses(user.id);
+        courses = await this.courseService.getOwnedCourses(user.id);
+      } else {
+        courses = await this.courseService.getEnrolledCourses(user.id, query);
+      }
 
       return res
         .status(StatusCode.SUCCESS)
@@ -179,16 +125,40 @@ export class CourseController implements ICourseController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const query = getRequestQuery<GetOneCourseQuery>(req);
-
-      const course = await this.courseService.getOneCourse(
+      const course = await this.courseService.getCourseById(
         req.params.courseId,
-        query
+        req.query as GetCourseQuery
       );
 
       return res
         .status(StatusCode.SUCCESS)
         .json(getResponseJson(true, StatusCode.SUCCESS, course));
+    } catch (error) {
+      handleError(error, next);
+    }
+  }
+
+  public async setLike(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      const user = getRequestUserOrThrowAuthenticationException(req);
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json(
+          getResponseJson(
+            true,
+            StatusCode.SUCCESS,
+            await this.courseService.setLike(
+              user.id,
+              user.role,
+              req.params.courseId
+            )
+          )
+        );
     } catch (error) {
       handleError(error, next);
     }
