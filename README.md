@@ -8,13 +8,22 @@
 
 ## Entitiy Relationship Diagram (ERD)
 
-![Alt text](image-3.png)
+![Alt text](image-5.png)
 
 ## Prisma Schema
 
 ```prisma
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
 model User {
-  id           String   @id
+  id           String   @id @unique
   email        String   @unique
   password     String
   accessToken  String?  @map("access_token")
@@ -25,17 +34,18 @@ model User {
 
   profile Profile?
 
-  courses Course[]
-
+  courses           Course[]
   courseEnrollments CourseEnrollment[]
+  courseLikes       CourseLike[]
 
   @@map("user")
 }
 
 model Profile {
-  id          String   @id
+  id          String   @id @unique
   phoneNumber String?  @map("phone_number")
   name        String
+  NIM         String   @map("nim")
   avatar      String?  @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
   about       String?  @default("Hello world")
   createdAt   DateTime @default(now()) @map("created_at")
@@ -48,7 +58,7 @@ model Profile {
 }
 
 model CourseEnrollment {
-  id String @id
+  id String @id @unique
 
   user     User   @relation(fields: [userId], references: [id])
   userId   String @map("user_id")
@@ -56,56 +66,75 @@ model CourseEnrollment {
   courseId String @map("course_id")
   role     Role   @default(STUDENT)
 
-  @@unique([id, userId, role])
+  @@unique([userId, courseId])
   @@map("course_enrollment")
 }
 
 model Course {
-  id             String   @id
-  image          String   @default("https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg")
-  title          String
-  description    String?
-  material       String?
-  totalStudents  Int      @default(0) @map("total_students")
-  totalPlaylists Int      @default(0) @map("total_playlists")
-  totalHours     Int      @default(0) @map("total_hours")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id               String   @id @unique
+  image            String   @default("https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg")
+  title            String
+  description      String?
+  material         String?
+  totalStudents    Int      @default(0) @map("total_students")
+  totalInstructors Int      @default(0) @map("total_instructors")
+  totalLessons     Int      @default(0) @map("total_lessons")
+  totalDurations   Float    @default(0) @map("total_durations")
+  totalLikes       Int      @default(0) @map("total_likes")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   author   User   @relation(fields: [authorId], references: [id])
   authorId String
 
-  courseEnrollments CourseEnrollment[]
-
-  coursePlaylists CoursePlaylist[]
+  enrollments CourseEnrollment[]
+  lessons     CourseLesson[]
+  likes       CourseLike[]
 
   @@map("course")
 }
 
-model CoursePlaylist {
-  id            String @id
-  name          String
-  totalDuration Int    @default(0)
+model CourseLesson {
+  id             String   @id @unique
+  title          String
+  description    String?
+  totalDurations Decimal  @default(0)
+  totalMaterials Int      @default(0)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   course   Course @relation(fields: [courseId], references: [id])
   courseId String @map("course_id")
 
-  courseVideos CourseVideo[]
+  videos CourseLessonVideo[]
 
-  @@map("course_playlist")
+  @@map("course_lesson")
 }
 
-model CourseVideo {
-  id            String  @id
-  name          String
-  description   String?
-  totalDuration Int
-  youtubeLink   String  @map("youtube_link")
+model CourseLessonVideo {
+  id             String   @id @unique
+  name           String
+  description    String?
+  totalDurations Decimal  @default(0)
+  youtubeLink    String   @map("youtube_link")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  coursePlaylist   CoursePlaylist @relation(fields: [coursePlaylistId], references: [id])
-  coursePlaylistId String         @map("course_playlist_id")
+  courseLesson   CourseLesson @relation(fields: [courseLessonId], references: [id])
+  courseLessonId String       @map("course_playlist_id")
 
   @@map("course_video")
+}
+
+model CourseLike {
+  id String @id @unique
+
+  course   Course @relation(fields: [courseId], references: [id])
+  courseId String @map("course_id")
+  user     User   @relation(fields: [userId], references: [id])
+  userId   String @map("user_id")
+
+  @@unique([courseId, userId])
 }
 
 enum Role {
