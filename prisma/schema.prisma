@@ -97,13 +97,13 @@ model CourseLesson {
 }
 
 model CourseLessonVideo {
-  id            String   @id @unique
-  name          String
-  description   String?
-  totalDuration Decimal
-  youtubeLink   String   @map("youtube_link")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id             String   @id @unique
+  name           String
+  description    String?
+  totalDurations Decimal
+  youtubeLink    String   @map("youtube_link")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   courseLesson   CourseLesson @relation(fields: [courseLessonId], references: [id])
   courseLessonId String       @map("course_playlist_id")
