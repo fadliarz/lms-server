@@ -1,7 +1,6 @@
 import { CourseLesson } from "@prisma/client";
 import {
   ModifyFieldWithNullToBeOptionalAndRemoveNull,
-  MakePropertiesOptional,
 } from "../../common/types";
 
 export type CourseLessonModel =

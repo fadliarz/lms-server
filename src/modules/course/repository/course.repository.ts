@@ -2,7 +2,6 @@ import {
   CreateCourseDto,
   Enroller,
   GetCourseQuery,
-  GetCoursesQuery,
   GetOneCourse,
   UpdateCourseDto,
 } from "../course.type";
@@ -24,10 +23,7 @@ export interface ICourseRepository {
     courseId: string,
     courseDetails: UpdateCourseDto
   ) => Promise<Course>;
-  getEnrolledCourses: (
-    userId: string,
-    query: GetCoursesQuery
-  ) => Promise<Course[]>;
+  getEnrolledCourses: (userId: string, role: Role) => Promise<Course[]>;
   getCourseById: (
     courseId: string,
     query: GetCourseQuery
@@ -128,13 +124,13 @@ export class CourseRepository implements ICourseRepository {
 
   public async getEnrolledCourses(
     userId: string,
-    query: GetCoursesQuery
+    role: Role
   ): Promise<Course[]> {
     try {
       const courseEnrollments = await this.courseEnrollmentTable.findMany({
         where: {
           userId,
-          role: query.role,
+          role,
         },
         select: {
           course: true,

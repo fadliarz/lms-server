@@ -7,8 +7,9 @@ import { getAuthMiddleWare } from "./middlewares/getAuthMiddleware";
 import { userUrls } from "./modules/user/user.type";
 import CourseRouter from "./modules/course/router/course.router";
 import { courseUrls } from "./modules/course/course.type";
-import { getAuthorizationMiddleware } from "./middlewares/getAuthorizationMiddleware";
-import { getCourseAuthorizationMiddleware } from "./middlewares/getCourseAuthorizationMiddleware";
+import { getUserAuthorizationMiddleware } from "./middlewares/getUserAuthorizationMiddleware";
+import { getCourseEnrollmentAuthorizationMiddleware } from "./middlewares/getCourseEnrollmentAuthorizationMiddleware";
+import { getCourseOwnershipAuthorizationMiddleware } from "./middlewares/getCourseOwnershipAuthorizationMiddleware";
 
 /**
  * Validate environtment variables.
@@ -24,11 +25,13 @@ const userApi = {
 };
 
 const courseApi = {
-  router: CourseRouter(
-    getAuthMiddleWare(),
-    getAuthorizationMiddleware(),
-    getCourseAuthorizationMiddleware()
-  ),
+  router: CourseRouter(getAuthMiddleWare(), {
+    userAuthorizationMiddleware: getUserAuthorizationMiddleware(),
+    courseEnrollmentAuthorizationMiddleware:
+      getCourseEnrollmentAuthorizationMiddleware(),
+    courseOwnershipAuthorizationMiddleware:
+      getCourseOwnershipAuthorizationMiddleware,
+  }),
   path: courseUrls.root,
 };
 

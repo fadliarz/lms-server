@@ -94,8 +94,6 @@ export class LessonController implements ICourseLessonController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
       const lesson = await this.courseLessonService.createLesson(
         req.params as CourseLessonParams,
         req.body

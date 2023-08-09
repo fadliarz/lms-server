@@ -5,7 +5,7 @@ import { AuthorizationException } from "../common/exceptions/AuthorizationExcept
 import dIContainer from "../inversifyConfig";
 import { databaseDITypes } from "../common/constants/databaseDITypes";
 
-export const getCourseAuthorizationMiddleware = () => {
+export const getCourseEnrollmentAuthorizationMiddleware = () => {
   return (role: Role | Role[]) => {
     return async (req: any, res: Response, next: NextFunction) => {
       try {

@@ -1,15 +1,10 @@
 import { inject, injectable } from "inversify";
-import {
-  CourseModel,
-  GetCourseQuery,
-  GetCoursesQuery,
-  GetOneCourse,
-} from "../course.type";
+import { CourseModel, GetCourseQuery, GetOneCourse } from "../course.type";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { CourseDITypes } from "../course.type";
 import { getValuable } from "../../../common/functions/getValuable";
 import { ICourseRepository } from "../repository/course.repository";
-import { Course } from "@prisma/client";
+import { Course, Role } from "@prisma/client";
 
 export interface ICourseService {
   deleteCourse: (courseId: string) => Promise<CourseModel>;
@@ -21,10 +16,7 @@ export interface ICourseService {
     courseId: string,
     courseDetails: UpdateCourseDto
   ) => Promise<CourseModel>;
-  getEnrolledCourses: (
-    userId: string,
-    query: GetCoursesQuery
-  ) => Promise<CourseModel[]>;
+  getEnrolledCourses: (userId: string, role: Role) => Promise<CourseModel[]>;
   getCourseById: (
     courseId: string,
     query: GetCourseQuery
@@ -85,26 +77,26 @@ export class CourseService implements ICourseService {
 
   public async getEnrolledCourses(
     userId: string,
-    query: GetCoursesQuery
+    role: Role
   ): Promise<CourseModel[]> {
     try {
       const courses = await this.courseRepository.getEnrolledCourses(
         userId,
-        query
+        role
       );
 
-      return getValuable(courses) as CourseModel[];
+      return getValuable(courses);
     } catch (error) {
       throw error;
     }
   }
 
   public async getCourseById(
-    userId: string,
+    courseId: string,
     query: GetCourseQuery
   ): Promise<GetOneCourse> {
     try {
-      const course = await this.courseRepository.getCourseById(userId, query);
+      const course = await this.courseRepository.getCourseById(courseId, query);
 
       return getValuable(course);
     } catch (error) {

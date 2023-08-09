@@ -45,11 +45,13 @@ model Profile {
 model CourseEnrollment {
   id String @id @unique
 
-  user     User   @relation(fields: [userId], references: [id])
-  userId   String @map("user_id")
-  course   Course @relation(fields: [courseId], references: [id])
-  courseId String @map("course_id")
-  role     Role   @default(STUDENT)
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  course    Course   @relation(fields: [courseId], references: [id])
+  courseId  String   @map("course_id")
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, courseId])
   @@map("course_enrollment")
@@ -83,7 +85,7 @@ model CourseLesson {
   id             String   @id @unique
   title          String
   description    String?
-  totalDurations Float  @default(0)
+  totalDurations Float    @default(0)
   totalMaterials Int      @default(0)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -100,7 +102,7 @@ model CourseLessonVideo {
   id             String   @id @unique
   name           String
   description    String?
-  totalDurations Float  
+  totalDurations Float
   youtubeLink    String   @map("youtube_link")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")

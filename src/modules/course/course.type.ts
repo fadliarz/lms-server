@@ -27,6 +27,9 @@ export const CourseDITypes = {
 export enum courseUrls {
   root = "/courses",
   course = "/:courseId",
+  student = "/student",
+  instructor = "/instructor",
+  author = "/author",
   likes = "/:courseId/likes",
 }
 
@@ -42,10 +45,6 @@ export type UpdateCourseDto = Partial<CreateCourseDto>;
 /**
  * Query
  */
-export type GetCoursesQuery = {
-  role: "OWNER" | "INSTRUCTOR" | "STUDENT";
-};
-
 export type GetCourseQuery = {
   include_students?: string;
   include_instructors?: string;

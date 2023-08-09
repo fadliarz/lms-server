@@ -3,7 +3,7 @@ import { Role } from "@prisma/client";
 import { NextFunction } from "express";
 import { AuthorizationException } from "../common/exceptions/AuthorizationException";
 
-export const getAuthorizationMiddleware = () => {
+export const getUserAuthorizationMiddleware = () => {
   return (role: Role | Role[]) => {
     return async (req: any, res: Response, next: NextFunction) => {
       try {

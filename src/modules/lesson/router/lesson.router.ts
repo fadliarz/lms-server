@@ -11,9 +11,14 @@ import {
 
 export default function CourseLessonRouter(
   authenticationMiddleware: any,
-  authorizationMiddleware: any,
-  courseAuthorizationMiddleware: any
+  authorizationMiddleware: any
 ) {
+  const {
+    userAuthorizationMiddleware,
+    courseEnrollmentAuthorizationMiddleware,
+    courseOwnershipAuthorizationMiddleware,
+  } = authorizationMiddleware;
+
   const router = express.Router();
 
   const courseControllerInstance = dIContainer.get<ICourseLessonController>(
@@ -26,10 +31,10 @@ export default function CourseLessonRouter(
   );
 
   router.post(
-    courseLessonUrls.lesson,
+    "/",
     authenticationMiddleware,
     authorizationMiddleware(Role.INSTRUCTOR),
-    courseAuthorizationMiddleware(Role.INSTRUCTOR),
+    courseEnrollmentAuthorizationMiddleware(Role.INSTRUCTOR),
     validationMiddleware(CreateCourseLesson, "body"),
     courseControllerInstance.createLesson.bind(courseControllerInstance)
   );
@@ -38,7 +43,7 @@ export default function CourseLessonRouter(
     courseLessonUrls.lesson,
     authenticationMiddleware,
     authorizationMiddleware(Role.INSTRUCTOR),
-    courseAuthorizationMiddleware(Role.INSTRUCTOR),
+    courseEnrollmentAuthorizationMiddleware(Role.INSTRUCTOR),
     validationMiddleware(UpdateCourseLesson, "body"),
     courseControllerInstance.updateLesson.bind(courseControllerInstance)
   );
@@ -47,7 +52,7 @@ export default function CourseLessonRouter(
     courseLessonUrls.lesson,
     authenticationMiddleware,
     authorizationMiddleware(Role.INSTRUCTOR),
-    courseAuthorizationMiddleware(Role.INSTRUCTOR),
+    courseEnrollmentAuthorizationMiddleware(Role.INSTRUCTOR),
     courseControllerInstance.deleteLesson.bind(courseControllerInstance)
   );
 

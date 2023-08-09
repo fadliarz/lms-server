@@ -28,7 +28,7 @@ export class CourseLessonRepository implements ICourseLessonRepository {
 
   public async deleteLesson(lessonId: string): Promise<CourseLesson> {
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      const deletedLesson = await this.prisma.$transaction(async (tx) => {
         const deletedLesson = await tx.courseLesson.delete({
           where: {
             id: lessonId,
@@ -47,6 +47,8 @@ export class CourseLessonRepository implements ICourseLessonRepository {
 
         return deletedLesson;
       });
+
+      return deletedLesson;
     } catch (error) {
       throw error;
     }
