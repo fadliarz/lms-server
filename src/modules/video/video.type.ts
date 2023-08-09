@@ -11,7 +11,6 @@ export type CourseLessonVideoDateKeys = "createdAt" | "updatedAt";
 export type CourseLessonVideoHasDefaultValue = "";
 export type ExcludeFromDto =
   | "id"
-  | "totalDurations"
   | "courseLessonId"
   | CourseLessonVideoDateKeys;
 
@@ -34,6 +33,8 @@ export type CreateCourseLessonVideoDto = Omit<
   ExcludeFromDto
 >;
 
+export type UpdateCourseLessonVideoDto = Partial<CreateCourseLessonVideoDto>;
+
 /**
  * Query
  */
@@ -41,5 +42,3 @@ export type CourseLessonVideoParams = {
   courseId: string;
   lessonId: string;
 };
-
-export type UpdateCourseLessonVideoDto = Partial<CreateCourseLessonVideoDto>;

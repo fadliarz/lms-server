@@ -1,21 +1,16 @@
-import { CourseLesson, PrismaClient, Role } from "@prisma/client";
-import { inject, injectable } from "inversify";
+import { CourseLesson, PrismaClient } from "@prisma/client";
+import { injectable } from "inversify";
 import { CreateCourseLessonDto, UpdateCourseLessonDto } from "../lesson.type";
 import { v4 as uuidv4 } from "uuid";
-import { AuthorizationException } from "../../../common/exceptions/AuthorizationException";
-import { doMinimumRoleAuthorization } from "../../../common/functions/doMinimumRoleAuthorization";
+import dIContainer from "../../../inversifyConfig";
+import { databaseDITypes } from "../../../common/constants/databaseDITypes";
 
 export interface ICourseLessonRepository {
   deleteLesson: (lessonId: string) => Promise<CourseLesson>;
-  isLessonBelongToCourse: (
-    lessonId: string,
-    courseId: string
-  ) => Promise<boolean>;
   updateLesson: (
     lessonId: string,
     lessonDetails: UpdateCourseLessonDto
   ) => Promise<CourseLesson>;
-  getUserCourseRole: (userId: string, courseId: string) => Promise<Role>;
   getLessonById: (lessonId: string) => Promise<CourseLesson>;
   createLesson: (
     courseId: string,
@@ -25,36 +20,33 @@ export interface ICourseLessonRepository {
 
 @injectable()
 export class CourseLessonRepository implements ICourseLessonRepository {
-  private readonly courseLessonTable = new PrismaClient().courseLesson;
-  private readonly courseEnrollmentTable = new PrismaClient().courseEnrollment;
+  private readonly prisma = dIContainer.get<PrismaClient>(
+    databaseDITypes.PRISMA_CLIENT
+  );
+  private readonly courseLessonTable = this.prisma.courseLesson;
+  private readonly courseTable = this.prisma.course;
 
   public async deleteLesson(lessonId: string): Promise<CourseLesson> {
     try {
-      const deletedLesson = await this.courseLessonTable.delete({
-        where: {
-          id: lessonId,
-        },
-      });
-
-      return deletedLesson;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async isLessonBelongToCourse(
-    lessonId: string,
-    courseId: string
-  ): Promise<boolean> {
-    try {
-      const { courseId: theCourseId } =
-        await this.courseLessonTable.findUniqueOrThrow({
+      return await this.prisma.$transaction(async (tx) => {
+        const deletedLesson = await tx.courseLesson.delete({
           where: {
             id: lessonId,
           },
         });
 
-      return courseId === theCourseId;
+        await tx.course.update({
+          where: {
+            id: "courseId",
+          },
+          data: {
+            totalDurations: { decrement: deletedLesson.totalDurations },
+            totalLessons: { decrement: 1 },
+          },
+        });
+
+        return deletedLesson;
+      });
     } catch (error) {
       throw error;
     }
@@ -65,53 +57,11 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     lessonDetails: UpdateCourseLessonDto
   ): Promise<CourseLesson> {
     try {
-      const lesson = await this.courseLessonTable.findFirstOrThrow({
+      const lesson = await this.courseLessonTable.update({
         where: {
           id: lessonId,
-          courseId: "as",
         },
-      });
-
-      return lesson;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async getUserCourseRole(
-    userId: string,
-    courseId: string
-  ): Promise<Role> {
-    try {
-      const { role } = await this.courseEnrollmentTable.findUniqueOrThrow({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId,
-          },
-        },
-        select: {
-          role: true,
-        },
-      });
-
-      return role;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async createLesson(
-    courseId: string,
-    lessonDetails: CreateCourseLessonDto
-  ): Promise<CourseLesson> {
-    try {
-      const lesson = await this.courseLessonTable.create({
-        data: {
-          id: uuidv4(),
-          courseId,
-          ...lessonDetails,
-        },
+        data: lessonDetails,
       });
 
       return lesson;
@@ -127,6 +77,35 @@ export class CourseLessonRepository implements ICourseLessonRepository {
           id: lessonId,
         },
       });
+
+      return lesson;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async createLesson(
+    courseId: string,
+    lessonDetails: CreateCourseLessonDto
+  ): Promise<CourseLesson> {
+    try {
+      const [lesson] = await this.prisma.$transaction([
+        this.courseLessonTable.create({
+          data: {
+            id: uuidv4(),
+            courseId,
+            ...lessonDetails,
+          },
+        }),
+        this.courseTable.update({
+          where: {
+            id: courseId,
+          },
+          data: {
+            totalLessons: { increment: 1 },
+          },
+        }),
+      ]);
 
       return lesson;
     } catch (error) {

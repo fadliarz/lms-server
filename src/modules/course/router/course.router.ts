@@ -11,11 +11,11 @@ import {
   GetCoursesQueryJoi,
 } from "../controller/course.joi";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
-import { getAuthMiddleWare } from "../../../middlewares/getAuthMiddleware";
 
 export default function CourseRouter(
+  authenticationMiddleware: any,
   authorizationMiddleware: any,
-  authenticationMiddleware: any
+  courseAuthorizationMiddleware: any
 ) {
   const router = express.Router();
 
@@ -24,7 +24,7 @@ export default function CourseRouter(
   );
 
   router.get(
-    "",
+    "/",
     authenticationMiddleware,
     validationMiddleware(GetCoursesQueryJoi, "query"),
     courseControllerInstance.getCourses.bind(courseControllerInstance)
@@ -37,9 +37,9 @@ export default function CourseRouter(
   );
 
   router.post(
-    courseUrls.course,
+    "/",
     authenticationMiddleware,
-    authorizationMiddleware([Role.INSTRUCTOR]),
+    authorizationMiddleware(Role.OWNER),
     validationMiddleware(CreateCourse, "body"),
     courseControllerInstance.createCourse.bind(courseControllerInstance)
   );
@@ -48,13 +48,23 @@ export default function CourseRouter(
     courseUrls.course,
     authenticationMiddleware,
     validationMiddleware(UpdateCourse, "body"),
+    authorizationMiddleware(Role.INSTRUCTOR),
+    courseAuthorizationMiddleware(Role.INSTRUCTOR),
     courseControllerInstance.updateCourse.bind(courseControllerInstance)
   );
 
   router.put(
     courseUrls.likes,
     authenticationMiddleware,
+    courseAuthorizationMiddleware([Role.STUDENT]),
     courseControllerInstance.setLike.bind(courseControllerInstance)
+  );
+
+  router.delete(
+    courseUrls.course,
+    authenticationMiddleware,
+    authorizationMiddleware(Role.OWNER),
+    courseControllerInstance.deleteCourse.bind(courseControllerInstance)
   );
 
   return router;

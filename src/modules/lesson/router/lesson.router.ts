@@ -2,7 +2,6 @@ import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { Role } from "@prisma/client";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
-import { getAuthMiddleWare } from "../../../middlewares/getAuthMiddleware";
 import { CourseLessonDITypes, courseLessonUrls } from "../lesson.type";
 import { ICourseLessonController } from "../controller/lesson.controller";
 import {
@@ -11,8 +10,9 @@ import {
 } from "../controller/lesson.joi";
 
 export default function CourseLessonRouter(
+  authenticationMiddleware: any,
   authorizationMiddleware: any,
-  authenticationMiddleware: any
+  courseAuthorizationMiddleware: any
 ) {
   const router = express.Router();
 
@@ -28,16 +28,17 @@ export default function CourseLessonRouter(
   router.post(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authorizationMiddleware([Role.INSTRUCTOR]),
+    authorizationMiddleware(Role.INSTRUCTOR),
+    courseAuthorizationMiddleware(Role.INSTRUCTOR),
     validationMiddleware(CreateCourseLesson, "body"),
-    getAuthMiddleWare(),
     courseControllerInstance.createLesson.bind(courseControllerInstance)
   );
 
   router.put(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authorizationMiddleware([Role.INSTRUCTOR]),
+    authorizationMiddleware(Role.INSTRUCTOR),
+    courseAuthorizationMiddleware(Role.INSTRUCTOR),
     validationMiddleware(UpdateCourseLesson, "body"),
     courseControllerInstance.updateLesson.bind(courseControllerInstance)
   );
@@ -45,7 +46,8 @@ export default function CourseLessonRouter(
   router.delete(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authorizationMiddleware([Role.INSTRUCTOR]),
+    authorizationMiddleware(Role.INSTRUCTOR),
+    courseAuthorizationMiddleware(Role.INSTRUCTOR),
     courseControllerInstance.deleteLesson.bind(courseControllerInstance)
   );
 

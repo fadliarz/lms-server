@@ -6,6 +6,8 @@ import {
   UpdateCourseLessonVideoDto,
 } from "../video.type";
 import { v4 as uuidv4 } from "uuid";
+import dIContainer from "../../../inversifyConfig";
+import { databaseDITypes } from "../../../common/constants/databaseDITypes";
 
 export interface ICourseLessonVideoRepository {
   updateVideo: (
@@ -13,11 +15,6 @@ export interface ICourseLessonVideoRepository {
     videoDetails: UpdateCourseLessonVideoDto
   ) => Promise<CourseLessonVideo>;
   deleteVideo: (params: CourseLessonVideoParams) => Promise<CourseLessonVideo>;
-  isOwnerOfCourse: (userId: string, courseId: string) => Promise<boolean>;
-  getUserEnrollmentRoleInCourse: (
-    userId: string,
-    courseId: string
-  ) => Promise<Role>;
   createVideo: (
     params: CourseLessonVideoParams,
     videoDetails: CreateCourseLessonVideoDto
@@ -28,10 +25,10 @@ export interface ICourseLessonVideoRepository {
 export class CourseLessonVideoRepository
   implements ICourseLessonVideoRepository
 {
-  private readonly courseLessonVideoTable = new PrismaClient()
-    .courseLessonVideo;
-  private readonly courseEnrollmentTable = new PrismaClient().courseEnrollment;
-  private readonly courseTable = new PrismaClient().course;
+  private readonly prisma = dIContainer.get<PrismaClient>(
+    databaseDITypes.PRISMA_CLIENT
+  );
+  private readonly courseLessonVideoTable = this.prisma.courseLessonVideo;
 
   public async updateVideo(
     params: CourseLessonVideoParams,
@@ -55,50 +52,33 @@ export class CourseLessonVideoRepository
     params: CourseLessonVideoParams
   ): Promise<CourseLessonVideo> {
     try {
-      const deletedVideo = await this.courseLessonVideoTable.delete({
-        where: {
-          id: params.lessonId,
-        },
-      });
-
-      return deletedVideo;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async isOwnerOfCourse(
-    userId: string,
-    courseId: string
-  ): Promise<boolean> {
-    try {
-      const { authorId } = await this.courseTable.findUniqueOrThrow({
-        where: {
-          id: courseId,
-        },
-      });
-
-      return authorId === userId;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async getUserEnrollmentRoleInCourse(
-    userId: string,
-    courseId: string
-  ): Promise<Role> {
-    try {
-      const { role } = await this.courseEnrollmentTable.findUniqueOrThrow({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId,
+      return await this.prisma.$transaction(async (tx) => {
+        const deletedVideo = await this.courseLessonVideoTable.delete({
+          where: {
+            id: params.lessonId,
           },
-        },
-      });
+        });
 
-      return role;
+        await tx.course.update({
+          where: {
+            id: params.courseId,
+          },
+          data: {
+            totalDurations: { decrement: deletedVideo.totalDurations },
+          },
+        });
+
+        await tx.courseLesson.update({
+          where: {
+            id: params.courseId,
+          },
+          data: {
+            totalDurations: { decrement: deletedVideo.totalDurations },
+          },
+        });
+
+        return deletedVideo;
+      });
     } catch (error) {
       throw error;
     }
@@ -109,15 +89,35 @@ export class CourseLessonVideoRepository
     videoDetails: CreateCourseLessonVideoDto
   ): Promise<CourseLessonVideo> {
     try {
-      const video = await this.courseLessonVideoTable.create({
-        data: {
-          id: uuidv4(),
-          ...videoDetails,
-          courseLessonId: params.lessonId,
-        },
-      });
+      return await this.prisma.$transaction(async (tx) => {
+        const video = await tx.courseLessonVideo.create({
+          data: {
+            id: uuidv4(),
+            ...videoDetails,
+            courseLessonId: params.lessonId,
+          },
+        });
 
-      return video;
+        await tx.course.update({
+          where: {
+            id: params.courseId,
+          },
+          data: {
+            totalDurations: { increment: video.totalDurations },
+          },
+        });
+
+        await tx.courseLesson.update({
+          where: {
+            id: params.lessonId,
+          },
+          data: {
+            totalDurations: { increment: video.totalDurations },
+          },
+        });
+
+        return video;
+      });
     } catch (error) {
       throw error;
     }

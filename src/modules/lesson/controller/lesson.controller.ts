@@ -41,10 +41,7 @@ export class LessonController implements ICourseLessonController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
       const deletedLesson = await this.courseLessonService.deleteLesson(
-        user.id,
         req.params as CourseLessonParams
       );
 
@@ -60,10 +57,7 @@ export class LessonController implements ICourseLessonController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
       const updatedLesson = await this.courseLessonService.updateLesson(
-        user.id,
         req.params as CourseLessonParams,
         req.body
       );
@@ -103,7 +97,6 @@ export class LessonController implements ICourseLessonController {
       const user = getRequestUserOrThrowAuthenticationException(req);
 
       const lesson = await this.courseLessonService.createLesson(
-        user.id,
         req.params as CourseLessonParams,
         req.body
       );

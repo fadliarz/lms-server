@@ -6,25 +6,21 @@ import {
   GetOneCourse,
   UpdateCourseDto,
 } from "../course.type";
-import { Course, CourseLesson, PrismaClient, Role, User } from "@prisma/client";
+import { Course, PrismaClient, Role } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import { injectable } from "inversify";
-import { StatusCode } from "../../../common/constants/statusCode";
-import HttpException from "../../../common/exceptions/HttpException";
+
 import { handlePrismaError } from "../../../common/exceptions/handlePrismaError";
-import { AuthorizationException } from "../../../common/exceptions/AuthorizationException";
+import dIContainer from "../../../inversifyConfig";
+import { databaseDITypes } from "../../../common/constants/databaseDITypes";
 
 export interface ICourseRepository {
-  getUserRoleInCourseOrThrow: (
-    userId: string,
-    courseId: string
-  ) => Promise<Role>;
+  deleteCourse: (courseId: string) => Promise<Course>;
   createCourse: (
     userId: string,
     courseDetails: CreateCourseDto
   ) => Promise<Course>;
   updateCourse: (
-    userId: string,
     courseId: string,
     courseDetails: UpdateCourseDto
   ) => Promise<Course>;
@@ -45,10 +41,12 @@ export interface ICourseRepository {
 
 @injectable()
 export class CourseRepository implements ICourseRepository {
-  private courseTable = new PrismaClient().course;
-  private courseEnrollmentTable = new PrismaClient().courseEnrollment;
-  private courseLikeTable = new PrismaClient().courseLike;
-  private userTable = new PrismaClient().user;
+  private readonly prisma = dIContainer.get<PrismaClient>(
+    databaseDITypes.PRISMA_CLIENT
+  );
+  private readonly courseTable = this.prisma.course;
+  private readonly courseEnrollmentTable = this.prisma.courseEnrollment;
+  private readonly courseLikeTable = this.prisma.courseLike;
 
   private async getCourseEnrollers(
     courseId: string,
@@ -81,24 +79,13 @@ export class CourseRepository implements ICourseRepository {
     return enrollers;
   }
 
-  public async getUserRoleInCourseOrThrow(
-    userId: string,
-    courseId: string
-  ): Promise<Role> {
+  public async deleteCourse(courseId: string): Promise<Course> {
     try {
-      const { role } = await this.courseEnrollmentTable.findUniqueOrThrow({
-        where: {
-          userId_courseId: {
-            userId,
-            courseId,
-          },
-        },
-        select: {
-          role: true,
-        },
+      const deletedCourse = await this.courseTable.delete({
+        where: { id: courseId },
       });
 
-      return role;
+      return deletedCourse;
     } catch (error) {
       throw error;
     }
@@ -124,28 +111,10 @@ export class CourseRepository implements ICourseRepository {
   }
 
   public async updateCourse(
-    userId: string,
     courseId: string,
     courseDetails: UpdateCourseDto
   ): Promise<Course> {
     try {
-      const course = await this.courseTable.findUnique({
-        where: {
-          id: courseId,
-        },
-        select: {
-          authorId: true,
-        },
-      });
-
-      if (!course) {
-        throw new HttpException(StatusCode.NOT_FOUND, "Course not found!");
-      }
-
-      if (userId !== course.authorId) {
-        throw new AuthorizationException();
-      }
-
       const updatedCourse = await this.courseTable.update({
         where: { id: courseId },
         data: courseDetails,
@@ -255,7 +224,7 @@ export class CourseRepository implements ICourseRepository {
     courseId: string
   ): Promise<Pick<Course, "totalLikes">> {
     try {
-      const courseLike = await this.courseLikeTable.findUniqueOrThrow({
+      const courseLike = await this.courseLikeTable.findUnique({
         where: {
           courseId_userId: {
             courseId,
@@ -266,7 +235,17 @@ export class CourseRepository implements ICourseRepository {
 
       const course = await this.courseTable.update({
         where: { id: courseId },
-        data: { totalLikes: { [!courseLike ? "increment" : "decrement"]: 1 } },
+        data: {
+          totalLikes: { [!courseLike ? "increment" : "decrement"]: 1 },
+          likes: !courseLike
+            ? {
+                create: {
+                  id: uuidv4(),
+                  userId,
+                },
+              }
+            : undefined,
+        },
       });
 
       return { totalLikes: course.totalLikes };

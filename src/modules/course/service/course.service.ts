@@ -9,17 +9,15 @@ import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { CourseDITypes } from "../course.type";
 import { getValuable } from "../../../common/functions/getValuable";
 import { ICourseRepository } from "../repository/course.repository";
-import { Course, Role } from "@prisma/client";
-import { CourseLessonModel } from "../../lesson/lesson.type";
-import { AuthorizationException } from "../../../common/exceptions/AuthorizationException";
+import { Course } from "@prisma/client";
 
 export interface ICourseService {
+  deleteCourse: (courseId: string) => Promise<CourseModel>;
   createCourse: (
     userId: string,
     courseDetails: CreateCourseDto
   ) => Promise<CourseModel>;
   updateCourse: (
-    userId: string,
     courseId: string,
     courseDetails: UpdateCourseDto
   ) => Promise<CourseModel>;
@@ -34,7 +32,6 @@ export interface ICourseService {
   getOwnedCourses: (userId: string) => Promise<CourseModel[]>;
   setLike: (
     userId: string,
-    role: Role,
     courseId: string
   ) => Promise<Pick<Course, "totalLikes">>;
 }
@@ -44,20 +41,13 @@ export class CourseService implements ICourseService {
   @inject(CourseDITypes.COURSE_REPOSITORY)
   private readonly courseRepository: ICourseRepository;
 
-  private async isEnrolledAndCanLikeOrThrow(
-    userId: string,
-    role: Role,
-    courseId: string
-  ) {
-    const userRole = await this.courseRepository.getUserRoleInCourseOrThrow(
-      userId,
-      courseId
-    );
+  public async deleteCourse(courseId: string): Promise<CourseModel> {
+    try {
+      const deletedCourse = await this.courseRepository.deleteCourse(courseId);
 
-    if (userRole.toString() !== role.toString()) {
-      throw new AuthorizationException(
-        "Unathorized! You are not allowed to like this course!"
-      );
+      return getValuable(deletedCourse);
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -78,13 +68,11 @@ export class CourseService implements ICourseService {
   }
 
   public async updateCourse(
-    userId: string,
     courseId: string,
     courseDetails: UpdateCourseDto
   ): Promise<CourseModel> {
     try {
       const course = await this.courseRepository.updateCourse(
-        userId,
         courseId,
         courseDetails
       );
@@ -136,12 +124,9 @@ export class CourseService implements ICourseService {
 
   public async setLike(
     userId: string,
-    role: Role,
     courseId: string
   ): Promise<Pick<Course, "totalLikes">> {
     try {
-      await this.isEnrolledAndCanLikeOrThrow(userId, role, courseId);
-
       return await this.courseRepository.setLike(userId, courseId);
     } catch (error) {
       throw error;

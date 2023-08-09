@@ -5,7 +5,6 @@ import {
 } from "../video.type";
 import { Request, Response, NextFunction } from "express";
 import { handleError } from "../../../common/exceptions/handleError";
-import { getRequestUserOrThrowAuthenticationException } from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { getResponseJson } from "../../../common/response/getResponseJson";
 import { ICourseLessonVideoService } from "../service/video.service";
@@ -41,11 +40,9 @@ export class CourseLessonVideoController
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
-      const updatedVideo = await this.courseLessonVideoService.deleteVideo(
-        user.id,
-        req.params as CourseLessonVideoParams
+      const updatedVideo = await this.courseLessonVideoService.updateVideo(
+        req.params as CourseLessonVideoParams,
+        req.body
       );
 
       return res
@@ -62,10 +59,7 @@ export class CourseLessonVideoController
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
       const deletedVideo = await this.courseLessonVideoService.deleteVideo(
-        user.id,
         req.params as CourseLessonVideoParams
       );
 
@@ -83,10 +77,7 @@ export class CourseLessonVideoController
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
       const video = await this.courseLessonVideoService.createVideo(
-        user.id,
         req.params as CourseLessonVideoParams,
         req.body
       );

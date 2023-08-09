@@ -11,8 +11,9 @@ import {
 } from "../controller/video.joi";
 
 export default function CourseLessonVideoRouter(
+  authenticationMiddleware: any,
   authorizationMiddleware: any,
-  authenticationMiddleware: any
+  courseAuthorizationMiddleware: any
 ) {
   const router = express.Router();
 
@@ -22,11 +23,10 @@ export default function CourseLessonVideoRouter(
     );
 
   router.post(
-    courseLessonVideoUrls.video,
+    "/",
     authenticationMiddleware,
-    authorizationMiddleware([Role.INSTRUCTOR]),
+    authorizationMiddleware(Role.INSTRUCTOR),
     validationMiddleware(CreateCourseLessonVideo, "body"),
-    getAuthMiddleWare(),
     courseLessonVideoControllerInstance.createVideo.bind(
       courseLessonVideoControllerInstance
     )
@@ -35,7 +35,8 @@ export default function CourseLessonVideoRouter(
   router.put(
     courseLessonVideoUrls.video,
     authenticationMiddleware,
-    authorizationMiddleware([Role.INSTRUCTOR]),
+    authorizationMiddleware(Role.INSTRUCTOR),
+    courseAuthorizationMiddleware(Role.INSTRUCTOR),
     validationMiddleware(UpdateCourseLessonVideo, "body"),
     courseLessonVideoControllerInstance.updateVideo.bind(
       courseLessonVideoControllerInstance
@@ -45,7 +46,8 @@ export default function CourseLessonVideoRouter(
   router.delete(
     courseLessonVideoUrls.video,
     authenticationMiddleware,
-    authorizationMiddleware([Role.INSTRUCTOR]),
+    authorizationMiddleware(Role.INSTRUCTOR),
+    courseAuthorizationMiddleware(Role.INSTRUCTOR),
     courseLessonVideoControllerInstance.deleteVideo.bind(
       courseLessonVideoControllerInstance
     )

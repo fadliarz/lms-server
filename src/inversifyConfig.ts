@@ -13,15 +13,26 @@ import { CourseDITypes } from "./modules/course/course.type";
 import { CourseRepository } from "./modules/course/repository/course.repository";
 import { CourseService } from "./modules/course/service/course.service";
 import { CourseController } from "./modules/course/controller/course.controller";
+import { PrismaClient } from "@prisma/client";
+import { databaseDITypes } from "./common/constants/databaseDITypes";
 
 const dIContainer = new Container();
 
 /**
+ * Prisma
+ */
+dIContainer.bind<PrismaClient>(databaseDITypes.PRISMA_CLIENT).to(PrismaClient);
+
+/**
  * User Container
  */
-dIContainer.bind<IUserRepository>(UserDITypes.USER_REPOSITORY).to(UserRepository);
+dIContainer
+  .bind<IUserRepository>(UserDITypes.USER_REPOSITORY)
+  .to(UserRepository);
 dIContainer.bind<IUserService>(UserDITypes.USER_SERVICE).to(UserService);
-dIContainer.bind<IUserController>(UserDITypes.USER_CONTROLLER).to(UserController);
+dIContainer
+  .bind<IUserController>(UserDITypes.USER_CONTROLLER)
+  .to(UserController);
 
 /**
  * Course Container
@@ -29,7 +40,9 @@ dIContainer.bind<IUserController>(UserDITypes.USER_CONTROLLER).to(UserController
 dIContainer
   .bind<ICourseRepository>(CourseDITypes.COURSE_REPOSITORY)
   .to(CourseRepository);
-dIContainer.bind<ICourseService>(CourseDITypes.COURSE_SERVICE).to(CourseService);
+dIContainer
+  .bind<ICourseService>(CourseDITypes.COURSE_SERVICE)
+  .to(CourseService);
 dIContainer
   .bind<ICourseController>(CourseDITypes.COURSE_CONTROLLER)
   .to(CourseController);

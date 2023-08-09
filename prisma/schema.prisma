@@ -83,7 +83,7 @@ model CourseLesson {
   id             String   @id @unique
   title          String
   description    String?
-  totalDurations Decimal  @default(0)
+  totalDurations Float  @default(0)
   totalMaterials Int      @default(0)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -100,7 +100,7 @@ model CourseLessonVideo {
   id             String   @id @unique
   name           String
   description    String?
-  totalDurations Decimal  @default(0)
+  totalDurations Float  
   youtubeLink    String   @map("youtube_link")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")

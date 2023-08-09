@@ -16,6 +16,11 @@ import { Role } from "@prisma/client";
 import { doMinimumRoleAuthorization } from "../../../common/functions/doMinimumRoleAuthorization";
 
 export interface ICourseController {
+  deleteCourse: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
   createCourse: (
     req: Request,
     res: Response,
@@ -48,6 +53,22 @@ export class CourseController implements ICourseController {
   @inject(CourseDITypes.COURSE_SERVICE)
   private readonly courseService: ICourseService;
 
+  public async deleteCourse(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      const deletedCourse = await this.courseService.deleteCourse(
+        req.params.courseId
+      );
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json(getResponseJson(true, StatusCode.SUCCESS, deletedCourse));
+    } catch (error) {}
+  }
+
   public async createCourse(
     req: Request,
     res: Response,
@@ -78,7 +99,6 @@ export class CourseController implements ICourseController {
       const user = getRequestUserOrThrowAuthenticationException(req);
 
       const course = await this.courseService.updateCourse(
-        user.id,
         req.params.courseId,
         req.body as UpdateCourseDto
       );
@@ -152,11 +172,7 @@ export class CourseController implements ICourseController {
           getResponseJson(
             true,
             StatusCode.SUCCESS,
-            await this.courseService.setLike(
-              user.id,
-              user.role,
-              req.params.courseId
-            )
+            await this.courseService.setLike(user.id, req.params.courseId)
           )
         );
     } catch (error) {
