@@ -1,59 +1,50 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { Role } from "@prisma/client";
-import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import { CourseLessonDITypes, courseLessonUrls } from "../lesson.type";
 import { ICourseLessonController } from "../controller/lesson.controller";
+import { ICourseLessonAuthorizationMiddleware } from "../authorization/lesson.authorization";
+import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import {
   CreateCourseLesson,
   UpdateCourseLesson,
 } from "../controller/lesson.joi";
 
-export default function CourseLessonRouter(
-  authenticationMiddleware: any,
-  authorizationMiddleware: any
-) {
-  const {
-    userAuthorizationMiddleware,
-    courseEnrollmentAuthorizationMiddleware,
-    courseOwnershipAuthorizationMiddleware,
-  } = authorizationMiddleware;
-
+export default function CourseLessonRouter(authenticationMiddleware: any) {
   const router = express.Router();
 
-  const courseControllerInstance = dIContainer.get<ICourseLessonController>(
-    CourseLessonDITypes.COURSE_LESSON_CONTROLLER
+  const controller = dIContainer.get<ICourseLessonController>(
+    CourseLessonDITypes.CONTROLLER
   );
-
-  router.get(
-    courseLessonUrls.lesson,
-    courseControllerInstance.getLessonById.bind(courseControllerInstance)
-  );
+  const authorizationMiddlewrae =
+    dIContainer.get<ICourseLessonAuthorizationMiddleware>(
+      CourseLessonDITypes.AUTHORIZATION_MIDDLEWARE
+    );
 
   router.post(
     "/",
     authenticationMiddleware,
-    authorizationMiddleware(Role.INSTRUCTOR),
-    courseEnrollmentAuthorizationMiddleware(Role.INSTRUCTOR),
-    validationMiddleware(CreateCourseLesson, "body"),
-    courseControllerInstance.createLesson.bind(courseControllerInstance)
+    authorizationMiddlewrae.getCreateLessonAuthorizationMiddleware(),
+    validationMiddleware({
+      body: CreateCourseLesson,
+    }),
+    controller.createLesson.bind(controller)
   );
 
   router.put(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authorizationMiddleware(Role.INSTRUCTOR),
-    courseEnrollmentAuthorizationMiddleware(Role.INSTRUCTOR),
-    validationMiddleware(UpdateCourseLesson, "body"),
-    courseControllerInstance.updateLesson.bind(courseControllerInstance)
+    authorizationMiddlewrae.getUpdateLessonAuthorizationMiddleware(),
+    validationMiddleware({
+      body: UpdateCourseLesson,
+    }),
+    controller.updateLesson.bind(controller)
   );
 
   router.delete(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authorizationMiddleware(Role.INSTRUCTOR),
-    courseEnrollmentAuthorizationMiddleware(Role.INSTRUCTOR),
-    courseControllerInstance.deleteLesson.bind(courseControllerInstance)
+    authenticationMiddleware.getDeleteLessonAuthorizationMiddleware(),
+    controller.deleteLesson.bind(controller)
   );
 
   return router;

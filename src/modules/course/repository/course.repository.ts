@@ -2,37 +2,51 @@ import {
   CreateCourseDto,
   Enroller,
   GetCourseQuery,
-  GetOneCourse,
   UpdateCourseDto,
 } from "../course.type";
 import { Course, PrismaClient, Role } from "@prisma/client";
-import { v4 as uuidv4 } from "uuid";
 import { injectable } from "inversify";
-
 import { handlePrismaError } from "../../../common/exceptions/handlePrismaError";
 import dIContainer from "../../../inversifyConfig";
 import { databaseDITypes } from "../../../common/constants/databaseDITypes";
+import { isEqualOrIncludeRole } from "../../../common/functions/isEqualOrIncludeRole";
+import { processQuery } from "../../../common/functions/processQuery";
 
 export interface ICourseRepository {
-  deleteCourse: (courseId: string) => Promise<Course>;
-  createCourse: (
-    userId: string,
-    courseDetails: CreateCourseDto
-  ) => Promise<Course>;
+  isLiked: (userId: number, courseId: number) => Promise<boolean>;
+  deleteCourseLike: (
+    userId: number,
+    courseId: number
+  ) => Promise<Pick<Course, "totalLikes">>;
+  createCourseLike: (
+    userId: number,
+    courseId: number
+  ) => Promise<Pick<Course, "totalLikes">>;
+  deleteCourse: (courseId: number) => Promise<Course>;
   updateCourse: (
-    courseId: string,
+    courseId: number,
     courseDetails: UpdateCourseDto
   ) => Promise<Course>;
-  getEnrolledCourses: (userId: string, role: Role) => Promise<Course[]>;
-  getCourseById: (
-    courseId: string,
-    query: GetCourseQuery
-  ) => Promise<GetOneCourse>;
-  getOwnedCourses: (userId: string) => Promise<Course[]>;
-  setLike: (
-    userId: string,
-    courseId: string
-  ) => Promise<Pick<Course, "totalLikes">>;
+  getCourseEnrollers: (
+    courseId: number,
+    include: {
+      students?: boolean;
+      instructors?: boolean;
+    }
+  ) => Promise<{
+    students?: Enroller[];
+    instructors?: Enroller[];
+  }>;
+  getEnrolledCourses: (
+    userId: number,
+    role: Role | Role[]
+  ) => Promise<{ role: Role; course: Course }[]>;
+  getCourseById: (courseId: number, query: GetCourseQuery) => Promise<Course>;
+  getOwnedCourses: (userId: number) => Promise<Course[]>;
+  createCourse: (
+    userId: number,
+    courseDetails: CreateCourseDto
+  ) => Promise<Course>;
 }
 
 @injectable()
@@ -44,38 +58,101 @@ export class CourseRepository implements ICourseRepository {
   private readonly courseEnrollmentTable = this.prisma.courseEnrollment;
   private readonly courseLikeTable = this.prisma.courseLike;
 
-  private async getCourseEnrollers(
-    courseId: string,
-    role: Role
-  ): Promise<Enroller[]> {
-    const enrollments = await this.courseEnrollmentTable.findMany({
+  public async isLiked(userId: number, courseId: number) {
+    const like = await this.courseLikeTable.findUnique({
       where: {
-        courseId,
-        role: role,
-      },
-      select: {
-        user: {
-          select: {
-            id: true,
-            profile: {
-              select: {
-                name: true,
-                NIM: true,
-              },
-            },
-          },
+        courseId_userId: {
+          userId,
+          courseId,
         },
       },
+      select: {
+        id: true,
+      },
     });
 
-    const enrollers = enrollments.map((enrollment) => {
-      return enrollment.user;
-    });
-
-    return enrollers;
+    return like ? true : false;
   }
 
-  public async deleteCourse(courseId: string): Promise<Course> {
+  public async deleteCourseLike(
+    userId: number,
+    courseId: number
+  ): Promise<Pick<Course, "totalLikes">> {
+    try {
+      const like = await this.prisma.$transaction(async (tx) => {
+        const [updatedCourse] = await Promise.all([
+          tx.course.update({
+            where: {
+              id: courseId,
+            },
+            data: {
+              totalLikes: { decrement: 1 },
+            },
+            select: {
+              totalLikes: true,
+            },
+          }),
+          tx.courseLike.delete({
+            where: {
+              courseId_userId: {
+                courseId,
+                userId,
+              },
+            },
+            select: {
+              id: true,
+            },
+          }),
+        ]);
+
+        return updatedCourse;
+      });
+
+      return like;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async createCourseLike(
+    userId: number,
+    courseId: number
+  ): Promise<Pick<Course, "totalLikes">> {
+    try {
+      const like = await this.prisma.$transaction(async (tx) => {
+        const [updatedCourse] = await Promise.all([
+          tx.course.update({
+            where: {
+              id: courseId,
+            },
+            data: {
+              totalLikes: { increment: 1 },
+            },
+            select: {
+              totalLikes: true,
+            },
+          }),
+          tx.courseLike.create({
+            data: {
+              courseId,
+              userId,
+            },
+            select: {
+              id: true,
+            },
+          }),
+        ]);
+
+        return updatedCourse;
+      });
+
+      return like;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async deleteCourse(courseId: number): Promise<Course> {
     try {
       const deletedCourse = await this.courseTable.delete({
         where: { id: courseId },
@@ -87,27 +164,8 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async createCourse(
-    userId: string,
-    courseDetails: CreateCourseDto
-  ): Promise<Course> {
-    try {
-      const course = await this.courseTable.create({
-        data: {
-          ...courseDetails,
-          id: uuidv4(),
-          authorId: userId,
-        },
-      });
-
-      return course;
-    } catch (error) {
-      throw error;
-    }
-  }
-
   public async updateCourse(
-    courseId: string,
+    courseId: number,
     courseDetails: UpdateCourseDto
   ): Promise<Course> {
     try {
@@ -121,79 +179,95 @@ export class CourseRepository implements ICourseRepository {
       throw error;
     }
   }
-
-  public async getEnrolledCourses(
-    userId: string,
-    role: Role
-  ): Promise<Course[]> {
-    try {
-      const courseEnrollments = await this.courseEnrollmentTable.findMany({
-        where: {
-          userId,
-          role,
-        },
-        select: {
-          course: true,
-        },
-      });
-
-      const courses = courseEnrollments.map((courseEnrollments) => {
-        return courseEnrollments.course;
-      });
-
-      return courses;
-    } catch (error) {
-      throw error;
+  public async getCourseEnrollers(
+    courseId: number,
+    include: {
+      students?: boolean;
+      instructors?: boolean;
     }
+  ): Promise<{
+    students?: Enroller[];
+    instructors?: Enroller[];
+  }> {
+    const enrollments = await this.courseEnrollmentTable.findMany({
+      where: {
+        courseId,
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            profile: {
+              select: {
+                name: true,
+                NIM: true,
+              },
+            },
+          },
+        },
+        role: true,
+      },
+    });
+
+    const students: Enroller[] = [];
+    const instructors: Enroller[] = [];
+
+    enrollments.forEach((enrollment) => {
+      if (
+        include.students &&
+        isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
+      ) {
+        students.push(enrollment.user);
+      }
+
+      if (
+        include.instructors &&
+        isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
+      ) {
+        instructors.push(enrollment.user);
+      }
+    });
+
+    let returnValue = {};
+
+    if (include.students) {
+      returnValue = { ...returnValue, students };
+    }
+
+    if (include.instructors) {
+      returnValue = { ...returnValue, instructors };
+    }
+
+    return returnValue;
   }
 
   public async getCourseById(
-    courseId: string,
+    courseId: number,
     query: GetCourseQuery
-  ): Promise<GetOneCourse> {
+  ): Promise<Course> {
     try {
-      let course = (await this.courseTable.findUniqueOrThrow({
+      const { include_author, include_lessons } = processQuery(query);
+      let course = await this.courseTable.findUniqueOrThrow({
         where: {
           id: courseId,
         },
         include: {
-          author: {
-            select: {
-              id: true,
-              profile: {
+          author: include_author
+            ? {
                 select: {
-                  name: true,
-                  NIM: true,
+                  id: true,
+                  profile: {
+                    select: {
+                      name: true,
+                      NIM: true,
+                    },
+                  },
                 },
-              },
-            },
-          },
-          lessons: query.include_lessons
-            ? /true/i.test(query.include_lessons)
-            : false,
+              }
+            : undefined,
+          lessons: include_lessons,
         },
-      })) as GetOneCourse;
-
-      if (
-        query.include_students ? /true/i.test(query.include_students) : false
-      ) {
-        const students = await this.getCourseEnrollers(courseId, Role.STUDENT);
-
-        course = { ...course, students };
-      }
-
-      if (
-        query.include_instructors
-          ? /true/i.test(query.include_instructors)
-          : false
-      ) {
-        const instructors = await this.getCourseEnrollers(
-          courseId,
-          Role.INSTRUCTOR
-        );
-
-        course = { ...course, instructors };
-      }
+      });
 
       return course;
     } catch (error) {
@@ -201,7 +275,31 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async getOwnedCourses(userId: string): Promise<Course[]> {
+  public async getEnrolledCourses(
+    userId: number,
+    role: Role | Role[]
+  ): Promise<{ role: Role; course: Course }[]> {
+    try {
+      const courseEnrollments = await this.courseEnrollmentTable.findMany({
+        where: {
+          userId,
+          role: {
+            in: role,
+          },
+        },
+        select: {
+          course: true,
+          role: true,
+        },
+      });
+
+      return courseEnrollments;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async getOwnedCourses(userId: number): Promise<Course[]> {
     try {
       const courses = await this.courseTable.findMany({
         where: {
@@ -215,36 +313,20 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async setLike(
-    userId: string,
-    courseId: string
-  ): Promise<Pick<Course, "totalLikes">> {
+  public async createCourse(
+    userId: number,
+    courseDetails: CreateCourseDto
+  ): Promise<Course> {
     try {
-      const courseLike = await this.courseLikeTable.findUnique({
-        where: {
-          courseId_userId: {
-            courseId,
-            userId,
-          },
-        },
-      });
-
-      const course = await this.courseTable.update({
-        where: { id: courseId },
+      const course = await this.courseTable.create({
         data: {
-          totalLikes: { [!courseLike ? "increment" : "decrement"]: 1 },
-          likes: !courseLike
-            ? {
-                create: {
-                  id: uuidv4(),
-                  userId,
-                },
-              }
-            : undefined,
+          ...courseDetails,
+
+          authorId: userId,
         },
       });
 
-      return { totalLikes: course.totalLikes };
+      return course;
     } catch (error) {
       throw error;
     }

@@ -1,14 +1,22 @@
 import { CourseEnrollment, PrismaClient, Role } from "@prisma/client";
 import dIContainer from "../../../inversifyConfig";
-import { CreateCourseEnrollmentDto } from "../enrollment.type";
+import {
+  CourseEnrollmentModel,
+  CreateCourseEnrollmentDto,
+  UpdateCourseEnrollmentDto,
+} from "../enrollment.type";
 import { databaseDITypes } from "../../../common/constants/databaseDITypes";
-import { v4 as uuidv4 } from "uuid";
 import { injectable } from "inversify";
+import { isEqualOrIncludeRole } from "../../../common/functions/isEqualOrIncludeRole";
 
 export class ICourseEnrollmentRepository {
   deleteEnrollment: (
-    userId: string,
-    courseId: string
+    enrollmentId: number,
+    enrollmentDetails: CourseEnrollmentModel
+  ) => Promise<CourseEnrollment>;
+  updateEnrollment: (
+    enrollmentId: number,
+    enrollmentDetails: UpdateCourseEnrollmentDto
   ) => Promise<CourseEnrollment>;
   createEnrollment: (
     enrollmentDetails: CreateCourseEnrollmentDto
@@ -20,43 +28,28 @@ export class CourseEnrollmentRepository implements ICourseEnrollmentRepository {
   private readonly prisma = dIContainer.get<PrismaClient>(
     databaseDITypes.PRISMA_CLIENT
   );
-  private readonly courseEnrollmentTable = this.prisma.courseEnrollment;
 
   public async deleteEnrollment(
-    userId: string,
-    courseId: string
+    enrollmentId: number,
+    enrollmentDetails: CourseEnrollmentModel
   ): Promise<CourseEnrollment> {
     try {
       return await this.prisma.$transaction(async (tx) => {
-        const { role } = await tx.courseEnrollment.findUniqueOrThrow({
-          where: {
-            userId_courseId: {
-              userId,
-              courseId,
-            },
-          },
-          select: {
-            role: true,
-          },
-        });
-
         const [deletedEnrollment] = await Promise.all([
           tx.courseEnrollment.delete({
             where: {
-              userId_courseId: {
-                userId,
-                courseId,
-              },
+              id: enrollmentId,
             },
           }),
+
           tx.course.update({
             where: {
-              id: courseId,
+              id: enrollmentDetails.courseId,
             },
             data: {
-              [role.toString() === Role.INSTRUCTOR.toString()
-                ? "totalInstructors"
-                : "totalStudents"]: { decrement: 1 },
+              [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
+                ? "totalStudents"
+                : "totalInstructors"]: { decrement: 1 },
             },
           }),
         ]);
@@ -67,6 +60,37 @@ export class CourseEnrollmentRepository implements ICourseEnrollmentRepository {
       throw error;
     }
   }
+
+  public async updateEnrollment(
+    enrollmentId: number,
+    enrollmentDetails: UpdateCourseEnrollmentDto
+  ): Promise<CourseEnrollment> {
+    try {
+      const updatedEnrollment = this.prisma.courseEnrollment.update({
+        where: {
+          id: enrollmentId,
+        },
+        data: {
+          ...enrollmentDetails,
+          course: {
+            update: {
+              [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
+                ? "totalStudents"
+                : "totalInstructors"]: { increment: 1 },
+              [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
+                ? "totalInstructors"
+                : "totalStudents"]: { decrement: 1 },
+            },
+          },
+        },
+      });
+
+      return updatedEnrollment;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   public async createEnrollment(
     enrollmentDetails: CreateCourseEnrollmentDto
   ): Promise<CourseEnrollment> {
@@ -74,20 +98,18 @@ export class CourseEnrollmentRepository implements ICourseEnrollmentRepository {
       return await this.prisma.$transaction(async (tx) => {
         const [enrollment] = await Promise.all([
           tx.courseEnrollment.create({
-            data: {
-              ...enrollmentDetails,
-              id: uuidv4(),
-            },
+            data: enrollmentDetails,
           }),
           tx.course.update({
             where: {
               id: enrollmentDetails.courseId,
             },
             data: {
-              [enrollmentDetails.role.toString() === Role.STUDENT.toString()
+              [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
                 ? "totalStudents"
                 : "totalInstructors"]: { increment: 1 },
             },
+            select: {},
           }),
         ]);
 

@@ -1,8 +1,5 @@
 import { CourseLesson } from "@prisma/client";
-import {
-  ModifyFieldWithNullToBeOptionalAndRemoveNull,
-} from "../../common/types";
-
+import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 export type CourseLessonModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLesson>;
 
@@ -13,16 +10,15 @@ type ExcludeFromDto =
   | "totalDurations"
   | "totalMaterials"
   | CourseLessonDateKeys;
-
 export const CourseLessonDITypes = {
-  COURSE_LESSON_REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
-  COURSE_LESSON_SERVICE: Symbol.for("COURSE_LESSON_SERVICE"),
-  COURSE_LESSON_CONTROLLER: Symbol.for("COURSE_LESSON_CONTROLLER"),
+  REPOSITORY: Symbol.for("REPOSITORY"),
+  SERVICE: Symbol.for("SERVICE"),
+  CONTROLLER: Symbol.for("CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for("AUTHORIZATION_MIDDLEWARE")
 };
-
 export enum courseLessonUrls {
   root = "/courses/:courseId/lessons",
-  lesson = "/:lessonId"
+  lesson = "/courses/:courseId/lessons/:lessonId",
 }
 
 /**
@@ -32,13 +28,4 @@ export type CreateCourseLessonDto = Omit<
   CourseLessonModel,
   ExcludeFromDto | "courseId"
 >;
-
 export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;
-
-/**
- * Query & Params
- */
-export type CourseLessonParams = {
-  courseId: string;
-  lessonId: string;
-};

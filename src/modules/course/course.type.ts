@@ -3,6 +3,7 @@ import {
   ModifyFieldWithNullToBeOptionalAndRemoveNull,
   MakePropertiesOptional,
 } from "../../common/types";
+import { BaseUserProfile } from "../user/user.type";
 
 export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
 
@@ -19,18 +20,17 @@ export type ExcludeFromDto =
   | CourseDateKeys;
 
 export const CourseDITypes = {
-  COURSE_REPOSITORY: Symbol.for("COURSE_REPOSITORY"),
-  COURSE_SERVICE: Symbol.for("COURSE_SERVICE"),
-  COURSE_CONTROLLER: Symbol.for("COURSE_CONTROLLER"),
+  REPOSITORY: Symbol.for("REPOSITORY"),
+  SERVICE: Symbol.for("SERVICE"),
+  CONTROLLER: Symbol.for("CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for("AUTHORIZATION_MIDDLEWARE"),
 };
 
 export enum courseUrls {
   root = "/courses",
   course = "/:courseId",
-  student = "/student",
-  instructor = "/instructor",
-  author = "/author",
   likes = "/:courseId/likes",
+  like = "/:courseId/likes/:likeId",
 }
 
 /**
@@ -49,21 +49,31 @@ export type GetCourseQuery = {
   include_students?: string;
   include_instructors?: string;
   include_lessons?: string;
+  include_videos?: string;
+  include_author?: string;
+};
+
+export type GetCoursesQuery = {
+  include_student_course?: string;
+  include_instructor_course?: string;
+  include_owned?: string;
 };
 
 /**
  * Return
  */
-export type GetOneCourse<T = Enroller> = Course & {
+export type GetCourseByIdDto<T = Enroller> = Course & {
   author?: T;
   students?: T[];
   instructors?: T[];
 };
 
 export type Enroller = {
-  id: string;
-  profile: {
-    name: string;
-    NIM: string;
-  } | null;
+  profile: BaseUserProfile | null;
+};
+
+export type CourseEnrollmentSelect = {
+  role?: boolean;
+  userId?: boolean;
+  courseId?: boolean;
 };

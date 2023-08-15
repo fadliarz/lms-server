@@ -11,18 +11,19 @@ export type CourseLessonVideoDateKeys = "createdAt" | "updatedAt";
 export type CourseLessonVideoHasDefaultValue = "";
 export type ExcludeFromDto =
   | "id"
-  | "courseLessonId"
+  | "lessonId"
   | CourseLessonVideoDateKeys;
 
 export const CourseLessonVideoDITypes = {
-  COURSE_LESSON_VIDEO_REPOSITORY: Symbol.for("COURSE_LESSON_VIDEO_REPOSITORY"),
-  COURSE_LESSON_VIDEO_SERVICE: Symbol.for("COURSE_LESSON_VIDEO_SERVICE"),
-  COURSE_LESSON_VIDEO_CONTROLLER: Symbol.for("COURSE_LESSON_VIDEO_CONTROLLER"),
+  REPOSITORY: Symbol.for("REPOSITORY"),
+  SERVICE: Symbol.for("SERVICE"),
+  CONTROLLER: Symbol.for("CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for("AUTHORIZATION_MIDDLEWARE"),
 };
 
 export enum courseLessonVideoUrls {
   root = "/courses/:courseId/lessons/:lessonId/videos",
-  video = "/:courseLessonVideoId",
+  video = "/courses/:courseId/lessons/:lessonId/videos/:videoId",
 }
 
 /**
@@ -41,4 +42,5 @@ export type UpdateCourseLessonVideoDto = Partial<CreateCourseLessonVideoDto>;
 export type CourseLessonVideoParams = {
   courseId: string;
   lessonId: string;
+  videoId: string;
 };

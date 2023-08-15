@@ -2,7 +2,6 @@ import { inject, injectable } from "inversify";
 import {
   CourseLessonDITypes,
   CourseLessonModel,
-  CourseLessonParams,
   CreateCourseLessonDto,
   UpdateCourseLessonDto,
 } from "../lesson.type";
@@ -10,29 +9,35 @@ import { ICourseLessonRepository } from "../repository/lesson.repository";
 import { getValuable } from "../../../common/functions/getValuable";
 
 export interface ICourseLessonService {
-  deleteLesson: (params: CourseLessonParams) => Promise<CourseLessonModel>;
+  deleteLesson: (
+    lessonId: number,
+    courseId: number
+  ) => Promise<CourseLessonModel>;
   updateLesson: (
-    params: CourseLessonParams,
+    lessonId: number,
+    courseId: number,
     lessonDetails: UpdateCourseLessonDto
   ) => Promise<CourseLessonModel>;
-  getLessonById: (lessonId: string) => Promise<CourseLessonModel>;
+  getLessonById: (lessonId: number) => Promise<CourseLessonModel>;
   createLesson: (
-    params: CourseLessonParams,
+    courseId: number,
     lessonDetails: CreateCourseLessonDto
   ) => Promise<CourseLessonModel>;
 }
 
 @injectable()
 export class CourseLessonService implements ICourseLessonService {
-  @inject(CourseLessonDITypes.COURSE_LESSON_REPOSITORY)
+  @inject(CourseLessonDITypes.REPOSITORY)
   private readonly courseLessonRepository: ICourseLessonRepository;
 
   public async deleteLesson(
-    params: CourseLessonParams
+    lessonId: number,
+    courseId: number
   ): Promise<CourseLessonModel> {
     try {
       const deletedLesson = await this.courseLessonRepository.deleteLesson(
-        params.lessonId
+        lessonId,
+        courseId
       );
 
       return getValuable(deletedLesson);
@@ -42,12 +47,14 @@ export class CourseLessonService implements ICourseLessonService {
   }
 
   public async updateLesson(
-    params: CourseLessonParams,
+    lessonId: number,
+    courseId: number,
     lessonDetails: UpdateCourseLessonDto
   ): Promise<CourseLessonModel> {
     try {
       const updatedLesson = await this.courseLessonRepository.updateLesson(
-        params.lessonId,
+        lessonId,
+        courseId,
         lessonDetails
       );
 
@@ -57,7 +64,7 @@ export class CourseLessonService implements ICourseLessonService {
     }
   }
 
-  public async getLessonById(lessonId: string): Promise<CourseLessonModel> {
+  public async getLessonById(lessonId: number): Promise<CourseLessonModel> {
     try {
       const lesson = await this.courseLessonRepository.getLessonById(lessonId);
 
@@ -68,12 +75,12 @@ export class CourseLessonService implements ICourseLessonService {
   }
 
   public async createLesson(
-    params: CourseLessonParams,
+    courseId: number,
     lessonDetails: CreateCourseLessonDto
   ): Promise<CourseLessonModel> {
     try {
       const lesson = await this.courseLessonRepository.createLesson(
-        params.courseId,
+        courseId,
         lessonDetails
       );
 

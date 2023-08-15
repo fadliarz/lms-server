@@ -3,14 +3,19 @@ import {
   CourseEnrollmentDITypes,
   CourseEnrollmentModel,
   CreateCourseEnrollmentDto,
+  UpdateCourseEnrollmentDto,
 } from "../enrollment.type";
 import { ICourseEnrollmentRepository } from "../repository/enrollment.repository";
 import { getValuable } from "../../../common/functions/getValuable";
 
 export interface ICourseEnrollmentService {
   deleteEnrollment: (
-    userId: string,
-    courseId: string
+    enrollmentId: number,
+    enrollmentDetails: CourseEnrollmentModel
+  ) => Promise<CourseEnrollmentModel>;
+  updateEnrollment: (
+    enrollmentId: number,
+    enrollmentDetails: UpdateCourseEnrollmentDto
   ) => Promise<CourseEnrollmentModel>;
   createEnrollment: (
     enrollmentDetails: CreateCourseEnrollmentDto
@@ -19,21 +24,38 @@ export interface ICourseEnrollmentService {
 
 @injectable()
 export class CourseEnrollmentService implements ICourseEnrollmentService {
-  @inject(CourseEnrollmentDITypes.COURSE_ENROLLMENT_REPOSITORY)
+  @inject(CourseEnrollmentDITypes.REPOSITORY)
   courseEnrollmentRepository: ICourseEnrollmentRepository;
 
   public async deleteEnrollment(
-    userId: string,
-    courseId: string
+    enrollmentId: number,
+    enrollmentDetails: CourseEnrollmentModel
   ): Promise<CourseEnrollmentModel> {
     try {
       const deletedEnrollment =
         await this.courseEnrollmentRepository.deleteEnrollment(
-          userId,
-          courseId
+          enrollmentId,
+          enrollmentDetails
         );
 
       return getValuable(deletedEnrollment);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async updateEnrollment(
+    enrollmentId: number,
+    enrollmentDetails: UpdateCourseEnrollmentDto
+  ): Promise<CourseEnrollmentModel> {
+    try {
+      const updatedEnrollment =
+        await this.courseEnrollmentRepository.updateEnrollment(
+          enrollmentId,
+          enrollmentDetails
+        );
+
+      return getValuable(updatedEnrollment);
     } catch (error) {
       throw error;
     }

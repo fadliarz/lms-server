@@ -8,7 +8,7 @@ generator client {
 }
 
 model User {
-  id           String   @id @unique
+  id           Int      @id() @default(autoincrement())
   email        String   @unique
   password     String
   accessToken  String?  @map("access_token")
@@ -27,7 +27,7 @@ model User {
 }
 
 model Profile {
-  id          String   @id @unique
+  id          Int      @id @default(autoincrement())
   phoneNumber String?  @map("phone_number")
   name        String
   NIM         String   @map("nim")
@@ -36,29 +36,30 @@ model Profile {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  user   User   @relation(fields: [userId], references: [id])
-  userId String @unique @map("user_id")
+  user   User @relation(fields: [userId], references: [id])
+  userId Int  @unique @map("user_id")
 
   @@map("profile")
 }
 
 model CourseEnrollment {
-  id String @id @unique
+  id Int @id @default(autoincrement())
 
   user      User     @relation(fields: [userId], references: [id])
-  userId    String   @map("user_id")
+  userId    Int      @map("user_id")
   course    Course   @relation(fields: [courseId], references: [id])
-  courseId  String   @map("course_id")
+  courseId  Int      @map("course_id")
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, courseId])
+  @@index([userId, courseId])
   @@map("course_enrollment")
 }
 
 model Course {
-  id               String   @id @unique
+  id               Int      @id @default(autoincrement())
   image            String   @default("https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg")
   title            String
   description      String?
@@ -66,13 +67,14 @@ model Course {
   totalStudents    Int      @default(0) @map("total_students")
   totalInstructors Int      @default(0) @map("total_instructors")
   totalLessons     Int      @default(0) @map("total_lessons")
+  totalVideos      Int      @default(0) @map("total_videos")
   totalDurations   Float    @default(0) @map("total_durations")
   totalLikes       Int      @default(0) @map("total_likes")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
-  author   User   @relation(fields: [authorId], references: [id])
-  authorId String
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
 
   enrollments CourseEnrollment[]
   lessons     CourseLesson[]
@@ -82,24 +84,26 @@ model Course {
 }
 
 model CourseLesson {
-  id             String   @id @unique
+  id             Int      @id @default(autoincrement())
   title          String
   description    String?
+  totalVideos    Int      @default(0) @map("total_videos")
   totalDurations Float    @default(0)
   totalMaterials Int      @default(0)
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   course   Course @relation(fields: [courseId], references: [id])
-  courseId String @map("course_id")
+  courseId Int    @map("course_id")
 
   videos CourseLessonVideo[]
 
+  @@unique([id, courseId])
   @@map("course_lesson")
 }
 
 model CourseLessonVideo {
-  id             String   @id @unique
+  id             Int      @id @default(autoincrement())
   name           String
   description    String?
   totalDurations Float
@@ -107,19 +111,20 @@ model CourseLessonVideo {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  courseLesson   CourseLesson @relation(fields: [courseLessonId], references: [id])
-  courseLessonId String       @map("course_playlist_id")
+  lesson   CourseLesson @relation(fields: [lessonId], references: [id])
+  lessonId Int          @map("course_playlist_id")
 
+  @@unique([id, lessonId])
   @@map("course_video")
 }
 
 model CourseLike {
-  id String @id @unique
+  id Int @id @default(autoincrement())
 
   course   Course @relation(fields: [courseId], references: [id])
-  courseId String @map("course_id")
+  courseId Int    @map("course_id")
   user     User   @relation(fields: [userId], references: [id])
-  userId   String @map("user_id")
+  userId   Int    @map("user_id")
 
   @@unique([courseId, userId])
 }

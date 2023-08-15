@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import { CourseLessonDITypes, CourseLessonParams } from "../lesson.type";
+import { CourseLessonDITypes } from "../lesson.type";
 import { ICourseLessonService } from "../service/lesson.service";
-import { handleError } from "../../../common/exceptions/handleError";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { getResponseJson } from "../../../common/response/getResponseJson";
-import { getRequestUserOrThrowAuthenticationException } from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface ICourseLessonController {
   deleteLesson: (
@@ -31,8 +29,8 @@ export interface ICourseLessonController {
 }
 
 @injectable()
-export class LessonController implements ICourseLessonController {
-  @inject(CourseLessonDITypes.COURSE_LESSON_SERVICE)
+export class CourseLessonController implements ICourseLessonController {
+  @inject(CourseLessonDITypes.SERVICE)
   private readonly courseLessonService: ICourseLessonService;
 
   public async deleteLesson(
@@ -42,7 +40,8 @@ export class LessonController implements ICourseLessonController {
   ): Promise<Response | void> {
     try {
       const deletedLesson = await this.courseLessonService.deleteLesson(
-        req.params as CourseLessonParams
+        Number(req.params.lessonId),
+        Number(req.params.courseId)
       );
 
       res
@@ -58,7 +57,8 @@ export class LessonController implements ICourseLessonController {
   ): Promise<Response | void> {
     try {
       const updatedLesson = await this.courseLessonService.updateLesson(
-        req.params as CourseLessonParams,
+        Number(req.params.lessonId),
+        Number(req.params.courseId),
         req.body
       );
 
@@ -66,7 +66,7 @@ export class LessonController implements ICourseLessonController {
         .status(StatusCode.SUCCESS)
         .json(getResponseJson(true, StatusCode.SUCCESS, updatedLesson));
     } catch (error) {
-      handleError(error, next);
+      next(error);
     }
   }
 
@@ -77,14 +77,14 @@ export class LessonController implements ICourseLessonController {
   ): Promise<Response | void> {
     try {
       const lesson = await this.courseLessonService.getLessonById(
-        req.params.lessonId
+        Number(req.params.lessonId)
       );
 
       return res
         .status(StatusCode.SUCCESS)
         .json(getResponseJson(true, StatusCode.SUCCESS, lesson));
     } catch (error) {
-      handleError(error, next);
+      next(error);
     }
   }
 
@@ -95,7 +95,7 @@ export class LessonController implements ICourseLessonController {
   ): Promise<Response | void> {
     try {
       const lesson = await this.courseLessonService.createLesson(
-        req.params as CourseLessonParams,
+        Number(req.params.courseId),
         req.body
       );
 
@@ -103,7 +103,7 @@ export class LessonController implements ICourseLessonController {
         .status(StatusCode.RESOURCE_CREATED)
         .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, lesson));
     } catch (error) {
-      handleError(error, next);
+      next(error);
     }
   }
 }

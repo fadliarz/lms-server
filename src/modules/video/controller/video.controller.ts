@@ -4,18 +4,17 @@ import {
   CourseLessonVideoParams,
 } from "../video.type";
 import { Request, Response, NextFunction } from "express";
-import { handleError } from "../../../common/exceptions/handleError";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { getResponseJson } from "../../../common/response/getResponseJson";
 import { ICourseLessonVideoService } from "../service/video.service";
 
 export interface ICourseLessonVideoController {
-  updateVideo: (
+  deleteVideo: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  deleteVideo: (
+  updateVideo: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -31,8 +30,26 @@ export interface ICourseLessonVideoController {
 export class CourseLessonVideoController
   implements ICourseLessonVideoController
 {
-  @inject(CourseLessonVideoDITypes.COURSE_LESSON_VIDEO_SERVICE)
+  @inject(CourseLessonVideoDITypes.SERVICE)
   courseLessonVideoService: ICourseLessonVideoService;
+
+  public async deleteVideo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      const deletedVideo = await this.courseLessonVideoService.deleteVideo(
+        req.params as CourseLessonVideoParams
+      );
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json(getResponseJson(true, StatusCode.SUCCESS, deletedVideo));
+    } catch (error) {
+      next(error);
+    }
+  }
 
   public async updateVideo(
     req: Request,
@@ -49,25 +66,7 @@ export class CourseLessonVideoController
         .status(StatusCode.SUCCESS)
         .json(getResponseJson(true, StatusCode.SUCCESS, updatedVideo));
     } catch (error) {
-      handleError(error, next);
-    }
-  }
-
-  public async deleteVideo(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const deletedVideo = await this.courseLessonVideoService.deleteVideo(
-        req.params as CourseLessonVideoParams
-      );
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, deletedVideo));
-    } catch (error) {
-      handleError(error, next);
+      next(error);
     }
   }
 
@@ -86,7 +85,7 @@ export class CourseLessonVideoController
         .status(StatusCode.RESOURCE_CREATED)
         .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, video));
     } catch (error) {
-      handleError(error, next);
+      next(error);
     }
   }
 }
