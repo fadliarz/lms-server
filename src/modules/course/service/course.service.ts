@@ -7,36 +7,36 @@ import {
 } from "../course.type";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { CourseDITypes } from "../course.type";
-import { getValuable } from "../../../common/functions/getValuable";
+import getValuable from "../../../common/functions/getValuable";
 import { ICourseRepository } from "../repository/course.repository";
 import { Course, Role } from "@prisma/client";
-import { processQuery } from "../../../common/functions/processQuery";
-import { isEqualOrIncludeRole } from "../../../common/functions/isEqualOrIncludeRole";
-import { ClientException } from "../../../common/exceptions/ClientException";
+import processQuery from "../../../common/functions/processQuery";
+import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
+import ClientException from "../../../common/exceptions/ClientException";
 
 export interface ICourseService {
-  deleteCourseLike: (
+  deleteLike: (
     userId: number,
     courseId: number
   ) => Promise<Pick<Course, "totalLikes">>;
-  createCourseLike: (
+  createLike: (
     userId: number,
     courseId: number
   ) => Promise<Pick<Course, "totalLikes">>;
-  deleteCourse: (courseId: number) => Promise<CourseModel>;
-  createCourse: (
+  delete: (courseId: number) => Promise<CourseModel>;
+  create: (
     userId: number,
     courseDetails: CreateCourseDto
   ) => Promise<CourseModel>;
-  updateCourse: (
+  update: (
     courseId: number,
     courseDetails: UpdateCourseDto
   ) => Promise<CourseModel>;
-  getCourseById: (
+  getById: (
     courseId: number,
     query: GetCourseQuery
   ) => Promise<GetCourseByIdDto>;
-  getCourses: (
+  getMany: (
     userId: number,
     query: GetCoursesQuery
   ) => Promise<{
@@ -49,23 +49,20 @@ export interface ICourseService {
 @injectable()
 export class CourseService implements ICourseService {
   @inject(CourseDITypes.REPOSITORY)
-  private readonly courseRepository: ICourseRepository;
+  private readonly repository: ICourseRepository;
 
-  public async deleteCourseLike(
+  public async deleteLike(
     userId: number,
     courseId: number
   ): Promise<Pick<Course, "totalLikes">> {
     try {
-      const isLiked = await this.courseRepository.isLiked(userId, courseId);
+      const isLiked = await this.repository.isLiked(userId, courseId);
 
       if (!isLiked) {
         throw new ClientException();
       }
 
-      const like = await this.courseRepository.createCourseLike(
-        userId,
-        courseId
-      );
+      const like = await this.repository.deleteLike(userId, courseId);
 
       return like;
     } catch (error) {
@@ -73,21 +70,18 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async createCourseLike(
+  public async createLike(
     userId: number,
     courseId: number
   ): Promise<Pick<Course, "totalLikes">> {
     try {
-      const isLiked = await this.courseRepository.isLiked(userId, courseId);
+      const isLiked = await this.repository.isLiked(userId, courseId);
 
       if (isLiked) {
         throw new ClientException();
       }
 
-      const like = await this.courseRepository.createCourseLike(
-        userId,
-        courseId
-      );
+      const like = await this.repository.createLike(userId, courseId);
 
       return like;
     } catch (error) {
@@ -95,9 +89,9 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async deleteCourse(courseId: number): Promise<CourseModel> {
+  public async delete(courseId: number): Promise<CourseModel> {
     try {
-      const deletedCourse = await this.courseRepository.deleteCourse(courseId);
+      const deletedCourse = await this.repository.delete(courseId);
 
       return getValuable(deletedCourse);
     } catch (error) {
@@ -105,15 +99,12 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async createCourse(
+  public async create(
     userId: number,
     courseDetails: CreateCourseDto
   ): Promise<CourseModel> {
     try {
-      const course = await this.courseRepository.createCourse(
-        userId,
-        courseDetails
-      );
+      const course = await this.repository.create(userId, courseDetails);
 
       return getValuable(course);
     } catch (error) {
@@ -121,15 +112,12 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async updateCourse(
+  public async update(
     courseId: number,
     courseDetails: UpdateCourseDto
   ): Promise<CourseModel> {
     try {
-      const course = await this.courseRepository.updateCourse(
-        courseId,
-        courseDetails
-      );
+      const course = await this.repository.update(courseId, courseDetails);
 
       return getValuable(course);
     } catch (error) {
@@ -137,21 +125,22 @@ export class CourseService implements ICourseService {
     }
   }
 
-  public async getCourseById(
+  public async getById(
     courseId: number,
     query: GetCourseQuery
   ): Promise<GetCourseByIdDto> {
     try {
-      let course = (await this.courseRepository.getCourseById(
+      let course = (await this.repository.getById(
         courseId,
         query
       )) as GetCourseByIdDto;
 
-      const { include_instructors, include_students } = processQuery(query);
+      const { include_instructors, include_students, include_author } =
+        processQuery(query);
 
       if (include_students || include_instructors) {
         const { students, instructors } =
-          await this.courseRepository.getCourseEnrollers(courseId, {
+          await this.repository.getManyCourseEnrollers(courseId, {
             students: include_students,
             instructors: include_instructors,
           });
@@ -165,13 +154,19 @@ export class CourseService implements ICourseService {
         }
       }
 
+      if (include_author) {
+        const author = await this.repository.getAuthor(courseId);
+
+        course = { ...course, author };
+      }
+
       return course;
     } catch (error) {
       throw error;
     }
   }
 
-  public async getCourses(
+  public async getMany(
     userId: number,
     query: GetCoursesQuery
   ): Promise<{
@@ -193,9 +188,7 @@ export class CourseService implements ICourseService {
       } = {};
 
       if (include_owned) {
-        const ownedCourses = await this.courseRepository.getOwnedCourses(
-          userId
-        );
+        const ownedCourses = await this.repository.getManyOwnedCourses(userId);
 
         courses.ownedCourses = ownedCourses;
       }
@@ -213,7 +206,7 @@ export class CourseService implements ICourseService {
       let instructorCourses: Course[] = [];
 
       if (roles.length > 0) {
-        const enrolledCourses = await this.courseRepository.getEnrolledCourses(
+        const enrolledCourses = await this.repository.getManyEnrolledCourses(
           userId,
           roles
         );

@@ -1,5 +1,3 @@
-import { response } from "express";
-
 export function getResponseJson(
   success: boolean,
   statusCode: number,
@@ -12,7 +10,10 @@ export function getResponseJson(
     message: message ? message : "Request success!",
   };
 
-  return success ? {
-    ...responseJson, data
-  } : responseJson
+  return success
+    ? {
+        ...responseJson,
+        data,
+      }
+    : responseJson;
 }

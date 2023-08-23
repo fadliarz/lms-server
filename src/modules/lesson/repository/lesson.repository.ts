@@ -1,52 +1,58 @@
-import { CourseLesson, PrismaClient } from "@prisma/client";
+import { CourseLesson } from "@prisma/client";
 import { injectable } from "inversify";
 import { CreateCourseLessonDto, UpdateCourseLessonDto } from "../lesson.type";
-import dIContainer from "../../../inversifyConfig";
-import { databaseDITypes } from "../../../common/constants/databaseDITypes";
+import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 
 export interface ICourseLessonRepository {
-  deleteLesson: (lessonId: number, courseId: number) => Promise<CourseLesson>;
-  updateLesson: (
+  delete: (lessonId: number, courseId: number) => Promise<CourseLesson>;
+  update: (
     lessonId: number,
     courseId: number,
     lessonDetails: UpdateCourseLessonDto
   ) => Promise<CourseLesson>;
-  getLessonById: (lessonId: number) => Promise<CourseLesson>;
-  createLesson: (
-    courseId: number,
-    lessonDetails: CreateCourseLessonDto
-  ) => Promise<CourseLesson>;
+  getById: (lessonId: number) => Promise<CourseLesson>;
+  create: (lessonDetails: CreateCourseLessonDto) => Promise<CourseLesson>;
 }
 
 @injectable()
 export class CourseLessonRepository implements ICourseLessonRepository {
-  private readonly prisma = dIContainer.get<PrismaClient>(
-    databaseDITypes.PRISMA_CLIENT
-  );
+  private readonly prisma = PrismaClientSingleton.getInstance();
   private readonly courseLessonTable = this.prisma.courseLesson;
   private readonly courseTable = this.prisma.course;
 
-  public async deleteLesson(
-    courseId: number,
-    lessonId: number
+  public async delete(
+    lessonId: number,
+    courseId: number
   ): Promise<CourseLesson> {
     try {
       const deletedLesson = await this.prisma.$transaction(async (tx) => {
-        const deletedLesson = await tx.courseLesson.delete({
+        const deletedLesson = await tx.courseLesson.findUniqueOrThrow({
           where: {
             id: lessonId,
           },
         });
 
-        await tx.course.update({
-          where: {
-            id: courseId,
-          },
-          data: {
-            totalDurations: { decrement: deletedLesson.totalDurations },
-            totalLessons: { decrement: 1 },
-          },
-        });
+        await Promise.all([
+          tx.courseLesson.delete({
+            where: {
+              id: lessonId,
+            },
+          }),
+          tx.courseLessonVideo.deleteMany({
+            where: {
+              lessonId,
+            },
+          }),
+          tx.course.update({
+            where: {
+              id: courseId,
+            },
+            data: {
+              totalDurations: { decrement: deletedLesson.totalDurations },
+              totalLessons: { decrement: 1 },
+            },
+          }),
+        ]);
 
         return deletedLesson;
       });
@@ -57,7 +63,7 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     }
   }
 
-  public async updateLesson(
+  public async update(
     lessonId: number,
     courseId: number,
     lessonDetails: UpdateCourseLessonDto
@@ -79,7 +85,7 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     }
   }
 
-  public async getLessonById(lessonId: number): Promise<CourseLesson> {
+  public async getById(lessonId: number): Promise<CourseLesson> {
     try {
       const lesson = await this.courseLessonTable.findUniqueOrThrow({
         where: {
@@ -93,21 +99,19 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     }
   }
 
-  public async createLesson(
-    courseId: number,
+  public async create(
     lessonDetails: CreateCourseLessonDto
   ): Promise<CourseLesson> {
     try {
       const [lesson] = await this.prisma.$transaction([
         this.courseLessonTable.create({
           data: {
-            courseId,
             ...lessonDetails,
           },
         }),
         this.courseTable.update({
           where: {
-            id: courseId,
+            id: lessonDetails.courseId,
           },
           data: {
             totalLessons: { increment: 1 },

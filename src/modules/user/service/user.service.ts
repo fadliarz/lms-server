@@ -1,26 +1,27 @@
 import jwt from "jsonwebtoken";
 import { isEqual } from "lodash";
 import sha256Encrypt from "../../../utils/encrypt";
-import { PublicUser, SignUpDto } from "../user.type";
+import { Me, PublicUser, SignUpDto } from "../user.type";
 import { IUserRepository } from "../repository/user.repository";
 import { injectable, inject } from "inversify";
 import { UserDITypes } from "../user.type";
 import HttpException from "../../../common/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { getValuable } from "../../../common/functions/getValuable";
+import getValuable from "../../../common/functions/getValuable";
 
 export interface IUserService {
+  getMe: (userId: number) => Promise<Me>;
   createNewUserAndGenerateAuthenticationToken: (
     userDetails: SignUpDto
   ) => Promise<PublicUser>;
   signInUser: (email: string, password: string) => Promise<PublicUser>;
-  clearUserAuthenticationToken: (userId: string) => Promise<void>;
+  clearUserAuthenticationToken: (userId: number) => Promise<void>;
 }
 
 @injectable()
 export class UserService implements IUserService {
   @inject(UserDITypes.USER_REPOSITORY)
-  private userRepository: IUserRepository;
+  private repository: IUserRepository;
 
   private generateFreshAuthenticationToken(
     type: "accessToken" | "refreshToken",
@@ -52,13 +53,23 @@ export class UserService implements IUserService {
     }
   }
 
+  public async getMe(userId: number): Promise<Me> {
+    try {
+      const me = await this.repository.getMe(userId);
+
+      return me;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   public async createNewUserAndGenerateAuthenticationToken(
     userDetails: SignUpDto
   ): Promise<PublicUser> {
     try {
       const { email } = userDetails;
 
-      const userBelongToSignUpEmail = await this.userRepository.getUserByEmail(
+      const userBelongToSignUpEmail = await this.repository.getUserByEmail(
         email
       );
 
@@ -83,11 +94,11 @@ export class UserService implements IUserService {
 
       userDetails.password = encryptedPassword;
 
-      const newUserDetails = await this.userRepository.createNewUser({
-        ...userDetails,
+      const newUserDetails = await this.repository.createNewUser(
+        userDetails,
         accessToken,
-        refreshToken,
-      });
+        refreshToken
+      );
 
       return getValuable(newUserDetails);
     } catch (error) {
@@ -100,7 +111,7 @@ export class UserService implements IUserService {
     password: string
   ): Promise<PublicUser> {
     try {
-      const userBelongToSignInEmail = await this.userRepository.getUserByEmail(
+      const userBelongToSignInEmail = await this.repository.getUserByEmail(
         email
       );
 
@@ -132,7 +143,7 @@ export class UserService implements IUserService {
         refreshToken,
       };
 
-      await this.userRepository.updateExistingUserDetails(user.id, {
+      await this.repository.updateExistingUserDetails(user.id, {
         accessToken,
         refreshToken,
       });
@@ -143,9 +154,9 @@ export class UserService implements IUserService {
     }
   }
 
-  public async clearUserAuthenticationToken(userId: string) {
+  public async clearUserAuthenticationToken(userId: number) {
     try {
-      await this.userRepository.updateExistingUserDetails(userId, {
+      await this.repository.updateExistingUserDetails(userId, {
         accessToken: "",
       });
     } catch (error) {

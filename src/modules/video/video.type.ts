@@ -1,29 +1,23 @@
-import { Course, CourseLessonVideo } from "@prisma/client";
-import {
-  ModifyFieldWithNullToBeOptionalAndRemoveNull,
-  MakePropertiesOptional,
-} from "../../common/types";
+import { CourseLessonVideo } from "@prisma/client";
+import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
 export type CourseLessonVideoModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonVideo>;
 
 export type CourseLessonVideoDateKeys = "createdAt" | "updatedAt";
 export type CourseLessonVideoHasDefaultValue = "";
-export type ExcludeFromDto =
-  | "id"
-  | "lessonId"
-  | CourseLessonVideoDateKeys;
+export type ExcludeFromDto = "id" | CourseLessonVideoDateKeys;
 
 export const CourseLessonVideoDITypes = {
-  REPOSITORY: Symbol.for("REPOSITORY"),
-  SERVICE: Symbol.for("SERVICE"),
-  CONTROLLER: Symbol.for("CONTROLLER"),
-  AUTHORIZATION_MIDDLEWARE: Symbol.for("AUTHORIZATION_MIDDLEWARE"),
+  REPOSITORY: Symbol.for("COURSE_VIDEO_REPOSITORY"),
+  SERVICE: Symbol.for("COURSE_VIDEO_SERVICE"),
+  CONTROLLER: Symbol.for("COURSE_VIDEO_CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for("COURSE_VIDEO_AUTHORIZATION_MIDDLEWARE"),
 };
 
 export enum courseLessonVideoUrls {
-  root = "/courses/:courseId/lessons/:lessonId/videos",
-  video = "/courses/:courseId/lessons/:lessonId/videos/:videoId",
+  root = "/videos",
+  video = "/:videoId",
 }
 
 /**
@@ -34,13 +28,20 @@ export type CreateCourseLessonVideoDto = Omit<
   ExcludeFromDto
 >;
 
-export type UpdateCourseLessonVideoDto = Partial<CreateCourseLessonVideoDto>;
+export type UpdateCourseLessonVideoDto = Partial<
+  Omit<CreateCourseLessonVideoDto, "lessonId">
+>;
 
 /**
- * Query
+ * Ids
  */
-export type CourseLessonVideoParams = {
-  courseId: string;
-  lessonId: string;
-  videoId: string;
+export type CreateCourseLessonVideoIds = {
+  lessonId: number;
+  courseId: number;
+};
+export type UpdateCourseLessonVideoIds = CreateCourseLessonVideoIds & {
+  videoId: number;
+};
+export type DeleteCourseLessonVideoIds = CreateCourseLessonVideoIds & {
+  videoId: number;
 };

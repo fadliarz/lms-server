@@ -1,5 +1,6 @@
 import { Request, Router } from "express";
 import { UserModel } from "../modules/user/user.type";
+import { PrismaClient } from "@prisma/client";
 
 export interface GenericObject<K> {
   [key: string]: K;

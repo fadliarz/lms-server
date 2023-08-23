@@ -1,25 +1,22 @@
 import { injectable, inject } from "inversify";
-import {
-  CourseLessonVideoDITypes,
-  CourseLessonVideoParams,
-} from "../video.type";
+import { CourseLessonVideoDITypes } from "../video.type";
 import { Request, Response, NextFunction } from "express";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { getResponseJson } from "../../../common/response/getResponseJson";
+import { getResponseJson } from "../../../common/functions/getResponseJson";
 import { ICourseLessonVideoService } from "../service/video.service";
 
 export interface ICourseLessonVideoController {
-  deleteVideo: (
+  delete: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  updateVideo: (
+  update: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  createVideo: (
+  create: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -31,16 +28,17 @@ export class CourseLessonVideoController
   implements ICourseLessonVideoController
 {
   @inject(CourseLessonVideoDITypes.SERVICE)
-  courseLessonVideoService: ICourseLessonVideoService;
+  service: ICourseLessonVideoService;
 
-  public async deleteVideo(
+  public async delete(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const deletedVideo = await this.courseLessonVideoService.deleteVideo(
-        req.params as CourseLessonVideoParams
+      const deletedVideo = await this.service.delete(
+        (req as any).ids,
+        (req as any).video
       );
 
       return res
@@ -51,14 +49,15 @@ export class CourseLessonVideoController
     }
   }
 
-  public async updateVideo(
+  public async update(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const updatedVideo = await this.courseLessonVideoService.updateVideo(
-        req.params as CourseLessonVideoParams,
+      const updatedVideo = await this.service.update(
+        (req as any).ids,
+        (req as any).video,
         req.body
       );
 
@@ -70,16 +69,13 @@ export class CourseLessonVideoController
     }
   }
 
-  public async createVideo(
+  public async create(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const video = await this.courseLessonVideoService.createVideo(
-        req.params as CourseLessonVideoParams,
-        req.body
-      );
+      const video = await this.service.create((req as any).ids, req.body);
 
       return res
         .status(StatusCode.RESOURCE_CREATED)

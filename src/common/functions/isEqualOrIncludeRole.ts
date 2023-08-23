@@ -1,6 +1,6 @@
 import { Role } from "@prisma/client";
 
-export function isEqualOrIncludeRole(
+export default function isEqualOrIncludeRole(
   firstRole: Role,
   secondRole: Role | Role[]
 ) {

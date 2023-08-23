@@ -9,23 +9,25 @@ type ExcludeFromDto =
   | "id"
   | "totalDurations"
   | "totalMaterials"
+  | "totalVideos"
   | CourseLessonDateKeys;
 export const CourseLessonDITypes = {
-  REPOSITORY: Symbol.for("REPOSITORY"),
-  SERVICE: Symbol.for("SERVICE"),
-  CONTROLLER: Symbol.for("CONTROLLER"),
-  AUTHORIZATION_MIDDLEWARE: Symbol.for("AUTHORIZATION_MIDDLEWARE")
+  REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
+  SERVICE: Symbol.for("COURSE_LESSON_SERVICE"),
+  CONTROLLER: Symbol.for("COURSE_LESSON_CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for(
+    "COURSE_LESSON_AUTHORIZATION_MIDDLEWARE"
+  ),
 };
 export enum courseLessonUrls {
-  root = "/courses/:courseId/lessons",
-  lesson = "/courses/:courseId/lessons/:lessonId",
+  root = "/lessons",
+  lesson = "/:lessonId",
 }
 
 /**
  * Dto
  */
-export type CreateCourseLessonDto = Omit<
-  CourseLessonModel,
-  ExcludeFromDto | "courseId"
+export type CreateCourseLessonDto = Omit<CourseLessonModel, ExcludeFromDto>;
+export type UpdateCourseLessonDto = Partial<
+  Omit<CreateCourseLessonDto, "courseId">
 >;
-export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;

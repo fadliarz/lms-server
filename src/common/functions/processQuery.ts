@@ -1,6 +1,6 @@
 type QueryObject<T> = { [key in keyof T]?: string | undefined };
 
-export function processQuery<T>(query: QueryObject<T>): {
+export default function processQuery<T>(query: QueryObject<T>): {
   [key in keyof T]: boolean;
 } {
   const result: { [key in keyof T]: boolean } = {} as {

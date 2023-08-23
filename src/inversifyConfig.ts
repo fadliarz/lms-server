@@ -13,8 +13,6 @@ import { CourseDITypes } from "./modules/course/course.type";
 import { CourseRepository } from "./modules/course/repository/course.repository";
 import { CourseService } from "./modules/course/service/course.service";
 import { CourseController } from "./modules/course/controller/course.controller";
-import { PrismaClient } from "@prisma/client";
-import { databaseDITypes } from "./common/constants/databaseDITypes";
 import {
   CourseAuthorizationMiddleware,
   ICourseAuthorizationMiddleware,
@@ -49,14 +47,29 @@ import {
   CourseLessonController,
   ICourseLessonController,
 } from "./modules/lesson/controller/lesson.controller";
-import { CourseLessonVideoController } from "./modules/video/controller/video.controller";
+import {
+  CourseLessonAuthorizationMiddleware,
+  ICourseLessonAuthorizationMiddleware,
+} from "./modules/lesson/authorization/lesson.authorization";
+import {
+  CourseLessonVideoRepository,
+  ICourseLessonVideoRepository,
+} from "./modules/video/repository/video.repository";
+import { CourseLessonVideoDITypes } from "./modules/video/video.type";
+import {
+  CourseLessonVideoService,
+  ICourseLessonVideoService,
+} from "./modules/video/service/video.service";
+import {
+  CourseLessonVideoController,
+  ICourseLessonVideoController,
+} from "./modules/video/controller/video.controller";
+import {
+  CourseLessonVideoAuthorizationMiddleware,
+  ICourseLessonVideoAuthorizationMiddleware,
+} from "./modules/video/authorization/video.authorization";
 
 const dIContainer = new Container();
-
-/**
- * Prisma
- */
-dIContainer.bind<PrismaClient>(databaseDITypes.PRISMA_CLIENT).to(PrismaClient);
 
 /**
  * User Container
@@ -113,5 +126,28 @@ dIContainer
 dIContainer
   .bind<ICourseLessonController>(CourseLessonDITypes.CONTROLLER)
   .to(CourseLessonController);
+dIContainer
+  .bind<ICourseLessonAuthorizationMiddleware>(
+    CourseLessonDITypes.AUTHORIZATION_MIDDLEWARE
+  )
+  .to(CourseLessonAuthorizationMiddleware);
+
+/**
+ * Course Lesson Video
+ */
+dIContainer
+  .bind<ICourseLessonVideoRepository>(CourseLessonVideoDITypes.REPOSITORY)
+  .to(CourseLessonVideoRepository);
+dIContainer
+  .bind<ICourseLessonVideoService>(CourseLessonVideoDITypes.SERVICE)
+  .to(CourseLessonVideoService);
+dIContainer
+  .bind<ICourseLessonVideoController>(CourseLessonVideoDITypes.CONTROLLER)
+  .to(CourseLessonVideoController);
+dIContainer
+  .bind<ICourseLessonVideoAuthorizationMiddleware>(
+    CourseLessonVideoDITypes.AUTHORIZATION_MIDDLEWARE
+  )
+  .to(CourseLessonVideoAuthorizationMiddleware);
 
 export default dIContainer;

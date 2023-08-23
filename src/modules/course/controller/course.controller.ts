@@ -4,41 +4,41 @@ import { Request, Response, NextFunction } from "express-serve-static-core";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ICourseService } from "../service/course.service";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
-import { getRequestUserOrThrowAuthenticationException } from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import { getResponseJson } from "../../../common/response/getResponseJson";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import { getResponseJson } from "../../../common/functions/getResponseJson";
 
 export interface ICourseController {
-  deleteCourseLike: (
+  deleteLike: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  createCourseLike: (
+  createLike: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  deleteCourse: (
+  delete: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  updateCourse: (
+  update: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  getCourseById: (
+  getById: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  getCourses: (
+  getMany: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  createCourse: (
+  create: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -48,16 +48,16 @@ export interface ICourseController {
 @injectable()
 export class CourseController implements ICourseController {
   @inject(CourseDITypes.SERVICE)
-  private readonly courseService: ICourseService;
+  private readonly service: ICourseService;
 
-  public async deleteCourseLike(
+  public async deleteLike(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
-      const like = await this.courseService.deleteCourseLike(
+      const like = await this.service.deleteLike(
         user.id,
         Number(Number(req.params.courseId))
       );
@@ -70,14 +70,14 @@ export class CourseController implements ICourseController {
     }
   }
 
-  public async createCourseLike(
+  public async createLike(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
-      const like = await this.courseService.createCourseLike(
+      const like = await this.service.createLike(
         user.id,
         Number(req.params.courseId)
       );
@@ -90,29 +90,31 @@ export class CourseController implements ICourseController {
     }
   }
 
-  public async deleteCourse(
+  public async delete(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const deletedCourse = await this.courseService.deleteCourse(
+      const deletedCourse = await this.service.delete(
         Number(req.params.courseId)
       );
 
       return res
         .status(StatusCode.SUCCESS)
         .json(getResponseJson(true, StatusCode.SUCCESS, deletedCourse));
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
   }
 
-  public async updateCourse(
+  public async update(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const course = await this.courseService.updateCourse(
+      const course = await this.service.update(
         Number(req.params.courseId),
         req.body as UpdateCourseDto
       );
@@ -125,13 +127,13 @@ export class CourseController implements ICourseController {
     }
   }
 
-  public async getCourseById(
+  public async getById(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const course = await this.courseService.getCourseById(
+      const course = await this.service.getById(
         Number(req.params.courseId),
         req.query
       );
@@ -144,14 +146,16 @@ export class CourseController implements ICourseController {
     }
   }
 
-  public async getCourses(
+  public async getMany(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
-      const courses = await this.courseService.getCourses(user.id, req.query);
+      const courses = await this.service.getMany(user.id, req.query);
+
+      console.log(courses);
 
       return res
         .status(StatusCode.SUCCESS)
@@ -161,14 +165,14 @@ export class CourseController implements ICourseController {
     }
   }
 
-  public async createCourse(
+  public async create(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
-      const course = await this.courseService.createCourse(
+      const course = await this.service.create(
         user.id,
         req.body as CreateCourseDto
       );

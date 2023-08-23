@@ -3,25 +3,25 @@ import { inject, injectable } from "inversify";
 import { CourseLessonDITypes } from "../lesson.type";
 import { ICourseLessonService } from "../service/lesson.service";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { getResponseJson } from "../../../common/response/getResponseJson";
+import { getResponseJson } from "../../../common/functions/getResponseJson";
 
 export interface ICourseLessonController {
-  deleteLesson: (
+  delete: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  updateLesson: (
+  update: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  getLessonById: (
+  getById: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  createLesson: (
+  create: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -31,34 +31,36 @@ export interface ICourseLessonController {
 @injectable()
 export class CourseLessonController implements ICourseLessonController {
   @inject(CourseLessonDITypes.SERVICE)
-  private readonly courseLessonService: ICourseLessonService;
+  private readonly service: ICourseLessonService;
 
-  public async deleteLesson(
+  public async delete(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const deletedLesson = await this.courseLessonService.deleteLesson(
+      const deletedLesson = await this.service.delete(
         Number(req.params.lessonId),
-        Number(req.params.courseId)
+        Number((req as any).courseId)
       );
 
       res
         .status(StatusCode.SUCCESS)
         .json(getResponseJson(true, StatusCode.SUCCESS, deletedLesson));
-    } catch (error) {}
+    } catch (error) {
+      next(error);
+    }
   }
 
-  public async updateLesson(
+  public async update(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const updatedLesson = await this.courseLessonService.updateLesson(
+      const updatedLesson = await this.service.update(
         Number(req.params.lessonId),
-        Number(req.params.courseId),
+        Number((req as any).courseId),
         req.body
       );
 
@@ -70,15 +72,13 @@ export class CourseLessonController implements ICourseLessonController {
     }
   }
 
-  public async getLessonById(
+  public async getById(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const lesson = await this.courseLessonService.getLessonById(
-        Number(req.params.lessonId)
-      );
+      const lesson = await this.service.getById(Number(req.params.lessonId));
 
       return res
         .status(StatusCode.SUCCESS)
@@ -88,16 +88,13 @@ export class CourseLessonController implements ICourseLessonController {
     }
   }
 
-  public async createLesson(
+  public async create(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const lesson = await this.courseLessonService.createLesson(
-        Number(req.params.courseId),
-        req.body
-      );
+      const lesson = await this.service.create(req.body);
 
       return res
         .status(StatusCode.RESOURCE_CREATED)

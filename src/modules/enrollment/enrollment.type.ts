@@ -1,16 +1,18 @@
-import { CourseEnrollment } from "@prisma/client";
+import { CourseEnrollment, Prisma } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
 export type CourseEnrollmentModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
 export type CourseEnrollmentDateKeys = "createdAt" | "updatedAt";
 export type CourseEnrollmentHasDefaultValue = "";
-export type ExcludeFromDto = "id" | CourseEnrollmentDateKeys;
+export type ExcludeFromDto = "id" | CourseEnrollmentDateKeys | "courseId";
 export const CourseEnrollmentDITypes = {
-  REPOSITORY: Symbol.for("REPOSITORY"),
-  SERVICE: Symbol.for("SERVICE"),
-  CONTROLLER: Symbol.for("CONTROLLER"),
-  AUTHORIZATION_MIDDLEARE: Symbol.for("AUTHORIZATION_MIDDLEWARE"),
+  REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
+  SERVICE: Symbol.for("COURSE_ENROLLMENT_SERVICE"),
+  CONTROLLER: Symbol.for("COURSE_ENROLLMENT_CONTROLLER"),
+  AUTHORIZATION_MIDDLEARE: Symbol.for(
+    "COURSE_ENROLLMENT_AUTHORIZATION_MIDDLEWARE"
+  ),
 };
 export enum courseEnrollmentUrls {
   root = "/enrollments",
@@ -25,9 +27,12 @@ export type CreateCourseEnrollmentDto = Omit<
   ExcludeFromDto
 >;
 
-export type UpdateCourseEnrollmentDto = Pick<CreateCourseEnrollmentDto, "role">;
+export type UpdateCourseEnrollmentDto = CreateCourseEnrollmentDto;
 
 /**
- * Query
+ * Select
  */
-export type CourseEnrollmentParams = {};
+export type CourseEnrollmentSelect = Pick<
+  Prisma.CourseEnrollmentSelect,
+  keyof CourseEnrollment
+>;

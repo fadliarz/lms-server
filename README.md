@@ -4,11 +4,11 @@
 
 ## Architecure | 4-layer Architecture
 
-![Alt text](image-2.png)
+![Alt text](4-layer-architecture.png)
 
 ## Entitiy Relationship Diagram (ERD)
 
-![Alt text](image-5.png)
+![Alt text](ERD.png)
 
 ## Prisma Schema
 

@@ -1,10 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { BaseCourseAuthorization } from "../../../common/class/BaseCourseAuthorization";
-import { getRequestUserOrThrowAuthenticationException } from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import { isEqualOrIncludeRole } from "../../../common/functions/isEqualOrIncludeRole";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import { Role } from "@prisma/client";
-import { AuthorizationException } from "../../../common/exceptions/AuthorizationException";
-import { getRoleStatus } from "../../../common/functions/getRoleStatus";
+import AuthorizationException from "../../../common/exceptions/AuthorizationException";
+import getRoleStatus from "../../../common/functions/getRoleStatus";
+import { injectable } from "inversify";
+import { CreateCourseLessonDto } from "../lesson.type";
+import ClientException from "../../../common/exceptions/ClientException";
+import BaseCourseLessonAuthorization from "../../../common/class/BaseCourseLessonAuthorization";
+import BaseCourseLessonVideoAuthorization from "../../../common/class/BaseCourseLessonVideoAuthorization";
 
 export class ICourseLessonAuthorizationMiddleware {
   getDeleteLessonAuthorizationMiddleware: () => (
@@ -24,12 +29,13 @@ export class ICourseLessonAuthorizationMiddleware {
   ) => Promise<void>;
 }
 
+@injectable()
 export class CourseLessonAuthorizationMiddleware
-  extends BaseCourseAuthorization
+  extends BaseCourseLessonVideoAuthorization
   implements ICourseLessonAuthorizationMiddleware
 {
   public getDeleteLessonAuthorizationMiddleware() {
-    return this.getCreateLessonAuthorizationMiddleware();
+    return this.getUpdateLessonAuthorizationMiddleware();
   }
 
   public getUpdateLessonAuthorizationMiddleware() {
@@ -40,35 +46,53 @@ export class CourseLessonAuthorizationMiddleware
     ): Promise<void> => {
       try {
         const user = getRequestUserOrThrowAuthenticationException(req);
-        const isInstructor = isEqualOrIncludeRole(user.role, Role.INSTRUCTOR);
-        const isStudent = isEqualOrIncludeRole(user.role, Role.STUDENT);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        let isAuthorized = false;
 
         if (isStudent) {
           throw new AuthorizationException();
         }
 
-        if (isInstructor) {
-          const authorId = await this.getCourseOwnerUserIdOrThrow(
-            Number(req.params.courseId)
-          );
+        if (isInstructor || isAdmin) {
+          const lessonId = Number(req.params.lessonId);
+
+          if (isNaN(lessonId)) {
+            throw new ClientException("Invalid lessonId!");
+          }
+          const courseId = await this.getCourseIdByLessonIdOrThrow(lessonId);
+          const authorId = await this.getAuthorIdOrThrow(courseId);
           const isAuthor = user.id === authorId;
 
-          if (isAuthor) {
-            next();
+          (req as any).courseId = courseId;
+
+          if (isAuthor || isAdmin) {
+            isAuthorized = true;
           }
 
-          const enrollment = await this.getCourseEnrollment(
-            user.id,
-            Number(req.params.courseId)
-          );
+          if (!isAuthorized) {
+            const enrollment = await this.courseEnrollmentTable.findUnique({
+              where: {
+                userId_courseId: {
+                  userId: user.id,
+                  courseId: courseId,
+                },
+              },
+              select: {
+                role: true,
+              },
+            });
 
-          if (!enrollment) {
-            throw new AuthorizationException();
+            if (
+              enrollment &&
+              isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
+            ) {
+              isAuthorized = true;
+            }
           }
+        }
 
-          if (isEqualOrIncludeRole(enrollment?.role as Role, Role.INSTRUCTOR)) {
-            throw new AuthorizationException();
-          }
+        if (!isAuthorized) {
+          throw new AuthorizationException();
         }
 
         next();
@@ -86,36 +110,50 @@ export class CourseLessonAuthorizationMiddleware
     ): Promise<void> => {
       try {
         const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isInstructor, isStudent } = getRoleStatus(user.role);
+        const body = req.body as CreateCourseLessonDto;
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        let isAuthorized = false;
 
         if (isStudent) {
           throw new AuthorizationException();
         }
 
         if (isInstructor) {
-          const authorId = await this.getCourseOwnerUserIdOrThrow(
-            Number(req.params.courseId)
-          );
+          const authorId = await this.getAuthorIdOrThrow(body.courseId);
           const isAuthor = user.id === authorId;
+
           if (isAuthor) {
-            next();
+            isAuthorized = true;
           }
 
-          const enrollment = await this.getCourseEnrollment(
-            user.id,
-            Number(req.params.courseId),
-            { role: true }
-          );
+          if (!isAuthorized) {
+            const enrollment = await this.courseEnrollmentTable.findUnique({
+              where: {
+                userId_courseId: {
+                  userId: user.id,
+                  courseId: body.courseId,
+                },
+              },
+              select: {
+                role: true,
+              },
+            });
 
-          if (!enrollment) {
-            throw new AuthorizationException();
+            if (
+              enrollment &&
+              isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
+            ) {
+              isAuthorized = true;
+            }
           }
+        }
 
-          if (
-            !isEqualOrIncludeRole(enrollment?.role as Role, Role.INSTRUCTOR)
-          ) {
-            throw new AuthorizationException();
-          }
+        if (isAdmin) {
+          isAuthorized = true;
+        }
+
+        if (!isAuthorized) {
+          throw new AuthorizationException();
         }
 
         next();

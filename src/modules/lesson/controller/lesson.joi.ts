@@ -1,15 +1,13 @@
 import Joi from "joi";
-import { CreateCourseLessonDto } from "../lesson.type";
-import { UpdateCourseDto } from "../../course/course.type";
+import { CreateCourseLessonDto, UpdateCourseLessonDto } from "../lesson.type";
 
-export const CreateCourseLesson = Joi.object<CreateCourseLessonDto>({
+export const CreateCourseLessonDtoJoi = Joi.object<CreateCourseLessonDto>({
   title: Joi.string().required(),
   description: Joi.string(),
+  courseId: Joi.number().required(),
 });
 
-export const UpdateCourseLesson = Joi.object<UpdateCourseDto>({
+export const UpdateCourseLessonDtoJoi = Joi.object<UpdateCourseLessonDto>({
   title: Joi.string(),
   description: Joi.string(),
-  material: Joi.string(),
-  image: Joi.string(),
 });

@@ -23,14 +23,42 @@ export default function CourseRouter(authenticationMiddleware: any) {
       CourseDITypes.AUTHORIZATION_MIDDLEWARE
     );
 
+  /**
+   * @swagger
+   * /courses:
+   *   post:
+   *     tags:
+   *      - Course
+   *     summary: Create a new course
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object,
+   *             properties:
+   *               image:
+   *                 type: string
+   *               description:
+   *                 type: string
+   *               material:
+   *                 type: string
+   *               title:
+   *                 type: string
+   *     responses:
+   *       201:
+   *         description: User created successfully
+   *       400:
+   *         description: Bad request
+   */
   router.post(
-    courseUrls.course,
+    "/",
     authenticationMiddleware,
     authorizationMiddleware.getCreateCourseAuthorization(),
     validationMiddleware({
       body: CreateCourseDtoJoi,
     }),
-    controller.createCourse.bind(controller)
+    controller.create.bind(controller)
   );
 
   router.get(
@@ -39,7 +67,7 @@ export default function CourseRouter(authenticationMiddleware: any) {
     validationMiddleware({
       query: GetCoursesQueryJoi,
     }),
-    controller.getCourses.bind(controller)
+    controller.getMany.bind(controller)
   );
 
   router.get(
@@ -49,38 +77,38 @@ export default function CourseRouter(authenticationMiddleware: any) {
     validationMiddleware({
       query: GetCourseQueryJoi,
     }),
-    controller.getCourseById.bind(controller)
+    controller.getById.bind(controller)
   );
 
   router.put(
     courseUrls.course,
     authenticationMiddleware,
-    authenticationMiddleware.getUpdateCourseAuthorization(),
+    authorizationMiddleware.getUpdateCourseAuthorization(),
     validationMiddleware({
       body: UpdateCourseDtoJoi,
     }),
-    controller.updateCourse.bind(controller)
+    controller.update.bind(controller)
   );
 
   router.delete(
     courseUrls.course,
     authenticationMiddleware,
     authorizationMiddleware.getDeleteCourseAuthorization(),
-    controller.deleteCourse.bind(controller)
+    controller.delete.bind(controller)
   );
 
   router.post(
     courseUrls.likes,
     authenticationMiddleware,
     authorizationMiddleware.getCreateCourseLikeAuthorization(),
-    controller.createCourseLike.bind(controller)
+    controller.createLike.bind(controller)
   );
 
   router.delete(
     courseUrls.like,
     authenticationMiddleware,
     authorizationMiddleware.getDeleteCourseLikeAuthorization(),
-    controller.deleteCourseLike.bind(controller)
+    controller.deleteLike.bind(controller)
   );
 
   return router;

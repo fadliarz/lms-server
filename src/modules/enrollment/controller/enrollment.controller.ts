@@ -6,21 +6,21 @@ import {
 } from "../enrollment.type";
 import { ICourseEnrollmentService } from "../service/enrollment.service";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { getResponseJson } from "../../../common/response/getResponseJson";
-import { getRequestUserOrThrowAuthenticationException } from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import { getResponseJson } from "../../../common/functions/getResponseJson";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface ICourseEnrollmentController {
-  deleteEnrollment: (
+  delete: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  updateEnrollment: (
+  update: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  createEnrollment: (
+  create: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -30,9 +30,9 @@ export interface ICourseEnrollmentController {
 @injectable()
 export class CourseEnrollmentController implements ICourseEnrollmentController {
   @inject(CourseEnrollmentDITypes.SERVICE)
-  courseEnrollmentService: ICourseEnrollmentService;
+  service: ICourseEnrollmentService;
 
-  public async deleteEnrollment(
+  public async delete(
     req: Request,
     res: Response,
     next: NextFunction
@@ -40,11 +40,10 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
 
-      const deletedEnrollment =
-        await this.courseEnrollmentService.deleteEnrollment(
-          user.id,
-          (req as any).enrollment as CourseEnrollmentModel
-        );
+      const deletedEnrollment = await this.service.delete(
+        user.id,
+        Number(req.params.courseId)
+      );
 
       return res
         .status(StatusCode.SUCCESS)
@@ -54,17 +53,17 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     }
   }
 
-  public async updateEnrollment(
+  public async update(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const updatedEnrollment =
-        await this.courseEnrollmentService.updateEnrollment(
-          Number(req.params.enrollmentId),
-          req.body
-        );
+      const updatedEnrollment = await this.service.update(
+        Number(req.params.enrollmentId),
+        Number(req.params.courseId),
+        req.body
+      );
 
       return res
         .status(StatusCode.SUCCESS)
@@ -74,13 +73,14 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     }
   }
 
-  public async createEnrollment(
+  public async create(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const enrollment = await this.courseEnrollmentService.createEnrollment(
+      const enrollment = await this.service.create(
+        Number(req.params.courseId),
         req.body
       );
 

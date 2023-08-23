@@ -30,7 +30,7 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
     authorizationMiddleware
       .getCreateCourseEnrollmentAuthorizationMiddleware()
       .bind(authorizationMiddleware),
-    controller.createEnrollment.bind(controller)
+    controller.create.bind(controller)
   );
 
   router.post(
@@ -40,7 +40,7 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
     authorizationMiddleware
       .getUpdateCourseEnrollmentAuthorizationMiddleWare()
       .bind(authorizationMiddleware),
-    controller.updateEnrollment.bind(controller)
+    controller.update.bind(controller)
   );
 
   router.delete(
@@ -49,7 +49,7 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
     authorizationMiddleware
       .getDeleteCourseEnrollmentAuthorizationMiddleware()
       .bind(authorizationMiddleware),
-    controller.updateEnrollment.bind(controller)
+    controller.delete.bind(controller)
   );
 
   return router;

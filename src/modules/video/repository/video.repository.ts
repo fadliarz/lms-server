@@ -1,23 +1,27 @@
-import { CourseLessonVideo, PrismaClient, Role } from "@prisma/client";
+import { CourseLessonVideo } from "@prisma/client";
 import { injectable } from "inversify";
 import {
   CreateCourseLessonVideoDto,
-  CourseLessonVideoParams,
   UpdateCourseLessonVideoDto,
+  CreateCourseLessonVideoIds,
+  UpdateCourseLessonVideoIds,
+  DeleteCourseLessonVideoIds,
 } from "../video.type";
-import { v4 as uuidv4 } from "uuid";
-import dIContainer from "../../../inversifyConfig";
-import { databaseDITypes } from "../../../common/constants/databaseDITypes";
+import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 
 export interface ICourseLessonVideoRepository {
-  deleteVideo: (params: CourseLessonVideoParams) => Promise<CourseLessonVideo>;
-  updateVideo: (
-    params: CourseLessonVideoParams,
-    videoDetails: UpdateCourseLessonVideoDto
+  delete: (
+    ids: DeleteCourseLessonVideoIds,
+    video: CourseLessonVideo
   ) => Promise<CourseLessonVideo>;
-  createVideo: (
-    params: CourseLessonVideoParams,
-    videoDetails: CreateCourseLessonVideoDto
+  update: (
+    ids: UpdateCourseLessonVideoIds,
+    video: CourseLessonVideo,
+    newVideoDetails: UpdateCourseLessonVideoDto
+  ) => Promise<CourseLessonVideo>;
+  create: (
+    ids: CreateCourseLessonVideoIds,
+    newVideoDetails: CreateCourseLessonVideoDto
   ) => Promise<CourseLessonVideo>;
 }
 
@@ -25,39 +29,37 @@ export interface ICourseLessonVideoRepository {
 export class CourseLessonVideoRepository
   implements ICourseLessonVideoRepository
 {
-  private readonly prisma = dIContainer.get<PrismaClient>(
-    databaseDITypes.PRISMA_CLIENT
-  );
+  private readonly prisma = PrismaClientSingleton.getInstance();
   private readonly courseLessonVideoTable = this.prisma.courseLessonVideo;
 
-  public async deleteVideo(
-    params: CourseLessonVideoParams
+  public async delete(
+    ids: DeleteCourseLessonVideoIds,
+    video: CourseLessonVideo
   ): Promise<CourseLessonVideo> {
     try {
       const deletedVideo = await this.prisma.$transaction(async (tx) => {
-        const deletedVideo = await this.courseLessonVideoTable.delete({
-          where: {
-            id: Number(params.lessonId),
-          },
-        });
-
-        await Promise.all([
+        const [deletedVideo] = await Promise.all([
+          tx.courseLessonVideo.delete({
+            where: {
+              id: ids.videoId,
+            },
+          }),
           tx.course.update({
             where: {
-              id: Number(params.courseId),
+              id: ids.courseId,
             },
             data: {
               totalVideos: { decrement: 1 },
-              totalDurations: { decrement: deletedVideo.totalDurations },
+              totalDurations: { decrement: video.totalDurations },
             },
           }),
           tx.courseLesson.update({
             where: {
-              id: Number(params.courseId),
+              id: ids.lessonId,
             },
             data: {
               totalVideos: { decrement: 1 },
-              totalDurations: { decrement: deletedVideo.totalDurations },
+              totalDurations: { decrement: video.totalDurations },
             },
           }),
         ]);
@@ -71,16 +73,49 @@ export class CourseLessonVideoRepository
     }
   }
 
-  public async updateVideo(
-    params: CourseLessonVideoParams,
-    videoDetails: UpdateCourseLessonVideoDto
+  public async update(
+    ids: UpdateCourseLessonVideoIds,
+    oldVideo: CourseLessonVideo,
+    newVideoDetails: UpdateCourseLessonVideoDto
   ): Promise<CourseLessonVideo> {
     try {
-      const updatedVideo = await this.courseLessonVideoTable.update({
-        where: {
-          id: Number(params.lessonId),
-        },
-        data: videoDetails,
+      const updatedVideo = await this.prisma.$transaction(async (tx) => {
+        const [updatedVideo] = await Promise.all([
+          tx.courseLessonVideo.update({
+            where: {
+              id: ids.videoId,
+            },
+            data: newVideoDetails,
+          }),
+          tx.courseLesson.update({
+            where: {
+              id: ids.lessonId,
+            },
+            data: {
+              totalDurations: newVideoDetails.totalDurations
+                ? {
+                    increment:
+                      newVideoDetails.totalDurations - oldVideo.totalDurations,
+                  }
+                : undefined,
+            },
+          }),
+          tx.course.update({
+            where: {
+              id: ids.courseId,
+            },
+            data: {
+              totalDurations: newVideoDetails.totalDurations
+                ? {
+                    increment:
+                      newVideoDetails.totalDurations - oldVideo.totalDurations,
+                  }
+                : undefined,
+            },
+          }),
+        ]);
+
+        return updatedVideo;
       });
 
       return updatedVideo;
@@ -89,34 +124,33 @@ export class CourseLessonVideoRepository
     }
   }
 
-  public async createVideo(
-    params: CourseLessonVideoParams,
-    videoDetails: CreateCourseLessonVideoDto
+  public async create(
+    ids: CreateCourseLessonVideoIds,
+    newVideoDetails: CreateCourseLessonVideoDto
   ): Promise<CourseLessonVideo> {
     try {
       const video = await this.prisma.$transaction(async (tx) => {
         const [video] = await Promise.all([
           tx.courseLessonVideo.create({
             data: {
-              lessonId: Number(params.lessonId),
-              ...videoDetails,
+              ...newVideoDetails,
             },
           }),
           tx.course.update({
             where: {
-              id: Number(params.courseId),
+              id: ids.courseId,
             },
             data: {
-              totalDurations: { increment: videoDetails.totalDurations },
+              totalDurations: { increment: newVideoDetails.totalDurations },
               totalVideos: { increment: 1 },
             },
           }),
           tx.courseLesson.update({
             where: {
-              id: Number(params.lessonId),
+              id: ids.lessonId,
             },
             data: {
-              totalDurations: { increment: videoDetails.totalDurations },
+              totalDurations: { increment: newVideoDetails.totalDurations },
               totalVideos: { increment: 1 },
             },
           }),

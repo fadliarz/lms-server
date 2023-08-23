@@ -1,9 +1,17 @@
-import { User } from "@prisma/client";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import { Course, Prisma, User } from "@prisma/client";
+import {
+  MakePropertiesOptional,
+  ModifyFieldWithNullToBeOptionalAndRemoveNull,
+} from "../../common/types";
 
 export type UserModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<User>;
 export type PublicUser = Omit<UserModel, "password">;
 export type UserDateKeys = "createdAt" | "updatedAt";
+export type UserHasDefaultValue =
+  | "avatar"
+  | "totalLessons"
+  | "totalCourses"
+  | "totalUnreadMessages";
 export type ExcludeFromDto =
   | "id"
   | "role"
@@ -20,15 +28,35 @@ export enum userUrls {
   signUp = "/signup",
   signIn = "/signin",
   logOut = "/logout",
+  me = "/me",
 }
 
 /**
  * Dto
  */
-export type SignUpDto = Omit<UserModel, ExcludeFromDto>;
-export type SignInDto = SignUpDto;
+export type SignUpDto = MakePropertiesOptional<
+  Omit<UserModel, ExcludeFromDto>,
+  UserHasDefaultValue
+>;
+
+export type SignInDto = Pick<SignUpDto, "email" | "password">;
 
 export type BaseUserProfile = {
   name: string;
   NIM: string;
 };
+
+export type UserSelect = Pick<Prisma.UserSelect, keyof User>;
+
+export type Me  = UserModel & {
+  courses: UserCourseType[]
+}
+
+export type UserCourseType = Pick<Course,   | 'id'
+| 'title'
+| 'description'
+| 'totalStudents'
+| 'totalLikes'
+| 'totalLessons'
+| 'createdAt'
+| 'updatedAt'>

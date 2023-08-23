@@ -5,10 +5,15 @@ import { inject, injectable } from "inversify";
 import { UserDITypes } from "../user.type";
 import { AuthenticatedRequest } from "../../../common/types";
 import HttpException from "../../../common/exceptions/HttpException";
-import { handleError } from "../../../common/exceptions/handleError";
-import { getResponseJson } from "../../../common/response/getResponseJson";
+import { getResponseJson } from "../../../common/functions/getResponseJson";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface IUserController {
+  getMe: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
   signIn: (
     req: Request,
     res: Response,
@@ -28,12 +33,12 @@ export interface IUserController {
 
 @injectable()
 export class UserController implements IUserController {
-  @inject(UserDITypes.USER_SERVICE) private userService: IUserService;
+  @inject(UserDITypes.USER_SERVICE) private service: IUserService;
 
   public async signUp(req: Request, res: Response, next: NextFunction) {
     try {
       const newUser =
-        await this.userService.createNewUserAndGenerateAuthenticationToken(
+        await this.service.createNewUserAndGenerateAuthenticationToken(
           req.body
         );
 
@@ -52,7 +57,7 @@ export class UserController implements IUserController {
         .status(StatusCode.RESOURCE_CREATED)
         .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, newUser));
     } catch (error) {
-      handleError(error, next);
+      next(error);
     }
   }
 
@@ -60,7 +65,7 @@ export class UserController implements IUserController {
     try {
       const { email, password } = req.body;
 
-      const user = await this.userService.signInUser(email, password);
+      const user = await this.service.signInUser(email, password);
 
       return res
         .cookie("access_token", user.accessToken, {
@@ -84,30 +89,36 @@ export class UserController implements IUserController {
           })
         );
     } catch (error) {
-      handleError(error, next);
+      next(error);
     }
   }
 
   public async logOut(req: Request, res: Response, next: NextFunction) {
     try {
-      const authenticatedRequest = req as AuthenticatedRequest;
+      const user = getRequestUserOrThrowAuthenticationException(req);
 
-      if (!authenticatedRequest.user) {
-        next(
-          new HttpException(StatusCode.BAD_REQUEST, "User is unauthenticated")
-        );
-      }
-
-      await this.userService.clearUserAuthenticationToken(
-        authenticatedRequest.user?.id as string
-      );
+      await this.service.clearUserAuthenticationToken(user.id);
 
       return res
         .clearCookie("access_token")
         .status(StatusCode.SUCCESS)
-        .json({});
+        .json(user);
     } catch (error) {
-      handleError(error, next);
+      next(error);
+    }
+  }
+
+  public async getMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = getRequestUserOrThrowAuthenticationException(req);
+
+      const me = await this.service.getMe(user.id);
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json(getResponseJson(true, StatusCode.SUCCESS, me));
+    } catch (error) {
+      next(error);
     }
   }
 }

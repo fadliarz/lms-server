@@ -5,8 +5,8 @@ import { ICourseLessonController } from "../controller/lesson.controller";
 import { ICourseLessonAuthorizationMiddleware } from "../authorization/lesson.authorization";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import {
-  CreateCourseLesson,
-  UpdateCourseLesson,
+  CreateCourseLessonDtoJoi,
+  UpdateCourseLessonDtoJoi,
 } from "../controller/lesson.joi";
 
 export default function CourseLessonRouter(authenticationMiddleware: any) {
@@ -15,7 +15,7 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
   const controller = dIContainer.get<ICourseLessonController>(
     CourseLessonDITypes.CONTROLLER
   );
-  const authorizationMiddlewrae =
+  const authorizationMiddleware =
     dIContainer.get<ICourseLessonAuthorizationMiddleware>(
       CourseLessonDITypes.AUTHORIZATION_MIDDLEWARE
     );
@@ -23,28 +23,34 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
   router.post(
     "/",
     authenticationMiddleware,
-    authorizationMiddlewrae.getCreateLessonAuthorizationMiddleware(),
     validationMiddleware({
-      body: CreateCourseLesson,
+      body: CreateCourseLessonDtoJoi,
     }),
-    controller.createLesson.bind(controller)
+    authorizationMiddleware.getCreateLessonAuthorizationMiddleware(),
+    controller.create.bind(controller)
+  );
+
+  router.get(
+    courseLessonUrls.lesson,
+    authenticationMiddleware,
+    controller.getById.bind(controller)
   );
 
   router.put(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authorizationMiddlewrae.getUpdateLessonAuthorizationMiddleware(),
     validationMiddleware({
-      body: UpdateCourseLesson,
+      body: UpdateCourseLessonDtoJoi,
     }),
-    controller.updateLesson.bind(controller)
+    authorizationMiddleware.getUpdateLessonAuthorizationMiddleware(),
+    controller.update.bind(controller)
   );
 
   router.delete(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authenticationMiddleware.getDeleteLessonAuthorizationMiddleware(),
-    controller.deleteLesson.bind(controller)
+    authorizationMiddleware.getDeleteLessonAuthorizationMiddleware(),
+    controller.delete.bind(controller)
   );
 
   return router;

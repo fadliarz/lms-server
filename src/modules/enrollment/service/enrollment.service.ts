@@ -6,18 +6,20 @@ import {
   UpdateCourseEnrollmentDto,
 } from "../enrollment.type";
 import { ICourseEnrollmentRepository } from "../repository/enrollment.repository";
-import { getValuable } from "../../../common/functions/getValuable";
+import getValuable from "../../../common/functions/getValuable";
 
 export interface ICourseEnrollmentService {
-  deleteEnrollment: (
+  delete: (
     enrollmentId: number,
-    enrollmentDetails: CourseEnrollmentModel
+    courseId: number
   ) => Promise<CourseEnrollmentModel>;
-  updateEnrollment: (
+  update: (
     enrollmentId: number,
+    courseId: number,
     enrollmentDetails: UpdateCourseEnrollmentDto
   ) => Promise<CourseEnrollmentModel>;
-  createEnrollment: (
+  create: (
+    courseId: number,
     enrollmentDetails: CreateCourseEnrollmentDto
   ) => Promise<CourseEnrollmentModel>;
 }
@@ -25,18 +27,17 @@ export interface ICourseEnrollmentService {
 @injectable()
 export class CourseEnrollmentService implements ICourseEnrollmentService {
   @inject(CourseEnrollmentDITypes.REPOSITORY)
-  courseEnrollmentRepository: ICourseEnrollmentRepository;
+  repository: ICourseEnrollmentRepository;
 
-  public async deleteEnrollment(
+  public async delete(
     enrollmentId: number,
-    enrollmentDetails: CourseEnrollmentModel
+    courseId: number
   ): Promise<CourseEnrollmentModel> {
     try {
-      const deletedEnrollment =
-        await this.courseEnrollmentRepository.deleteEnrollment(
-          enrollmentId,
-          enrollmentDetails
-        );
+      const deletedEnrollment = await this.repository.delete(
+        enrollmentId,
+        courseId
+      );
 
       return getValuable(deletedEnrollment);
     } catch (error) {
@@ -44,16 +45,17 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
     }
   }
 
-  public async updateEnrollment(
+  public async update(
     enrollmentId: number,
+    courseId: number,
     enrollmentDetails: UpdateCourseEnrollmentDto
   ): Promise<CourseEnrollmentModel> {
     try {
-      const updatedEnrollment =
-        await this.courseEnrollmentRepository.updateEnrollment(
-          enrollmentId,
-          enrollmentDetails
-        );
+      const updatedEnrollment = await this.repository.update(
+        enrollmentId,
+        courseId,
+        enrollmentDetails
+      );
 
       return getValuable(updatedEnrollment);
     } catch (error) {
@@ -61,11 +63,13 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
     }
   }
 
-  public async createEnrollment(
+  public async create(
+    courseId: number,
     enrollmentDetails: CreateCourseEnrollmentDto
   ): Promise<CourseEnrollmentModel> {
     try {
-      const enrollment = await this.courseEnrollmentRepository.createEnrollment(
+      const enrollment = await this.repository.create(
+        courseId,
         enrollmentDetails
       );
 

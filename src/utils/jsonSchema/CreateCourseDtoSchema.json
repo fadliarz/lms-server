@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/CreateCourseDto",
+  "definitions": {
+    "CreateCourseDto": {
+      "$ref": "#/definitions/MakePropertiesOptional%3Calias-731470504-73450-73598-731470504-0-213601%3Cdef-alias-458243151-210-293-458243151-0-1864%2Cdef-alias-458243151-398-599-458243151-0-1864%3E%2CCourseHasDefaultValue%3E",
+      "description": "Dto"
+    },
+    "MakePropertiesOptional<alias-731470504-73450-73598-731470504-0-213601<def-alias-458243151-210-293-458243151-0-1864,def-alias-458243151-398-599-458243151-0-1864>,CourseHasDefaultValue>": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "image": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "material": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ]
+    }
+  }
+}

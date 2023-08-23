@@ -1,26 +1,27 @@
-import { UserModel, UserDateKeys } from "../user.type";
+import { UserModel, UserDateKeys, SignUpDto, Me } from "../user.type";
 import { injectable } from "inversify";
-import { v4 as uuidv4 } from "uuid";
-import { PrismaClient, User } from "@prisma/client";
-import { Prisma } from "@prisma/client";
-import HttpException from "../../../common/exceptions/HttpException";
-import { StatusCode } from "../../../common/constants/statusCode";
-import { handlePrismaError } from "../../../common/exceptions/handlePrismaError";
+import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
+import { User } from "@prisma/client";
+import getValuable from "../../../common/functions/getValuable";
 
 export interface IUserRepository {
+  getMe: (userId: number) => Promise<Me>;
   createNewUser: (
-    userDetails: Omit<UserModel, UserDateKeys | "id" | "role">
+    userDetails: SignUpDto,
+    accessToken: string,
+    refreshToken: string
   ) => Promise<User>;
   getUserByEmail: (email: string) => Promise<User | null>;
   updateExistingUserDetails: (
-    userId: string,
+    userId: number,
     userDetails: Partial<UserModel>
   ) => Promise<User>;
 }
 
 @injectable()
 export class UserRepository implements IUserRepository {
-  private userTable = new PrismaClient().user;
+  private readonly prisma = PrismaClientSingleton.getInstance();
+  private readonly userTable = this.prisma.user;
 
   private async getFirstUserByFilter(
     filter: Partial<UserModel>
@@ -34,12 +35,60 @@ export class UserRepository implements IUserRepository {
     }
   }
 
+  public async getMe(userId: number): Promise<Me> {
+    try {
+      const user = await this.userTable.findUniqueOrThrow({
+        where: {
+          id: userId,
+        },
+      });
+
+      user.refreshToken = "secret";
+
+      const courseEnrollments = await this.prisma.courseEnrollment.findMany({
+        where: {
+          userId,
+        },
+        select: {
+          courseId: true,
+        },
+      });
+
+      const courses = await this.prisma.course.findMany({
+        where: {
+          id: {
+            in: courseEnrollments.map((enrollment) => enrollment.courseId),
+          },
+        },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          totalStudents: true,
+          totalLikes: true,
+          totalLessons: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+
+      return {
+        ...getValuable(user),
+        courses,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
   public async createNewUser(
-    userDetails: Omit<UserModel, "id" | UserDateKeys | "role">
+    userDetails: SignUpDto,
+    accessToken: string,
+    refreshToken: string
   ): Promise<User> {
     try {
       const newUserDetails = await this.userTable.create({
-        data: { ...userDetails, id: uuidv4() },
+        data: { ...userDetails, accessToken, refreshToken },
       });
 
       return newUserDetails;
@@ -63,7 +112,7 @@ export class UserRepository implements IUserRepository {
   }
 
   public async updateExistingUserDetails(
-    userId: string,
+    userId: number,
     userDetailsUpdates: Partial<Omit<UserModel, "id">>
   ): Promise<User> {
     try {
@@ -76,7 +125,7 @@ export class UserRepository implements IUserRepository {
 
       return updatedUserDetails;
     } catch (error) {
-      throw handlePrismaError(error);
+      throw error;
     }
   }
 }

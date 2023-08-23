@@ -3,8 +3,8 @@ import {
   ModifyFieldWithNullToBeOptionalAndRemoveNull,
   MakePropertiesOptional,
 } from "../../common/types";
-import { BaseUserProfile } from "../user/user.type";
-
+import { BaseUserProfile, UserModel } from "../user/user.type";
+import { CourseLessonModel } from "../lesson/lesson.type";
 export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
 
 export type CourseDateKeys = "createdAt" | "updatedAt";
@@ -14,16 +14,17 @@ export type ExcludeFromDto =
   | "totalStudents"
   | "totalInstructors"
   | "totalLessons"
+  | "totalVideos"
   | "totalDurations"
   | "totalLikes"
   | "authorId"
   | CourseDateKeys;
 
 export const CourseDITypes = {
-  REPOSITORY: Symbol.for("REPOSITORY"),
-  SERVICE: Symbol.for("SERVICE"),
-  CONTROLLER: Symbol.for("CONTROLLER"),
-  AUTHORIZATION_MIDDLEWARE: Symbol.for("AUTHORIZATION_MIDDLEWARE"),
+  REPOSITORY: Symbol.for("COURSE_REPOSITORY"),
+  SERVICE: Symbol.for("COURSE_SERVICE"),
+  CONTROLLER: Symbol.for("COURSE_CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for("COURSE_AUTHORIZATION_MIDDLEWARE"),
 };
 
 export enum courseUrls {
@@ -66,14 +67,7 @@ export type GetCourseByIdDto<T = Enroller> = Course & {
   author?: T;
   students?: T[];
   instructors?: T[];
+  lessons: CourseLessonModel[];
 };
 
-export type Enroller = {
-  profile: BaseUserProfile | null;
-};
-
-export type CourseEnrollmentSelect = {
-  role?: boolean;
-  userId?: boolean;
-  courseId?: boolean;
-};
+export type Enroller = Pick<UserModel, "id" | "name" | "NIM" | "avatar">;

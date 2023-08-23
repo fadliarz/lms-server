@@ -2,7 +2,7 @@ import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { ICourseLessonVideoController } from "../controller/video.controller";
 import { CourseLessonVideoDITypes, courseLessonVideoUrls } from "../video.type";
-import { ICourseLessonVideoAuthorizationMiddleware } from "../authorization/lesson.authorization";
+import { ICourseLessonVideoAuthorizationMiddleware } from "../authorization/video.authorization";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import {
   CreateCourseLessonVideoJoi,
@@ -23,28 +23,28 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
   router.post(
     "/",
     authenticationMiddleware,
-    authorizationMiddleware.getCreateLessonAuthorizationMiddleware(),
     validationMiddleware({
       body: CreateCourseLessonVideoJoi,
     }),
-    controller.createVideo.bind(controller)
+    authorizationMiddleware.getCreateVideoAuthorizationMiddleware(),
+    controller.create.bind(controller)
   );
 
   router.put(
     courseLessonVideoUrls.video,
     authenticationMiddleware,
-    authorizationMiddleware.getUpdateLessonAuthorizationMiddleware(),
     validationMiddleware({
       body: UpdateCourseLessonVideoJoi,
     }),
-    controller.updateVideo.bind(controller)
+    authorizationMiddleware.getUpdateVideoAuthorizationMiddleware(),
+    controller.update.bind(controller)
   );
 
   router.delete(
     courseLessonVideoUrls.video,
     authenticationMiddleware,
-    authorizationMiddleware.getDeleteLessonAuthorizationMiddleware(),
-    controller.deleteVideo.bind(controller)
+    authorizationMiddleware.getDeleteVideoAuthorizationMiddleware(),
+    controller.delete.bind(controller)
   );
 
   return router;

@@ -1,8 +1,10 @@
 import { Valuable } from "../types";
 
-export function getValuable<T extends {}, V = Valuable<T>>(obj: T): V;
-export function getValuable<T extends {}, V = Valuable<T>>(obj: T[]): V[];
-export function getValuable<T extends {}, V = Valuable<T>>(
+export default function getValuable<T extends {}, V = Valuable<T>>(obj: T): V;
+export default function getValuable<T extends {}, V = Valuable<T>>(
+  obj: T[]
+): V[];
+export default function getValuable<T extends {}, V = Valuable<T>>(
   obj: T | T[]
 ): V | V[] {
   const filterPredicate = ([, v]: [string, unknown]) =>

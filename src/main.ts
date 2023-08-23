@@ -1,6 +1,6 @@
 import "dotenv/config";
 import App from "./app";
-import validateEnv from "./common/validations/validateEnv";
+import validateEnv from "./common/functions/validateEnv";
 import { Api } from "./common/types";
 import UserRouter from "./modules/user/router/user.router";
 import { getAuthMiddleWare } from "./middlewares/getAuthMiddleware";
@@ -11,6 +11,8 @@ import CourseEnrollmentRouter from "./modules/enrollment/router/enrollment.route
 import { courseEnrollmentUrls } from "./modules/enrollment/enrollment.type";
 import CourseLessonRouter from "./modules/lesson/router/lesson.router";
 import { courseLessonUrls } from "./modules/lesson/lesson.type";
+import CourseLessonVideoRouter from "./modules/video/router/video.router";
+import { courseLessonVideoUrls } from "./modules/video/video.type";
 
 /**
  * Validate environtment variables.
@@ -30,14 +32,24 @@ const courseApi = {
 };
 const courseEnrollmentApi = {
   router: CourseEnrollmentRouter(getAuthMiddleWare()),
-  path: courseEnrollmentUrls.root
+  path: courseEnrollmentUrls.root,
 };
 const courseLessonApi = {
   router: CourseLessonRouter(getAuthMiddleWare()),
-  path: courseLessonUrls.root
+  path: courseLessonUrls.root,
+};
+const courseLessonVideoApi = {
+  router: CourseLessonVideoRouter(getAuthMiddleWare()),
+  path: courseLessonVideoUrls.root
 }
 
-const routers: Api[] = [userApi, courseApi, courseEnrollmentApi, courseLessonApi];
+const routers: Api[] = [
+  userApi,
+  courseApi,
+  courseEnrollmentApi,
+  courseLessonApi,
+  courseLessonVideoApi
+];
 const port = Number(process.env.PORT) || 5000;
 
 /**
@@ -45,7 +57,4 @@ const port = Number(process.env.PORT) || 5000;
  */
 const app = new App(routers, port);
 
-/**
- * Listen to application
- */
-app.listen();
+export default app;

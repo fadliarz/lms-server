@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import HttpException from "../common/exceptions/HttpException";
-import { getResponseJson } from "../common/response/getResponseJson";
-import { InternalServerException } from "../common/exceptions/InternalServerException";
+import { getResponseJson } from "../common/functions/getResponseJson";
+import InternalServerException from "../common/exceptions/InternalServerException";
+import { Prisma } from "@prisma/client";
 
 function errorMiddleware(
   error: HttpException,
@@ -9,11 +10,21 @@ function errorMiddleware(
   res: Response,
   next: NextFunction
 ) {
-  const statusCode = error.status;
-  const message = error.message;
+  let statusCode = error.status || 500;
+  let message = error.message || "Internal server error!";
 
-  if (!(error instanceof HttpException)) {
-    error = new InternalServerException();
+  if (process.env.NODE_ENV === "production") {
+    console.log(error);
+  }
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === "P2025") {
+      message = "Related record not found!";
+    } else {
+      message = new InternalServerException().message;
+    }
+  } else if (!(error instanceof HttpException)) {
+    message = new InternalServerException().message;
   }
 
   return res

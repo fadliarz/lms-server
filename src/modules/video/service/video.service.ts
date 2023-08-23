@@ -4,21 +4,26 @@ import {
   CourseLessonVideoDITypes,
   CourseLessonVideoModel,
   CreateCourseLessonVideoDto,
-  CourseLessonVideoParams,
+  CreateCourseLessonVideoIds,
+  DeleteCourseLessonVideoIds,
   UpdateCourseLessonVideoDto,
+  UpdateCourseLessonVideoIds,
 } from "../video.type";
-import { getValuable } from "../../../common/functions/getValuable";
+import getValuable from "../../../common/functions/getValuable";
+import { CourseLessonVideo } from "@prisma/client";
 
 export interface ICourseLessonVideoService {
-  deleteVideo: (
-    params: CourseLessonVideoParams
+  delete: (
+    ids: DeleteCourseLessonVideoIds,
+    video: CourseLessonVideo
   ) => Promise<CourseLessonVideoModel>;
-  updateVideo: (
-    params: CourseLessonVideoParams,
-    videoDetails: UpdateCourseLessonVideoDto
+  update: (
+    ids: UpdateCourseLessonVideoIds,
+    video: CourseLessonVideo,
+    newVideoDetails: UpdateCourseLessonVideoDto
   ) => Promise<CourseLessonVideoModel>;
-  createVideo: (
-    params: CourseLessonVideoParams,
+  create: (
+    ids: CreateCourseLessonVideoIds,
     videoDetails: CreateCourseLessonVideoDto
   ) => Promise<CourseLessonVideoModel>;
 }
@@ -26,15 +31,14 @@ export interface ICourseLessonVideoService {
 @injectable()
 export class CourseLessonVideoService implements ICourseLessonVideoService {
   @inject(CourseLessonVideoDITypes.REPOSITORY)
-  courseLessonVideoRepository: ICourseLessonVideoRepository;
+  repository: ICourseLessonVideoRepository;
 
-  public async deleteVideo(
-    params: CourseLessonVideoParams
+  public async delete(
+    ids: DeleteCourseLessonVideoIds,
+    video: CourseLessonVideo
   ): Promise<CourseLessonVideoModel> {
     try {
-      const deletedVideo = await this.courseLessonVideoRepository.deleteVideo(
-        params
-      );
+      const deletedVideo = await this.repository.delete(ids, video);
 
       return getValuable(deletedVideo);
     } catch (error) {
@@ -42,15 +46,13 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     }
   }
 
-  public async updateVideo(
-    params: CourseLessonVideoParams,
-    videoDetails: UpdateCourseLessonVideoDto
+  public async update(
+    ids: UpdateCourseLessonVideoIds,
+    video: CourseLessonVideo,
+    newVideoDetails: UpdateCourseLessonVideoDto
   ): Promise<CourseLessonVideoModel> {
     try {
-      const updatedVideo = await this.courseLessonVideoRepository.updateVideo(
-        params,
-        videoDetails
-      );
+      const updatedVideo = await this.repository.update(ids, video, newVideoDetails);
 
       return getValuable(updatedVideo);
     } catch (error) {
@@ -58,15 +60,12 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     }
   }
 
-  public async createVideo(
-    params: CourseLessonVideoParams,
-    videoDetails: CreateCourseLessonVideoDto
+  public async create(
+    ids: CreateCourseLessonVideoIds,
+    newVideoDetails: CreateCourseLessonVideoDto
   ): Promise<CourseLessonVideoModel> {
     try {
-      const video = await this.courseLessonVideoRepository.createVideo(
-        params,
-        videoDetails
-      );
+      const video = await this.repository.create(ids, newVideoDetails);
 
       return getValuable(video);
     } catch (error) {

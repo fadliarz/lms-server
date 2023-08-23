@@ -1,9 +1,9 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { StatusCode } from "../common/constants/statusCode";
-import HttpException from "../common/exceptions/HttpException";
 import { PrismaClient } from "@prisma/client";
-import { getValuable } from "../common/functions/getValuable";
+import getValuable from "../common/functions/getValuable";
+import AuthenticationException from "../common/exceptions/AuthenticationException";
+import RecordNotFoundException from "../common/exceptions/RecordNotFoundException";
 
 export const getAuthMiddleWare = () => {
   const userTable = new PrismaClient().user;
@@ -11,12 +11,18 @@ export const getAuthMiddleWare = () => {
   return async (req: any, res: Response, next: NextFunction) => {
     try {
       const accessToken = req.cookies.access_token || req.headers.cookie;
-      const decoded = jwt.verify(
-        accessToken,
-        process.env.ACCESS_TOKEN_PRIVATE_KEY as string
-      ) as {
-        email: string;
-      };
+
+      let decoded: { email: string };
+      try {
+        decoded = jwt.verify(
+          accessToken,
+          process.env.ACCESS_TOKEN_PRIVATE_KEY as string
+        ) as {
+          email: string;
+        };
+      } catch (error) {
+        throw new AuthenticationException();
+      }
 
       const user = await userTable.findFirst({
         where: {
@@ -26,7 +32,7 @@ export const getAuthMiddleWare = () => {
       });
 
       if (!user) {
-        throw new HttpException(StatusCode.NOT_FOUND, "User not found!");
+        throw new RecordNotFoundException("User not found!");
       }
 
       user.refreshToken = null;
@@ -36,12 +42,6 @@ export const getAuthMiddleWare = () => {
 
       next();
     } catch (error) {
-      if (!(error instanceof HttpException)) {
-        next(
-          new HttpException(StatusCode.BAD_REQUEST, "You are not logged in!")
-        );
-      }
-
       next(error);
     }
   };

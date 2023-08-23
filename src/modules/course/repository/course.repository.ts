@@ -4,30 +4,26 @@ import {
   GetCourseQuery,
   UpdateCourseDto,
 } from "../course.type";
-import { Course, PrismaClient, Role } from "@prisma/client";
+import { Course, CourseLesson, Role, User } from "@prisma/client";
 import { injectable } from "inversify";
-import { handlePrismaError } from "../../../common/exceptions/handlePrismaError";
-import dIContainer from "../../../inversifyConfig";
-import { databaseDITypes } from "../../../common/constants/databaseDITypes";
-import { isEqualOrIncludeRole } from "../../../common/functions/isEqualOrIncludeRole";
-import { processQuery } from "../../../common/functions/processQuery";
+import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
+import processQuery from "../../../common/functions/processQuery";
+import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 
 export interface ICourseRepository {
+  getAuthor: (courseId: number) => Promise<Enroller>;
   isLiked: (userId: number, courseId: number) => Promise<boolean>;
-  deleteCourseLike: (
+  deleteLike: (
     userId: number,
     courseId: number
   ) => Promise<Pick<Course, "totalLikes">>;
-  createCourseLike: (
+  createLike: (
     userId: number,
     courseId: number
   ) => Promise<Pick<Course, "totalLikes">>;
-  deleteCourse: (courseId: number) => Promise<Course>;
-  updateCourse: (
-    courseId: number,
-    courseDetails: UpdateCourseDto
-  ) => Promise<Course>;
-  getCourseEnrollers: (
+  delete: (courseId: number) => Promise<Course>;
+  update: (courseId: number, courseDetails: UpdateCourseDto) => Promise<Course>;
+  getManyCourseEnrollers: (
     courseId: number,
     include: {
       students?: boolean;
@@ -37,26 +33,39 @@ export interface ICourseRepository {
     students?: Enroller[];
     instructors?: Enroller[];
   }>;
-  getEnrolledCourses: (
+  getManyEnrolledCourses: (
     userId: number,
     role: Role | Role[]
   ) => Promise<{ role: Role; course: Course }[]>;
-  getCourseById: (courseId: number, query: GetCourseQuery) => Promise<Course>;
-  getOwnedCourses: (userId: number) => Promise<Course[]>;
-  createCourse: (
-    userId: number,
-    courseDetails: CreateCourseDto
-  ) => Promise<Course>;
+  getById: (courseId: number, query: GetCourseQuery) => Promise<Course>;
+  getManyOwnedCourses: (userId: number) => Promise<Course[]>;
+  create: (userId: number, courseDetails: CreateCourseDto) => Promise<Course>;
 }
 
 @injectable()
 export class CourseRepository implements ICourseRepository {
-  private readonly prisma = dIContainer.get<PrismaClient>(
-    databaseDITypes.PRISMA_CLIENT
-  );
+  private readonly prisma = PrismaClientSingleton.getInstance();
   private readonly courseTable = this.prisma.course;
   private readonly courseEnrollmentTable = this.prisma.courseEnrollment;
   private readonly courseLikeTable = this.prisma.courseLike;
+
+  public async getAuthor(courseId: number) {
+    const { author } = await this.courseTable.findUniqueOrThrow({
+      where: { id: courseId },
+      select: {
+        author: {
+          select: {
+            id: true,
+            name: true,
+            NIM: true,
+            avatar: true,
+          },
+        },
+      },
+    });
+
+    return author;
+  }
 
   public async isLiked(userId: number, courseId: number) {
     const like = await this.courseLikeTable.findUnique({
@@ -74,7 +83,7 @@ export class CourseRepository implements ICourseRepository {
     return like ? true : false;
   }
 
-  public async deleteCourseLike(
+  public async deleteLike(
     userId: number,
     courseId: number
   ): Promise<Pick<Course, "totalLikes">> {
@@ -114,7 +123,7 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async createCourseLike(
+  public async createLike(
     userId: number,
     courseId: number
   ): Promise<Pick<Course, "totalLikes">> {
@@ -152,10 +161,69 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async deleteCourse(courseId: number): Promise<Course> {
+  public async delete(courseId: number): Promise<Course> {
     try {
-      const deletedCourse = await this.courseTable.delete({
-        where: { id: courseId },
+      const deletedCourse = await this.prisma.$transaction(async (tx) => {
+        let myCursor = -1;
+        const { id: maxLessonId } = await tx.courseLesson.findFirstOrThrow({
+          orderBy: {
+            id: "desc",
+          },
+          select: { id: true },
+        });
+
+        let lesson: Pick<CourseLesson, "id">;
+
+        while (myCursor < maxLessonId) {
+          const lessons = await tx.courseLesson.findMany({
+            skip: myCursor === -1 ? 0 : 1,
+            take: 1,
+            cursor:
+              myCursor === -1
+                ? undefined
+                : {
+                    id: myCursor,
+                  },
+            select: {
+              id: true,
+            },
+          });
+
+          lesson = lessons[0];
+          myCursor = lesson.id;
+
+          await tx.courseLessonVideo.deleteMany({
+            where: {
+              lessonId: lesson.id,
+            },
+          });
+        }
+
+        await Promise.all([
+          tx.courseLesson.deleteMany({
+            where: {
+              courseId,
+            },
+          }),
+          tx.courseEnrollment.deleteMany({
+            where: {
+              courseId,
+            },
+          }),
+          tx.courseLike.deleteMany({
+            where: {
+              courseId,
+            },
+          }),
+        ]);
+
+        const deletedCourse = await tx.course.delete({
+          where: {
+            id: courseId,
+          },
+        });
+
+        return deletedCourse;
       });
 
       return deletedCourse;
@@ -164,7 +232,7 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async updateCourse(
+  public async update(
     courseId: number,
     courseDetails: UpdateCourseDto
   ): Promise<Course> {
@@ -179,7 +247,7 @@ export class CourseRepository implements ICourseRepository {
       throw error;
     }
   }
-  public async getCourseEnrollers(
+  public async getManyCourseEnrollers(
     courseId: number,
     include: {
       students?: boolean;
@@ -197,12 +265,9 @@ export class CourseRepository implements ICourseRepository {
         user: {
           select: {
             id: true,
-            profile: {
-              select: {
-                name: true,
-                NIM: true,
-              },
-            },
+            name: true,
+            NIM: true,
+            avatar: true,
           },
         },
         role: true,
@@ -241,7 +306,7 @@ export class CourseRepository implements ICourseRepository {
     return returnValue;
   }
 
-  public async getCourseById(
+  public async getById(
     courseId: number,
     query: GetCourseQuery
   ): Promise<Course> {
@@ -256,26 +321,28 @@ export class CourseRepository implements ICourseRepository {
             ? {
                 select: {
                   id: true,
-                  profile: {
-                    select: {
-                      name: true,
-                      NIM: true,
-                    },
-                  },
+                  name: true,
+                  NIM: true,
                 },
               }
             : undefined,
-          lessons: include_lessons,
+          lessons: include_lessons
+            ? {
+                include: {
+                  videos: true,
+                },
+              }
+            : false,
         },
       });
 
       return course;
     } catch (error) {
-      throw handlePrismaError(error);
+      throw error;
     }
   }
 
-  public async getEnrolledCourses(
+  public async getManyEnrolledCourses(
     userId: number,
     role: Role | Role[]
   ): Promise<{ role: Role; course: Course }[]> {
@@ -299,7 +366,7 @@ export class CourseRepository implements ICourseRepository {
     }
   }
 
-  public async getOwnedCourses(userId: number): Promise<Course[]> {
+  public async getManyOwnedCourses(userId: number): Promise<Course[]> {
     try {
       const courses = await this.courseTable.findMany({
         where: {
@@ -309,11 +376,11 @@ export class CourseRepository implements ICourseRepository {
 
       return courses;
     } catch (error) {
-      throw handlePrismaError(error);
+      throw error;
     }
   }
 
-  public async createCourse(
+  public async create(
     userId: number,
     courseDetails: CreateCourseDto
   ): Promise<Course> {
