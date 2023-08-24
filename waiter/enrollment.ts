@@ -33,7 +33,7 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-// Instructor & !Author
+// Enrolled Instructor
 describe("Create, Update & Delete Course", () => {
   let user: User;
   let course: Course;
@@ -74,7 +74,7 @@ describe("Create, Update & Delete Course", () => {
     }
   });
 
-  it("[INSTRUCTOR & !Author] should create course", async () => {
+  it("[Enrolled INSTRUCTOR] should create course", async () => {
     const body: CreateCourseDto = {
       title: "title",
     };
@@ -87,7 +87,7 @@ describe("Create, Update & Delete Course", () => {
     expect(res.statusCode).toBe(expectedStatusCode.create);
   });
 
-  it("[INSTRUCTOR & !Author] should update course", async () => {
+  it("[Enrolled INSTRUCTOR] should update course", async () => {
     const body: UpdateCourseDto = { title: "new title" };
 
     const res = await request(server)
@@ -98,7 +98,7 @@ describe("Create, Update & Delete Course", () => {
     expect(res.statusCode).toBe(expectedStatusCode.update);
   });
 
-  it("[INSTRUCTOR & !Author] shouldn't delete course", async () => {
+  it("[Enrolled INSTRUCTOR] shouldn't delete course", async () => {
     const res = await request(server)
       .delete(urls.course(enrollment.courseId))
       .send()
@@ -113,7 +113,6 @@ describe("Create, Update & Delete Course", () => {
   let loginRes: request.Response;
   let user: User;
   let course: Course;
-  let enrollment: CourseEnrollment;
   const expectedStatusCode = {
     create: StatusCode.RESOURCE_CREATED,
     update: StatusCode.SUCCESS,
@@ -171,77 +170,6 @@ describe("Create, Update & Delete Course", () => {
   it("[INSTRUCTOR & Author] should delete course", async () => {
     const res = await request(server)
       .delete(urls.course(course.id))
-      .send()
-      .set("Cookie", [`${loginRes.header["set-cookie"]}`]);
-
-    expect(res.statusCode).toBe(expectedStatusCode.delete);
-  });
-});
-
-// Student
-describe("Create, Update & Delete Course", () => {
-  let loginRes: request.Response;
-  let user: User;
-  let course: Course;
-  let enrollment: CourseEnrollment;
-  const expectedStatusCode = {
-    create: StatusCode.UNAUTHORIZED,
-    update: StatusCode.UNAUTHORIZED,
-    delete: StatusCode.UNAUTHORIZED,
-  };
-
-  beforeAll(async () => {
-    user = await prisma.user.findFirstOrThrow({
-      where: {
-        role: Role.STUDENT,
-      },
-    });
-
-    enrollment = await prisma.courseEnrollment.findFirstOrThrow();
-  });
-
-  beforeEach(async () => {
-    const body: SignInDto = {
-      email: user.email,
-      password: "password",
-    };
-
-    try {
-      loginRes = await request(server).post(urls.login).send(body);
-    } catch (error) {
-      console.log("Error sign in...");
-
-      throw error;
-    }
-  });
-
-  it("[STUDENT] shouldn't create course ", async () => {
-    const body: CreateCourseDto = {
-      title: "title",
-    };
-
-    const res = await request(server)
-      .post(urls.courses)
-      .send(body)
-      .set("Cookie", [`${loginRes.header["set-cookie"]}`]);
-
-    expect(res.statusCode).toBe(expectedStatusCode.create);
-  });
-
-  it("[STUDENT] shouldn't update course - Unauthorized", async () => {
-    const body: UpdateCourseDto = { title: "new title" };
-
-    const res = await request(server)
-      .put(urls.course(enrollment.courseId))
-      .send(body)
-      .set("Cookie", [`${loginRes.header["set-cookie"]}`]);
-
-    expect(res.statusCode).toBe(expectedStatusCode.update);
-  });
-
-  it("[STUDENT] shouldn't delete course - Unauthorized", async () => {
-    const res = await request(server)
-      .delete(urls.course(enrollment.courseId))
       .send()
       .set("Cookie", [`${loginRes.header["set-cookie"]}`]);
 

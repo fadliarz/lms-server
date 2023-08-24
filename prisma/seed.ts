@@ -7,7 +7,6 @@ import {
   User,
 } from "@prisma/client";
 import { faker } from "@faker-js/faker";
-import isEqualOrIncludeRole from "../src/common/functions/isEqualOrIncludeRole";
 import sha256Encrypt from "../src/utils/encrypt";
 
 const prisma = new PrismaClient();
@@ -28,10 +27,6 @@ async function cleanTables() {
   await courseTable.deleteMany();
   await userTable.deleteMany();
 }
-
-let INSTRUCTOR_CURSOR = -1;
-const TOTAL_COURSES = 20;
-const MAXIMUM_COURSE_INSERTION = 100;
 
 function generateSample<T>(array: Array<T>): T {
   return array[Math.floor(Math.random() * array.length)];
@@ -238,100 +233,166 @@ async function updateCourseCount() {
 }
 
 async function insertCourseEnrollments(
-  total: number,
-  enrollmentPerUser: number
+  enrollmentPerCase: number
 ): Promise<{ count: number }> {
   try {
-    if (enrollmentPerUser > TOTAL_COURSES) {
-      throw new Error("enrollmentPerUser > TOTAL_COURSES");
-    }
-
     let count = 0;
-    let user: Pick<User, "id" | "role">;
+    let myCursor = -1;
+    let course: Pick<Course, "id" | "authorId">;
 
-    const { id: maxUserId } = await userTable.findFirstOrThrow({
+    const { id: maxCourseId } = await prisma.course.findFirstOrThrow({
+      select: { id: true },
       orderBy: {
         id: "desc",
       },
-      select: { id: true },
     });
 
-    const { id: maxCourseId } = await courseTable.findFirstOrThrow({
-      orderBy: {
-        id: "desc",
-      },
-      select: { id: true },
-    });
-
-    let userCursor = -1;
-    let courseCursor = -1;
-
-    for (
-      let index = 0;
-      index < Math.floor(total / enrollmentPerUser);
-      index++
-    ) {
-      if (userCursor === maxUserId) {
-        userCursor = -1;
-      }
-      if (courseCursor === maxCourseId) {
-        courseCursor = -1;
-      }
-
-      const users = await userTable.findMany({
-        skip: userCursor === -1 ? undefined : 1,
-        take: 1,
+    while (myCursor < maxCourseId) {
+      const courses = await prisma.course.findMany({
+        skip: myCursor === -1 ? 0 : 1,
         cursor:
-          userCursor === -1
+          myCursor === -1
             ? undefined
             : {
-                id: userCursor,
+                id: myCursor,
               },
         select: {
           id: true,
-          role: true,
+          authorId: true,
         },
       });
-      const courses = await courseTable.findMany({
-        skip: courseCursor === -1 ? undefined : 1,
-        take: 3,
-        cursor:
-          courseCursor === -1
-            ? undefined
-            : {
-                id: courseCursor,
+
+      course = courses[0];
+      myCursor = course.id;
+
+      const [studentsAsStudent, instructorsAsStudent, adminsAsStudent] =
+        await Promise.all([
+          prisma.user.findMany({
+            where: {
+              role: Role.STUDENT,
+            },
+            take: enrollmentPerCase,
+            select: {
+              id: true,
+            },
+          }),
+          prisma.user.findMany({
+            where: {
+              role: Role.INSTRUCTOR,
+              id: {
+                notIn: [course.authorId],
               },
-        select: {
-          id: true,
-        },
-      });
+            },
+            take: enrollmentPerCase,
+            select: {
+              id: true,
+            },
+          }),
+          prisma.user.findMany({
+            where: {
+              role: Role.OWNER,
+              id: {
+                notIn: [course.authorId],
+              },
+            },
+            take: enrollmentPerCase,
+            select: {
+              id: true,
+            },
+          }),
+        ]);
 
-      user = users[0];
-      userCursor = user.id;
-      courseCursor = courses[courses.length - 1].id;
-
-      const enrollments = await courseEnrollmentTable.createMany({
-        data: courses.map((course) => {
-          return {
-            courseId: course.id,
-            userId: user.id,
-            role: isEqualOrIncludeRole(user.role, Role.INSTRUCTOR)
-              ? generateSample([Role.STUDENT, Role.INSTRUCTOR])
-              : Role.STUDENT,
-          };
+      const [instructorsAsInstructor, adminsAsInstructor] = await Promise.all([
+        prisma.user.findMany({
+          where: {
+            role: Role.INSTRUCTOR,
+            id: {
+              notIn: [
+                ...instructorsAsStudent.map((instructor) => instructor.id),
+                course.authorId,
+              ],
+            },
+          },
+          take: enrollmentPerCase,
+          select: {
+            id: true,
+          },
         }),
-      });
+        prisma.user.findMany({
+          where: {
+            role: Role.OWNER,
+            id: {
+              notIn: [
+                ...adminsAsStudent.map((admin) => admin.id),
+                course.authorId,
+              ],
+            },
+          },
+          take: enrollmentPerCase,
+          select: {
+            id: true,
+          },
+        }),
+      ]);
 
-      count += enrollments.count;
+      await Promise.all([
+        prisma.courseEnrollment.createMany({
+          data: studentsAsStudent.map((user) => {
+            return {
+              courseId: course.id,
+              userId: user.id,
+              role: Role.STUDENT,
+            };
+          }),
+        }),
+        prisma.courseEnrollment.createMany({
+          data: instructorsAsStudent.map((user) => {
+            return {
+              courseId: course.id,
+              userId: user.id,
+              role: Role.STUDENT,
+            };
+          }),
+        }),
+        prisma.courseEnrollment.createMany({
+          data: adminsAsStudent.map((user) => {
+            return {
+              courseId: course.id,
+              userId: user.id,
+              role: Role.STUDENT,
+            };
+          }),
+        }),
+        prisma.courseEnrollment.createMany({
+          data: instructorsAsInstructor.map((user) => {
+            return {
+              courseId: course.id,
+              userId: user.id,
+              role: Role.INSTRUCTOR,
+            };
+          }),
+        }),
+        prisma.courseEnrollment.createMany({
+          data: adminsAsInstructor.map((user) => {
+            return {
+              courseId: course.id,
+              userId: user.id,
+              role: Role.INSTRUCTOR,
+            };
+          }),
+        }),
+      ]).then((datas) => {
+        datas.forEach((data) => {
+          count += data.count;
+        });
+      });
     }
 
     console.log(
       "Completed inserting " + count + " course enrollments to the database!"
     );
 
-    return {
-      count,
-    };
+    return { count };
   } catch (error: any) {
     console.log(
       "Failed inserting course enrollments: " + error.message || "Unknown error"
@@ -367,22 +428,16 @@ function generateCourseCreateInputArray(
 }
 
 async function insertCourses(
-  total: number,
-  coursePerInstructor: number
+  coursePerInstructorOrAdmin: number
 ): Promise<{ count: number }> {
   try {
-    if (total > MAXIMUM_COURSE_INSERTION) {
-      throw new Error("Maximum course insertion!");
-    }
-
-    if (total < coursePerInstructor) {
-      throw new Error("total < coursePerInstructor");
-    }
-
     let count = 0;
     let instructor: Pick<User, "id">;
+    let admin: Pick<User, "id">;
+    let instructorCursor = -1;
+    let adminCursor = -1;
 
-    const { id } = await userTable.findFirstOrThrow({
+    const { id: maxInstructorId } = await userTable.findFirstOrThrow({
       where: {
         role: Role.INSTRUCTOR,
       },
@@ -391,24 +446,25 @@ async function insertCourses(
       },
       select: { id: true },
     });
+    const { id: maxAdminId } = await userTable.findFirstOrThrow({
+      where: {
+        role: Role.OWNER,
+      },
+      orderBy: {
+        id: "desc",
+      },
+      select: { id: true },
+    });
 
-    for (
-      let index = 0;
-      index < Math.floor(total / coursePerInstructor);
-      index++
-    ) {
-      if (INSTRUCTOR_CURSOR === id) {
-        INSTRUCTOR_CURSOR = -1;
-      }
-
+    while (instructorCursor < maxInstructorId) {
       const instructors = await userTable.findMany({
-        skip: INSTRUCTOR_CURSOR === -1 ? undefined : 1,
+        skip: instructorCursor === -1 ? 0 : 1,
         take: 1,
         cursor:
-          INSTRUCTOR_CURSOR === -1
+          instructorCursor === -1
             ? undefined
             : {
-                id: INSTRUCTOR_CURSOR,
+                id: instructorCursor,
               },
         where: {
           role: Role.INSTRUCTOR,
@@ -419,12 +475,43 @@ async function insertCourses(
       });
 
       instructor = instructors[0];
-      INSTRUCTOR_CURSOR = instructor.id;
+      instructorCursor = instructor.id;
 
       const courses = await courseTable.createMany({
         data: generateCourseCreateInputArray(
-          coursePerInstructor,
+          coursePerInstructorOrAdmin,
           instructor.id
+        ),
+      });
+
+      count += courses.count;
+    }
+
+    while (adminCursor < maxAdminId) {
+      const admins = await userTable.findMany({
+        skip: adminCursor === -1 ? 0 : 1,
+        take: 1,
+        cursor:
+          adminCursor === -1
+            ? undefined
+            : {
+                id: adminCursor,
+              },
+        where: {
+          role: Role.OWNER,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      admin = admins[0];
+      adminCursor = admin.id;
+
+      const courses = await courseTable.createMany({
+        data: generateCourseCreateInputArray(
+          coursePerInstructorOrAdmin,
+          admin.id
         ),
       });
 
@@ -592,33 +679,108 @@ async function updateUserCount() {
   }
 }
 
-async function main() {
+async function deleteAuthorEnrollment() {
+  try {
+    let myCursor = -1;
+    let course: Pick<Course, "id" | "authorId">;
+    let count = 0;
+
+    const { id: maxId } = await courseTable.findFirstOrThrow({
+      orderBy: {
+        id: "desc",
+      },
+      select: { id: true },
+    });
+
+    while (myCursor < maxId) {
+      const courses = await courseTable.findMany({
+        skip: myCursor === -1 ? 0 : 1,
+        take: 1,
+        cursor:
+          myCursor === -1
+            ? undefined
+            : {
+                id: myCursor,
+              },
+        select: {
+          id: true,
+          authorId: true,
+        },
+      });
+
+      course = courses[0];
+      myCursor = course.id;
+
+      try {
+        const enrollment = await courseEnrollmentTable.findUnique({
+          where: {
+            userId_courseId: {
+              userId: course.authorId,
+              courseId: course.id,
+            },
+          },
+        });
+
+        if (enrollment) {
+          await courseEnrollmentTable.delete({
+            where: {
+              userId_courseId: {
+                userId: course.authorId,
+                courseId: course.id,
+              },
+            },
+          });
+        }
+
+        count++;
+      } catch (error) {
+        console.log(count);
+        throw error;
+      }
+    }
+
+    console.log("Completed deleting author enrollment!");
+  } catch (error: any) {
+    console.log(
+      "Error deleting author enrollment: " + error.message || "unknown error"
+    );
+
+    throw error;
+  }
+}
+
+async function seed() {
   await cleanTables();
 
-  const TOTAL_STUDENT = 5;
-  const TOTAL_INSTRUCTORS = 15;
+  const TOTAL_STUDENT = 2;
+  const TOTAL_INSTRUCTORS = 3;
+  const TOTAL_ADMIN = 3;
 
   await insertUsers(TOTAL_STUDENT, Role.STUDENT);
   await insertUsers(TOTAL_INSTRUCTORS, Role.INSTRUCTOR);
-  await insertCourses(TOTAL_COURSES, TOTAL_INSTRUCTORS / TOTAL_COURSES);
-  await insertCourseEnrollments(300, 3);
+  await insertUsers(TOTAL_ADMIN, Role.OWNER);
+  await insertCourses(1);
+  await insertCourseEnrollments(1);
   await insertLessons(3);
   await insertVideos(3);
   await updateCourseCount();
   await updateUserCount();
+  await deleteAuthorEnrollment();
 
   setTimeout(() => {}, 5000);
 }
 
-main()
-  .then(async () => {
-    console.log("Successfully seeding database...");
+// main()
+//   .then(async () => {
+//     console.log("Successfully seeding database...");
 
-    await prisma.$disconnect;
-  })
-  .catch(async (error) => {
-    console.error("Error seeding database: ", error);
+//     await prisma.$disconnect;
+//   })
+//   .catch(async (error) => {
+//     console.error("Error seeding database: ", error);
 
-    await prisma.$disconnect;
-    process.exit(1);
-  });
+//     await prisma.$disconnect;
+//     process.exit(1);
+//   });
+
+export default seed;

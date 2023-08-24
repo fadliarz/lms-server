@@ -13,9 +13,7 @@ function errorMiddleware(
   let statusCode = error.status || 500;
   let message = error.message || "Internal server error!";
 
-  if (process.env.NODE_ENV === "production") {
-    console.log(error);
-  }
+  console.log(error);
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     if (error.code === "P2025") {

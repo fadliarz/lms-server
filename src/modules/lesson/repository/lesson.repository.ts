@@ -32,27 +32,27 @@ export class CourseLessonRepository implements ICourseLessonRepository {
           },
         });
 
-        await Promise.all([
-          tx.courseLesson.delete({
-            where: {
-              id: lessonId,
-            },
-          }),
-          tx.courseLessonVideo.deleteMany({
-            where: {
-              lessonId,
-            },
-          }),
-          tx.course.update({
-            where: {
-              id: courseId,
-            },
-            data: {
-              totalDurations: { decrement: deletedLesson.totalDurations },
-              totalLessons: { decrement: 1 },
-            },
-          }),
-        ]);
+        await tx.courseLessonVideo.deleteMany({
+          where: {
+            lessonId,
+          },
+        }),
+          await Promise.all([
+            tx.courseLesson.delete({
+              where: {
+                id: lessonId,
+              },
+            }),
+            tx.course.update({
+              where: {
+                id: courseId,
+              },
+              data: {
+                totalDurations: { decrement: deletedLesson.totalDurations },
+                totalLessons: { decrement: 1 },
+              },
+            }),
+          ]);
 
         return deletedLesson;
       });

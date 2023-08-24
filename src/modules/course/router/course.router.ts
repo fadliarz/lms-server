@@ -61,24 +61,24 @@ export default function CourseRouter(authenticationMiddleware: any) {
     controller.create.bind(controller)
   );
 
-  router.get(
-    "/",
-    authenticationMiddleware,
-    validationMiddleware({
-      query: GetCoursesQueryJoi,
-    }),
-    controller.getMany.bind(controller)
-  );
+  // router.get(
+  //   "/",
+  //   authenticationMiddleware,
+  //   validationMiddleware({
+  //     query: GetCoursesQueryJoi,
+  //   }),
+  //   controller.getMany.bind(controller)
+  // );
 
-  router.get(
-    courseUrls.course,
-    authenticationMiddleware,
-    authorizationMiddleware.getCourseByIdAuthorization(),
-    validationMiddleware({
-      query: GetCourseQueryJoi,
-    }),
-    controller.getById.bind(controller)
-  );
+  // router.get(
+  //   courseUrls.course,
+  //   authenticationMiddleware,
+  //   authorizationMiddleware.getCourseByIdAuthorization(),
+  //   validationMiddleware({
+  //     query: GetCourseQueryJoi,
+  //   }),
+  //   controller.getById.bind(controller)
+  // );
 
   router.put(
     courseUrls.course,
@@ -97,19 +97,19 @@ export default function CourseRouter(authenticationMiddleware: any) {
     controller.delete.bind(controller)
   );
 
-  router.post(
-    courseUrls.likes,
-    authenticationMiddleware,
-    authorizationMiddleware.getCreateCourseLikeAuthorization(),
-    controller.createLike.bind(controller)
-  );
+  // router.post(
+  //   courseUrls.likes,
+  //   authenticationMiddleware,
+  //   authorizationMiddleware.getCreateCourseLikeAuthorization(),
+  //   controller.createLike.bind(controller)
+  // );
 
-  router.delete(
-    courseUrls.like,
-    authenticationMiddleware,
-    authorizationMiddleware.getDeleteCourseLikeAuthorization(),
-    controller.deleteLike.bind(controller)
-  );
+  // router.delete(
+  //   courseUrls.like,
+  //   authenticationMiddleware,
+  //   authorizationMiddleware.getDeleteCourseLikeAuthorization(),
+  //   controller.deleteLike.bind(controller)
+  // );
 
   return router;
 }
