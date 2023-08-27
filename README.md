@@ -8,7 +8,7 @@
 
 ## Entitiy Relationship Diagram (ERD)
 
-![Alt text](entity-relationship-diagram.png.png)
+![Alt text](entity-relationship-diagram.png)
 
 ## Prisma Schema
 
