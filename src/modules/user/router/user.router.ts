@@ -13,8 +13,6 @@ export default function UserRouter(authenticationMiddleware: any) {
     UserDITypes.USER_CONTROLLER
   );
 
-  router.get(userUrls.me, authenticationMiddleware, controller.getMe.bind(controller));
-
   /**
    * @swagger
    * /users:

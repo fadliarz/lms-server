@@ -6,20 +6,26 @@ import { injectable } from "inversify";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import { BaseCourseAuthorization } from "../../../common/class/BaseCourseAuthorization";
 import processQuery from "../../../common/functions/processQuery";
-import { GetCourseQuery } from "../course.type";
+import {
+  CreateCourseLikeDto,
+  CreateCourseLikeIds,
+  DeleteCourseLikeIds,
+  GetCourseQuery,
+  GetCoursesQuery,
+} from "../course.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 
 export interface ICourseAuthorizationMiddleware {
-  // getDeleteCourseLikeAuthorization: () => (
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ) => Promise<void>;
-  // getCreateCourseLikeAuthorization: () => (
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ) => Promise<void>;
+  getDeleteCourseLikeAuthorization: () => (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  getCreateCourseLikeAuthorization: () => (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
   getDeleteCourseAuthorization: () => (
     req: Request,
     res: Response,
@@ -30,11 +36,16 @@ export interface ICourseAuthorizationMiddleware {
     res: Response,
     next: NextFunction
   ) => Promise<void>;
-  // getCourseByIdAuthorization: () => (
-  //   req: Request,
-  //   res: Response,
-  //   next: NextFunction
-  // ) => Promise<void>;
+  getCoursesAuthorization: () => (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
+  getCourseByIdAuthorization: () => (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<void>;
   getCreateCourseAuthorization: () => (
     req: Request,
     res: Response,
@@ -47,52 +58,110 @@ export class CourseAuthorizationMiddleware
   extends BaseCourseAuthorization
   implements ICourseAuthorizationMiddleware
 {
-  // public getDeleteCourseLikeAuthorization() {
-  //   return this.getCreateCourseLikeAuthorization();
-  // }
+  public getDeleteCourseLikeAuthorization() {
+    return async (
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        const user = getRequestUserOrThrowAuthenticationException(req);
+        const likeId = Number(req.params.likeId);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        let isAuthorized = false;
 
-  // public getCreateCourseLikeAuthorization() {
-  //   return async (
-  //     req: Request,
-  //     res: Response,
-  //     next: NextFunction
-  //   ): Promise<void> => {
-  //     try {
-  //       const user = getRequestUserOrThrowAuthenticationException(req);
-  //       const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-  //       let isAuthorized = false;
+        if (isAdmin || isInstructor || isStudent) {
+          const like = await this.prisma.courseLike.findUniqueOrThrow({
+            where: {
+              id: likeId,
+            },
+          });
 
-  //       if (isAdmin || isInstructor || isStudent) {
-  //         const enrollment = await this.prisma.courseEnrollment.findUnique({
-  //           where: {
-  //             userId_courseId: {
-  //               userId: user.id,
-  //               courseId: Number(req.params.courseId),
-  //             },
-  //           },
-  //           select: {
-  //             role: true,
-  //           },
-  //         });
+          const enrollment = await this.prisma.courseEnrollment.findUnique({
+            where: {
+              userId_courseId: {
+                userId: user.id,
+                courseId: like.courseId,
+              },
+            },
+            select: {
+              role: true,
+            },
+          });
 
-  //         if (
-  //           enrollment &&
-  //           isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
-  //         ) {
-  //           isAuthorized = true;
-  //         }
-  //       }
+          console.log(enrollment);
 
-  //       if (!isAuthorized) {
-  //         throw new AuthorizationException();
-  //       }
+          if (
+            enrollment &&
+            isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
+          ) {
+            isAuthorized = true;
+          }
 
-  //       next();
-  //     } catch (error) {
-  //       next(error);
-  //     }
-  //   };
-  // }
+          (req as any).ids = {
+            courseId: like.courseId,
+          } satisfies DeleteCourseLikeIds;
+        }
+
+        if (!isAuthorized) {
+          throw new AuthorizationException();
+        }
+
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
+
+  public getCreateCourseLikeAuthorization() {
+    return async (
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        const user = getRequestUserOrThrowAuthenticationException(req);
+        const body = req.body as CreateCourseLikeDto;
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        let isAuthorized = false;
+
+        if (isAdmin || isInstructor || isStudent) {
+          const enrollment = await this.prisma.courseEnrollment.findUnique({
+            where: {
+              userId_courseId: {
+                userId: user.id,
+                courseId: body.courseId,
+              },
+            },
+            select: {
+              role: true,
+              courseId: true,
+            },
+          });
+
+          if (
+            enrollment &&
+            isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
+          ) {
+            isAuthorized = true;
+
+            (req as any).ids = {
+              courseId: enrollment.courseId,
+            } satisfies CreateCourseLikeIds;
+          }
+        }
+
+        if (!isAuthorized) {
+          throw new AuthorizationException();
+        }
+
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
 
   public getDeleteCourseAuthorization() {
     return async (
@@ -195,63 +264,96 @@ export class CourseAuthorizationMiddleware
     };
   }
 
-  // public getCourseByIdAuthorization() {
-  //   return async (
-  //     req: Request,
-  //     res: Response,
-  //     next: NextFunction
-  //   ): Promise<void> => {
-  //     try {
-  //       const user = getRequestUserOrThrowAuthenticationException(req);
-  //       const query = processQuery(req.query as GetCourseQuery);
-  //       const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-  //       let isAuthorized = false;
+  public getCoursesAuthorization() {
+    return async (
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        const user = getRequestUserOrThrowAuthenticationException(req);
+        const query = processQuery(req.query as GetCoursesQuery);
+        const { isAdmin, isInstructor } = getRoleStatus(user.role);
+        let isAuthorized = false;
 
-  //       if (isInstructor || isStudent) {
-  //         if (query.include_videos || query.include_videos) {
-  //           const authorId = await this.getAuthorIdOrThrow(
-  //             Number(req.params.courseId)
-  //           );
-  //           const isAuthor = user.id === authorId;
+        if (query.include_instructor_courses || query.include_owned_courses) {
+          if (isAdmin || isInstructor) {
+            isAuthorized = true;
+          }
+        } else {
+          isAuthorized = true;
+        }
 
-  //           if (isAuthor) {
-  //             isAuthorized = true;
-  //           }
+        if (!isAuthorized) {
+          throw new AuthorizationException();
+        }
 
-  //           if (!isAuthorized) {
-  //             const enrollment = await this.prisma.courseEnrollment.findUnique({
-  //               where: {
-  //                 userId_courseId: {
-  //                   userId: user.id,
-  //                   courseId: Number(req.params.courseId),
-  //                 },
-  //               },
-  //               select: {
-  //                 id: true,
-  //               },
-  //             });
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
 
-  //             if (enrollment) {
-  //               isAuthorized = true;
-  //             }
-  //           }
-  //         }
-  //       }
+  public getCourseByIdAuthorization() {
+    return async (
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        const user = getRequestUserOrThrowAuthenticationException(req);
+        const query = processQuery(req.query as GetCourseQuery);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        let isAuthorized = false;
 
-  //       if (isAdmin) {
-  //         isAuthorized = true;
-  //       }
+        if (isInstructor || isStudent) {
+          if (query.include_videos) {
+            const authorId = await this.getAuthorIdOrThrow(
+              Number(req.params.courseId)
+            );
+            const isAuthor = user.id === authorId;
 
-  //       if (!isAuthorized) {
-  //         throw new AuthorizationException();
-  //       }
+            if (isAuthor) {
+              isAuthorized = true;
+            }
 
-  //       next();
-  //     } catch (error) {
-  //       next(error);
-  //     }
-  //   };
-  // }
+            if (!isAuthorized) {
+              const enrollment = await this.prisma.courseEnrollment.findUnique({
+                where: {
+                  userId_courseId: {
+                    userId: user.id,
+                    courseId: Number(req.params.courseId),
+                  },
+                },
+                select: {
+                  id: true,
+                },
+              });
+
+              if (enrollment) {
+                isAuthorized = true;
+              }
+            }
+          } else {
+            isAuthorized = true;
+          }
+        }
+
+        if (isAdmin) {
+          isAuthorized = true;
+        }
+
+        if (!isAuthorized) {
+          throw new AuthorizationException();
+        }
+
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
 
   public getCreateCourseAuthorization() {
     return async (

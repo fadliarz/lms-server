@@ -33,7 +33,7 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
     controller.create.bind(controller)
   );
 
-  router.post(
+  router.put(
     courseEnrollmentUrls.enrollment,
     authenticationMiddleware,
     validationMiddleware({ body: UpdateCousreEnrollmentDtoJoi }),

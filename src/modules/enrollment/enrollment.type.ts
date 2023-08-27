@@ -5,7 +5,8 @@ export type CourseEnrollmentModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
 export type CourseEnrollmentDateKeys = "createdAt" | "updatedAt";
 export type CourseEnrollmentHasDefaultValue = "";
-export type ExcludeFromDto = "id" | CourseEnrollmentDateKeys | "courseId";
+export type ExcludeFromDto = "id" | CourseEnrollmentDateKeys;
+
 export const CourseEnrollmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_ENROLLMENT_SERVICE"),
@@ -14,6 +15,7 @@ export const CourseEnrollmentDITypes = {
     "COURSE_ENROLLMENT_AUTHORIZATION_MIDDLEWARE"
   ),
 };
+
 export enum courseEnrollmentUrls {
   root = "/enrollments",
   enrollment = "/:enrollmentId",
@@ -26,8 +28,17 @@ export type CreateCourseEnrollmentDto = Omit<
   CourseEnrollmentModel,
   ExcludeFromDto
 >;
+export type UpdateCourseEnrollmentDto = Pick<CreateCourseEnrollmentDto, "role">;
 
-export type UpdateCourseEnrollmentDto = CreateCourseEnrollmentDto;
+/**
+ * Ids
+ */
+export type UpdateCourseEnrollmentIds = {
+  courseId: number;
+};
+export type DeleteCourseEnrollmentIds = {
+  courseId: number;
+};
 
 /**
  * Select

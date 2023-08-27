@@ -11,32 +11,4 @@ export default abstract class AuthorizationMiddleware {
   protected readonly courseLessonTable = this.prisma.courseLesson;
   protected readonly courseEnrollmentTable = this.prisma.courseEnrollment;
   protected readonly courseLessonVideoTable = this.prisma.courseLessonVideo;
-
-  protected async getUserRole(
-    userId: number
-  ): Promise<Pick<User, "role"> | null> {
-    const user = await this.userTable.findUnique({
-      where: {
-        id: userId,
-      },
-      select: {
-        role: true,
-      },
-    });
-
-    return user;
-  }
-
-  protected async getUserRoleOrThrow(
-    userId: number,
-    error?: Error
-  ): Promise<Role> {
-    const user = await this.getUserRole(userId);
-
-    if (!user) {
-      throw error || new RecordNotFoundException();
-    }
-
-    return user.role;
-  }
 }

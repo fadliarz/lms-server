@@ -3,10 +3,10 @@ import {
   ModifyFieldWithNullToBeOptionalAndRemoveNull,
   MakePropertiesOptional,
 } from "../../common/types";
-import { BaseUserProfile, UserModel } from "../user/user.type";
+import { UserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
-export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
 
+export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
 export type CourseDateKeys = "createdAt" | "updatedAt";
 export type CourseHasDefaultValue = "image";
 export type ExcludeFromDto =
@@ -30,8 +30,8 @@ export const CourseDITypes = {
 export enum courseUrls {
   root = "/courses",
   course = "/:courseId",
-  likes = "/:courseId/likes",
-  like = "/:courseId/likes/:likeId",
+  likes = "/likes",
+  like = "/likes/:likeId",
 }
 
 /**
@@ -42,6 +42,9 @@ export type CreateCourseDto = MakePropertiesOptional<
   CourseHasDefaultValue
 >;
 export type UpdateCourseDto = Partial<CreateCourseDto>;
+export type CreateCourseLikeDto = {
+  courseId: number;
+};
 
 /**
  * Query
@@ -53,11 +56,10 @@ export type GetCourseQuery = {
   include_videos?: string;
   include_author?: string;
 };
-
 export type GetCoursesQuery = {
-  include_student_course?: string;
-  include_instructor_course?: string;
-  include_owned?: string;
+  include_student_courses?: string;
+  include_instructor_courses?: string;
+  include_owned_courses?: string;
 };
 
 /**
@@ -69,5 +71,14 @@ export type GetCourseByIdDto<T = Enroller> = Course & {
   instructors?: T[];
   lessons: CourseLessonModel[];
 };
-
 export type Enroller = Pick<UserModel, "id" | "name" | "NIM" | "avatar">;
+
+/**
+ * Ids
+ */
+export type CreateCourseLikeIds = {
+  courseId: number;
+};
+export type DeleteCourseLikeIds = {
+  courseId: number;
+};

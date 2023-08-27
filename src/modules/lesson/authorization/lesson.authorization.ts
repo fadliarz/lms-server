@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { BaseCourseAuthorization } from "../../../common/class/BaseCourseAuthorization";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import { Role } from "@prisma/client";
@@ -8,7 +7,6 @@ import getRoleStatus from "../../../common/functions/getRoleStatus";
 import { injectable } from "inversify";
 import { CreateCourseLessonDto } from "../lesson.type";
 import ClientException from "../../../common/exceptions/ClientException";
-import BaseCourseLessonAuthorization from "../../../common/class/BaseCourseLessonAuthorization";
 import BaseCourseLessonVideoAuthorization from "../../../common/class/BaseCourseLessonVideoAuthorization";
 
 export class ICourseLessonAuthorizationMiddleware {

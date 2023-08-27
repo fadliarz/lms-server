@@ -9,11 +9,6 @@ import { getResponseJson } from "../../../common/functions/getResponseJson";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface IUserController {
-  getMe: (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<Response | void>;
   signIn: (
     req: Request,
     res: Response,
@@ -103,20 +98,6 @@ export class UserController implements IUserController {
         .clearCookie("access_token")
         .status(StatusCode.SUCCESS)
         .json(user);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getMe(req: Request, res: Response, next: NextFunction) {
-    try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
-      const me = await this.service.getMe(user.id);
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, me));
     } catch (error) {
       next(error);
     }

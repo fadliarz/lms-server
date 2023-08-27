@@ -3,23 +3,26 @@ import {
   CourseEnrollmentDITypes,
   CourseEnrollmentModel,
   CreateCourseEnrollmentDto,
+  DeleteCourseEnrollmentIds,
   UpdateCourseEnrollmentDto,
+  UpdateCourseEnrollmentIds,
 } from "../enrollment.type";
 import { ICourseEnrollmentRepository } from "../repository/enrollment.repository";
 import getValuable from "../../../common/functions/getValuable";
+import { CourseEnrollment } from "@prisma/client";
 
 export interface ICourseEnrollmentService {
   delete: (
     enrollmentId: number,
-    courseId: number
+    ids: DeleteCourseEnrollmentIds,
+    enrollment: CourseEnrollment
   ) => Promise<CourseEnrollmentModel>;
   update: (
     enrollmentId: number,
-    courseId: number,
+    ids: UpdateCourseEnrollmentIds,
     enrollmentDetails: UpdateCourseEnrollmentDto
   ) => Promise<CourseEnrollmentModel>;
   create: (
-    courseId: number,
     enrollmentDetails: CreateCourseEnrollmentDto
   ) => Promise<CourseEnrollmentModel>;
 }
@@ -31,12 +34,14 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
 
   public async delete(
     enrollmentId: number,
-    courseId: number
+    ids: DeleteCourseEnrollmentIds,
+    enrollment: CourseEnrollment
   ): Promise<CourseEnrollmentModel> {
     try {
       const deletedEnrollment = await this.repository.delete(
         enrollmentId,
-        courseId
+        ids,
+        enrollment
       );
 
       return getValuable(deletedEnrollment);
@@ -47,13 +52,13 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
 
   public async update(
     enrollmentId: number,
-    courseId: number,
+    ids: UpdateCourseEnrollmentIds,
     enrollmentDetails: UpdateCourseEnrollmentDto
   ): Promise<CourseEnrollmentModel> {
     try {
       const updatedEnrollment = await this.repository.update(
         enrollmentId,
-        courseId,
+        ids,
         enrollmentDetails
       );
 
@@ -64,14 +69,10 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
   }
 
   public async create(
-    courseId: number,
     enrollmentDetails: CreateCourseEnrollmentDto
   ): Promise<CourseEnrollmentModel> {
     try {
-      const enrollment = await this.repository.create(
-        courseId,
-        enrollmentDetails
-      );
+      const enrollment = await this.repository.create(enrollmentDetails);
 
       return getValuable(enrollment);
     } catch (error) {

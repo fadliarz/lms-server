@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import dIContainer from "../../../inversifyConfig";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import { PrismaClient, Role } from "@prisma/client";
+import { CourseEnrollment, PrismaClient, Role } from "@prisma/client";
 import AuthorizationException from "../../../common/exceptions/AuthorizationException";
 import { injectable } from "inversify";
 import {
   CreateCourseEnrollmentDto,
+  DeleteCourseEnrollmentIds,
   UpdateCourseEnrollmentDto,
+  UpdateCourseEnrollmentIds,
 } from "../../enrollment/enrollment.type";
 import HttpException from "../../../common/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
@@ -40,34 +42,22 @@ export class CourseEnrollmentAuthorizationMiddleware
   implements ICourseEnrollmentAuthorizationMiddleware
 {
   private async checkEnrollmentRoleLogicOrThrow(
-    enrollmentId: number,
-    newEnrollmentRole: Role
+    enrollmentRole: Role,
+    newEnrollmentRole: Role,
+    userRole: Role
   ) {
-    const enrollment = await this.prisma.courseEnrollment.findUnique({
-      where: {
-        id: enrollmentId,
-      },
-      select: {
-        userId: true,
-        role: true,
-      },
-    });
-
-    if (!enrollment) {
-      throw new RecordNotFoundException();
+    if (isEqualOrIncludeRole(enrollmentRole, newEnrollmentRole)) {
+      throw new ClientException("Current role and new role are identic!");
     }
 
-    if (isEqualOrIncludeRole(enrollment.role, newEnrollmentRole)) {
-      throw new ClientException();
-    }
-
-    const userRole = await this.getUserRoleOrThrow(enrollment.userId);
-    const { isStudent } = getRoleStatus(userRole);
-
-    if (isStudent && isEqualOrIncludeRole(newEnrollmentRole, Role.INSTRUCTOR)) {
+    if (
+      isEqualOrIncludeRole(userRole, Role.STUDENT) &&
+      isEqualOrIncludeRole(newEnrollmentRole, Role.INSTRUCTOR)
+    ) {
       throw new AuthorizationException();
     }
   }
+
   public getDeleteCourseEnrollmentAuthorizationMiddleware() {
     return async (
       req: Request,
@@ -77,47 +67,46 @@ export class CourseEnrollmentAuthorizationMiddleware
       try {
         const user = getRequestUserOrThrowAuthenticationException(req);
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-        const isUserIdEqual = user.id === Number(req.params.userId);
+        let isAuthorized = false;
 
-        if (isStudent) {
-          if (isUserIdEqual) {
-            next();
-          }
+        const enrollment = await this.courseEnrollmentTable.findUnique({
+          where: { id: Number(req.params.enrollmentId) },
+        });
 
+        // if the enrollment user is the course author itself, this must be satisfied
+        if (!enrollment) {
           throw new AuthorizationException();
+        }
+
+        const isUserIdEqual = user.id === enrollment.userId;
+
+        if (isStudent && isUserIdEqual) {
+          isAuthorized = true;
         }
 
         if (isInstructor) {
-          const authorId = await this.getAuthorIdOrThrow(
-            Number(req.params.courseId)
-          );
+          const authorId = await this.getAuthorIdOrThrow(enrollment.courseId);
           const isAuthor = user.id === authorId;
 
-          if ((isUserIdEqual && !isAuthor) || (!isUserIdEqual && isAuthor)) {
-            next();
+          if (!(!isAuthor && !isUserIdEqual)) {
+            isAuthorized = true;
           }
-
-          throw new AuthorizationException();
         }
 
         if (isAdmin) {
-          if (!isUserIdEqual) {
-            next();
-          }
+          isAuthorized = true;
+        }
 
-          const authorId = await this.getAuthorIdOrThrow(
-            Number(req.params.courseId)
-          );
-          const isAuthor = user.id === authorId;
-
-          if (!isAuthor) {
-            next();
-          }
-
+        if (!isAuthorized) {
           throw new AuthorizationException();
         }
 
-        throw new AuthorizationException();
+        (req as any).enrollment = enrollment satisfies CourseEnrollment;
+        (req as any).ids = {
+          courseId: enrollment.courseId,
+        } satisfies DeleteCourseEnrollmentIds;
+
+        next();
       } catch (error) {
         next(error);
       }
@@ -133,59 +122,66 @@ export class CourseEnrollmentAuthorizationMiddleware
       try {
         const user = getRequestUserOrThrowAuthenticationException(req);
         const dto = req.body as UpdateCourseEnrollmentDto;
-        const isUserIdEqual = user.id === dto.userId;
+        const enrollmentId = Number(req.params.enrollmentId);
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        let isAuthorized = false;
 
         if (isStudent) {
-          throw new AuthorizationException();
         }
 
-        if (isInstructor) {
-          const authorId = await this.getAuthorIdOrThrow(
-            Number(req.params.courseId)
-          );
-          const isAuthor = user.id === authorId;
+        if (isInstructor || isAdmin) {
+          const enrollment = await this.courseEnrollmentTable.findUnique({
+            where: {
+              id: enrollmentId,
+            },
+          });
 
-          if (isAuthor && !isUserIdEqual) {
-            await this.checkEnrollmentRoleLogicOrThrow(
-              Number(req.params.enrollmentId),
-              dto.role
-            );
-
-            next();
-          }
-
-          throw new AuthorizationException();
-        }
-
-        if (isAdmin) {
-          if (!isUserIdEqual) {
-            await this.checkEnrollmentRoleLogicOrThrow(
-              Number(req.params.enrollmentId),
-              dto.role
-            );
-
-            next();
+          // if the enrollment user is the course author itself, this must be satisfied
+          if (!enrollment) {
+            throw new AuthorizationException();
           }
 
           const authorId = await this.getAuthorIdOrThrow(
-            Number(req.params.courseId)
+            enrollment.courseId,
+            new AuthorizationException()
           );
           const isAuthor = user.id === authorId;
 
-          if (!isAuthor) {
-            await this.checkEnrollmentRoleLogicOrThrow(
-              Number(req.params.enrollmentId),
-              dto.role
-            );
-
-            next();
+          if (isAuthor || isAdmin) {
+            isAuthorized = true;
           }
 
+          if (!(isInstructor && !isAuthor)) {
+            isAuthorized = true;
+          }
+
+          if (isAuthorized) {
+            const { role } = await this.userTable.findUniqueOrThrow({
+              where: {
+                id: enrollment.userId,
+              },
+              select: {
+                role: true,
+              },
+            });
+
+            await this.checkEnrollmentRoleLogicOrThrow(
+              enrollment.role,
+              dto.role,
+              role
+            );
+
+            (req as any).ids = {
+              courseId: enrollment.courseId,
+            } satisfies UpdateCourseEnrollmentIds;
+          }
+        }
+
+        if (!isAuthorized) {
           throw new AuthorizationException();
         }
 
-        throw new AuthorizationException();
+        next();
       } catch (error) {
         next(error);
       }
@@ -203,19 +199,16 @@ export class CourseEnrollmentAuthorizationMiddleware
         const dto = req.body as CreateCourseEnrollmentDto;
         const isUserIdEqual = user.id === dto.userId;
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        let isAuthorized = false;
 
         if (isStudent) {
           if (isUserIdEqual && isEqualOrIncludeRole(dto.role, Role.STUDENT)) {
-            next();
+            isAuthorized = true;
           }
-
-          throw new AuthorizationException();
         }
 
         if (isInstructor) {
-          const authorId = await this.getAuthorIdOrThrow(
-            Number(req.params.courseId)
-          );
+          const authorId = await this.getAuthorIdOrThrow(dto.courseId);
           const isAuthor = user.id === authorId;
 
           if (
@@ -223,26 +216,53 @@ export class CourseEnrollmentAuthorizationMiddleware
             !isAuthor &&
             isEqualOrIncludeRole(dto.role, Role.STUDENT)
           ) {
-            next();
+            isAuthorized = true;
           }
-
-          throw new AuthorizationException();
         }
 
         if (isAdmin) {
-          const authorId = await this.getAuthorIdOrThrow(
-            Number(req.params.courseId)
-          );
+          const authorId = await this.getAuthorIdOrThrow(dto.courseId);
           const isAuthor = user.id === authorId;
 
-          if (isUserIdEqual && isAuthor) {
-            throw new AuthorizationException();
+          if (!(isAuthor && isUserIdEqual)) {
+            isAuthorized = true;
           }
-
-          next();
         }
 
-        throw new AuthorizationException();
+        let userGettingEnrolledRole = user.role satisfies Role;
+
+        if (!isUserIdEqual) {
+          const userGettingEnrolled = await this.userTable.findUnique({
+            where: {
+              id: dto.userId,
+            },
+            select: {
+              role: true,
+            },
+          });
+
+          if (!userGettingEnrolled) {
+            throw new RecordNotFoundException("User not found!");
+          }
+
+          userGettingEnrolledRole = userGettingEnrolled.role;
+        }
+
+        if (
+          isEqualOrIncludeRole(dto.role, Role.INSTRUCTOR) &&
+          !isEqualOrIncludeRole(userGettingEnrolledRole, [
+            Role.INSTRUCTOR,
+            Role.OWNER,
+          ])
+        ) {
+          throw new AuthorizationException();
+        }
+
+        if (!isAuthorized) {
+          throw new AuthorizationException();
+        }
+
+        next();
       } catch (error) {
         next(error);
       }

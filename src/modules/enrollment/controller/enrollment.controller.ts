@@ -3,6 +3,7 @@ import { inject, injectable } from "inversify";
 import {
   CourseEnrollmentDITypes,
   CourseEnrollmentModel,
+  DeleteCourseEnrollmentIds,
 } from "../enrollment.type";
 import { ICourseEnrollmentService } from "../service/enrollment.service";
 import { StatusCode } from "../../../common/constants/statusCode";
@@ -38,11 +39,10 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-
       const deletedEnrollment = await this.service.delete(
-        user.id,
-        Number(req.params.courseId)
+        Number(req.params.enrollmentId),
+        (req as any).ids,
+        (req as any).enrollment
       );
 
       return res
@@ -61,7 +61,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     try {
       const updatedEnrollment = await this.service.update(
         Number(req.params.enrollmentId),
-        Number(req.params.courseId),
+        (req as any).ids,
         req.body
       );
 
@@ -79,10 +79,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const enrollment = await this.service.create(
-        Number(req.params.courseId),
-        req.body
-      );
+      const enrollment = await this.service.create(req.body);
 
       return res
         .status(StatusCode.RESOURCE_CREATED)

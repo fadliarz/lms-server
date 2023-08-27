@@ -10,7 +10,6 @@ import { StatusCode } from "../../../common/constants/statusCode";
 import getValuable from "../../../common/functions/getValuable";
 
 export interface IUserService {
-  getMe: (userId: number) => Promise<Me>;
   createNewUserAndGenerateAuthenticationToken: (
     userDetails: SignUpDto
   ) => Promise<PublicUser>;
@@ -48,16 +47,6 @@ export class UserService implements IUserService {
   ): boolean {
     try {
       return isEqual(sha256Encrypt(incomingPassword), encryptedPassword);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async getMe(userId: number): Promise<Me> {
-    try {
-      const me = await this.repository.getMe(userId);
-
-      return me;
     } catch (error) {
       throw error;
     }

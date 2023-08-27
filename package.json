@@ -9,7 +9,7 @@
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
     "build": "tsc",
     "postinstall": "npm run build",
-    "seed": "ts-node ./prisma/seed.ts"
+    "seed": "ts-node ./prisma/main.ts"
   },
   "keywords": [],
   "author": "",

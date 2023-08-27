@@ -1,5 +1,6 @@
 import {
   Course,
+  CourseEnrollment,
   CourseLesson,
   Prisma,
   PrismaClient,
@@ -209,6 +210,11 @@ async function updateCourseCount() {
           courseId: course.id,
         },
       });
+      const totalLikes = await courseLikeTable.count({
+        where: {
+          courseId: course.id,
+        },
+      });
 
       await courseTable.update({
         where: {
@@ -218,6 +224,7 @@ async function updateCourseCount() {
           totalStudents,
           totalInstructors,
           totalLessons,
+          totalLikes,
         },
       });
     }
@@ -749,38 +756,80 @@ async function deleteAuthorEnrollment() {
   }
 }
 
+async function insertCourseLikes() {
+  try {
+    let myCursor = -1;
+    let count = 0;
+    let enrollment: CourseEnrollment;
+
+    const { id: maxEnrollmentId } =
+      await prisma.courseEnrollment.findFirstOrThrow({
+        where: {
+          role: Role.STUDENT,
+        },
+        orderBy: {
+          id: "desc",
+        },
+        select: {
+          id: true,
+        },
+      });
+
+    while (myCursor < maxEnrollmentId) {
+      const enrollments = await prisma.courseEnrollment.findMany({
+        skip: myCursor === -1 ? 0 : 1,
+        cursor:
+          myCursor === -1
+            ? undefined
+            : {
+                id: myCursor,
+              },
+        where: {
+          role: Role.STUDENT,
+        },
+      });
+
+      enrollment = enrollments[0];
+      myCursor = enrollment.id;
+
+      await prisma.courseLike.create({
+        data: {
+          userId: enrollment.userId,
+          courseId: enrollment.courseId,
+        },
+      });
+
+      count++;
+    }
+
+    console.log("Completed inserting cousre like! count: ", count);
+  } catch (error: any) {
+    console.log(
+      "Error inserting course like: " + error.message || "unknown error"
+    );
+
+    throw error;
+  }
+}
+
 async function seed() {
   await cleanTables();
 
-  const TOTAL_STUDENT = 2;
-  const TOTAL_INSTRUCTORS = 3;
-  const TOTAL_ADMIN = 3;
+  const TOTAL_STUDENT = 3;
+  const TOTAL_INSTRUCTORS = 5;
+  const TOTAL_ADMIN = 5;
 
   await insertUsers(TOTAL_STUDENT, Role.STUDENT);
   await insertUsers(TOTAL_INSTRUCTORS, Role.INSTRUCTOR);
   await insertUsers(TOTAL_ADMIN, Role.OWNER);
   await insertCourses(1);
-  await insertCourseEnrollments(1);
-  await insertLessons(3);
-  await insertVideos(3);
-  await updateCourseCount();
+  await insertCourseEnrollments(2);
+  await insertLessons(2);
+  await insertVideos(2);
   await updateUserCount();
   await deleteAuthorEnrollment();
-
-  setTimeout(() => {}, 5000);
+  await insertCourseLikes();
+  await updateCourseCount();
 }
-
-// main()
-//   .then(async () => {
-//     console.log("Successfully seeding database...");
-
-//     await prisma.$disconnect;
-//   })
-//   .catch(async (error) => {
-//     console.error("Error seeding database: ", error);
-
-//     await prisma.$disconnect;
-//     process.exit(1);
-//   });
 
 export default seed;

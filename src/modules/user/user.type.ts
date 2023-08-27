@@ -28,7 +28,6 @@ export enum userUrls {
   signUp = "/signup",
   signIn = "/signin",
   logOut = "/logout",
-  me = "/me",
 }
 
 /**
@@ -48,15 +47,18 @@ export type BaseUserProfile = {
 
 export type UserSelect = Pick<Prisma.UserSelect, keyof User>;
 
-export type Me  = UserModel & {
-  courses: UserCourseType[]
-}
+export type Me = UserModel & {
+  courses: UserCourseType[];
+};
 
-export type UserCourseType = Pick<Course,   | 'id'
-| 'title'
-| 'description'
-| 'totalStudents'
-| 'totalLikes'
-| 'totalLessons'
-| 'createdAt'
-| 'updatedAt'>
+export type UserCourseType = Pick<
+  Course,
+  | "id"
+  | "title"
+  | "description"
+  | "totalStudents"
+  | "totalLikes"
+  | "totalLessons"
+  | "createdAt"
+  | "updatedAt"
+>;
