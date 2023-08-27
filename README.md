@@ -138,6 +138,25 @@ enum Role {
 }
 ```
 
+## Unit Test (91.21% Line Coverage)
+![Alt text](coverage.png)
+
+## User
+![Alt text](user.png)
+
+## Course
+![Alt text](course.png)
+
+## Enrollment
+![Alt text](enrollment.png)
+
+## Lesson
+![Alt text](lesson.png)
+
+## Video
+![Alt text](video.png)
+
+
 ## Enrollment
 ---
 #### Creating Enrollment

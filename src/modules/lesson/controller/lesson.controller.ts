@@ -60,7 +60,6 @@ export class CourseLessonController implements ICourseLessonController {
     try {
       const updatedLesson = await this.service.update(
         Number(req.params.lessonId),
-        Number((req as any).courseId),
         req.body
       );
 

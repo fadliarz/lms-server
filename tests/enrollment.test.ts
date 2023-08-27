@@ -276,7 +276,7 @@ afterAll(async () => {
 
 // Unenrolled STUDENT
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForUnenrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.STUDENT),
     {
@@ -294,7 +294,7 @@ describe(
 
 // Unenrolled INSTRUCTOR
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForUnenrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.INSTRUCTOR),
     {
@@ -312,7 +312,7 @@ describe(
 
 // Unenrolled ADMIN
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForUnenrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.OWNER),
     {
@@ -330,7 +330,7 @@ describe(
 
 // Enrolled STUDENT as STUDENT
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForEnrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.STUDENT, Role.STUDENT),
     {
@@ -356,7 +356,7 @@ describe(
 
 // Enrolled INSTRUCTOR as STUDENT
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForEnrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.INSTRUCTOR, Role.STUDENT),
     {
@@ -383,7 +383,7 @@ describe(
 
 // Enrolled INSTRUCTOR as INSTRUCTOR
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForEnrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.INSTRUCTOR, Role.INSTRUCTOR),
     {
@@ -410,7 +410,7 @@ describe(
 
 // Enrolled ADMIN as STUDENT
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForEnrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.OWNER, Role.STUDENT),
     {
@@ -436,7 +436,7 @@ describe(
 
 // Enrolled ADMIN as INSTRUCTOR
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForEnrolledUser(
     UserForTest.getGenerateTestObjectFunction(Role.OWNER, Role.INSTRUCTOR),
     {
@@ -462,7 +462,7 @@ describe(
 
 // Author & INSTRUCTOR
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForUnenrolledUser(
     UserForTest.getGenerateTestObjectFunctionForAuthor(Role.INSTRUCTOR),
     {
@@ -480,7 +480,7 @@ describe(
 
 // Author & ADMIN
 describe(
-  "Create, Update, and Delete Course Enrollment With Identical userId ",
+  "Create, Update, and Delete Course Enrollment With Identical userId",
   getEnrollmentDescribeForUnenrolledUser(
     UserForTest.getGenerateTestObjectFunctionForAuthor(Role.OWNER),
     {

@@ -12,7 +12,6 @@ export interface ICourseLessonService {
   delete: (lessonId: number, courseId: number) => Promise<CourseLessonModel>;
   update: (
     lessonId: number,
-    courseId: number,
     lessonDetails: UpdateCourseLessonDto
   ) => Promise<CourseLessonModel>;
   getById: (lessonId: number) => Promise<CourseLessonModel>;
@@ -39,13 +38,11 @@ export class CourseLessonService implements ICourseLessonService {
 
   public async update(
     lessonId: number,
-    courseId: number,
     lessonDetails: UpdateCourseLessonDto
   ): Promise<CourseLessonModel> {
     try {
       const updatedLesson = await this.repository.update(
         lessonId,
-        courseId,
         lessonDetails
       );
 

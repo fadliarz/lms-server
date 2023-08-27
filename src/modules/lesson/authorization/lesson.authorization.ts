@@ -57,6 +57,7 @@ export class CourseLessonAuthorizationMiddleware
           if (isNaN(lessonId)) {
             throw new ClientException("Invalid lessonId!");
           }
+
           const courseId = await this.getCourseIdByLessonIdOrThrow(lessonId);
           const authorId = await this.getAuthorIdOrThrow(courseId);
           const isAuthor = user.id === authorId;

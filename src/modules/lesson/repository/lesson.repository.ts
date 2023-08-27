@@ -7,7 +7,6 @@ export interface ICourseLessonRepository {
   delete: (lessonId: number, courseId: number) => Promise<CourseLesson>;
   update: (
     lessonId: number,
-    courseId: number,
     lessonDetails: UpdateCourseLessonDto
   ) => Promise<CourseLesson>;
   getById: (lessonId: number) => Promise<CourseLesson>;
@@ -66,16 +65,12 @@ export class CourseLessonRepository implements ICourseLessonRepository {
 
   public async update(
     lessonId: number,
-    courseId: number,
     lessonDetails: UpdateCourseLessonDto
   ): Promise<CourseLesson> {
     try {
       const lesson = await this.courseLessonTable.update({
         where: {
-          id_courseId: {
-            id: lessonId,
-            courseId,
-          },
+          id: lessonId,
         },
         data: lessonDetails,
       });
