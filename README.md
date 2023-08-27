@@ -150,7 +150,7 @@ enum Role {
 | Admin & Author | Unauthorized | Permitted
 
 #### Updating Enrollment
-| Role & Authorship | Updating Identic User | Updating User User |
+| Role & Authorship | Updating Identic User | Updating Different User |
 | ------ | ------ | ------ |
 | Student | Unauthorized | Unauthorized |
 | Instructor & !Author | Unauthorized | Unauthorized |
@@ -193,7 +193,7 @@ enum Role {
 | Admin & Author | - | Permitted |
 
 #### Reading Course and Exclude Videos
-| Role & Authorship | enrolled | !enrolled |
+| Role & Authorship | Enrolled | Unenrolled |
 | ------ | ------ | ------ |
 | Student | Permitted | Permitted |
 | Instructor & !Author | Permitted| Permitted |
