@@ -8,24 +8,22 @@ generator client {
 }
 
 model User {
-  id           Int     @id() @default(autoincrement())
-  email        String  @unique
-  password     String
-  accessToken  String? @map("access_token")
-  refreshToken String? @map("refresh_token")
-
-  phoneNumber         String? @map("phone_number")
+  id                  Int      @id() @default(autoincrement())
+  email               String   @unique
+  password            String
+  accessToken         String?  @map("access_token")
+  refreshToken        String?  @map("refresh_token")
+  phoneNumber         String?  @map("phone_number")
   name                String
-  NIM                 String  @map("nim")
-  avatar              String  @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
+  NIM                 String   @map("nim")
+  avatar              String   @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
   about               String?
-  totalCourses        Int     @default(0) @map("total_courses")
-  totalLessons        Int     @default(0) @map("total_lessons")
-  totalUnreadMessages Int     @default(0) @map("total_unread_messages")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  role      Role     @default(STUDENT)
+  totalCourses        Int      @default(0) @map("total_courses")
+  totalLessons        Int      @default(0) @map("total_lessons")
+  totalUnreadMessages Int      @default(0) @map("total_unread_messages")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  role                Role     @default(STUDENT)
 
   courses           Course[]
   courseEnrollments CourseEnrollment[]
@@ -35,8 +33,7 @@ model User {
 }
 
 model CourseEnrollment {
-  id Int @id @default(autoincrement())
-
+  id        Int      @id @default(autoincrement())
   user      User     @relation(fields: [userId], references: [id])
   userId    Int      @map("user_id")
   course    Course   @relation(fields: [courseId], references: [id])
@@ -46,7 +43,6 @@ model CourseEnrollment {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, courseId])
-  @@index([userId, courseId])
   @@map("course_enrollment")
 }
 
@@ -72,6 +68,7 @@ model Course {
   lessons     CourseLesson[]
   likes       CourseLike[]
 
+  @@index([id, authorId])
   @@map("course")
 }
 
@@ -90,7 +87,6 @@ model CourseLesson {
 
   videos CourseLessonVideo[]
 
-  @@unique([id, courseId])
   @@map("course_lesson")
 }
 
@@ -106,7 +102,6 @@ model CourseLessonVideo {
   lesson   CourseLesson @relation(fields: [lessonId], references: [id])
   lessonId Int          @map("lesson_id")
 
-  @@unique([id, lessonId])
   @@map("course_video")
 }
 
