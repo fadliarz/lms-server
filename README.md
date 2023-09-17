@@ -7,7 +7,7 @@
 ![Alt text](4-layer-architecture.png)
 
 ## Entitiy Relationship Diagram (ERD)
-![Alt text](entity-relationship-diagram.png)
+![Alt text](ERD.png)
 
 ## API Documentation
 Link: _currently unavailable_
