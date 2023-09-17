@@ -7,11 +7,16 @@
 ![Alt text](4-layer-architecture.png)
 
 ## Entitiy Relationship Diagram (ERD)
-
 ![Alt text](entity-relationship-diagram.png)
 
-## Prisma Schema
+## API Documentation
+Link: _currently unavailable_
+![Alt text](image.png)
 
+## Unit Test (91.21% Line Coverage)
+![Alt text](coverage.png)
+
+## Prisma Schema
 ```prisma
 datasource db {
   provider = "mysql"
@@ -79,6 +84,9 @@ model Course {
   author   User @relation(fields: [authorId], references: [id])
   authorId Int  @map("author_id")
 
+  category   CourseCategory @relation(fields: [categoryId], references: [id])
+  categoryId Int            @map("category_id")
+
   enrollments CourseEnrollment[]
   lessons     CourseLesson[]
   likes       CourseLike[]
@@ -129,6 +137,18 @@ model CourseLike {
   userId   Int    @map("user_id")
 
   @@unique([courseId, userId])
+  @@map("course_like")
+}
+
+model CourseCategory {
+  id        Int      @id @default(autoincrement())
+  title     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  courses Course[]
+
+  @@map("course_category")
 }
 
 enum Role {
@@ -138,12 +158,6 @@ enum Role {
 }
 ```
 
-## API Documentation
-Link: _currently unavailable_
-![Alt text](image.png)
-
-## Unit Test (91.21% Line Coverage)
-![Alt text](coverage.png)
 
 ## User
 ![Alt text](user.png)
