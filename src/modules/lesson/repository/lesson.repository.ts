@@ -23,101 +23,85 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     lessonId: number,
     courseId: number
   ): Promise<CourseLesson> {
-    try {
-      const deletedLesson = await this.prisma.$transaction(async (tx) => {
-        const deletedLesson = await tx.courseLesson.findUniqueOrThrow({
+    const deletedLesson = await this.prisma.$transaction(async (tx) => {
+      const deletedLesson = await tx.courseLesson.findUniqueOrThrow({
+        where: {
+          id: lessonId,
+        },
+      });
+
+      await tx.courseLessonVideo.deleteMany({
+        where: {
+          lessonId,
+        },
+      });
+
+      await Promise.all([
+        tx.courseLesson.delete({
           where: {
             id: lessonId,
           },
-        });
-
-        await tx.courseLessonVideo.deleteMany({
+        }),
+        tx.course.update({
           where: {
-            lessonId,
+            id: courseId,
           },
-        });
-
-        await Promise.all([
-          tx.courseLesson.delete({
-            where: {
-              id: lessonId,
-            },
-          }),
-          tx.course.update({
-            where: {
-              id: courseId,
-            },
-            data: {
-              totalDurations: { decrement: deletedLesson.totalDurations },
-              totalLessons: { decrement: 1 },
-            },
-          }),
-        ]);
-
-        return deletedLesson;
-      });
+          data: {
+            totalDurations: { decrement: deletedLesson.totalDurations },
+            totalLessons: { decrement: 1 },
+          },
+        }),
+      ]);
 
       return deletedLesson;
-    } catch (error) {
-      throw error;
-    }
+    });
+
+    return deletedLesson;
   }
 
   public async update(
     lessonId: number,
     lessonDetails: UpdateCourseLessonDto
   ): Promise<CourseLesson> {
-    try {
-      const lesson = await this.courseLessonTable.update({
-        where: {
-          id: lessonId,
-        },
-        data: lessonDetails,
-      });
+    const lesson = await this.courseLessonTable.update({
+      where: {
+        id: lessonId,
+      },
+      data: lessonDetails,
+    });
 
-      return lesson;
-    } catch (error) {
-      throw error;
-    }
+    return lesson;
   }
 
   public async getById(lessonId: number): Promise<CourseLesson> {
-    try {
-      const lesson = await this.courseLessonTable.findUniqueOrThrow({
-        where: {
-          id: lessonId,
-        },
-      });
+    const lesson = await this.courseLessonTable.findUniqueOrThrow({
+      where: {
+        id: lessonId,
+      },
+    });
 
-      return lesson;
-    } catch (error) {
-      throw error;
-    }
+    return lesson;
   }
 
   public async create(
     lessonDetails: CreateCourseLessonDto
   ): Promise<CourseLesson> {
-    try {
-      const [lesson] = await this.prisma.$transaction([
-        this.courseLessonTable.create({
-          data: {
-            ...lessonDetails,
-          },
-        }),
-        this.courseTable.update({
-          where: {
-            id: lessonDetails.courseId,
-          },
-          data: {
-            totalLessons: { increment: 1 },
-          },
-        }),
-      ]);
+    const [lesson] = await this.prisma.$transaction([
+      this.courseLessonTable.create({
+        data: {
+          ...lessonDetails,
+        },
+      }),
+      this.courseTable.update({
+        where: {
+          id: lessonDetails.courseId,
+        },
+        data: {
+          totalLessons: { increment: 1 },
+        },
+      }),
+    ]);
 
-      return lesson;
-    } catch (error) {
-      throw error;
-    }
+    return lesson;
   }
 }

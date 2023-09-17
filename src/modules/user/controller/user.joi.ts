@@ -10,7 +10,6 @@ const SignUp = Joi.object<SignUpDto>({
   avatar: Joi.string(),
   about: Joi.string(),
 });
-
 const SignIn = Joi.object<SignInDto>({
   email: Joi.string().email(),
   password: Joi.string(),

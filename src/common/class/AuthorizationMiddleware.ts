@@ -1,7 +1,5 @@
 import { injectable } from "inversify";
 import PrismaClientSingleton from "./PrismaClientSingleton";
-import { Role, User } from "@prisma/client";
-import RecordNotFoundException from "../exceptions/RecordNotFoundException";
 
 @injectable()
 export default abstract class AuthorizationMiddleware {

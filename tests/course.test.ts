@@ -105,6 +105,11 @@ function getCourseDescribe(
     it(expectation.create, async () => {
       const body: CreateCourseDto = {
         title: "title",
+        categoryId: (
+          await prisma.courseCategory.findFirstOrThrow({
+            select: { id: true },
+          })
+        ).id,
       };
 
       const res = await request(server)

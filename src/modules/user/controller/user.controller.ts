@@ -3,12 +3,15 @@ import { NextFunction, Request, Response } from "express";
 import { IUserService } from "../service/user.service";
 import { inject, injectable } from "inversify";
 import { UserDITypes } from "../user.type";
-import { AuthenticatedRequest } from "../../../common/types";
-import HttpException from "../../../common/exceptions/HttpException";
 import { getResponseJson } from "../../../common/functions/getResponseJson";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface IUserController {
+  getMe: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
   signIn: (
     req: Request,
     res: Response,
@@ -29,6 +32,19 @@ export interface IUserController {
 @injectable()
 export class UserController implements IUserController {
   @inject(UserDITypes.USER_SERVICE) private service: IUserService;
+
+  public async getMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = getRequestUserOrThrowAuthenticationException(req);
+      const me = await this.service.getMe(user.id);
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json(getResponseJson(true, StatusCode.SUCCESS, me));
+    } catch (error) {
+      next(error);
+    }
+  }
 
   public async signUp(req: Request, res: Response, next: NextFunction) {
     try {
@@ -59,7 +75,6 @@ export class UserController implements IUserController {
   public async signIn(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
-
       const user = await this.service.signInUser(email, password);
 
       return res
@@ -91,7 +106,7 @@ export class UserController implements IUserController {
   public async logOut(req: Request, res: Response, next: NextFunction) {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
-
+      
       await this.service.clearUserAuthenticationToken(user.id);
 
       return res

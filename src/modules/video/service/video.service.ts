@@ -37,13 +37,9 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     ids: DeleteCourseLessonVideoIds,
     video: CourseLessonVideo
   ): Promise<CourseLessonVideoModel> {
-    try {
-      const deletedVideo = await this.repository.delete(ids, video);
+    const deletedVideo = await this.repository.delete(ids, video);
 
-      return getValuable(deletedVideo);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(deletedVideo);
   }
 
   public async update(
@@ -51,25 +47,21 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     video: CourseLessonVideo,
     newVideoDetails: UpdateCourseLessonVideoDto
   ): Promise<CourseLessonVideoModel> {
-    try {
-      const updatedVideo = await this.repository.update(ids, video, newVideoDetails);
+    const updatedVideo = await this.repository.update(
+      ids,
+      video,
+      newVideoDetails
+    );
 
-      return getValuable(updatedVideo);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(updatedVideo);
   }
 
   public async create(
     ids: CreateCourseLessonVideoIds,
     newVideoDetails: CreateCourseLessonVideoDto
   ): Promise<CourseLessonVideoModel> {
-    try {
-      const video = await this.repository.create(ids, newVideoDetails);
+    const video = await this.repository.create(ids, newVideoDetails);
 
-      return getValuable(video);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(video);
   }
 }

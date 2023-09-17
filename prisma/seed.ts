@@ -17,6 +17,7 @@ const courseEnrollmentTable = prisma.courseEnrollment;
 const courseLessonTable = prisma.courseLesson;
 const courseLessonVideoTable = prisma.courseLessonVideo;
 const courseTable = prisma.course;
+const courseCategoryTable = prisma.courseCategory;
 const userTable = prisma.user;
 
 async function cleanTables() {
@@ -26,6 +27,7 @@ async function cleanTables() {
   await courseLessonTable.deleteMany();
   await courseLessonVideoTable.deleteMany();
   await courseTable.deleteMany();
+  await courseCategoryTable.deleteMany();
   await userTable.deleteMany();
 }
 
@@ -33,68 +35,158 @@ function generateSample<T>(array: Array<T>): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
-async function insertVideos(videoPerCourse: number) {
+async function generateCourseCreateInputArray(
+  total: number,
+  authorId: number
+): Promise<Prisma.CourseCreateManyInput[]> {
   try {
-    let count = 0;
-    const { id: maxLessonId } = await courseLessonTable.findFirstOrThrow({
+    const courses: Prisma.CourseCreateManyInput[] = [];
+
+    let id = 0;
+    let { id: maxId } = await prisma.courseCategory.findFirstOrThrow({
       orderBy: {
         id: "desc",
       },
-      select: {
-        id: true,
-      },
     });
 
-    let myCursor = -1;
-    let lesson: Pick<CourseLesson, "id">;
+    for (let index = 0; index < total; index++) {
+      id = (
+        await prisma.courseCategory.findMany({
+          skip: id === 0 ? 0 : 1,
+          take: 1,
+          cursor:
+            id === 0
+              ? undefined
+              : {
+                  id,
+                },
+          select: {
+            id: true,
+          },
+        })
+      )[0].id;
 
-    while (myCursor < maxLessonId) {
-      const lessons = await courseLessonTable.findMany({
+      const courseObject: Prisma.CourseCreateManyInput = {
+        title: faker.lorem.word(),
+        authorId,
+        image: faker.image.url(),
+        categoryId: id,
+      };
+
+      if (id === maxId) {
+        id = 0;
+      }
+
+      courses.push(courseObject);
+    }
+
+    return courses;
+  } catch (error) {
+    console.log("Failed creating course create input array!");
+
+    throw error;
+  }
+}
+
+async function insertCourses(
+  coursePerInstructorOrAdmin: number
+): Promise<{ count: number }> {
+  try {
+    let count = 0;
+    let instructor: Pick<User, "id">;
+    let admin: Pick<User, "id">;
+    let instructorCursor = -1;
+    let adminCursor = -1;
+
+    const { id: maxInstructorId } = await userTable.findFirstOrThrow({
+      where: {
+        role: Role.INSTRUCTOR,
+      },
+      orderBy: {
+        id: "desc",
+      },
+      select: { id: true },
+    });
+    const { id: maxAdminId } = await userTable.findFirstOrThrow({
+      where: {
+        role: Role.OWNER,
+      },
+      orderBy: {
+        id: "desc",
+      },
+      select: { id: true },
+    });
+
+    while (instructorCursor < maxInstructorId) {
+      const instructors = await userTable.findMany({
+        skip: instructorCursor === -1 ? 0 : 1,
         take: 1,
-        skip: myCursor === -1 ? 0 : 1,
         cursor:
-          myCursor === -1
+          instructorCursor === -1
             ? undefined
             : {
-                id: myCursor,
+                id: instructorCursor,
               },
+        where: {
+          role: Role.INSTRUCTOR,
+        },
         select: {
           id: true,
         },
       });
 
-      lesson = lessons[0];
-      myCursor = lesson.id;
+      instructor = instructors[0];
+      instructorCursor = instructor.id;
 
-      const data: Prisma.CourseLessonVideoCreateManyInput[] = [];
-
-      for (let index = 0; index < videoPerCourse; index++) {
-        data.push({
-          lessonId: lesson.id,
-          name: faker.lorem.word(),
-          description: faker.lorem.words(5),
-          totalDurations: faker.number.float({ min: 2, max: 100 }),
-          youtubeLink: generateSample([
-            "https://www.youtube.com/watch?v=URwmzTeuHdk&pp=ygUOaHVzc2VpbiBuYXNzZXI%3D",
-            "https://www.youtube.com/watch?v=GsF8R6DBxSg&pp=ygUOaHVzc2VpbiBuYXNzZXI%3D",
-            "https://www.youtube.com/watch?v=BTD5I1BMx2Q&pp=ygUOaHVzc2VpbiBuYXNzZXI%3D",
-          ]),
-        });
-      }
-
-      const videos = await courseLessonVideoTable.createMany({
-        data,
+      const courses = await courseTable.createMany({
+        data: await generateCourseCreateInputArray(
+          coursePerInstructorOrAdmin,
+          instructor.id
+        ),
       });
 
-      count += videos.count;
+      count += courses.count;
     }
 
-    console.log(
-      "Completed inserting " + count + " course videos to the database!"
-    );
+    while (adminCursor < maxAdminId) {
+      const admins = await userTable.findMany({
+        skip: adminCursor === -1 ? 0 : 1,
+        take: 1,
+        cursor:
+          adminCursor === -1
+            ? undefined
+            : {
+                id: adminCursor,
+              },
+        where: {
+          role: Role.OWNER,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      admin = admins[0];
+      adminCursor = admin.id;
+
+      const courses = await courseTable.createMany({
+        data: await generateCourseCreateInputArray(
+          coursePerInstructorOrAdmin,
+          admin.id
+        ),
+      });
+
+      count += courses.count;
+    }
+
+    console.log("Completed inserting " + count + " courses to the database!");
+
+    return {
+      count,
+    };
   } catch (error: any) {
     console.log(
-      "Failed inserting course videos: " + error.message || "Unknown error"
+      "Failed inserting courses: " + error.message || "Unknown error"
     );
 
     throw error;
@@ -163,22 +255,25 @@ async function insertLessons(lessonPerCourse: number) {
   }
 }
 
-async function updateCourseCount() {
+async function insertVideos(videoPerCourse: number) {
   try {
-    let myCursor = -1;
-    let course: Pick<Course, "id">;
-
-    const { id: maxId } = await courseTable.findFirstOrThrow({
+    let count = 0;
+    const { id: maxLessonId } = await courseLessonTable.findFirstOrThrow({
       orderBy: {
         id: "desc",
       },
-      select: { id: true },
+      select: {
+        id: true,
+      },
     });
 
-    while (myCursor < maxId) {
-      const courses = await courseTable.findMany({
-        skip: myCursor === -1 ? undefined : 1,
+    let myCursor = -1;
+    let lesson: Pick<CourseLesson, "id">;
+
+    while (myCursor < maxLessonId) {
+      const lessons = await courseLessonTable.findMany({
         take: 1,
+        skip: myCursor === -1 ? 0 : 1,
         cursor:
           myCursor === -1
             ? undefined
@@ -190,49 +285,38 @@ async function updateCourseCount() {
         },
       });
 
-      course = courses[0];
-      myCursor = course.id;
+      lesson = lessons[0];
+      myCursor = lesson.id;
 
-      const totalStudents = await courseEnrollmentTable.count({
-        where: {
-          courseId: course.id,
-          role: Role.STUDENT,
-        },
-      });
-      const totalInstructors = await courseEnrollmentTable.count({
-        where: {
-          courseId: course.id,
-          role: Role.INSTRUCTOR,
-        },
-      });
-      const totalLessons = await courseLessonTable.count({
-        where: {
-          courseId: course.id,
-        },
-      });
-      const totalLikes = await courseLikeTable.count({
-        where: {
-          courseId: course.id,
-        },
+      const data: Prisma.CourseLessonVideoCreateManyInput[] = [];
+
+      for (let index = 0; index < videoPerCourse; index++) {
+        data.push({
+          lessonId: lesson.id,
+          name: faker.lorem.word(),
+          description: faker.lorem.words(5),
+          totalDurations: faker.number.float({ min: 2, max: 100 }),
+          youtubeLink: generateSample([
+            "https://www.youtube.com/watch?v=URwmzTeuHdk&pp=ygUOaHVzc2VpbiBuYXNzZXI%3D",
+            "https://www.youtube.com/watch?v=GsF8R6DBxSg&pp=ygUOaHVzc2VpbiBuYXNzZXI%3D",
+            "https://www.youtube.com/watch?v=BTD5I1BMx2Q&pp=ygUOaHVzc2VpbiBuYXNzZXI%3D",
+          ]),
+        });
+      }
+
+      const videos = await courseLessonVideoTable.createMany({
+        data,
       });
 
-      await courseTable.update({
-        where: {
-          id: course.id,
-        },
-        data: {
-          totalStudents,
-          totalInstructors,
-          totalLessons,
-          totalLikes,
-        },
-      });
+      count += videos.count;
     }
 
-    console.log("Completed updating course count!");
+    console.log(
+      "Completed inserting " + count + " course videos to the database!"
+    );
   } catch (error: any) {
     console.log(
-      "Error updating course count: " + error.message || "unknown error"
+      "Failed inserting course videos: " + error.message || "Unknown error"
     );
 
     throw error;
@@ -409,130 +493,154 @@ async function insertCourseEnrollments(
   }
 }
 
-function generateCourseCreateInputArray(
-  total: number,
-  authorId: number
-): Prisma.CourseCreateManyInput[] {
+async function insertCourseLikes() {
   try {
-    const courses: Prisma.CourseCreateManyInput[] = [];
+    let myCursor = -1;
+    let count = 0;
+    let enrollment: CourseEnrollment;
 
-    for (let index = 0; index < total; index++) {
-      const courseObject: Prisma.CourseCreateManyInput = {
-        title: faker.lorem.word(),
-        authorId,
-        image: faker.image.url(),
-      };
+    const { id: maxEnrollmentId } =
+      await prisma.courseEnrollment.findFirstOrThrow({
+        where: {
+          role: Role.STUDENT,
+        },
+        orderBy: {
+          id: "desc",
+        },
+        select: {
+          id: true,
+        },
+      });
 
-      courses.push(courseObject);
+    while (myCursor < maxEnrollmentId) {
+      const enrollments = await prisma.courseEnrollment.findMany({
+        skip: myCursor === -1 ? 0 : 1,
+        cursor:
+          myCursor === -1
+            ? undefined
+            : {
+                id: myCursor,
+              },
+        where: {
+          role: Role.STUDENT,
+        },
+      });
+
+      enrollment = enrollments[0];
+      myCursor = enrollment.id;
+
+      await prisma.courseLike.create({
+        data: {
+          userId: enrollment.userId,
+          courseId: enrollment.courseId,
+        },
+      });
+
+      count++;
     }
 
-    return courses;
-  } catch (error) {
-    console.log("Failed creating course create input array!");
+    console.log("Completed inserting course like! count: ", count);
+  } catch (error: any) {
+    console.log(
+      "Error inserting course like: " + error.message || "unknown error"
+    );
 
     throw error;
   }
 }
 
-async function insertCourses(
-  coursePerInstructorOrAdmin: number
-): Promise<{ count: number }> {
+async function insertCourseCategories(total: number) {
   try {
-    let count = 0;
-    let instructor: Pick<User, "id">;
-    let admin: Pick<User, "id">;
-    let instructorCursor = -1;
-    let adminCursor = -1;
+    let input: Prisma.CourseCategoryCreateManyInput[] = [];
 
-    const { id: maxInstructorId } = await userTable.findFirstOrThrow({
-      where: {
-        role: Role.INSTRUCTOR,
-      },
-      orderBy: {
-        id: "desc",
-      },
-      select: { id: true },
-    });
-    const { id: maxAdminId } = await userTable.findFirstOrThrow({
-      where: {
-        role: Role.OWNER,
-      },
-      orderBy: {
-        id: "desc",
-      },
-      select: { id: true },
-    });
-
-    while (instructorCursor < maxInstructorId) {
-      const instructors = await userTable.findMany({
-        skip: instructorCursor === -1 ? 0 : 1,
-        take: 1,
-        cursor:
-          instructorCursor === -1
-            ? undefined
-            : {
-                id: instructorCursor,
-              },
-        where: {
-          role: Role.INSTRUCTOR,
-        },
-        select: {
-          id: true,
-        },
+    for (let index = 0; index < total; index++) {
+      input.push({
+        title: faker.word.words(),
       });
-
-      instructor = instructors[0];
-      instructorCursor = instructor.id;
-
-      const courses = await courseTable.createMany({
-        data: generateCourseCreateInputArray(
-          coursePerInstructorOrAdmin,
-          instructor.id
-        ),
-      });
-
-      count += courses.count;
     }
 
-    while (adminCursor < maxAdminId) {
-      const admins = await userTable.findMany({
-        skip: adminCursor === -1 ? 0 : 1,
-        take: 1,
-        cursor:
-          adminCursor === -1
-            ? undefined
-            : {
-                id: adminCursor,
-              },
-        where: {
-          role: Role.OWNER,
-        },
-        select: {
-          id: true,
-        },
-      });
+    await prisma.courseCategory.createMany({
+      data: input,
+    });
 
-      admin = admins[0];
-      adminCursor = admin.id;
-
-      const courses = await courseTable.createMany({
-        data: generateCourseCreateInputArray(
-          coursePerInstructorOrAdmin,
-          admin.id
-        ),
-      });
-
-      count += courses.count;
-    }
-
-    console.log("Completed inserting " + count + " courses to the database!");
-
-    return {
-      count,
-    };
+    console.log("Completed inserting course category! count: ", total);
   } catch (error: any) {
     console.log(
-      "Failed inserting courses: " + error.message || "Unknown error"
+      "Error inserting course category: " + error.message || "unknown error"
+    );
+  }
+}
+
+async function updateCourseCount() {
+  try {
+    let myCursor = -1;
+    let course: Pick<Course, "id">;
+
+    const { id: maxId } = await courseTable.findFirstOrThrow({
+      orderBy: {
+        id: "desc",
+      },
+      select: { id: true },
+    });
+
+    while (myCursor < maxId) {
+      const courses = await courseTable.findMany({
+        skip: myCursor === -1 ? undefined : 1,
+        take: 1,
+        cursor:
+          myCursor === -1
+            ? undefined
+            : {
+                id: myCursor,
+              },
+        select: {
+          id: true,
+        },
+      });
+
+      course = courses[0];
+      myCursor = course.id;
+
+      const totalStudents = await courseEnrollmentTable.count({
+        where: {
+          courseId: course.id,
+          role: Role.STUDENT,
+        },
+      });
+      const totalInstructors = await courseEnrollmentTable.count({
+        where: {
+          courseId: course.id,
+          role: Role.INSTRUCTOR,
+        },
+      });
+      const totalLessons = await courseLessonTable.count({
+        where: {
+          courseId: course.id,
+        },
+      });
+      const totalLikes = await courseLikeTable.count({
+        where: {
+          courseId: course.id,
+        },
+      });
+
+      await courseTable.update({
+        where: {
+          id: course.id,
+        },
+        data: {
+          totalStudents,
+          totalInstructors,
+          totalLessons,
+          totalLikes,
+        },
+      });
+    }
+
+    console.log("Completed updating course count!");
+  } catch (error: any) {
+    console.log(
+      "Error updating course count: " + error.message || "unknown error"
     );
 
     throw error;
@@ -756,62 +864,6 @@ async function deleteAuthorEnrollment() {
   }
 }
 
-async function insertCourseLikes() {
-  try {
-    let myCursor = -1;
-    let count = 0;
-    let enrollment: CourseEnrollment;
-
-    const { id: maxEnrollmentId } =
-      await prisma.courseEnrollment.findFirstOrThrow({
-        where: {
-          role: Role.STUDENT,
-        },
-        orderBy: {
-          id: "desc",
-        },
-        select: {
-          id: true,
-        },
-      });
-
-    while (myCursor < maxEnrollmentId) {
-      const enrollments = await prisma.courseEnrollment.findMany({
-        skip: myCursor === -1 ? 0 : 1,
-        cursor:
-          myCursor === -1
-            ? undefined
-            : {
-                id: myCursor,
-              },
-        where: {
-          role: Role.STUDENT,
-        },
-      });
-
-      enrollment = enrollments[0];
-      myCursor = enrollment.id;
-
-      await prisma.courseLike.create({
-        data: {
-          userId: enrollment.userId,
-          courseId: enrollment.courseId,
-        },
-      });
-
-      count++;
-    }
-
-    console.log("Completed inserting cousre like! count: ", count);
-  } catch (error: any) {
-    console.log(
-      "Error inserting course like: " + error.message || "unknown error"
-    );
-
-    throw error;
-  }
-}
-
 async function seed() {
   await cleanTables();
 
@@ -819,6 +871,7 @@ async function seed() {
   const TOTAL_INSTRUCTORS = 5;
   const TOTAL_ADMIN = 5;
 
+  await insertCourseCategories(10);
   await insertUsers(TOTAL_STUDENT, Role.STUDENT);
   await insertUsers(TOTAL_INSTRUCTORS, Role.INSTRUCTOR);
   await insertUsers(TOTAL_ADMIN, Role.OWNER);

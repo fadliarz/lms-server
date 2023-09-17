@@ -13,22 +13,12 @@ export default function UserRouter(authenticationMiddleware: any) {
     UserDITypes.USER_CONTROLLER
   );
 
-  /**
-   * @swagger
-   * /users:
-   *   get:
-   *     tags:
-   *       - User
-   *     description: Returns a sample response
-   *     responses:
-   *       200:
-   *         description: A sample response
-   *         schema:
-   *           type: object
-   *           properties:
-   *             message:
-   *               type: string
-   */
+  router.get(
+    userUrls.me,
+    authenticationMiddleware,
+    controller.getMe.bind(controller)
+  );
+
   router.post(
     userUrls.signUp,
     validationMiddleware({
@@ -37,22 +27,6 @@ export default function UserRouter(authenticationMiddleware: any) {
     controller.signUp.bind(controller)
   );
 
-  /**
-   * @swagger
-   * /users/:userId:
-   *   get:
-   *     tags:
-   *       - User
-   *     description: Returns a sample response
-   *     responses:
-   *       200:
-   *         description: A sample response
-   *         schema:
-   *           type: object
-   *           properties:
-   *             message:
-   *               type: string
-   */
   router.post(
     userUrls.signIn,
     validationMiddleware({ body: SignIn }),

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import express, { Application, NextFunction, Router } from "express";
+import express, { Application, Router } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
@@ -10,6 +10,7 @@ import { Api } from "./common/types";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
+import yaml from "yamljs"
 
 class App {
   private readonly prisma = PrismaClientSingleton.getInstance();
@@ -37,23 +38,10 @@ class App {
    * Swagger
    */
   public setupSwagger(...args: Router[]) {
-    const swaggerOptions = {
-      definition: {
-        openapi: "3.0.0",
-        info: {
-          title: "Learning Management System",
-          version: "1.0.0",
-          description: "API documentation",
-        },
-      },
-      apis: ["./src/modules/*/router/*.router.ts"],
-    };
-
-    const swaggerSpec = swaggerJSDoc(swaggerOptions);
     this.express.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(swaggerSpec)
+      swaggerUi.setup(yaml.load("src/swagger.yaml"))
     );
   }
 

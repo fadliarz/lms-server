@@ -272,11 +272,19 @@ export class CourseAuthorizationMiddleware
     ): Promise<void> => {
       try {
         const user = getRequestUserOrThrowAuthenticationException(req);
-        const query = processQuery(req.query as GetCoursesQuery);
+        const query = req.query as GetCoursesQuery;
+        const courseRoleQuery = processQuery({
+          include_owned_courses: query.include_owned_courses,
+          include_instructor_courses: query.include_instructor_courses,
+          include_student_courses: query.include_student_courses,
+        });
         const { isAdmin, isInstructor } = getRoleStatus(user.role);
         let isAuthorized = false;
 
-        if (query.include_instructor_courses || query.include_owned_courses) {
+        if (
+          courseRoleQuery.include_instructor_courses ||
+          courseRoleQuery.include_owned_courses
+        ) {
           if (isAdmin || isInstructor) {
             isAuthorized = true;
           }

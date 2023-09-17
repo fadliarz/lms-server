@@ -12,6 +12,8 @@ seed()
   .catch(async (error) => {
     console.error("Error seeding database: ", error);
 
-    await prisma.$disconnect;
     process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect;
   });

@@ -3,6 +3,7 @@ import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types
 
 export type CourseEnrollmentModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
+  
 export type CourseEnrollmentDateKeys = "createdAt" | "updatedAt";
 export type CourseEnrollmentHasDefaultValue = "";
 export type ExcludeFromDto = "id" | CourseEnrollmentDateKeys;

@@ -12,7 +12,6 @@ export const CreateCourseLessonVideoJoi =
     lessonId: Joi.number().required(),
     youtubeLink: Joi.string().required(),
   });
-
 export const UpdateCourseLessonVideoJoi =
   Joi.object<UpdateCourseLessonVideoDto>({
     name: Joi.string(),

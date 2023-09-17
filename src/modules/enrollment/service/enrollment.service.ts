@@ -37,17 +37,13 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
     ids: DeleteCourseEnrollmentIds,
     enrollment: CourseEnrollment
   ): Promise<CourseEnrollmentModel> {
-    try {
-      const deletedEnrollment = await this.repository.delete(
-        enrollmentId,
-        ids,
-        enrollment
-      );
+    const deletedEnrollment = await this.repository.delete(
+      enrollmentId,
+      ids,
+      enrollment
+    );
 
-      return getValuable(deletedEnrollment);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(deletedEnrollment);
   }
 
   public async update(
@@ -55,28 +51,20 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
     ids: UpdateCourseEnrollmentIds,
     enrollmentDetails: UpdateCourseEnrollmentDto
   ): Promise<CourseEnrollmentModel> {
-    try {
-      const updatedEnrollment = await this.repository.update(
-        enrollmentId,
-        ids,
-        enrollmentDetails
-      );
+    const updatedEnrollment = await this.repository.update(
+      enrollmentId,
+      ids,
+      enrollmentDetails
+    );
 
-      return getValuable(updatedEnrollment);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(updatedEnrollment);
   }
 
   public async create(
     enrollmentDetails: CreateCourseEnrollmentDto
   ): Promise<CourseEnrollmentModel> {
-    try {
-      const enrollment = await this.repository.create(enrollmentDetails);
+    const enrollment = await this.repository.create(enrollmentDetails);
 
-      return getValuable(enrollment);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(enrollment);
   }
 }

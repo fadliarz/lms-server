@@ -1,5 +1,6 @@
 import { CourseLesson } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+
 export type CourseLessonModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLesson>;
 
@@ -11,6 +12,7 @@ type ExcludeFromDto =
   | "totalMaterials"
   | "totalVideos"
   | CourseLessonDateKeys;
+
 export const CourseLessonDITypes = {
   REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_LESSON_SERVICE"),
@@ -19,6 +21,7 @@ export const CourseLessonDITypes = {
     "COURSE_LESSON_AUTHORIZATION_MIDDLEWARE"
   ),
 };
+
 export enum courseLessonUrls {
   root = "/lessons",
   lesson = "/:lessonId",

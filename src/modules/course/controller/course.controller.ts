@@ -8,6 +8,11 @@ import getRequestUserOrThrowAuthenticationException from "../../../common/functi
 import { getResponseJson } from "../../../common/functions/getResponseJson";
 
 export interface ICourseController {
+  getCategories: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
   deleteLike: (
     req: Request,
     res: Response,
@@ -49,6 +54,22 @@ export interface ICourseController {
 export class CourseController implements ICourseController {
   @inject(CourseDITypes.SERVICE)
   private readonly service: ICourseService;
+
+  public async getCategories(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      const categories = await this.service.getCategories();
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json(getResponseJson(true, StatusCode.SUCCESS, categories));
+    } catch (error) {
+      next(error);
+    }
+  }
 
   public async deleteLike(
     req: Request,
@@ -150,8 +171,6 @@ export class CourseController implements ICourseController {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
       const courses = await this.service.getMany(user.id, req.query);
-
-      console.log(courses);
 
       return res
         .status(StatusCode.SUCCESS)

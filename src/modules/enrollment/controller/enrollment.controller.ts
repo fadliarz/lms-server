@@ -1,14 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { inject, injectable } from "inversify";
-import {
-  CourseEnrollmentDITypes,
-  CourseEnrollmentModel,
-  DeleteCourseEnrollmentIds,
-} from "../enrollment.type";
+import { CourseEnrollmentDITypes } from "../enrollment.type";
 import { ICourseEnrollmentService } from "../service/enrollment.service";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { getResponseJson } from "../../../common/functions/getResponseJson";
-import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface ICourseEnrollmentController {
   delete: (

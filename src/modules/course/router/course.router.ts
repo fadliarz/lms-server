@@ -24,34 +24,8 @@ export default function CourseRouter(authenticationMiddleware: any) {
       CourseDITypes.AUTHORIZATION_MIDDLEWARE
     );
 
-  /**
-   * @swagger
-   * /courses:
-   *   post:
-   *     tags:
-   *      - Course
-   *     summary: Create a new course
-   *     requestBody:
-   *       required: true
-   *       content:
-   *         application/json:
-   *           schema:
-   *             type: object,
-   *             properties:
-   *               image:
-   *                 type: string
-   *               description:
-   *                 type: string
-   *               material:
-   *                 type: string
-   *               title:
-   *                 type: string
-   *     responses:
-   *       201:
-   *         description: User created successfully
-   *       400:
-   *         description: Bad request
-   */
+  router.get(courseUrls.category, controller.getCategories.bind(controller));
+
   router.post(
     "/",
     authenticationMiddleware,

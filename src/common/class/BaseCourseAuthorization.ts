@@ -1,9 +1,6 @@
 import AuthorizationMiddleware from "./AuthorizationMiddleware";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
-import HttpException from "../exceptions/HttpException";
-import { StatusCode } from "../constants/statusCode";
 import { injectable } from "inversify";
-import { CourseEnrollment } from "@prisma/client";
 
 @injectable()
 export class BaseCourseAuthorization extends AuthorizationMiddleware {

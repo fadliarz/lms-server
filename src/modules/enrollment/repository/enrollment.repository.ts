@@ -35,33 +35,29 @@ export class CourseEnrollmentRepository implements ICourseEnrollmentRepository {
     ids: DeleteCourseEnrollmentIds,
     enrollment: CourseEnrollment
   ): Promise<CourseEnrollment> {
-    try {
-      const deletedEnrollment = await this.prisma.$transaction(async (tx) => {
-        const [deletedEnrollment] = await Promise.all([
-          tx.courseEnrollment.delete({
-            where: {
-              id: enrollmentId,
-            },
-          }),
-          tx.course.update({
-            where: {
-              id: ids.courseId,
-            },
-            data: {
-              [isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
-                ? "totalStudents"
-                : "totalInstructors"]: { decrement: 1 },
-            },
-          }),
-        ]);
-
-        return deletedEnrollment;
-      });
+    const deletedEnrollment = await this.prisma.$transaction(async (tx) => {
+      const [deletedEnrollment] = await Promise.all([
+        tx.courseEnrollment.delete({
+          where: {
+            id: enrollmentId,
+          },
+        }),
+        tx.course.update({
+          where: {
+            id: ids.courseId,
+          },
+          data: {
+            [isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
+              ? "totalStudents"
+              : "totalInstructors"]: { decrement: 1 },
+          },
+        }),
+      ]);
 
       return deletedEnrollment;
-    } catch (error) {
-      throw error;
-    }
+    });
+
+    return deletedEnrollment;
   }
 
   public async update(
@@ -69,69 +65,61 @@ export class CourseEnrollmentRepository implements ICourseEnrollmentRepository {
     ids: UpdateCourseEnrollmentIds,
     enrollmentDetails: UpdateCourseEnrollmentDto
   ): Promise<CourseEnrollment> {
-    try {
-      const updatedEnrollment = await this.prisma.$transaction(async (tx) => {
-        const [updatedEnrollment] = await Promise.all([
-          tx.courseEnrollment.update({
-            where: {
-              id: enrollmentId,
-            },
-            data: enrollmentDetails,
-          }),
-          tx.course.update({
-            where: {
-              id: ids.courseId,
-            },
-            data: {
-              [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
-                ? "totalStudents"
-                : "totalInstructors"]: { increment: 1 },
-              [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
-                ? "totalInstructors"
-                : "totalStudents"]: { decrement: 1 },
-            },
-          }),
-        ]);
-
-        return updatedEnrollment;
-      });
+    const updatedEnrollment = await this.prisma.$transaction(async (tx) => {
+      const [updatedEnrollment] = await Promise.all([
+        tx.courseEnrollment.update({
+          where: {
+            id: enrollmentId,
+          },
+          data: enrollmentDetails,
+        }),
+        tx.course.update({
+          where: {
+            id: ids.courseId,
+          },
+          data: {
+            [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
+              ? "totalStudents"
+              : "totalInstructors"]: { increment: 1 },
+            [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
+              ? "totalInstructors"
+              : "totalStudents"]: { decrement: 1 },
+          },
+        }),
+      ]);
 
       return updatedEnrollment;
-    } catch (error) {
-      throw error;
-    }
+    });
+
+    return updatedEnrollment;
   }
 
   public async create(
     enrollmentDetails: CreateCourseEnrollmentDto
   ): Promise<CourseEnrollment> {
-    try {
-      const enrollment = await this.prisma.$transaction(async (tx) => {
-        const [enrollment] = await Promise.all([
-          tx.courseEnrollment.create({
-            data: enrollmentDetails,
-          }),
-          tx.course.update({
-            where: {
-              id: enrollmentDetails.courseId,
-            },
-            data: {
-              [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
-                ? "totalStudents"
-                : "totalInstructors"]: { increment: 1 },
-            },
-            select: {
-              id: true
-            },
-          }),
-        ]);
-
-        return enrollment;
-      });
+    const enrollment = await this.prisma.$transaction(async (tx) => {
+      const [enrollment] = await Promise.all([
+        tx.courseEnrollment.create({
+          data: enrollmentDetails,
+        }),
+        tx.course.update({
+          where: {
+            id: enrollmentDetails.courseId,
+          },
+          data: {
+            [isEqualOrIncludeRole(enrollmentDetails.role, Role.STUDENT)
+              ? "totalStudents"
+              : "totalInstructors"]: { increment: 1 },
+          },
+          select: {
+            id: true,
+          },
+        }),
+      ]);
 
       return enrollment;
-    } catch (error) {
-      throw error;
-    }
+    });
+
+    return enrollment;
   }
 }

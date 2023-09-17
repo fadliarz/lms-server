@@ -6,6 +6,7 @@ import {
 
 export type UserModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<User>;
 export type PublicUser = Omit<UserModel, "password">;
+
 export type UserDateKeys = "createdAt" | "updatedAt";
 export type UserHasDefaultValue =
   | "avatar"
@@ -18,13 +19,16 @@ export type ExcludeFromDto =
   | "accessToken"
   | "refreshToken"
   | UserDateKeys;
+
 export const UserDITypes = {
   USER_REPOSITORY: Symbol.for("USER_REPOSITORY"),
   USER_SERVICE: Symbol.for("USER_SERVICE"),
   USER_CONTROLLER: Symbol.for("USER_CONTROLLER"),
 };
+
 export enum userUrls {
   root = "/auth",
+  me = "/me",
   signUp = "/signup",
   signIn = "/signin",
   logOut = "/logout",
@@ -37,20 +41,16 @@ export type SignUpDto = MakePropertiesOptional<
   Omit<UserModel, ExcludeFromDto>,
   UserHasDefaultValue
 >;
-
 export type SignInDto = Pick<SignUpDto, "email" | "password">;
 
 export type BaseUserProfile = {
   name: string;
   NIM: string;
 };
-
 export type UserSelect = Pick<Prisma.UserSelect, keyof User>;
-
 export type Me = UserModel & {
   courses: UserCourseType[];
 };
-
 export type UserCourseType = Pick<
   Course,
   | "id"

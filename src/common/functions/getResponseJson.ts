@@ -10,10 +10,8 @@ export function getResponseJson(
     message: message ? message : "Request success!",
   };
 
-  return success
-    ? {
-        ...responseJson,
-        data,
-      }
-    : responseJson;
+  return {
+    ...responseJson,
+    data,
+  };
 }

@@ -1,4 +1,4 @@
-import { Course } from "@prisma/client";
+import { Course, CourseCategory } from "@prisma/client";
 import {
   ModifyFieldWithNullToBeOptionalAndRemoveNull,
   MakePropertiesOptional,
@@ -6,7 +6,12 @@ import {
 import { UserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
 
-export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
+export type CourseModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<Course> & {
+    category: CourseCategory;
+  };
+  
+export type CourseCategoryModel = CourseCategory;
 export type CourseDateKeys = "createdAt" | "updatedAt";
 export type CourseHasDefaultValue = "image";
 export type ExcludeFromDto =
@@ -18,6 +23,7 @@ export type ExcludeFromDto =
   | "totalDurations"
   | "totalLikes"
   | "authorId"
+  | "category"
   | CourseDateKeys;
 
 export const CourseDITypes = {
@@ -32,6 +38,7 @@ export enum courseUrls {
   course = "/:courseId",
   likes = "/likes",
   like = "/likes/:likeId",
+  category = "/categories",
 }
 
 /**
@@ -60,6 +67,7 @@ export type GetCoursesQuery = {
   include_student_courses?: string;
   include_instructor_courses?: string;
   include_owned_courses?: string;
+  category_id?: string;
 };
 
 /**
@@ -70,6 +78,7 @@ export type GetCourseByIdDto<T = Enroller> = Course & {
   students?: T[];
   instructors?: T[];
   lessons: CourseLessonModel[];
+  category: CourseCategory;
 };
 export type Enroller = Pick<UserModel, "id" | "name" | "NIM" | "avatar">;
 

@@ -6,7 +6,6 @@ export const CreateCourseLessonDtoJoi = Joi.object<CreateCourseLessonDto>({
   description: Joi.string(),
   courseId: Joi.number().required(),
 });
-
 export const UpdateCourseLessonDtoJoi = Joi.object<UpdateCourseLessonDto>({
   title: Joi.string(),
   description: Joi.string(),

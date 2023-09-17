@@ -27,50 +27,31 @@ export class CourseLessonService implements ICourseLessonService {
     lessonId: number,
     courseId: number
   ): Promise<CourseLessonModel> {
-    try {
-      const deletedLesson = await this.repository.delete(lessonId, courseId);
+    const deletedLesson = await this.repository.delete(lessonId, courseId);
 
-      return getValuable(deletedLesson);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(deletedLesson);
   }
 
   public async update(
     lessonId: number,
     lessonDetails: UpdateCourseLessonDto
   ): Promise<CourseLessonModel> {
-    try {
-      const updatedLesson = await this.repository.update(
-        lessonId,
-        lessonDetails
-      );
+    const updatedLesson = await this.repository.update(lessonId, lessonDetails);
 
-      return getValuable(updatedLesson);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(updatedLesson);
   }
 
   public async getById(lessonId: number): Promise<CourseLessonModel> {
-    try {
-      const lesson = await this.repository.getById(lessonId);
+    const lesson = await this.repository.getById(lessonId);
 
-      return getValuable(lesson);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(lesson);
   }
 
   public async create(
     lessonDetails: CreateCourseLessonDto
   ): Promise<CourseLessonModel> {
-    try {
-      const lesson = await this.repository.create(lessonDetails);
+    const lesson = await this.repository.create(lessonDetails);
 
-      return getValuable(lesson);
-    } catch (error) {
-      throw error;
-    }
+    return getValuable(lesson);
   }
 }

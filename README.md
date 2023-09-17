@@ -138,6 +138,10 @@ enum Role {
 }
 ```
 
+## API Documentation
+Link: _currently unavailable_
+![Alt text](image.png)
+
 ## Unit Test (91.21% Line Coverage)
 ![Alt text](coverage.png)
 
