@@ -1,5 +1,7 @@
 node_modules
-dist
 coverage
+dist
 .vscode
-.env
+
+.git
+.gitignore

@@ -4,17 +4,17 @@
 
 ## Architecure | 4-layer Architecture
 
-![Alt text](4-layer-architecture.png)
+![Alt text](uploads/4-layer-architecture.png)
 
 ## Entitiy Relationship Diagram (ERD)
-![Alt text](ERD.png)
+![Alt text](uploads/ERD.png)
 
 ## API Documentation
 Link: _currently unavailable_
-![Alt text](image.png)
+![Alt text](uploads/documentation.png.png)
 
 ## Unit Test (91.21% Line Coverage)
-![Alt text](coverage.png)
+![Alt text](uploads/coverage.png)
 
 ## Prisma Schema
 ```prisma
@@ -160,19 +160,19 @@ enum Role {
 
 
 ## User
-![Alt text](user.png)
+![Alt text](uploads/testing/user.png)
 
 ## Course
-![Alt text](course.png)
+![Alt text](uploads/testing/course.png)
 
 ## Enrollment
-![Alt text](enrollment.png)
+![Alt text](uploads/testing/enrollment.png)
 
 ## Lesson
-![Alt text](lesson.png)
+![Alt text](uploads/testing/lesson.png)
 
 ## Video
-![Alt text](video.png)
+![Alt text](uploads/testing/video.png)
 
 
 ## Enrollment

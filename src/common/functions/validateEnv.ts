@@ -3,7 +3,7 @@ import { cleanEnv, str, port, num } from "envalid";
 function validateEnv() {
   const env = cleanEnv(process.env, {
     NODE_ENV: str({
-      choices: ["development", "production"],
+      choices: ["development", "production", "test"],
     }),
     ACCESS_TOKEN_PRIVATE_KEY: str(),
     REFRESH_TOKEN_PRIVATE_KEY: str(),
