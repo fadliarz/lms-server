@@ -13,7 +13,7 @@
 Link: _currently unavailable_
 ![Alt text](uploads/documentation.png.png)
 
-## Unit Test (91.21% Line Coverage)
+## Unit Test (92.1% Line Coverage)
 ![Alt text](uploads/coverage.png)
 
 ## Prisma Schema
