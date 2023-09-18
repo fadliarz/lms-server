@@ -11,7 +11,7 @@
 
 ## API Documentation
 Link: _currently unavailable_
-![Alt text](uploads/documentation.png.png)
+![Alt text](uploads/documentation.png)
 
 ## Unit Test (92.1% Line Coverage)
 ![Alt text](uploads/coverage.png)
