@@ -4,7 +4,7 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node dist/main.js",
+    "start": "node dist/src/main.js",
     "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
     "build": "tsc",

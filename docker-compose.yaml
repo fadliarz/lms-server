@@ -1,0 +1,28 @@
+version: "3"
+services:
+  node-app:
+    container_name: node-app:lms\
+    restart: always
+    build: ./server
+    volumes:
+      - node-app_volume:/home/node/app/node_modules
+  mysql:
+    container_name: mysql:lms
+    image: mysql:8.0
+    volumes:
+      - mysql_volume:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD: secret
+      - MYSQL_DATABASE: lms
+    ports:
+      - 5432:5432
+    depends_on:
+      - node-app
+    networks:
+      - app-network
+volumes:
+  mysql_volume: lms
+  node-app_volume: ./server
+networks:
+  app-network:
+    driver: bridge
