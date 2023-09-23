@@ -5,12 +5,19 @@ services:
       context: .
       target: development
     volumes:
-      - node-app_volume:/home/node/app
+      - ./:/home/node/app
       - /home/node/app/node_modules
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mysql://$MYSQL_USER:$MYSQL_ROOT_PASSWORD@mysql:3306/$MYSQL_DATABASE?connection_limit=9
+    ports:
+      - $PORT:$PORT
   mysql:
     volumes:
       - mysql_volume:/var/lib/mysql
     environment:
+      MYSQL_USER: root
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: lms
     ports:

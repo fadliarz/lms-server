@@ -25,7 +25,6 @@ services:
     networks:
       - app-network
 volumes:
-  node-app_volume:
   mysql_volume:
 networks:
   app-network:

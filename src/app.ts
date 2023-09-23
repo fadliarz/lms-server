@@ -7,10 +7,10 @@ import compression from "compression";
 import cookieParser from "cookie-parser";
 import errorMiddleware from "./middlewares/errorMiddleware";
 import { Api } from "./common/types";
-import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
 import yaml from "yamljs";
+import { Request, Response } from "express";
 
 class App {
   private readonly prisma = PrismaClientSingleton.getInstance();
@@ -77,6 +77,10 @@ class App {
     Apis.forEach((api: Api) => {
       this.express.use(api.path, api.router);
     });
+
+    this.express.use("/test", (req: Request, res: Response) => {
+      return res.send("Success!");
+    });
   }
 
   /**
@@ -93,7 +97,7 @@ class App {
     try {
       await this.prisma.$connect();
 
-      this.listen()
+      this.listen();
     } catch (error) {
       throw Error("Failed estabilishing a database connection!");
     }
@@ -108,7 +112,7 @@ class App {
         ? Math.floor(Math.random() * 60000) + 5000
         : this.port;
     this.express.listen(port, () => {
-      console.log("App is listening on port ", port);
+      console.log("App is listening on the port ", port);
     });
   }
 }
