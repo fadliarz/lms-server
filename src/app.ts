@@ -10,7 +10,7 @@ import { Api } from "./common/types";
 import swaggerJSDoc from "swagger-jsdoc";
 import swaggerUi from "swagger-ui-express";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
-import yaml from "yamljs"
+import yaml from "yamljs";
 
 class App {
   private readonly prisma = PrismaClientSingleton.getInstance();
@@ -26,12 +26,11 @@ class App {
     this.express = express();
     this.port = port;
 
-    this.initialiseDatabaseConnection();
     this.initialiseMiddlewares();
     this.initialiseApi(Apis);
     this.initialiseErrorHandling();
     this.setupSwagger(...Apis.map((api) => api.router));
-    this.listen();
+    this.initialiseDatabaseConnection();
   }
 
   /**
@@ -93,6 +92,8 @@ class App {
   private async initialiseDatabaseConnection(): Promise<void> {
     try {
       await this.prisma.$connect();
+
+      this.listen()
     } catch (error) {
       throw Error("Failed estabilishing a database connection!");
     }

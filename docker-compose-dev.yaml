@@ -1,0 +1,19 @@
+version: "3"
+services:
+  node-app:
+    build:
+      context: .
+      target: development
+    volumes:
+      - node-app_volume:/home/node/app
+      - /home/node/app/node_modules
+  mysql:
+    volumes:
+      - mysql_volume:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: lms
+    ports:
+      - 3306:3306
+volumes:
+  mysql_volume:

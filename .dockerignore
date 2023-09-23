@@ -8,6 +8,7 @@ dist
 
 # Docker
 Dockerfile
+docker-compose*
 
 # Git
 .git
