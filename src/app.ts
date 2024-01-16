@@ -30,7 +30,7 @@ class App {
     this.initialiseApi(Apis);
     this.initialiseErrorHandling();
     this.setupSwagger(...Apis.map((api) => api.router));
-    this.initialiseDatabaseConnection();
+    // this.initialiseDatabaseConnection();
   }
 
   /**

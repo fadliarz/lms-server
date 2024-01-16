@@ -1,55 +1,75 @@
 import { Course, Prisma, User } from "@prisma/client";
-import {
-  MakePropertiesOptional,
-  ModifyFieldWithNullToBeOptionalAndRemoveNull,
-} from "../../common/types";
-
-export type UserModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<User>;
-export type PublicUser = Omit<UserModel, "password">;
-
-export type UserDateKeys = "createdAt" | "updatedAt";
-export type UserHasDefaultValue =
-  | "avatar"
-  | "totalLessons"
-  | "totalCourses"
-  | "totalUnreadMessages";
-export type ExcludeFromDto =
-  | "id"
-  | "role"
-  | "accessToken"
-  | "refreshToken"
-  | UserDateKeys;
+import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
 export const UserDITypes = {
-  USER_REPOSITORY: Symbol.for("USER_REPOSITORY"),
-  USER_SERVICE: Symbol.for("USER_SERVICE"),
-  USER_CONTROLLER: Symbol.for("USER_CONTROLLER"),
+  REPOSITORY: Symbol.for("USER_REPOSITORY"),
+  SERVICE: Symbol.for("USER_SERVICE"),
+  CONTROLLER: Symbol.for("USER_CONTROLLER"),
 };
-
 export enum userUrls {
-  root = "/auth",
+  root = "/users",
   me = "/me",
+  user = "/:userId",
   signUp = "/signup",
   signIn = "/signin",
   logOut = "/logout",
 }
 
 /**
- * Dto
+ * Role Enum
  */
-export type SignUpDto = MakePropertiesOptional<
-  Omit<UserModel, ExcludeFromDto>,
-  UserHasDefaultValue
->;
-export type SignInDto = Pick<SignUpDto, "email" | "password">;
+export type EnumUserRole = "STUDENT" | "INSTRUCTOR" | "OWNER";
+export enum enumUserRole {
+  "STUDENT",
+  "INSTRUCTOR",
+  "OWNER",
+}
+export type EnumCourseRole = "STUDENT" | "INSTRUCTOR" | "OWNER";
+export enum enumCourseRole {
+  "STUDENT",
+  "INSTRUCTOR",
+  "OWNER",
+}
+export type EnumCourseEnrollmentRole = "STUDENT" | "INSTRUCTOR";
+export enum enumCourseEnrollmentRole {
+  "STUDENT",
+  "INSTRUCTOR",
+}
 
+/**
+ * Model
+ */
+export type UserModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<User>;
+export type PublicUserModel = Omit<
+  UserModel,
+  "accessToken" | "refreshToken" | "password"
+>;
+
+/**
+ *
+ *
+ * Dto
+ *
+ *
+ */
+
+/**
+ * User
+ */
+export type CreateUserDtoRequiredField = "email" | "password" | "name" | "NIM";
+export type CreateUserDtoOptionalField = "phoneNumber" | "avatar" | "about";
+export type CreateUserDto = ModifyFieldWithNullToBeOptionalAndRemoveNull<
+  Pick<User, CreateUserDtoRequiredField | CreateUserDtoOptionalField>
+>;
+export type UpdateUserDto = Partial<CreateUserDto>;
+export type SignInDto = Pick<CreateUserDto, "email" | "password">;
+
+/**
+ * Profile
+ */
 export type BaseUserProfile = {
   name: string;
   NIM: string;
-};
-export type UserSelect = Pick<Prisma.UserSelect, keyof User>;
-export type Me = UserModel & {
-  courses: UserCourseType[];
 };
 export type UserCourseType = Pick<
   Course,
@@ -62,3 +82,7 @@ export type UserCourseType = Pick<
   | "createdAt"
   | "updatedAt"
 >;
+export type Me = UserModel & {
+  courses: UserCourseType[];
+};
+export type UserSelect = Pick<Prisma.UserSelect, keyof User>;

@@ -1,122 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id                  Int      @id() @default(autoincrement())
-  email               String   @unique
+  id                  Int                @id @default(autoincrement())
+  email               String             @unique
   password            String
-  accessToken         String?  @map("access_token")
-  refreshToken        String?  @map("refresh_token")
-  phoneNumber         String?  @map("phone_number")
+  accessToken         String?            @map("access_token")
+  refreshToken        String?            @map("refresh_token")
+  phoneNumber         String?            @map("phone_number")
   name                String
-  NIM                 String   @map("nim")
-  avatar              String   @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
+  NIM                 String             @map("nim")
+  avatar              String             @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
   about               String?
-  totalCourses        Int      @default(0) @map("total_courses")
-  totalLessons        Int      @default(0) @map("total_lessons")
-  totalUnreadMessages Int      @default(0) @map("total_unread_messages")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
-  role                Role     @default(STUDENT)
-
-  courses           Course[]
-  courseEnrollments CourseEnrollment[]
-  courseLikes       CourseLike[]
+  totalCourses        Int                @default(0) @map("total_courses")
+  totalLessons        Int                @default(0) @map("total_lessons")
+  totalUnreadMessages Int                @default(0) @map("total_unread_messages")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+  role                Role               @default(STUDENT)
+  courses             Course[]
+  courseEnrollments   CourseEnrollment[]
+  courseLikes         CourseLike[]
 
   @@map("user")
 }
 
 model CourseEnrollment {
   id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
   userId    Int      @map("user_id")
-  course    Course   @relation(fields: [courseId], references: [id])
   courseId  Int      @map("course_id")
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  course    Course   @relation(fields: [courseId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, courseId])
+  @@index([courseId], map: "course_enrollment_course_id_fkey")
   @@map("course_enrollment")
 }
 
 model Course {
-  id               Int      @id @default(autoincrement())
-  image            String   @default("https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg")
+  id               Int                @id @default(autoincrement())
+  status           CourseStatus       @default(PUBLISHED)
+  image            String             @default("https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg")
   title            String
   description      String?
   material         String?
-  totalStudents    Int      @default(0) @map("total_students")
-  totalInstructors Int      @default(0) @map("total_instructors")
-  totalLessons     Int      @default(0) @map("total_lessons")
-  totalVideos      Int      @default(0) @map("total_videos")
-  totalDurations   Float    @default(0) @map("total_durations")
-  totalLikes       Int      @default(0) @map("total_likes")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  totalStudents    Int                @default(0) @map("total_students")
+  totalInstructors Int                @default(0) @map("total_instructors")
+  totalLessons     Int                @default(0) @map("total_lessons")
+  totalVideos      Int                @default(0) @map("total_videos")
+  totalDurations   Float              @default(0) @map("total_durations")
+  totalLikes       Int                @default(0) @map("total_likes")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  authorId         Int                @map("author_id")
+  categoryId       Int                @map("category_id")
+  author           User               @relation(fields: [authorId], references: [id])
+  category         CourseCategory     @relation(fields: [categoryId], references: [id])
+  enrollments      CourseEnrollment[]
+  lessons          CourseLesson[]
+  likes            CourseLike[]
 
-  author   User @relation(fields: [authorId], references: [id])
-  authorId Int  @map("author_id")
-
-  category   CourseCategory @relation(fields: [categoryId], references: [id])
-  categoryId Int            @map("category_id")
-
-  enrollments CourseEnrollment[]
-  lessons     CourseLesson[]
-  likes       CourseLike[]
-
+  @@unique([id, status])
   @@index([id, authorId])
+  @@index([authorId], map: "course_author_id_fkey")
+  @@index([categoryId], map: "course_category_id_fkey")
   @@map("course")
 }
 
 model CourseLesson {
-  id             Int      @id @default(autoincrement())
+  id             Int                 @id @default(autoincrement())
   title          String
   description    String?
-  totalVideos    Int      @default(0) @map("total_videos")
-  totalDurations Float    @default(0) @map("total_durations")
-  totalMaterials Int      @default(0) @map("total_materials")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  totalVideos    Int                 @default(0) @map("total_videos")
+  totalDurations Float               @default(0) @map("total_durations")
+  totalMaterials Int                 @default(0) @map("total_materials")
+  createdAt      DateTime            @default(now()) @map("created_at")
+  updatedAt      DateTime            @updatedAt @map("updated_at")
+  courseId       Int                 @map("course_id")
+  course         Course              @relation(fields: [courseId], references: [id])
+  videos         CourseLessonVideo[]
 
-  course   Course @relation(fields: [courseId], references: [id])
-  courseId Int    @map("course_id")
-
-  videos CourseLessonVideo[]
-
+  @@index([courseId], map: "course_lesson_course_id_fkey")
   @@map("course_lesson")
 }
 
 model CourseLessonVideo {
-  id             Int      @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   name           String
   description    String?
-  totalDurations Float    @map("total_durations")
-  youtubeLink    String   @map("youtube_link")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  totalDurations Float        @map("total_durations")
+  youtubeLink    String       @map("youtube_link")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  lessonId       Int          @map("lesson_id")
+  lesson         CourseLesson @relation(fields: [lessonId], references: [id])
 
-  lesson   CourseLesson @relation(fields: [lessonId], references: [id])
-  lessonId Int          @map("lesson_id")
-
+  @@index([lessonId], map: "course_video_lesson_id_fkey")
   @@map("course_video")
 }
 
 model CourseLike {
-  id Int @id @default(autoincrement())
-
-  course   Course @relation(fields: [courseId], references: [id])
+  id       Int    @id @default(autoincrement())
   courseId Int    @map("course_id")
-  user     User   @relation(fields: [userId], references: [id])
   userId   Int    @map("user_id")
+  course   Course @relation(fields: [courseId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
 
   @@unique([courseId, userId])
+  @@index([userId], map: "course_like_user_id_fkey")
   @@map("course_like")
 }
 
@@ -125,8 +125,7 @@ model CourseCategory {
   title     String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
-  courses Course[]
+  courses   Course[]
 
   @@map("course_category")
 }
@@ -135,4 +134,9 @@ enum Role {
   OWNER
   INSTRUCTOR
   STUDENT
+}
+
+enum CourseStatus {
+  PUBLISHED
+  DRAFT
 }

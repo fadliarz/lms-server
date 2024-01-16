@@ -1,8 +1,15 @@
 import HttpException from "./HttpException";
 import { StatusCode } from "../../common/constants/statusCode";
+import { ErrorCode } from "../constants/errorCode";
+import { ErrorMessage } from "../constants/errorMessage";
 
 export default class AuthenticationException extends HttpException {
   constructor(message?: string) {
-    super(StatusCode.UNAUTHENTICATED, message ? message : "Unathenticated!", true);
+    super(
+      StatusCode.UNAUTHENTICATED,
+      ErrorCode.UNAUTHENTICATED,
+      message || (ErrorMessage[ErrorCode.UNAUTHENTICATED] as string),
+      true
+    );
   }
 }

@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import { Container } from "inversify";
 import { UserController } from "./modules/user/controller/user.controller";
 import { UserRepository } from "./modules/user/repository/user.repository";
@@ -68,19 +70,28 @@ import {
   CourseLessonVideoAuthorizationMiddleware,
   ICourseLessonVideoAuthorizationMiddleware,
 } from "./modules/video/authorization/video.authorization";
+import {
+  CourseCategoryRepository,
+  ICourseCategoryRepository,
+} from "./modules/category/repository/category.repository";
+import {
+  CourseCategoryService,
+  ICourseCategoryService,
+} from "./modules/category/service/category.service";
+import {
+  CourseCategoryController,
+  ICourseCategoryController,
+} from "./modules/category/controller/category.controller";
+import { CourseCategoryDITypes } from "./modules/category/category.type";
 
 const dIContainer = new Container();
 
 /**
  * User Container
  */
-dIContainer
-  .bind<IUserRepository>(UserDITypes.USER_REPOSITORY)
-  .to(UserRepository);
-dIContainer.bind<IUserService>(UserDITypes.USER_SERVICE).to(UserService);
-dIContainer
-  .bind<IUserController>(UserDITypes.USER_CONTROLLER)
-  .to(UserController);
+dIContainer.bind<IUserRepository>(UserDITypes.REPOSITORY).to(UserRepository);
+dIContainer.bind<IUserService>(UserDITypes.SERVICE).to(UserService);
+dIContainer.bind<IUserController>(UserDITypes.CONTROLLER).to(UserController);
 
 /**
  * Course Container
@@ -92,9 +103,19 @@ dIContainer.bind<ICourseService>(CourseDITypes.SERVICE).to(CourseService);
 dIContainer
   .bind<ICourseController>(CourseDITypes.CONTROLLER)
   .to(CourseController);
+
+/**
+ * Course Category
+ */
 dIContainer
-  .bind<ICourseAuthorizationMiddleware>(CourseDITypes.AUTHORIZATION_MIDDLEWARE)
-  .to(CourseAuthorizationMiddleware);
+  .bind<ICourseCategoryRepository>(CourseCategoryDITypes.REPOSITORY)
+  .to(CourseCategoryRepository);
+dIContainer
+  .bind<ICourseCategoryService>(CourseCategoryDITypes.SERVICE)
+  .to(CourseCategoryService);
+dIContainer
+  .bind<ICourseCategoryController>(CourseCategoryDITypes.CONTROLLER)
+  .to(CourseCategoryController);
 
 /**
  * Course Enrollment

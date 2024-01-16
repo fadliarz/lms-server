@@ -10,8 +10,6 @@ import {
   UpdateCourseEnrollmentDto,
   UpdateCourseEnrollmentIds,
 } from "../../enrollment/enrollment.type";
-import HttpException from "../../../common/exceptions/HttpException";
-import { StatusCode } from "../../../common/constants/statusCode";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import { BaseCourseAuthorization } from "../../../common/class/BaseCourseAuthorization";
 import getRoleStatus from "../../../common/functions/getRoleStatus";

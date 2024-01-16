@@ -8,7 +8,23 @@ export default class BaseCourseLessonVideoAuthorization extends BaseCourseLesson
     errorObject?: Error
   ): Promise<number> {
     try {
-      const video = await this.courseLessonVideoTable.findUniqueOrThrow({
+      const lessonId = await this.getLessonIdByVideoId(videoId);
+
+      if (!lessonId) {
+        throw errorObject || new RecordNotFoundException("Lesson not found!");
+      }
+
+      return lessonId;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  protected async getLessonIdByVideoId(
+    videoId: number
+  ): Promise<number | null> {
+    try {
+      const video = await this.courseLessonVideoTable.findUnique({
         where: {
           id: videoId,
         },
@@ -17,11 +33,7 @@ export default class BaseCourseLessonVideoAuthorization extends BaseCourseLesson
         },
       });
 
-      if (!video) {
-        throw errorObject || new RecordNotFoundException("Lesson not found!");
-      }
-
-      return video.lessonId;
+      return video ? video.lessonId : null;
     } catch (error) {
       throw error;
     }

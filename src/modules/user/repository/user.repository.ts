@@ -1,21 +1,21 @@
-import { UserModel, SignUpDto, Me } from "../user.type";
+import { CreateUserDto, Me, UpdateUserDto } from "../user.type";
 import { injectable } from "inversify";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import { User } from "@prisma/client";
 import getValuable from "../../../common/functions/getValuable";
 
 export interface IUserRepository {
-  getMe: (userId: number) => Promise<Me>;
-  createNewUser: (
-    userDetails: SignUpDto,
+  createUser: (
+    userDetails: CreateUserDto,
     accessToken: string,
     refreshToken: string
   ) => Promise<User>;
+  getUserById: (userId: number) => Promise<User | null>;
   getUserByEmail: (email: string) => Promise<User | null>;
-  updateExistingUserDetails: (
-    userId: number,
-    userDetails: Partial<UserModel>
-  ) => Promise<User>;
+  getMe: (userId: number) => Promise<Me>;
+  updateUser: (userId: number, userDetails: Partial<User>) => Promise<User>;
+  updateUserPassword: (userId: number, password: string) => Promise<User>;
+  deleteUser: (userId: number) => Promise<{}>;
 }
 
 @injectable()
@@ -23,6 +23,34 @@ export class UserRepository implements IUserRepository {
   private readonly prisma = PrismaClientSingleton.getInstance();
   private readonly userTable = this.prisma.user;
 
+  public async createUser(
+    userDetails: CreateUserDto,
+    accessToken: string,
+    refreshToken: string
+  ): Promise<User> {
+    const newUser = await this.userTable.create({
+      data: { ...userDetails, accessToken, refreshToken },
+    });
+
+    return newUser;
+  }
+
+  public async getUserById(userId: number) {
+    const user = await this.userTable.findUnique({ where: { id: userId } });
+
+    return user;
+  }
+
+  public async getUserByEmail(email: string) {
+    const user = await this.userTable.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    return user;
+  }
+  
   public async getMe(userId: number) {
     const { courseEnrollments, ...user } =
       await this.userTable.findUniqueOrThrow({
@@ -58,39 +86,40 @@ export class UserRepository implements IUserRepository {
     return me;
   }
 
-  public async createNewUser(
-    userDetails: SignUpDto,
-    accessToken: string,
-    refreshToken: string
-  ): Promise<User> {
-    const newUserDetails = await this.userTable.create({
-      data: { ...userDetails, accessToken, refreshToken },
-    });
-
-    return newUserDetails;
-  }
-
-  public async getUserByEmail(email: string) {
-    const user = await this.userTable.findUnique({
-      where: {
-        email,
-      },
-    });
-
-    return user;
-  }
-
-  public async updateExistingUserDetails(
-    userId: number,
-    userDetailsUpdates: Partial<Omit<UserModel, "id">>
-  ): Promise<User> {
-    const updatedUserDetails = await this.userTable.update({
+  public async updateUser(userId: number, userDetails: Partial<User>) {
+    const updatedUser = await this.userTable.update({
       where: {
         id: userId,
       },
-      data: userDetailsUpdates,
+      data: userDetails,
     });
 
-    return updatedUserDetails;
+    return updatedUser;
+  }
+
+  public async updateUserPassword(
+    userId: number,
+    password: string
+  ): Promise<User> {
+    const updatedUser = await this.userTable.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password,
+      },
+    });
+
+    return updatedUser;
+  }
+
+  public async deleteUser(userId: number) {
+    await this.userTable.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    return {};
   }
 }

@@ -1,19 +1,60 @@
 import { injectable, inject } from "inversify";
-import { CourseDITypes } from "../course.type";
+import {
+  CourseDITypes,
+  GetCourseByIdQuery,
+  GetCoursesQuery,
+  GetEnrolledCourseByIdQuery,
+  GetEnrolledCoursesQuery,
+} from "../course.type";
 import { Request, Response, NextFunction } from "express-serve-static-core";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ICourseService } from "../service/course.service";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import { getResponseJson } from "../../../common/functions/getResponseJson";
+import validateJoi from "../../../common/functions/validateJoi";
+import {
+  CreateCourseDtoJoi,
+  CreateCourseLikeDtoJoi,
+  GetCourseByIdQueryJoi,
+  GetCoursesQueryJoi,
+  GetEnrolledCourseByIdQueryJoi,
+  UpdateCourseDtoJoi,
+} from "./course.joi";
+
+import "reflect-metadata";
 
 export interface ICourseController {
-  getCategories: (
+  createCourse: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  deleteLike: (
+  getCourseById: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
+  getCourses: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
+  getEnrolledCourseById: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
+  getEnrolledCourses: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
+  updateCourse: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
+  deleteCourse: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -23,27 +64,7 @@ export interface ICourseController {
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  delete: (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<Response | void>;
-  update: (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<Response | void>;
-  getById: (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<Response | void>;
-  getMany: (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<Response | void>;
-  create: (
+  deleteLike: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -55,36 +76,135 @@ export class CourseController implements ICourseController {
   @inject(CourseDITypes.SERVICE)
   private readonly service: ICourseService;
 
-  public async getCategories(
+  public async createCourse(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const categories = await this.service.getCategories();
+      await validateJoi({ body: CreateCourseDtoJoi })(req, res, next);
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, categories));
+      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+      const newCourse = await this.service.createCourse(
+        userId,
+        req.body as CreateCourseDto
+      );
+
+      return res.status(StatusCode.RESOURCE_CREATED).json({ data: newCourse });
     } catch (error) {
       next(error);
     }
   }
 
-  public async deleteLike(
+  public async getCourseById(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const like = await this.service.deleteLike(
-        Number(req.params.likeId),
-        (req as any).ids
+      await validateJoi({ query: GetCourseByIdQueryJoi })(req, res, next);
+
+      const course = await this.service.getCourseById(
+        Number(req.params.courseId),
+        req.query as unknown as GetCourseByIdQuery
       );
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, like));
+      res.status(StatusCode.SUCCESS).json({ data: course });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getCourses(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
+
+      const courses = await this.service.getCourses(
+        (req as any).query as GetCoursesQuery
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: courses });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getEnrolledCourseById(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      await validateJoi({ query: GetEnrolledCourseByIdQueryJoi })(
+        req,
+        res,
+        next
+      );
+
+      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+      const enrolledCourse = await this.service.getEnrolledCourseById(
+        userId,
+        // examined by authorization middleware
+        req.params.courseId as unknown as number,
+        req.query as unknown as GetEnrolledCourseByIdQuery
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: enrolledCourse });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getEnrolledCourses(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+      const courses = await this.service.getEnrolledCourses(
+        userId,
+        req.query as unknown as GetEnrolledCoursesQuery // validated with validation middleware
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: courses });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateCourse(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateCourseDtoJoi })(req, res, next);
+
+      const updatedCourse = await this.service.updateCourse(
+        Number(req.params.courseId),
+        req.body as UpdateCourseDto
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedCourse });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async deleteCourse(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      await this.service.deleteCourse(Number(req.params.courseId));
+
+      return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }
@@ -96,105 +216,29 @@ export class CourseController implements ICourseController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-      const like = await this.service.createLike(user.id, (req as any).ids);
+      await validateJoi({ body: CreateCourseLikeDtoJoi })(req, res, next);
 
-      return res
-        .status(StatusCode.RESOURCE_CREATED)
-        .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, like));
+      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+      const newLike = await this.service.createLike(
+        userId,
+        (req as any).resourceId
+      );
+
+      return res.status(StatusCode.RESOURCE_CREATED).json({ data: newLike });
     } catch (error) {
       next(error);
     }
   }
 
-  public async delete(
+  public async deleteLike(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const deletedCourse = await this.service.delete(
-        Number(req.params.courseId)
-      );
+      await this.service.deleteLike((req as any).resourceId);
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, deletedCourse));
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  public async update(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const course = await this.service.update(
-        Number(req.params.courseId),
-        req.body as UpdateCourseDto
-      );
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, course));
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getById(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const course = await this.service.getById(
-        Number(req.params.courseId),
-        req.query
-      );
-
-      res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, course));
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getMany(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-      const courses = await this.service.getMany(user.id, req.query);
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, courses));
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async create(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-      const course = await this.service.create(
-        user.id,
-        req.body as CreateCourseDto
-      );
-
-      return res
-        .status(StatusCode.RESOURCE_CREATED)
-        .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, course));
+      return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }

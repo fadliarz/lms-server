@@ -3,7 +3,6 @@ import { inject, injectable } from "inversify";
 import { CourseLessonDITypes } from "../lesson.type";
 import { ICourseLessonService } from "../service/lesson.service";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { getResponseJson } from "../../../common/functions/getResponseJson";
 
 export interface ICourseLessonController {
   delete: (
@@ -44,9 +43,7 @@ export class CourseLessonController implements ICourseLessonController {
         Number((req as any).courseId)
       );
 
-      res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, deletedLesson));
+      res.status(StatusCode.SUCCESS).json({ data: deletedLesson });
     } catch (error) {
       next(error);
     }
@@ -63,9 +60,7 @@ export class CourseLessonController implements ICourseLessonController {
         req.body
       );
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, updatedLesson));
+      return res.status(StatusCode.SUCCESS).json({ data: updatedLesson });
     } catch (error) {
       next(error);
     }
@@ -79,9 +74,7 @@ export class CourseLessonController implements ICourseLessonController {
     try {
       const lesson = await this.service.getById(Number(req.params.lessonId));
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, lesson));
+      return res.status(StatusCode.SUCCESS).json({ data: lesson });
     } catch (error) {
       next(error);
     }
@@ -95,9 +88,7 @@ export class CourseLessonController implements ICourseLessonController {
     try {
       const lesson = await this.service.create(req.body);
 
-      return res
-        .status(StatusCode.RESOURCE_CREATED)
-        .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, lesson));
+      return res.status(StatusCode.RESOURCE_CREATED).json({ data: lesson });
     } catch (error) {
       next(error);
     }

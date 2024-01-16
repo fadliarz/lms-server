@@ -1,40 +1,56 @@
 import { Request, Response, NextFunction } from "express";
 import HttpException from "../common/exceptions/HttpException";
-import { getResponseJson } from "../common/functions/getResponseJson";
 import InternalServerException from "../common/exceptions/InternalServerException";
 import { Prisma } from "@prisma/client";
 import { StatusCode } from "../common/constants/statusCode";
+import { ErrorCode } from "../common/constants/errorCode";
+import { ErrorMessage } from "../common/constants/errorMessage";
+import PrismaError from "../common/constants/prismaError";
 
 function errorMiddleware(
-  error: HttpException,
+  error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  let statusCode = error.status || 500;
-  let message = error.message || "Internal server error!";
-
-  console.log(error);
+  let statusCode: number;
+  let errorCode: string;
+  let message: string;
 
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    if (error.code === "P2025") {
-      message = "Related record not found!";
-      statusCode = StatusCode.NOT_FOUND;
-    } else if (error.code === "P2002") {
-      message = "Related record already existed";
-      statusCode = StatusCode.BAD_REQUEST;
+    statusCode = StatusCode.BAD_REQUEST;
+
+    if ((PrismaError as any)[error.code] !== undefined) {
+      const errorInformation = (PrismaError as any)[error.code];
+      errorCode = errorInformation.errorCode;
+      message = errorInformation.message;
     } else {
-      message = "Client side exception!";
-      statusCode = StatusCode.BAD_REQUEST;
+      errorCode = ErrorCode.BAD_REQUEST;
+      message = ErrorMessage[ErrorCode.BAD_REQUEST] as string;
     }
-  } else if (!(error instanceof HttpException)) {
-    message = new InternalServerException().message;
-    statusCode = StatusCode.SERVER_ERROR;
+
+    return res.status(statusCode).json({
+      error: {
+        errorCode,
+        message,
+      },
+    });
   }
 
-  return res
-    .status(statusCode)
-    .json(getResponseJson(false, statusCode, error, message));
+  if (!(error instanceof HttpException)) {
+    error = new InternalServerException();
+  }
+
+  statusCode = (error as HttpException).status;
+  message = (error as HttpException).message;
+  errorCode = (error as HttpException).errorCode;
+
+  return res.status(statusCode).json({
+    error: {
+      errorCode,
+      message,
+    },
+  });
 }
 
 export default errorMiddleware;

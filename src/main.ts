@@ -13,6 +13,8 @@ import CourseLessonRouter from "./modules/lesson/router/lesson.router";
 import { courseLessonUrls } from "./modules/lesson/lesson.type";
 import CourseLessonVideoRouter from "./modules/video/router/video.router";
 import { courseLessonVideoUrls } from "./modules/video/video.type";
+import CourseCategoryRouter from "./modules/category/router/category.router";
+import { courseCategoryUrls } from "./modules/category/category.type";
 
 /**
  * Validate environtment variables.
@@ -30,6 +32,10 @@ const courseApi = {
   router: CourseRouter(getAuthMiddleWare()),
   path: courseUrls.root,
 };
+const courseCategoryApi = {
+  router: CourseCategoryRouter(getAuthMiddleWare()),
+  path: courseCategoryUrls.root,
+};
 const courseEnrollmentApi = {
   router: CourseEnrollmentRouter(getAuthMiddleWare()),
   path: courseEnrollmentUrls.root,
@@ -40,15 +46,16 @@ const courseLessonApi = {
 };
 const courseLessonVideoApi = {
   router: CourseLessonVideoRouter(getAuthMiddleWare()),
-  path: courseLessonVideoUrls.root
-}
+  path: courseLessonVideoUrls.root,
+};
 
 const routers: Api[] = [
   userApi,
   courseApi,
+  courseCategoryApi,
   courseEnrollmentApi,
   courseLessonApi,
-  courseLessonVideoApi
+  courseLessonVideoApi,
 ];
 const port = Number(process.env.PORT) || 5000;
 

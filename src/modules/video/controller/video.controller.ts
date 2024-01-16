@@ -2,21 +2,25 @@ import { injectable, inject } from "inversify";
 import { CourseLessonVideoDITypes } from "../video.type";
 import { Request, Response, NextFunction } from "express";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { getResponseJson } from "../../../common/functions/getResponseJson";
 import { ICourseLessonVideoService } from "../service/video.service";
 
 export interface ICourseLessonVideoController {
-  delete: (
+  createVideo: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  update: (
+  getVideoById: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  create: (
+  updateVideo: (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<Response | void>;
+  deleteVideo: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -30,56 +34,63 @@ export class CourseLessonVideoController
   @inject(CourseLessonVideoDITypes.SERVICE)
   service: ICourseLessonVideoService;
 
-  public async delete(
+  public async createVideo(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const deletedVideo = await this.service.delete(
-        (req as any).ids,
-        (req as any).video
-      );
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, deletedVideo));
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async update(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const updatedVideo = await this.service.update(
-        (req as any).ids,
-        (req as any).video,
+      const newVideo = await this.service.createVideo(
+        (req as any).resourceId,
         req.body
       );
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, updatedVideo));
+      return res.status(StatusCode.RESOURCE_CREATED).json({ data: newVideo });
     } catch (error) {
       next(error);
     }
   }
 
-  public async create(
+  public async getVideoById(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const video = await this.service.create((req as any).ids, req.body);
+      const video = await this.service.getVideoById((req as any).resourceId);
 
-      return res
-        .status(StatusCode.RESOURCE_CREATED)
-        .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, video));
+      return res.status(StatusCode.SUCCESS).json({ data: video });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateVideo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      const updatedVideo = await this.service.updateVideo(
+        (req as any).resourceId,
+        req.body
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedVideo });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async deleteVideo(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      await this.service.deleteVideo((req as any).resourceId);
+
+      return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }

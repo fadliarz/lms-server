@@ -1,38 +1,14 @@
-import { Course, CourseCategory } from "@prisma/client";
-import {
-  ModifyFieldWithNullToBeOptionalAndRemoveNull,
-  MakePropertiesOptional,
-} from "../../common/types";
+import { Course, CourseEnrollment, CourseLike, Role } from "@prisma/client";
 import { UserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
-
-export type CourseModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<Course> & {
-    category: CourseCategory;
-  };
-  
-export type CourseCategoryModel = CourseCategory;
-export type CourseDateKeys = "createdAt" | "updatedAt";
-export type CourseHasDefaultValue = "image";
-export type ExcludeFromDto =
-  | "id"
-  | "totalStudents"
-  | "totalInstructors"
-  | "totalLessons"
-  | "totalVideos"
-  | "totalDurations"
-  | "totalLikes"
-  | "authorId"
-  | "category"
-  | CourseDateKeys;
+import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import { CourseCategoryModel } from "../category/category.type";
 
 export const CourseDITypes = {
   REPOSITORY: Symbol.for("COURSE_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_CONTROLLER"),
-  AUTHORIZATION_MIDDLEWARE: Symbol.for("COURSE_AUTHORIZATION_MIDDLEWARE"),
 };
-
 export enum courseUrls {
   root = "/courses",
   course = "/:courseId",
@@ -42,52 +18,164 @@ export enum courseUrls {
 }
 
 /**
- * Dto
+ *
+ *
+ * Model
+ *
+ *
  */
-export type CreateCourseDto = MakePropertiesOptional<
-  Omit<CourseModel, ExcludeFromDto>,
-  CourseHasDefaultValue
+
+/**
+ * Model Course
+ *
+ */
+export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
+export type BasicCourseModel = Pick<
+  CourseModel,
+  "description" | "image" | "title" | "categoryId" | "material"
 >;
-export type UpdateCourseDto = Partial<CreateCourseDto>;
-export type CreateCourseLikeDto = {
-  courseId: number;
+
+/**
+ * Model CourseLike
+ *
+ */
+export type CourseLikeModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLike>;
+
+/**
+ * Model Course Enrollment
+ *
+ */
+export type CourseEnrollmentModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
+export type BasicCourseEnrollmentModel = Pick<
+  CourseEnrollmentModel,
+  "userId" | "courseId" | "role"
+>;
+
+/**
+ * Model Enrolled Course
+ *
+ */
+export type EnrolledCourseModel = {
+  role: Role;
+  course: CourseModel;
 };
 
 /**
- * Query
+ *
+ *
+ * Dto
+ *
+ *
  */
-export type GetCourseQuery = {
-  include_students?: string;
-  include_instructors?: string;
-  include_lessons?: string;
-  include_videos?: string;
-  include_author?: string;
+
+/**
+ * CreateCourse
+ *
+ */
+type CreateCourseDtoRequiredField = Pick<CourseModel, "title" | "categoryId">;
+type CreateCourseDtoOptionalField = Partial<
+  Pick<CourseModel, "image" | "description" | "material">
+>;
+export type CreateCourseDto = CreateCourseDtoRequiredField &
+  CreateCourseDtoOptionalField;
+
+/**
+ * GetCourseById
+ */
+type GetCourseByIdIncludeQuery = {
+  include_author?: boolean;
+  include_category?: boolean;
+  include_students?: boolean;
+  include_instructors?: boolean;
+  include_playlist?: boolean;
 };
-export type GetCoursesQuery = {
-  include_student_courses?: string;
-  include_instructor_courses?: string;
-  include_owned_courses?: string;
-  category_id?: string;
+type GetCourseByIdFilterQuery = {};
+export type GetCourseByIdQuery = GetCourseByIdIncludeQuery &
+  GetCourseByIdFilterQuery;
+
+export type BasicUser = Pick<UserModel, "id" | "name" | "NIM" | "avatar">;
+export type BasicCategory = Pick<CourseCategoryModel, "id" | "title">;
+export type BasicCourseLesson = Pick<CourseLessonModel, "id" | "title">;
+export type GetCourseByIdResBody<
+  U = BasicUser,
+  C = BasicCategory,
+  L = BasicCourseLesson
+> = Course & {
+  author?: U;
+  students?: U[];
+  instructors?: U[];
+  category?: C;
+  playlist?: L[];
 };
 
 /**
- * Return
+ * GetCourses
+ *
  */
-export type GetCourseByIdDto<T = Enroller> = Course & {
-  author?: T;
-  students?: T[];
-  instructors?: T[];
-  lessons: CourseLessonModel[];
-  category: CourseCategory;
-};
-export type Enroller = Pick<UserModel, "id" | "name" | "NIM" | "avatar">;
+export type GetCoursesQuery = Pick<
+  GetCourseByIdIncludeQuery,
+  "include_author" | "include_category"
+> & { pageNumber: number; pageSize: number };
 
 /**
- * Ids
+ * GetEnrolledCourseById
+ *
  */
-export type CreateCourseLikeIds = {
-  courseId: number;
+type GetEnrolledCourseByIdIncludeQuery = {
+  include_author?: boolean;
+  include_category?: boolean;
+  include_students?: boolean;
+  include_instructors?: boolean;
+  include_playlist?: boolean;
 };
-export type DeleteCourseLikeIds = {
+type GetEnrolledCourseByIdFilterQuery = {
+  role: Role;
+};
+export type GetEnrolledCourseByIdQuery = GetEnrolledCourseByIdIncludeQuery &
+  GetEnrolledCourseByIdFilterQuery;
+
+/**
+ * GetEnrolledCourses
+ *
+ */
+type GetEnrolledCoursesIncludeQuery = {
+  include_author?: boolean;
+  include_category?: boolean;
+  include_student_courses?: boolean;
+  include_instructor_courses?: boolean;
+  include_owned_courses?: boolean;
+};
+type GetEnrolledCoursesLimitQuery = {
+  limit_student_courses: number;
+  limit_instructor_courses: number;
+  limit_owned_courses: number;
+};
+export type GetEnrolledCoursesQuery = GetEnrolledCoursesIncludeQuery &
+  GetEnrolledCoursesIncludeQuery &
+  GetEnrolledCoursesLimitQuery;
+
+/**
+ * UpdateCourse
+ *
+ */
+export type UpdateCourseDto = Partial<
+  CreateCourseDto & Pick<CourseModel, "status">
+>;
+
+/**
+ * CreateCourseLike
+ *
+ */
+type CreateCourseLikeDtoRequiredField = {};
+export type CreateCourseLikeDto = CreateCourseLikeDtoRequiredField;
+
+/**
+ * ResourceId Course
+ *
+ */
+export type CourseLikeResourceId = {
   courseId: number;
+  likeId?: number;
 };

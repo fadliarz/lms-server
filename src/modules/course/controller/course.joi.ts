@@ -2,43 +2,121 @@ import Joi from "joi";
 import {
   CreateCourseDto,
   CreateCourseLikeDto,
-  GetCourseQuery,
+  GetCourseByIdQuery,
   GetCoursesQuery,
+  GetEnrolledCourseByIdQuery,
   UpdateCourseDto,
 } from "../course.type";
+import { CourseStatus, Role } from "@prisma/client";
 
+/**
+ * CreateCourse
+ *
+ */
 export const CreateCourseDtoJoi = Joi.object<CreateCourseDto>({
-  image: Joi.string(),
-  categoryId: Joi.number().required(),
+  // required
   title: Joi.string().required(),
-  description: Joi.string(),
-  material: Joi.string(),
-});
-export const UpdateCourseDtoJoi = Joi.object<UpdateCourseDto>({
+  categoryId: Joi.number().required(),
+  // optional
   image: Joi.string(),
-  categoryId: Joi.number(),
-  title: Joi.string(),
   description: Joi.string(),
   material: Joi.string(),
-});
-export const CreateCourseLikeDtoJoi = Joi.object<CreateCourseLikeDto>({
-  courseId: Joi.number().required(),
 });
 
-export const GetCourseQueryJoi = Joi.object<GetCourseQuery>({
-  include_students: Joi.string().valid("true", "false").insensitive(),
-  include_instructors: Joi.string().valid("true", "false").insensitive(),
-  include_lessons: Joi.string().valid("true", "false").insensitive(),
-  include_videos: Joi.string().valid("true", "false").insensitive(),
-  include_author: Joi.string().valid("true", "false").insensitive(),
+/**
+ * GetCourseById
+ *
+ */
+export const GetCourseByIdQueryJoi = Joi.object<GetCourseByIdQuery>({
+  /**
+   * Include
+   */
+  include_author: Joi.boolean(),
+  include_category: Joi.boolean(),
+  include_students: Joi.boolean(),
+  include_instructors: Joi.boolean(),
+  include_playlist: Joi.boolean(),
 });
+
+/**
+ * GetCourses
+ *
+ */
 export const GetCoursesQueryJoi = Joi.object<GetCoursesQuery>({
-  include_student_courses: Joi.string().valid("true", "false").insensitive(),
-  include_instructor_courses: Joi.string().valid("true", "false").insensitive(),
-  include_owned_courses: Joi.string().valid("true", "false").insensitive(),
-  category_id: Joi.string(),
-}).or(
-  "include_student_courses",
-  "include_instructor_courses",
-  "include_owned_courses"
-);
+  /**
+   * Include
+   */
+  include_author: Joi.boolean(),
+  include_category: Joi.boolean(),
+  /**
+   * Limit
+   */
+  pageSize: Joi.number().required().min(1).max(10),
+  pageNumber: Joi.number().required().min(1),
+});
+
+/**
+ * GetEnrolledCourseById
+ *
+ */
+export const GetEnrolledCourseByIdQueryJoi =
+  Joi.object<GetEnrolledCourseByIdQuery>({
+    /**
+     * Include
+     */
+    include_author: Joi.boolean(),
+    include_category: Joi.boolean(),
+    include_students: Joi.boolean(),
+    include_instructors: Joi.boolean(),
+    include_playlist: Joi.boolean(),
+    /**
+     * Role
+     */
+    role: Joi.valid(Role.STUDENT, Role.INSTRUCTOR),
+  });
+
+/**
+ * GetEnrolledCourses
+ *
+ */
+// export const GetCoursesQueryJoi = Joi.object<GetCoursesQuery>({
+//   student_courses: Joi.boolean(),
+//   instructor_courses: Joi.boolean(),
+//   owned_courses: Joi.boolean(),
+//   limit_student_courses: Joi.number().integer(),
+//   limit_instructor_courses: Joi.number().integer(),
+//   limit_owned_courses: Joi.number().integer(),
+//   category_id: Joi.alternatives().try(
+//     Joi.number().integer(),
+//     Joi.array().items(Joi.number().integer())
+//   ),
+//   include_author: Joi.boolean(),
+//   include_category: Joi.boolean(),
+//   include_students: Joi.boolean(),
+//   include_instructors: Joi.boolean(),
+//   include_lessons: Joi.boolean(),
+//   include_likes: Joi.boolean(),
+//   include_videos: Joi.boolean(),
+// })
+//   .with("student_courses", "limit_student_courses")
+//   .with("instructor_courses", "limit_instructor_courses")
+//   .with("owned_courses", "limit_owned_courses")
+//   .or("student_courses", "instructor_courses", "owned_courses");
+
+/**
+ * UpdateCourse
+ */
+export const UpdateCourseDtoJoi = Joi.object<UpdateCourseDto>({
+  title: Joi.string(),
+  categoryId: Joi.number(),
+  image: Joi.string(),
+  description: Joi.string(),
+  material: Joi.string(),
+  status: Joi.string().valid(CourseStatus.PUBLISHED, CourseStatus.DRAFT),
+});
+
+/**
+ * CreateCourseLike
+ *
+ */
+export const CreateCourseLikeDtoJoi = Joi.object<CreateCourseLikeDto>({});

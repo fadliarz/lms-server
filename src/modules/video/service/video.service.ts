@@ -3,29 +3,25 @@ import { ICourseLessonVideoRepository } from "../repository/video.repository";
 import {
   CourseLessonVideoDITypes,
   CourseLessonVideoModel,
+  CourseLessonVideoResourceId,
   CreateCourseLessonVideoDto,
-  CreateCourseLessonVideoIds,
-  DeleteCourseLessonVideoIds,
   UpdateCourseLessonVideoDto,
-  UpdateCourseLessonVideoIds,
 } from "../video.type";
 import getValuable from "../../../common/functions/getValuable";
-import { CourseLessonVideo } from "@prisma/client";
 
 export interface ICourseLessonVideoService {
-  delete: (
-    ids: DeleteCourseLessonVideoIds,
-    video: CourseLessonVideo
-  ) => Promise<CourseLessonVideoModel>;
-  update: (
-    ids: UpdateCourseLessonVideoIds,
-    video: CourseLessonVideo,
-    newVideoDetails: UpdateCourseLessonVideoDto
-  ) => Promise<CourseLessonVideoModel>;
-  create: (
-    ids: CreateCourseLessonVideoIds,
+  createVideo: (
+    resourceId: CourseLessonVideoResourceId,
     videoDetails: CreateCourseLessonVideoDto
   ) => Promise<CourseLessonVideoModel>;
+  getVideoById: (
+    resourceId: CourseLessonVideoResourceId
+  ) => Promise<CourseLessonVideoModel>;
+  updateVideo: (
+    resourceId: CourseLessonVideoResourceId,
+    videoDetails: UpdateCourseLessonVideoDto
+  ) => Promise<CourseLessonVideoModel>;
+  deleteVideo: (resourceId: CourseLessonVideoResourceId) => Promise<{}>;
 }
 
 @injectable()
@@ -33,35 +29,40 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
   @inject(CourseLessonVideoDITypes.REPOSITORY)
   repository: ICourseLessonVideoRepository;
 
-  public async delete(
-    ids: DeleteCourseLessonVideoIds,
-    video: CourseLessonVideo
+  public async createVideo(
+    resourceId: CourseLessonVideoResourceId,
+    videoDetails: CreateCourseLessonVideoDto
   ): Promise<CourseLessonVideoModel> {
-    const deletedVideo = await this.repository.delete(ids, video);
+    const video = await this.repository.createVideo(resourceId, videoDetails);
 
-    return getValuable(deletedVideo);
+    return getValuable(video);
   }
 
-  public async update(
-    ids: UpdateCourseLessonVideoIds,
-    video: CourseLessonVideo,
-    newVideoDetails: UpdateCourseLessonVideoDto
+  public async getVideoById(
+    resourceId: CourseLessonVideoResourceId
   ): Promise<CourseLessonVideoModel> {
-    const updatedVideo = await this.repository.update(
-      ids,
-      video,
-      newVideoDetails
+    const video = await this.repository.getVideoById(resourceId);
+
+    return getValuable(video);
+  }
+
+  public async updateVideo(
+    resourceId: CourseLessonVideoResourceId,
+    videoDetails: UpdateCourseLessonVideoDto
+  ): Promise<CourseLessonVideoModel> {
+    const updatedVideo = await this.repository.updateVideo(
+      resourceId,
+      videoDetails
     );
 
     return getValuable(updatedVideo);
   }
 
-  public async create(
-    ids: CreateCourseLessonVideoIds,
-    newVideoDetails: CreateCourseLessonVideoDto
-  ): Promise<CourseLessonVideoModel> {
-    const video = await this.repository.create(ids, newVideoDetails);
+  public async deleteVideo(
+    resourceId: CourseLessonVideoResourceId
+  ): Promise<{}> {
+    await this.repository.deleteVideo(resourceId);
 
-    return getValuable(video);
+    return {};
   }
 }

@@ -3,7 +3,6 @@ import { inject, injectable } from "inversify";
 import { CourseEnrollmentDITypes } from "../enrollment.type";
 import { ICourseEnrollmentService } from "../service/enrollment.service";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { getResponseJson } from "../../../common/functions/getResponseJson";
 
 export interface ICourseEnrollmentController {
   delete: (
@@ -40,9 +39,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
         (req as any).enrollment
       );
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, deletedEnrollment));
+      return res.status(StatusCode.SUCCESS).json({ data: deletedEnrollment });
     } catch (error) {
       next(error);
     }
@@ -60,9 +57,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
         req.body
       );
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json(getResponseJson(true, StatusCode.SUCCESS, updatedEnrollment));
+      return res.status(StatusCode.SUCCESS).json({ data: updatedEnrollment });
     } catch (error) {
       next(error);
     }
@@ -76,9 +71,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     try {
       const enrollment = await this.service.create(req.body);
 
-      return res
-        .status(StatusCode.RESOURCE_CREATED)
-        .json(getResponseJson(true, StatusCode.RESOURCE_CREATED, enrollment));
+      return res.status(StatusCode.RESOURCE_CREATED).json({ data: enrollment });
     } catch (error) {
       next(error);
     }

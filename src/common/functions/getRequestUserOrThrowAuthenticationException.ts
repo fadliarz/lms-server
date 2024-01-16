@@ -1,7 +1,7 @@
 import { AuthenticatedRequest } from "../types";
 import { Request } from "express";
 import { UserModel } from "../../modules/user/user.type";
-import  AuthenticationException  from "../exceptions/AuthenticationException";
+import AuthenticationException from "../exceptions/AuthenticationException";
 
 export default function getRequestUserOrThrowAuthenticationException(
   req: Request

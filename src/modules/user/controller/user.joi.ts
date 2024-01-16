@@ -1,7 +1,7 @@
 import Joi from "joi";
-import { SignInDto, SignUpDto } from "../user.type";
+import { SignInDto, CreateUserDto } from "../user.type";
 
-const SignUp = Joi.object<SignUpDto>({
+const SignUp = Joi.object<CreateUserDto>({
   email: Joi.string().email().required(),
   password: Joi.string().required(),
   name: Joi.string().required(),

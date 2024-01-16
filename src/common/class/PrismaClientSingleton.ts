@@ -1,7 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { injectable } from "inversify";
 
-@injectable()
 export default class PrismaClientSingleton {
   private static instance: PrismaClient;
 

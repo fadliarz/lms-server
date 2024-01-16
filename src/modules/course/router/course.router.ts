@@ -3,15 +3,7 @@ import dIContainer from "../../../inversifyConfig";
 import { CourseDITypes } from "../course.type";
 import { courseUrls } from "../course.type";
 import { ICourseController } from "../controller/course.controller";
-import { ICourseAuthorizationMiddleware } from "../authorization/course.authorization";
-import { validationMiddleware } from "../../../middlewares/validationMiddleware";
-import {
-  CreateCourseDtoJoi,
-  CreateCourseLikeDtoJoi,
-  GetCourseQueryJoi,
-  GetCoursesQueryJoi,
-  UpdateCourseDtoJoi,
-} from "../controller/course.joi";
+import { CourseAuthorizationMiddleware } from "../authorization/course.authorization";
 
 export default function CourseRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -19,70 +11,76 @@ export default function CourseRouter(authenticationMiddleware: any) {
   const controller = dIContainer.get<ICourseController>(
     CourseDITypes.CONTROLLER
   );
-  const authorizationMiddleware =
-    dIContainer.get<ICourseAuthorizationMiddleware>(
-      CourseDITypes.AUTHORIZATION_MIDDLEWARE
-    );
+  const authorizationMiddleware = new CourseAuthorizationMiddleware();
 
-  router.get(courseUrls.category, controller.getCategories.bind(controller));
-
+  /**
+   * Create (Course)
+   *
+   */
   router.post(
     "/",
     authenticationMiddleware,
-    authorizationMiddleware.getCreateCourseAuthorization(),
-    validationMiddleware({
-      body: CreateCourseDtoJoi,
-    }),
-    controller.create.bind(controller)
+    authorizationMiddleware.getCreateCourseAuthorizationMiddleware(),
+    controller.createCourse.bind(controller)
   );
 
-  router.get(
-    "/",
-    authenticationMiddleware,
-    validationMiddleware({
-      query: GetCoursesQueryJoi,
-    }),
-    authorizationMiddleware.getCoursesAuthorization(),
-    controller.getMany.bind(controller)
-  );
-
+  /**
+   * GetCourseById (Course)
+   * 
+   */
   router.get(
     courseUrls.course,
     authenticationMiddleware,
-    validationMiddleware({
-      query: GetCourseQueryJoi,
-    }),
-    authorizationMiddleware.getCourseByIdAuthorization(),
-    controller.getById.bind(controller)
+    controller.getCourseById.bind(controller)
   );
 
+  // router.get(
+  //   "/",
+  //   authenticationMiddleware,
+  //   validationMiddleware({
+  //     query: GetCoursesQueryJoi,
+  //   }),
+  //   authorizationMiddleware.(),
+  //   controller.getCourses.bind(controller)
+  // );
+
+  /**
+   * Update (Course)
+   *
+   */
   router.put(
     courseUrls.course,
     authenticationMiddleware,
-    authorizationMiddleware.getUpdateCourseAuthorization(),
-    validationMiddleware({
-      body: UpdateCourseDtoJoi,
-    }),
-    controller.update.bind(controller)
+    authorizationMiddleware.getUpdateCourseAuthorizationMiddleware(),
+    controller.updateCourse.bind(controller)
   );
 
+  /**
+   * Delete (Course)
+   *
+   */
   router.delete(
     courseUrls.course,
     authenticationMiddleware,
-    authorizationMiddleware.getDeleteCourseAuthorization(),
-    controller.delete.bind(controller)
+    authorizationMiddleware.getDeleteCourseAuthorizationMiddleware(),
+    controller.deleteCourse.bind(controller)
   );
 
+  /**
+   * Create (CourseLike)
+   *
+   */
   router.post(
     courseUrls.likes,
     authenticationMiddleware,
-    validationMiddleware({
-      body: CreateCourseLikeDtoJoi,
-    }),
     authorizationMiddleware.getCreateCourseLikeAuthorization(),
     controller.createLike.bind(controller)
   );
 
+  /**
+   * Delete (CourseLike)
+   *
+   */
   router.delete(
     courseUrls.like,
     authenticationMiddleware,
