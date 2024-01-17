@@ -27,6 +27,9 @@ down-dev:
 test-course:
 	jest -- --watchAll --verbose --runInBand --coverage src/modules/course/course.test.ts
 
+test-course-authorization:
+	jest -- --watchAll --verbose --runInBand --coverage src/modules/course/authorization/course.authorization.test.ts
+
 test-category:
 	jest -- --watchAll --verbose --runInBand --coverage src/modules/category/category.test.ts
 

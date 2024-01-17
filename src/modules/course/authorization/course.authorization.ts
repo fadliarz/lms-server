@@ -10,7 +10,6 @@ import HttpException from "../../../common/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
 import ClientException from "../../../common/exceptions/ClientException";
 import isNaNArray from "../../../common/functions/isNaNArray";
-import RecordNotFoundException from "../../../common/exceptions/RecordNotFoundException";
 import { ErrorCode } from "../../../common/constants/errorCode";
 import { ErrorMessage } from "../../../common/constants/errorMessage";
 
@@ -105,7 +104,7 @@ export class CourseAuthorizationMiddleware
         if (isStudent) {
         }
 
-        if (isInstructor) {
+        if (isInstructor || isAdmin) {
           const authorId = await this.getAuthorIdOrThrow(courseId);
           const isAuthor = userId === authorId;
           if (isAuthor) {
@@ -156,7 +155,7 @@ export class CourseAuthorizationMiddleware
         const user = getRequestUserOrThrowAuthenticationException(req);
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
         let isAuthorized = false;
-        if (isInstructor) {
+        if (isInstructor || isAdmin) {
           const authorId = await this.getAuthorIdOrThrow(courseId);
           const isAuthor = user.id === authorId;
 
@@ -205,7 +204,7 @@ export class CourseAuthorizationMiddleware
           getRequestUserOrThrowAuthenticationException(req);
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
         let isAuthorized = false;
-        if (isStudent || isInstructor) {
+        if (isStudent || isInstructor || isAdmin) {
           const enrollment = await this.getEnrollmentById(userId, courseId);
 
           if (
@@ -215,7 +214,7 @@ export class CourseAuthorizationMiddleware
             isAuthorized = true;
 
             (req as any).resourceId = {
-              courseId: enrollment.courseId,
+              courseId,
             } satisfies CourseLikeResourceId;
           }
         }
@@ -248,31 +247,18 @@ export class CourseAuthorizationMiddleware
           throw new ClientException("Invalid courseId || likeId (NaN)");
         }
 
-        const like = await this.getLikeById(likeId);
-        if (!like) {
-          throw new RecordNotFoundException();
-        }
-
         const user = getRequestUserOrThrowAuthenticationException(req);
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
         let isAuthorized = false;
-        if (isStudent || isInstructor) {
-          if (like.courseId !== courseId) {
-            throw new ClientException("likeId doesn't match courseId");
-          }
+        if (isStudent || isInstructor || isAdmin) {
+          await this.getLikeByIdOrThrow(courseId, likeId, user.id);
 
-          if (like.userId === user.id) {
-            isAuthorized = true;
-          }
+          isAuthorized = true;
 
           (req as any).resourceId = {
             courseId: courseId,
             likeId: likeId,
           } satisfies CourseLikeResourceId;
-        }
-
-        if (isAdmin) {
-          isAuthorized = true;
         }
 
         if (!isAuthorized) {

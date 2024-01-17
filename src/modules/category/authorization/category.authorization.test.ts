@@ -8,10 +8,13 @@ import {
   CourseCategoryAuthorizationMiddleware,
   ICourseCategoryAuthorizationMiddleware,
 } from "./category.authorization";
+import HttpException from "../../../common/exceptions/HttpException";
 
 jest.mock(
   "../../../common/functions/getRequestUserOrThrowAuthenticationException"
 );
+jest.mock("./category.authorization");
+
 /**
  *
  * @param mockRequest
@@ -65,49 +68,10 @@ describe("CourseCategoryAuthorizationMiddleware", () => {
       userRole: Role;
     };
     type TestCase = {
-      name: (userRole: Role | null) => string;
+      name: (userRole: Role) => string;
       getRole: () => Role;
       test: (params: TestParams) => Promise<void>;
     };
-
-    function getUnauthorizedTestCase(userRole: Role): TestCase {
-      return {
-        name: (userRole: Role | null): string => {
-          return `Unauthorized: [userRole: ${userRole}]`;
-        },
-        getRole: (): Role => {
-          return userRole;
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { mockRequest, mockResponse, mockNext, userRole } = params;
-
-          mockNextError(mockRequest, mockResponse, mockNext);
-          (
-            getRequestUserOrThrowAuthenticationException as jest.Mock
-          ).mockReturnValue({
-            role: userRole,
-          });
-
-          await middleware.getCreateCategoryAuthorizationMiddleware()(
-            mockRequest,
-            mockResponse,
-            mockNext
-          );
-
-          expect(mockNext).toBeCalledTimes(1);
-          expect(mockNext).not.toBeCalledWith();
-          expect(mockResponse.status).toBeCalledTimes(1);
-          expect(mockResponse.status).toBeCalledWith(StatusCode.UNAUTHORIZED);
-          expect(mockResponse.json).toBeCalledTimes(1);
-          expect(mockResponse.json).toBeCalledWith({
-            error: {
-              errorCode: ErrorCode.UNAUTHORIZED,
-              message: expect.any(String),
-            },
-          });
-        },
-      };
-    }
 
     function getAuthorizedTestCase(userRole: Role): TestCase {
       return {
@@ -140,12 +104,50 @@ describe("CourseCategoryAuthorizationMiddleware", () => {
       };
     }
 
+    function getUnauthorizedTestCase(userRole: Role): TestCase {
+      return {
+        name: (userRole: Role): string => {
+          return `Unauthorized: [userRole: ${userRole}]`;
+        },
+        getRole: (): Role => {
+          return userRole;
+        },
+        test: async (params: TestParams): Promise<void> => {
+          const { mockRequest, mockResponse, mockNext, userRole } = params;
+
+          mockNextError(mockRequest, mockResponse, mockNext);
+          (
+            getRequestUserOrThrowAuthenticationException as jest.Mock
+          ).mockReturnValue({
+            role: userRole,
+          });
+
+          await middleware.getCreateCategoryAuthorizationMiddleware()(
+            mockRequest,
+            mockResponse,
+            mockNext
+          );
+
+          expect(mockNext).toBeCalledTimes(1);
+          expect(mockNext).toBeCalledWith(expect.any(HttpException));
+          expect(mockResponse.status).toBeCalledTimes(1);
+          expect(mockResponse.status).toBeCalledWith(StatusCode.UNAUTHORIZED);
+          expect(mockResponse.json).toBeCalledTimes(1);
+          expect(mockResponse.json).toBeCalledWith({
+            error: {
+              errorCode: ErrorCode.UNAUTHORIZED,
+              message: expect.any(String),
+            },
+          });
+        },
+      };
+    }
+
     const testCases: TestCase[] = [
       getUnauthorizedTestCase(Role.STUDENT),
       getAuthorizedTestCase(Role.INSTRUCTOR),
       getAuthorizedTestCase(Role.OWNER),
     ];
-
     testCases.forEach((tc) => {
       const userRole = tc.getRole();
       return it(tc.name(userRole), async () => {

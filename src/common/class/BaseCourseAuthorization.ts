@@ -1,6 +1,8 @@
 import AuthorizationMiddleware from "./AuthorizationMiddleware";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
-import { Course, CourseEnrollment, CourseLike, Role } from "@prisma/client";
+import { CourseEnrollment, CourseLike, Role } from "@prisma/client";
+import { CourseLikeModel } from "../../modules/course/course.type";
+import getValuable from "../functions/getValuable";
 
 export class BaseCourseAuthorization extends AuthorizationMiddleware {
   protected async getAuthorId(courseId: number): Promise<number | null> {
@@ -32,12 +34,18 @@ export class BaseCourseAuthorization extends AuthorizationMiddleware {
   }
 
   protected async getLikeById(
-    likeId: number
-  ): Promise<Pick<CourseLike, "userId" | "courseId"> | null> {
+    courseId: number,
+    likeId: number,
+    userId: number
+  ): Promise<Pick<CourseLikeModel, "userId" | "courseId"> | null> {
     try {
       const like = await this.courseLikeTable.findUnique({
         where: {
           id: likeId,
+          courseId_userId: {
+            courseId,
+            userId,
+          },
         },
         select: {
           courseId: true,
@@ -45,23 +53,25 @@ export class BaseCourseAuthorization extends AuthorizationMiddleware {
         },
       });
 
-      return like ? like : null;
+      return like === null ? like : getValuable(like);
     } catch (error) {
       throw error;
     }
   }
 
   protected async getLikeByIdOrThrow(
+    courseId: number,
     likeId: number,
-    errorObject: Error
-  ): Promise<Pick<CourseLike, "userId" | "courseId">> {
+    userId: number,
+    errorObject?: Error
+  ): Promise<Pick<CourseLikeModel, "userId" | "courseId">> {
     try {
-      const id = await this.getLikeById(likeId);
-      if (!id) {
+      const like = await this.getLikeById(courseId, likeId, userId);
+      if (!like) {
         throw errorObject ? errorObject : new RecordNotFoundException();
       }
 
-      return id;
+      return like;
     } catch (error) {
       throw error;
     }

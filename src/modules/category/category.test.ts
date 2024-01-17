@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import "reflect-metadata";
 import errorMiddleware from "../../middlewares/errorMiddleware";
 import { ICourseCategoryController } from "./controller/category.controller";
-import { PrismaClient, Role } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import RandPrisma from "../../common/class/randprisma/RandPrisma";
 import dIContainer from "../../inversifyConfig";
 import {
@@ -31,6 +31,7 @@ import { ErrorCode } from "../../common/constants/errorCode";
  * @param next
  *
  * Mock next() function so it can simulates real wold scenario.
+ *
  */
 function mockNextError(
   mockRequest: Request,
