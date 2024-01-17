@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
 import "reflect-metadata";
+import { Request, Response, NextFunction } from "express";
 import errorMiddleware from "../../middlewares/errorMiddleware";
 import { ICourseCategoryController } from "./controller/category.controller";
 import { PrismaClient } from "@prisma/client";

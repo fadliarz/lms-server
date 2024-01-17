@@ -13,7 +13,10 @@ export interface ICourseLessonService {
     courseId: number,
     dto: CreateCourseLessonDto
   ) => Promise<CourseLessonModel>;
-  getLessonById: (lessonId: number) => Promise<CourseLessonModel>;
+  getLessonById: (
+    courseId: number,
+    lessonId: number
+  ) => Promise<CourseLessonModel>;
   updateLesson: (
     lessonId: number,
     dto: UpdateCourseLessonDto
@@ -35,8 +38,11 @@ export class CourseLessonService implements ICourseLessonService {
     return getValuable(lesson);
   }
 
-  public async getLessonById(lessonId: number): Promise<CourseLessonModel> {
-    const lesson = await this.repository.getLessonById(lessonId);
+  public async getLessonById(
+    courseId: number,
+    lessonId: number
+  ): Promise<CourseLessonModel> {
+    const lesson = await this.repository.getLessonById(courseId, lessonId);
 
     return getValuable(lesson);
   }

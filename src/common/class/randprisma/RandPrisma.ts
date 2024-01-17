@@ -14,7 +14,10 @@ import {
   CreateCourseCategoryDto,
 } from "../../../modules/category/category.type";
 import { Role } from "@prisma/client";
-import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
+import {
+  CourseLessonModel,
+  CreateCourseLessonDto,
+} from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
 
 export default class RandPrisma implements RandDB {
@@ -91,6 +94,13 @@ export default class RandPrisma implements RandDB {
     };
   }
 
+  public generateCreateLessonDto(): CreateCourseLessonDto {
+    return {
+      title: this.generateRandomString(8),
+      description: this.generateRandomString(8),
+    };
+  }
+
   public async generateCourse(): Promise<{
     author: UserModel;
     category: CourseCategoryModel;
@@ -109,6 +119,35 @@ export default class RandPrisma implements RandDB {
       author: getValuable(user),
       category: getValuable(category),
       course: getValuable(course),
+    };
+  }
+
+  public async generateLesson(): Promise<{
+    author: UserModel;
+    category: CourseCategoryModel;
+    course: CourseModel;
+    lesson: CourseLessonModel;
+  }> {
+    const user = await this.generateUser(Role.INSTRUCTOR);
+    const category = await this.generateCategory();
+    const course = await this.prisma.course.create({
+      data: {
+        ...this.generateCreateCourseDto(category.id),
+        authorId: user.id,
+      },
+    });
+    const lesson = await this.prisma.courseLesson.create({
+      data: {
+        ...this.generateCreateLessonDto(),
+        courseId: course.id,
+      },
+    });
+
+    return {
+      author: getValuable(user),
+      category: getValuable(category),
+      course: getValuable(course),
+      lesson: getValuable(lesson),
     };
   }
 

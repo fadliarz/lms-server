@@ -8,7 +8,7 @@ export interface ICourseLessonRepository {
     courseId: number,
     dto: CreateCourseLessonDto
   ) => Promise<CourseLesson>;
-  getLessonById: (lessonId: number) => Promise<CourseLesson>;
+  getLessonById: (courseId: number, lessonId: number) => Promise<CourseLesson>;
   updateLesson: (
     lessonId: number,
     dto: UpdateCourseLessonDto
@@ -46,10 +46,14 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     return lesson;
   }
 
-  public async getLessonById(lessonId: number): Promise<CourseLesson> {
+  public async getLessonById(
+    courseId: number,
+    lessonId: number
+  ): Promise<CourseLesson> {
     const lesson = await this.courseLessonTable.findUniqueOrThrow({
       where: {
         id: lessonId,
+        courseId,
       },
     });
 

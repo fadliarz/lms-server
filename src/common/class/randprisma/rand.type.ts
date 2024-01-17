@@ -6,7 +6,10 @@ import {
   CreateCourseDto,
 } from "../../../modules/course/course.type";
 import { UserModel } from "../../../modules/user/user.type";
-import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
+import {
+  CourseLessonModel,
+  CreateCourseLessonDto,
+} from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
 import {
   CourseCategoryModel,
@@ -17,11 +20,18 @@ export default interface RandDB {
   generateUser: (role: Role) => Promise<UserModel>;
   generateCreateCourseDto: (categoryId: number) => CreateCourseDto;
   generateCreateCategoryDto: () => CreateCourseCategoryDto;
+  generateCreateLessonDto: () => CreateCourseLessonDto;
   generateCourse: () => Promise<{
     author: UserModel;
     category: CourseCategoryModel;
     course: CourseModel;
   }>;
+  generateLesson: () => Promise<{
+    author: UserModel;
+    category: CourseCategoryModel;
+    course: CourseModel;
+    lesson: CourseLessonModel,
+  }>
   insertManyLessonsIntoCourse: (
     courseId: number,
     numberOfLessons: number

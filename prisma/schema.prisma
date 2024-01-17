@@ -89,7 +89,7 @@ model CourseLesson {
   course         Course              @relation(fields: [courseId], references: [id])
   videos         CourseLessonVideo[]
 
-  @@index([courseId], map: "course_lesson_course_id_fkey")
+  @@index([courseId, id], map: "course_lesson_course_id_id_fkey")
   @@map("course_lesson")
 }
 

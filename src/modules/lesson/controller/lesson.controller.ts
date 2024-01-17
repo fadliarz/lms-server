@@ -3,6 +3,11 @@ import { inject, injectable } from "inversify";
 import { CourseLessonDITypes } from "../lesson.type";
 import { ICourseLessonService } from "../service/lesson.service";
 import { StatusCode } from "../../../common/constants/statusCode";
+import validateJoi from "../../../common/functions/validateJoi";
+import {
+  CreateCourseLessonDtoJoi,
+  UpdateCourseLessonDtoJoi,
+} from "./lesson.joi";
 
 export interface ICourseLessonController {
   createLesson: (
@@ -38,6 +43,8 @@ export class CourseLessonController implements ICourseLessonController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
+      await validateJoi({ body: CreateCourseLessonDtoJoi })(req, res, next);
+
       const newLesson = await this.service.createLesson(
         Number(req.params.courseId),
         req.body
@@ -56,6 +63,7 @@ export class CourseLessonController implements ICourseLessonController {
   ): Promise<Response | void> {
     try {
       const lesson = await this.service.getLessonById(
+        Number(req.params.courseId),
         Number(req.params.lessonId)
       );
 
@@ -71,6 +79,8 @@ export class CourseLessonController implements ICourseLessonController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
+      await validateJoi({ body: UpdateCourseLessonDtoJoi })(req, res, next);
+
       const updatedLesson = await this.service.updateLesson(
         Number(req.params.lessonId),
         req.body

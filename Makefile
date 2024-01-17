@@ -36,16 +36,19 @@ test-category:
 test-category-authorization:
 	jest -- --watchAll --verbose --runInBand --coverage src/modules/category/authorization/category.authorization.test.ts
 
+test-lesson:
+	jest -- --watchAll --verbose --runInBand --coverage src/modules/lesson/lesson.test.ts
+
 test-lesson-authorization:
 	jest -- --watchAll --verbose --runInBand --coverage src/modules/lesson/authorization/lesson.authorization.test.ts
 
 #
 # MIGRATION
 #
-createmigrate:
+prisma-init-migrate:
 	prisma migrate dev --name init
 
-dbpull:
+prisma-dbpull:
 	prisma db pull
 
 
