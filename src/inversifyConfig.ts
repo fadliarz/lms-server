@@ -16,10 +16,6 @@ import { CourseRepository } from "./modules/course/repository/course.repository"
 import { CourseService } from "./modules/course/service/course.service";
 import { CourseController } from "./modules/course/controller/course.controller";
 import {
-  CourseAuthorizationMiddleware,
-  ICourseAuthorizationMiddleware,
-} from "./modules/course/authorization/course.authorization";
-import {
   CourseEnrollmentController,
   ICourseEnrollmentController,
 } from "./modules/enrollment/controller/enrollment.controller";
@@ -32,10 +28,6 @@ import {
   CourseEnrollmentRepository,
   ICourseEnrollmentRepository,
 } from "./modules/enrollment/repository/enrollment.repository";
-import {
-  CourseEnrollmentAuthorizationMiddleware,
-  ICourseEnrollmentAuthorizationMiddleware,
-} from "./modules/enrollment/authorization/enrollment.authorization";
 import {
   CourseLessonRepository,
   ICourseLessonRepository,
@@ -50,10 +42,6 @@ import {
   ICourseLessonController,
 } from "./modules/lesson/controller/lesson.controller";
 import {
-  CourseLessonAuthorizationMiddleware,
-  ICourseLessonAuthorizationMiddleware,
-} from "./modules/lesson/authorization/lesson.authorization";
-import {
   CourseLessonVideoRepository,
   ICourseLessonVideoRepository,
 } from "./modules/video/repository/video.repository";
@@ -66,10 +54,6 @@ import {
   CourseLessonVideoController,
   ICourseLessonVideoController,
 } from "./modules/video/controller/video.controller";
-import {
-  CourseLessonVideoAuthorizationMiddleware,
-  ICourseLessonVideoAuthorizationMiddleware,
-} from "./modules/video/authorization/video.authorization";
 import {
   CourseCategoryRepository,
   ICourseCategoryRepository,
@@ -129,11 +113,6 @@ dIContainer
 dIContainer
   .bind<ICourseEnrollmentController>(CourseEnrollmentDITypes.CONTROLLER)
   .to(CourseEnrollmentController);
-dIContainer
-  .bind<ICourseEnrollmentAuthorizationMiddleware>(
-    CourseEnrollmentDITypes.AUTHORIZATION_MIDDLEARE
-  )
-  .to(CourseEnrollmentAuthorizationMiddleware);
 
 /**
  * Course Lesson
@@ -147,11 +126,6 @@ dIContainer
 dIContainer
   .bind<ICourseLessonController>(CourseLessonDITypes.CONTROLLER)
   .to(CourseLessonController);
-dIContainer
-  .bind<ICourseLessonAuthorizationMiddleware>(
-    CourseLessonDITypes.AUTHORIZATION_MIDDLEWARE
-  )
-  .to(CourseLessonAuthorizationMiddleware);
 
 /**
  * Course Lesson Video
@@ -165,10 +139,5 @@ dIContainer
 dIContainer
   .bind<ICourseLessonVideoController>(CourseLessonVideoDITypes.CONTROLLER)
   .to(CourseLessonVideoController);
-dIContainer
-  .bind<ICourseLessonVideoAuthorizationMiddleware>(
-    CourseLessonVideoDITypes.AUTHORIZATION_MIDDLEWARE
-  )
-  .to(CourseLessonVideoAuthorizationMiddleware);
 
 export default dIContainer;

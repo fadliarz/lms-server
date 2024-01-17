@@ -1,8 +1,13 @@
+import "reflect-metadata";
+
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { ICourseLessonVideoController } from "../controller/video.controller";
 import { CourseLessonVideoDITypes, courseLessonVideoUrls } from "../video.type";
-import { ICourseLessonVideoAuthorizationMiddleware } from "../authorization/video.authorization";
+import {
+  CourseLessonVideoAuthorizationMiddleware,
+  ICourseLessonVideoAuthorizationMiddleware,
+} from "../authorization/video.authorization";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import {
   CreateCourseLessonVideoJoi,
@@ -15,9 +20,7 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
     CourseLessonVideoDITypes.CONTROLLER
   );
   const authorizationMiddleware =
-    dIContainer.get<ICourseLessonVideoAuthorizationMiddleware>(
-      CourseLessonVideoDITypes.AUTHORIZATION_MIDDLEWARE
-    );
+    new CourseLessonVideoAuthorizationMiddleware();
 
   /**
    * Create

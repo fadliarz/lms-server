@@ -36,6 +36,9 @@ test-category:
 test-category-authorization:
 	jest -- --watchAll --verbose --runInBand --coverage src/modules/category/authorization/category.authorization.test.ts
 
+test-lesson-authorization:
+	jest -- --watchAll --verbose --runInBand --coverage src/modules/lesson/authorization/lesson.authorization.test.ts
+
 #
 # MIGRATION
 #

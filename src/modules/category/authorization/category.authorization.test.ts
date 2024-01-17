@@ -13,7 +13,6 @@ import HttpException from "../../../common/exceptions/HttpException";
 jest.mock(
   "../../../common/functions/getRequestUserOrThrowAuthenticationException"
 );
-jest.mock("./category.authorization");
 
 /**
  *

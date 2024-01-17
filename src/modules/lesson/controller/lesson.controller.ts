@@ -5,22 +5,22 @@ import { ICourseLessonService } from "../service/lesson.service";
 import { StatusCode } from "../../../common/constants/statusCode";
 
 export interface ICourseLessonController {
-  delete: (
+  createLesson: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  update: (
+  getLessonById: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  getById: (
+  updateLesson: (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<Response | void>;
-  create: (
+  deleteLesson: (
     req: Request,
     res: Response,
     next: NextFunction
@@ -32,30 +32,46 @@ export class CourseLessonController implements ICourseLessonController {
   @inject(CourseLessonDITypes.SERVICE)
   private readonly service: ICourseLessonService;
 
-  public async delete(
+  public async createLesson(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const deletedLesson = await this.service.delete(
-        Number(req.params.lessonId),
-        Number((req as any).courseId)
+      const newLesson = await this.service.createLesson(
+        Number(req.params.courseId),
+        req.body
       );
 
-      res.status(StatusCode.SUCCESS).json({ data: deletedLesson });
+      return res.status(StatusCode.RESOURCE_CREATED).json({ data: newLesson });
     } catch (error) {
       next(error);
     }
   }
 
-  public async update(
+  public async getLessonById(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const updatedLesson = await this.service.update(
+      const lesson = await this.service.getLessonById(
+        Number(req.params.lessonId)
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: lesson });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateLesson(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response | void> {
+    try {
+      const updatedLesson = await this.service.updateLesson(
         Number(req.params.lessonId),
         req.body
       );
@@ -66,29 +82,18 @@ export class CourseLessonController implements ICourseLessonController {
     }
   }
 
-  public async getById(
+  public async deleteLesson(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      const lesson = await this.service.getById(Number(req.params.lessonId));
+      await this.service.deleteLesson(
+        Number((req as any).courseId),
+        Number(req.params.lessonId)
+      );
 
-      return res.status(StatusCode.SUCCESS).json({ data: lesson });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async create(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): Promise<Response | void> {
-    try {
-      const lesson = await this.service.create(req.body);
-
-      return res.status(StatusCode.RESOURCE_CREATED).json({ data: lesson });
+      res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }

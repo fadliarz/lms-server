@@ -64,8 +64,9 @@ export class CourseAuthorizationMiddleware
       next: NextFunction
     ): Promise<void> => {
       try {
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+        const { id: userId, role: userRole } =
+          getRequestUserOrThrowAuthenticationException(req);
+        const { isStudent, isInstructor, isAdmin } = getRoleStatus(userRole);
         let isAuthorized = false;
         if (isStudent) {
         }
@@ -94,7 +95,7 @@ export class CourseAuthorizationMiddleware
       try {
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
-          throw new ClientException("Invalid courseId (NaN)");
+          throw new ClientException();
         }
 
         const { id: userId, role: userRole } =
@@ -107,7 +108,7 @@ export class CourseAuthorizationMiddleware
         if (isInstructor || isAdmin) {
           const authorId = await this.getAuthorIdOrThrow(courseId);
           const isAuthor = userId === authorId;
-          if (isAuthor) {
+          if (isAuthor || isAdmin) {
             isAuthorized = true;
           }
 
@@ -150,14 +151,18 @@ export class CourseAuthorizationMiddleware
       try {
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
-          throw new ClientException("Invalid courseId (NaN)");
+          throw new ClientException();
         }
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        const { id: userId, role: userRole } =
+          getRequestUserOrThrowAuthenticationException(req);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
         let isAuthorized = false;
+        if (isStudent) {
+        }
+
         if (isInstructor || isAdmin) {
           const authorId = await this.getAuthorIdOrThrow(courseId);
-          const isAuthor = user.id === authorId;
+          const isAuthor = userId === authorId;
 
           if (isAuthor) {
             isAuthorized = true;
@@ -205,17 +210,13 @@ export class CourseAuthorizationMiddleware
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
         let isAuthorized = false;
         if (isStudent || isInstructor || isAdmin) {
-          const enrollment = await this.getEnrollmentById(userId, courseId);
+          const enrollmentRole = await this.getEnrollmentRoleById(userId, courseId);
 
           if (
-            enrollment &&
-            isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
+            enrollmentRole &&
+            isEqualOrIncludeRole(enrollmentRole, Role.STUDENT)
           ) {
             isAuthorized = true;
-
-            (req as any).resourceId = {
-              courseId,
-            } satisfies CourseLikeResourceId;
           }
         }
 
@@ -226,6 +227,10 @@ export class CourseAuthorizationMiddleware
         if (!isAuthorized) {
           throw new AuthorizationException();
         }
+
+        (req as any).resourceId = {
+          courseId,
+        } satisfies CourseLikeResourceId;
 
         next();
       } catch (error) {
@@ -244,26 +249,27 @@ export class CourseAuthorizationMiddleware
         const courseId = Number(req.params.courseId);
         const likeId = Number(req.params.likeId);
         if (isNaNArray([courseId, likeId])) {
-          throw new ClientException("Invalid courseId || likeId (NaN)");
+          throw new ClientException();
         }
 
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        const { id: userId, role: userRole } =
+          getRequestUserOrThrowAuthenticationException(req);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
         let isAuthorized = false;
         if (isStudent || isInstructor || isAdmin) {
-          await this.getLikeByIdOrThrow(courseId, likeId, user.id);
+          await this.getLikeByIdOrThrow(courseId, likeId, userId);
 
           isAuthorized = true;
-
-          (req as any).resourceId = {
-            courseId: courseId,
-            likeId: likeId,
-          } satisfies CourseLikeResourceId;
         }
 
         if (!isAuthorized) {
           throw new AuthorizationException();
         }
+
+        (req as any).resourceId = {
+          courseId: courseId,
+          likeId: likeId,
+        } satisfies CourseLikeResourceId;
 
         next();
       } catch (error) {

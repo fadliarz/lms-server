@@ -30,11 +30,12 @@ class App {
     this.initialiseApi(Apis);
     this.initialiseErrorHandling();
     this.setupSwagger(...Apis.map((api) => api.router));
-    // this.initialiseDatabaseConnection();
+    this.initialiseDatabaseConnection();
   }
 
   /**
    * Swagger
+   * 
    */
   public setupSwagger(...args: Router[]) {
     this.express.use(
@@ -46,6 +47,7 @@ class App {
 
   /**
    * Middlewares
+   * 
    */
   private initialiseMiddlewares(): void {
     this.express.use(
@@ -85,6 +87,7 @@ class App {
 
   /**
    * Error Handling
+   * 
    */
   private initialiseErrorHandling(): void {
     this.express.use(errorMiddleware);
@@ -92,10 +95,13 @@ class App {
 
   /**
    * Make database connection
+   * 
    */
   private async initialiseDatabaseConnection(): Promise<void> {
     try {
       await this.prisma.$connect();
+
+      console.log("Successfully estabilishing database connection, connecting to the server....")
 
       this.listen();
     } catch (error) {
@@ -105,6 +111,7 @@ class App {
 
   /**
    * Listen to app to a port
+   * 
    */
   public listen(): void {
     let port =

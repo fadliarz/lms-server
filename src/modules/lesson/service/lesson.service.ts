@@ -9,13 +9,16 @@ import { ICourseLessonRepository } from "../repository/lesson.repository";
 import getValuable from "../../../common/functions/getValuable";
 
 export interface ICourseLessonService {
-  delete: (lessonId: number, courseId: number) => Promise<CourseLessonModel>;
-  update: (
-    lessonId: number,
-    lessonDetails: UpdateCourseLessonDto
+  createLesson: (
+    courseId: number,
+    dto: CreateCourseLessonDto
   ) => Promise<CourseLessonModel>;
-  getById: (lessonId: number) => Promise<CourseLessonModel>;
-  create: (lessonDetails: CreateCourseLessonDto) => Promise<CourseLessonModel>;
+  getLessonById: (lessonId: number) => Promise<CourseLessonModel>;
+  updateLesson: (
+    lessonId: number,
+    dto: UpdateCourseLessonDto
+  ) => Promise<CourseLessonModel>;
+  deleteLesson: (courseId: number, lessonId: number) => Promise<{}>;
 }
 
 @injectable()
@@ -23,35 +26,33 @@ export class CourseLessonService implements ICourseLessonService {
   @inject(CourseLessonDITypes.REPOSITORY)
   private readonly repository: ICourseLessonRepository;
 
-  public async delete(
-    lessonId: number,
-    courseId: number
+  public async createLesson(
+    courseId: number,
+    dto: CreateCourseLessonDto
   ): Promise<CourseLessonModel> {
-    const deletedLesson = await this.repository.delete(lessonId, courseId);
+    const lesson = await this.repository.createLesson(courseId, dto);
 
-    return getValuable(deletedLesson);
+    return getValuable(lesson);
   }
 
-  public async update(
+  public async getLessonById(lessonId: number): Promise<CourseLessonModel> {
+    const lesson = await this.repository.getLessonById(lessonId);
+
+    return getValuable(lesson);
+  }
+
+  public async updateLesson(
     lessonId: number,
-    lessonDetails: UpdateCourseLessonDto
+    dto: UpdateCourseLessonDto
   ): Promise<CourseLessonModel> {
-    const updatedLesson = await this.repository.update(lessonId, lessonDetails);
+    const updatedLesson = await this.repository.updateLesson(lessonId, dto);
 
     return getValuable(updatedLesson);
   }
 
-  public async getById(lessonId: number): Promise<CourseLessonModel> {
-    const lesson = await this.repository.getById(lessonId);
+  public async deleteLesson(courseId: number, lessonId: number): Promise<{}> {
+    await this.repository.deleteLesson(courseId, lessonId);
 
-    return getValuable(lesson);
-  }
-
-  public async create(
-    lessonDetails: CreateCourseLessonDto
-  ): Promise<CourseLessonModel> {
-    const lesson = await this.repository.create(lessonDetails);
-
-    return getValuable(lesson);
+    return {};
   }
 }

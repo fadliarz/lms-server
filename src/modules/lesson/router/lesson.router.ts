@@ -1,8 +1,10 @@
+import "reflect-metadata";
+
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { CourseLessonDITypes, courseLessonUrls } from "../lesson.type";
 import { ICourseLessonController } from "../controller/lesson.controller";
-import { ICourseLessonAuthorizationMiddleware } from "../authorization/lesson.authorization";
+import { CourseLessonAuthorizationMiddleware } from "../authorization/lesson.authorization";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import {
   CreateCourseLessonDtoJoi,
@@ -15,10 +17,7 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
   const controller = dIContainer.get<ICourseLessonController>(
     CourseLessonDITypes.CONTROLLER
   );
-  const authorizationMiddleware =
-    dIContainer.get<ICourseLessonAuthorizationMiddleware>(
-      CourseLessonDITypes.AUTHORIZATION_MIDDLEWARE
-    );
+  const authorizationMiddleware = new CourseLessonAuthorizationMiddleware();
 
   router.post(
     "/",
@@ -27,13 +26,13 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
       body: CreateCourseLessonDtoJoi,
     }),
     authorizationMiddleware.getCreateLessonAuthorizationMiddleware(),
-    controller.create.bind(controller)
+    controller.createLesson.bind(controller)
   );
 
   router.get(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    controller.getById.bind(controller)
+    controller.getLessonById.bind(controller)
   );
 
   router.put(
@@ -43,14 +42,14 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
       body: UpdateCourseLessonDtoJoi,
     }),
     authorizationMiddleware.getUpdateLessonAuthorizationMiddleware(),
-    controller.update.bind(controller)
+    controller.updateLesson.bind(controller)
   );
 
   router.delete(
     courseLessonUrls.lesson,
     authenticationMiddleware,
     authorizationMiddleware.getDeleteLessonAuthorizationMiddleware(),
-    controller.delete.bind(controller)
+    controller.deleteLesson.bind(controller)
   );
 
   return router;

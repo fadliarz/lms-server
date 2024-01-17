@@ -27,7 +27,7 @@ export enum courseUrls {
 
 /**
  * Model Course
- *
+ * 
  */
 export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
 export type BasicCourseModel = Pick<
@@ -71,7 +71,7 @@ export type EnrolledCourseModel = {
  */
 
 /**
- * CreateCourse
+ * DtoCreateCourse
  *
  */
 type CreateCourseDtoRequiredField = Pick<CourseModel, "title" | "categoryId">;
@@ -82,7 +82,7 @@ export type CreateCourseDto = CreateCourseDtoRequiredField &
   CreateCourseDtoOptionalField;
 
 /**
- * GetCourseById
+ * Dto GetCourseById
  */
 type GetCourseByIdIncludeQuery = {
   include_author?: boolean;
@@ -111,7 +111,7 @@ export type GetCourseByIdResBody<
 };
 
 /**
- * GetCourses
+ * Dto GetCourses
  *
  */
 export type GetCoursesQuery = Pick<
@@ -120,7 +120,7 @@ export type GetCoursesQuery = Pick<
 > & { pageNumber: number; pageSize: number };
 
 /**
- * GetEnrolledCourseById
+ * Dto GetEnrolledCourseById
  *
  */
 type GetEnrolledCourseByIdIncludeQuery = {
@@ -137,7 +137,7 @@ export type GetEnrolledCourseByIdQuery = GetEnrolledCourseByIdIncludeQuery &
   GetEnrolledCourseByIdFilterQuery;
 
 /**
- * GetEnrolledCourses
+ * Dto GetEnrolledCourses
  *
  */
 type GetEnrolledCoursesIncludeQuery = {
@@ -157,7 +157,7 @@ export type GetEnrolledCoursesQuery = GetEnrolledCoursesIncludeQuery &
   GetEnrolledCoursesLimitQuery;
 
 /**
- * UpdateCourse
+ * Dto UpdateCourse
  *
  */
 export type UpdateCourseDto = Partial<
@@ -165,14 +165,14 @@ export type UpdateCourseDto = Partial<
 >;
 
 /**
- * CreateCourseLike
+ * Dto CreateCourseLike
  *
  */
 type CreateCourseLikeDtoRequiredField = {};
 export type CreateCourseLikeDto = CreateCourseLikeDtoRequiredField;
 
 /**
- * ResourceId Course
+ * ResourceId CourseLike
  *
  */
 export type CourseLikeResourceId = {

@@ -4,13 +4,12 @@ import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole
 import { Role } from "@prisma/client";
 import AuthorizationException from "../../../common/exceptions/AuthorizationException";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
-import { injectable } from "inversify";
-import { CreateCourseLessonDto } from "../lesson.type";
 import ClientException from "../../../common/exceptions/ClientException";
 import BaseCourseLessonVideoAuthorization from "../../../common/class/BaseCourseLessonVideoAuthorization";
+import isNaNArray from "../../../common/functions/isNaNArray";
 
 export class ICourseLessonAuthorizationMiddleware {
-  getDeleteLessonAuthorizationMiddleware: () => (
+  getCreateLessonAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
     next: NextFunction
@@ -20,87 +19,17 @@ export class ICourseLessonAuthorizationMiddleware {
     res: Response,
     next: NextFunction
   ) => Promise<void>;
-  getCreateLessonAuthorizationMiddleware: () => (
+  getDeleteLessonAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
     next: NextFunction
   ) => Promise<void>;
 }
 
-@injectable()
 export class CourseLessonAuthorizationMiddleware
   extends BaseCourseLessonVideoAuthorization
   implements ICourseLessonAuthorizationMiddleware
 {
-  public getDeleteLessonAuthorizationMiddleware() {
-    return this.getUpdateLessonAuthorizationMiddleware();
-  }
-
-  public getUpdateLessonAuthorizationMiddleware() {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-        let isAuthorized = false;
-
-        if (isStudent) {
-          throw new AuthorizationException();
-        }
-
-        if (isInstructor || isAdmin) {
-          const lessonId = Number(req.params.lessonId);
-
-          if (isNaN(lessonId)) {
-            throw new ClientException("Invalid lessonId!");
-          }
-
-          const courseId = await this.getCourseIdByLessonIdOrThrow(lessonId);
-          const authorId = await this.getAuthorIdOrThrow(courseId);
-          const isAuthor = user.id === authorId;
-
-          (req as any).courseId = courseId;
-
-          if (isAuthor || isAdmin) {
-            isAuthorized = true;
-          }
-
-          if (!isAuthorized) {
-            const enrollment = await this.courseEnrollmentTable.findUnique({
-              where: {
-                userId_courseId: {
-                  userId: user.id,
-                  courseId: courseId,
-                },
-              },
-              select: {
-                role: true,
-              },
-            });
-
-            if (
-              enrollment &&
-              isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
-            ) {
-              isAuthorized = true;
-            }
-          }
-        }
-
-        if (!isAuthorized) {
-          throw new AuthorizationException();
-        }
-
-        next();
-      } catch (error) {
-        next(error);
-      }
-    };
-  }
-
   public getCreateLessonAuthorizationMiddleware() {
     return async (
       req: Request,
@@ -108,39 +37,35 @@ export class CourseLessonAuthorizationMiddleware
       next: NextFunction
     ): Promise<void> => {
       try {
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const body = req.body as CreateCourseLessonDto;
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-        let isAuthorized = false;
-
-        if (isStudent) {
-          throw new AuthorizationException();
+        const courseId = Number(req.params.courseId);
+        if (isNaN(courseId)) {
+          throw new ClientException();
         }
 
-        if (isInstructor) {
-          const authorId = await this.getAuthorIdOrThrow(body.courseId);
-          const isAuthor = user.id === authorId;
+        const { id: userId, role: userRole } =
+          getRequestUserOrThrowAuthenticationException(req);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+        let isAuthorized = false;
+        if (isStudent) {
+        }
+
+        if (isInstructor || isAdmin) {
+          const authorId = await this.getAuthorIdOrThrow(courseId);
+          const isAuthor = userId === authorId;
 
           if (isAuthor) {
             isAuthorized = true;
           }
 
           if (!isAuthorized) {
-            const enrollment = await this.courseEnrollmentTable.findUnique({
-              where: {
-                userId_courseId: {
-                  userId: user.id,
-                  courseId: body.courseId,
-                },
-              },
-              select: {
-                role: true,
-              },
-            });
+            const enrollmentRole = await this.getEnrollmentRoleById(
+              userId,
+              courseId
+            );
 
             if (
-              enrollment &&
-              isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
+              enrollmentRole &&
+              isEqualOrIncludeRole(enrollmentRole, Role.INSTRUCTOR)
             ) {
               isAuthorized = true;
             }
@@ -160,5 +85,67 @@ export class CourseLessonAuthorizationMiddleware
         next(error);
       }
     };
+  }
+
+  public getUpdateLessonAuthorizationMiddleware() {
+    return async (
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ): Promise<void> => {
+      try {
+        const courseId = Number(req.params.courseId);
+        const lessonId = Number(req.params.lessonId);
+        if (isNaNArray([courseId, lessonId])) {
+          throw new ClientException();
+        }
+
+        const { id: userId, role: userRole } =
+          getRequestUserOrThrowAuthenticationException(req);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+        let isAuthorized = false;
+        if (isStudent) {
+        }
+
+        if (isInstructor || isAdmin) {
+          await this.getLessonByIdOrThrow(courseId, lessonId);
+          const authorId = await this.getAuthorIdOrThrow(courseId);
+          const isAuthor = userId === authorId;
+          if (isAuthor || isAdmin) {
+            isAuthorized = true;
+          }
+
+          if (!isAuthorized) {
+            const enrollmentRole = await this.getEnrollmentRoleById(
+              userId,
+              courseId
+            );
+
+            if (
+              enrollmentRole &&
+              isEqualOrIncludeRole(enrollmentRole, Role.INSTRUCTOR)
+            ) {
+              isAuthorized = true;
+            }
+          }
+        }
+
+        if (isAdmin) {
+          isAuthorized = true;
+        }
+
+        if (!isAuthorized) {
+          throw new AuthorizationException();
+        }
+
+        next();
+      } catch (error) {
+        next(error);
+      }
+    };
+  }
+
+  public getDeleteLessonAuthorizationMiddleware() {
+    return this.getUpdateLessonAuthorizationMiddleware();
   }
 }

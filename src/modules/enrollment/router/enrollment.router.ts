@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { ICourseEnrollmentController } from "../controller/enrollment.controller";
@@ -5,11 +7,11 @@ import {
   CourseEnrollmentDITypes,
   courseEnrollmentUrls,
 } from "../enrollment.type";
-import { ICourseEnrollmentAuthorizationMiddleware } from "../authorization/enrollment.authorization";
+import { CourseEnrollmentAuthorizationMiddleware } from "../authorization/enrollment.authorization";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import {
   CreateCourseEnrollmentDtoJoi,
-  UpdateCousreEnrollmentDtoJoi,
+  UpdateCourseEnrollmentDtoJoi,
 } from "../controller/enrollment.joi";
 
 export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
@@ -18,10 +20,7 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
   const controller = dIContainer.get<ICourseEnrollmentController>(
     CourseEnrollmentDITypes.CONTROLLER
   );
-  const authorizationMiddleware =
-    dIContainer.get<ICourseEnrollmentAuthorizationMiddleware>(
-      CourseEnrollmentDITypes.AUTHORIZATION_MIDDLEARE
-    );
+  const authorizationMiddleware = new CourseEnrollmentAuthorizationMiddleware();
 
   router.post(
     "/",
@@ -36,7 +35,7 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
   router.put(
     courseEnrollmentUrls.enrollment,
     authenticationMiddleware,
-    validationMiddleware({ body: UpdateCousreEnrollmentDtoJoi }),
+    validationMiddleware({ body: UpdateCourseEnrollmentDtoJoi }),
     authorizationMiddleware
       .getUpdateCourseEnrollmentAuthorizationMiddleWare()
       .bind(authorizationMiddleware),

@@ -5,7 +5,6 @@ export const CourseLessonVideoDITypes = {
   REPOSITORY: Symbol.for("COURSE_VIDEO_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_VIDEO_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_VIDEO_CONTROLLER"),
-  AUTHORIZATION_MIDDLEWARE: Symbol.for("COURSE_VIDEO_AUTHORIZATION_MIDDLEWARE"),
 };
 export enum courseLessonVideoUrls {
   root = "/courses/:courseId/lessons/:lessonId/videos",

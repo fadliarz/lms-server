@@ -1,36 +1,52 @@
 import { CourseLesson } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
-export type CourseLessonModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLesson>;
-
-type CourseLessonDateKeys = "createdAt" | "updatedAt";
-type CourseLessonHasDefaultValue = "";
-type ExcludeFromDto =
-  | "id"
-  | "totalDurations"
-  | "totalMaterials"
-  | "totalVideos"
-  | CourseLessonDateKeys;
-
 export const CourseLessonDITypes = {
   REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_LESSON_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_LESSON_CONTROLLER"),
-  AUTHORIZATION_MIDDLEWARE: Symbol.for(
-    "COURSE_LESSON_AUTHORIZATION_MIDDLEWARE"
-  ),
 };
-
 export enum courseLessonUrls {
   root = "/lessons",
   lesson = "/:lessonId",
 }
+/**
+ * Model CourseLesson
+ *
+ */
+export type CourseLessonModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLesson>;
 
 /**
+ *
+ *
  * Dto
+ *
+ *
  */
-export type CreateCourseLessonDto = Omit<CourseLessonModel, ExcludeFromDto>;
-export type UpdateCourseLessonDto = Partial<
-  Omit<CreateCourseLessonDto, "courseId">
+
+/**
+ * Dto CreateCourseLesson
+ *
+ */
+type CreateCourseLessonDtoRequiredField = Pick<CourseLessonModel, "title">;
+type CreateCourseLessonDtoOptionalField = Partial<
+  Pick<CourseLessonModel, "description">
 >;
+export type CreateCourseLessonDto = CreateCourseLessonDtoRequiredField &
+  CreateCourseLessonDtoOptionalField;
+
+/**
+ * Dto UpdateCourseLesson
+ *
+ */
+export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;
+
+/**
+ * ResourceId CourseLesson
+ *
+ */
+export type CourseLessonResourceId = {
+  courseId: number;
+  lessonId?: number;
+};

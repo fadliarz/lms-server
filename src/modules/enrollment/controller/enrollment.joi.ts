@@ -13,7 +13,7 @@ export const CreateCourseEnrollmentDtoJoi =
       .required()
       .valid(...[Role.STUDENT, Role.INSTRUCTOR].map((role) => role.toString())),
   });
-export const UpdateCousreEnrollmentDtoJoi =
+export const UpdateCourseEnrollmentDtoJoi =
   Joi.object<UpdateCourseEnrollmentDto>({
     role: Joi.string()
       .required()

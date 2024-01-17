@@ -1,3 +1,5 @@
+import "reflect-metadata";
+
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { CourseDITypes } from "../course.type";
@@ -26,7 +28,7 @@ export default function CourseRouter(authenticationMiddleware: any) {
 
   /**
    * GetCourseById (Course)
-   * 
+   *
    */
   router.get(
     courseUrls.course,

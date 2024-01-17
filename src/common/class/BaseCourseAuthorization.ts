@@ -1,6 +1,6 @@
 import AuthorizationMiddleware from "./AuthorizationMiddleware";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
-import { CourseEnrollment, CourseLike, Role } from "@prisma/client";
+import { CourseEnrollment, Role } from "@prisma/client";
 import { CourseLikeModel } from "../../modules/course/course.type";
 import getValuable from "../functions/getValuable";
 

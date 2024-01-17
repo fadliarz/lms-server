@@ -1,9 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import dIContainer from "../../../inversifyConfig";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import { CourseEnrollment, PrismaClient, Role } from "@prisma/client";
 import AuthorizationException from "../../../common/exceptions/AuthorizationException";
-import { injectable } from "inversify";
 import {
   CreateCourseEnrollmentDto,
   DeleteCourseEnrollmentIds,
@@ -34,7 +32,6 @@ export interface ICourseEnrollmentAuthorizationMiddleware {
   ) => Promise<void>;
 }
 
-@injectable()
 export class CourseEnrollmentAuthorizationMiddleware
   extends BaseCourseAuthorization
   implements ICourseEnrollmentAuthorizationMiddleware

@@ -12,6 +12,14 @@ export enum courseCategoryUrls {
 }
 
 /**
+ * 
+ * 
+ * Model
+ * 
+ * 
+ */
+
+/**
  * Model CourseCategory
  *
  */
@@ -29,7 +37,7 @@ export type BasicCourseCategoryModel =
  */
 
 /**
- * CreateCourseCategory
+ * Dto CreateCourseCategory
  *
  */
 export type CreateCourseCategoryDto = {
@@ -37,7 +45,7 @@ export type CreateCourseCategoryDto = {
 };
 
 /**
- * UpdateCourseCategoryDto
+ * Dto UpdateCourseCategoryDto
  *
  */
 export type UpdateCourseCategoryDto = Partial<CreateCourseCategoryDto>;

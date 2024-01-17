@@ -1,3 +1,5 @@
+import "reflect-metadata"
+
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IUserController } from "../controller/user.controller";
