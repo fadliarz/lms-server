@@ -5,7 +5,7 @@ import { Me, CreateUserDto, UserModel } from "../user.type";
 import { IUserRepository } from "../repository/user.repository";
 import { injectable, inject } from "inversify";
 import { UserDITypes } from "../user.type";
-import HttpException from "../../../common/exceptions/HttpException";
+import HttpException from "../../../common/class/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
 import getValuable from "../../../common/functions/getValuable";
 import validateEnv from "../../../common/functions/validateEnv";

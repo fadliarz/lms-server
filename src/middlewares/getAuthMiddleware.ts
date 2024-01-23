@@ -2,8 +2,8 @@ import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
 import getValuable from "../common/functions/getValuable";
-import AuthenticationException from "../common/exceptions/AuthenticationException";
-import RecordNotFoundException from "../common/exceptions/RecordNotFoundException";
+import AuthenticationException from "../common/class/exceptions/AuthenticationException";
+import RecordNotFoundException from "../common/class/exceptions/RecordNotFoundException";
 
 export const getAuthMiddleWare = () => {
   const userTable = new PrismaClient().user;

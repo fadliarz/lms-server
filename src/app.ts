@@ -11,31 +11,40 @@ import swaggerUi from "swagger-ui-express";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
 import yaml from "yamljs";
 import { Request, Response } from "express";
+import https from "https";
 
 class App {
   private readonly prisma = PrismaClientSingleton.getInstance();
   public readonly express: Application;
   private readonly port: number;
+  private readonly httpsServer: any;
 
   /**
    *
-   * @param controllers
+   * @param Apis
    * @param port
    */
   constructor(Apis: Api[], port: number) {
     this.express = express();
     this.port = port;
+    this.httpsServer = https.createServer(
+      {
+        key: process.env.SSL_KEY,
+        cert: process.env.SSL_CERT,
+      },
+      this.express
+    );
 
     this.initialiseMiddlewares();
     this.initialiseApi(Apis);
     this.initialiseErrorHandling();
     this.setupSwagger(...Apis.map((api) => api.router));
-    this.initialiseDatabaseConnection();
+    this.setup();
   }
 
   /**
    * Swagger
-   * 
+   *
    */
   public setupSwagger(...args: Router[]) {
     this.express.use(
@@ -47,7 +56,7 @@ class App {
 
   /**
    * Middlewares
-   * 
+   *
    */
   private initialiseMiddlewares(): void {
     this.express.use(
@@ -73,7 +82,8 @@ class App {
 
   /**
    *
-   * @param controllers
+   * @param Apis
+   * @private
    */
   private initialiseApi(Apis: Api[]): void {
     Apis.forEach((api: Api) => {
@@ -87,7 +97,7 @@ class App {
 
   /**
    * Error Handling
-   * 
+   *
    */
   private initialiseErrorHandling(): void {
     this.express.use(errorMiddleware);
@@ -95,32 +105,44 @@ class App {
 
   /**
    * Make database connection
-   * 
+   *
    */
   private async initialiseDatabaseConnection(): Promise<void> {
     try {
       await this.prisma.$connect();
 
-      console.log("Successfully estabilishing database connection, connecting to the server....")
-
-      this.listen();
+      console.log("Successfully establishing database connection!");
     } catch (error) {
-      throw Error("Failed estabilishing a database connection!");
+      throw Error("Failed establishing a database connection!");
     }
   }
 
   /**
    * Listen to app to a port
-   * 
+   *
    */
   public listen(): void {
     let port =
       process.env.NODE_ENV == "test"
         ? Math.floor(Math.random() * 60000) + 5000
         : this.port;
-    this.express.listen(port, () => {
-      console.log("App is listening on the port ", port);
+    this.httpsServer.listen(port, () => {
+      console.log("HTTPS server is listening on the port ", port);
     });
+  }
+
+  /**
+   * Setup
+   *
+   */
+  private async setup(): Promise<void> {
+    try {
+      await this.initialiseDatabaseConnection();
+
+      this.listen();
+    } catch (error) {
+      throw Error("Failed setting up!");
+    }
   }
 }
 

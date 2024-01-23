@@ -1,9 +1,9 @@
 import Joi from "joi";
-import { Role } from "@prisma/client";
 import {
   CreateCourseEnrollmentDto,
-  UpdateCourseEnrollmentDto,
+  UpdateCourseEnrollmentRoleDto,
 } from "../enrollment.type";
+import { CourseEnrollmentRoleModel } from "../../course/course.type";
 
 export const CreateCourseEnrollmentDtoJoi =
   Joi.object<CreateCourseEnrollmentDto>({
@@ -11,11 +11,21 @@ export const CreateCourseEnrollmentDtoJoi =
     courseId: Joi.number().required(),
     role: Joi.string()
       .required()
-      .valid(...[Role.STUDENT, Role.INSTRUCTOR].map((role) => role.toString())),
+      .valid(
+        ...[
+          CourseEnrollmentRoleModel.STUDENT,
+          CourseEnrollmentRoleModel.INSTRUCTOR,
+        ].map((enrollmentRole) => enrollmentRole.toString()),
+      ),
   });
-export const UpdateCourseEnrollmentDtoJoi =
-  Joi.object<UpdateCourseEnrollmentDto>({
+export const UpdateCourseEnrollmentRoleDtoJoi =
+  Joi.object<UpdateCourseEnrollmentRoleDto>({
     role: Joi.string()
       .required()
-      .valid(...[Role.STUDENT, Role.INSTRUCTOR].map((role) => role.toString())),
+      .valid(
+        ...[
+          CourseEnrollmentRoleModel.STUDENT,
+          CourseEnrollmentRoleModel.INSTRUCTOR,
+        ].map((enrollmentRole) => enrollmentRole.toString()),
+      ),
   });

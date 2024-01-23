@@ -67,11 +67,51 @@ import {
   ICourseCategoryController,
 } from "./modules/category/controller/category.controller";
 import { CourseCategoryDITypes } from "./modules/category/category.type";
+import {
+  CourseAuthorizationMiddleware,
+  ICourseAuthorizationMiddleware,
+} from "./modules/course/authorization/course.authorization";
+import {
+  ICourseEnrollmentTable,
+  ICourseLessonTable,
+  ICourseLessonVideoTable,
+  ICourseLikeTable,
+  ICourseTable,
+  ITable,
+} from "./common/class/table/table.type";
+import PrismaTable, {
+  PrismaTableDITypes,
+} from "./common/class/table/PrismaTable";
+import PrismaCourseTable from "./common/class/table/PrismaCourseTable";
+import PrismaCourseEnrollmenTable from "./common/class/table/PrismaCourseEnrollmentTable";
+import PrismaCourseLessonTable from "./common/class/table/PrismaCourseLessonTable";
+import PrismaCourseLessonVideoTable from "./common/class/table/PrismaCourseLessonVideoTable";
+import PrismaCourseLikeTable from "./common/class/table/PrismaCourseLikeTable";
 
 const dIContainer = new Container();
 
 /**
+ * PrismaTable Container
+ *
+ */
+dIContainer.bind<ITable>(PrismaTableDITypes.TABLE).to(PrismaTable);
+dIContainer.bind<ICourseTable>(PrismaTableDITypes.COURSE).to(PrismaCourseTable);
+dIContainer
+  .bind<ICourseEnrollmentTable>(PrismaTableDITypes.COURSE_ENROLLMENT)
+  .to(PrismaCourseEnrollmenTable);
+dIContainer
+  .bind<ICourseLessonTable>(PrismaTableDITypes.COURSE_LESSON)
+  .to(PrismaCourseLessonTable);
+dIContainer
+  .bind<ICourseLessonVideoTable>(PrismaTableDITypes.COURSE_LESSON_VIDEO)
+  .to(PrismaCourseLessonVideoTable);
+dIContainer
+  .bind<ICourseLikeTable>(PrismaTableDITypes.COURSE_LIKE)
+  .to(PrismaCourseLikeTable);
+
+/**
  * User Container
+ *
  */
 dIContainer.bind<IUserRepository>(UserDITypes.REPOSITORY).to(UserRepository);
 dIContainer.bind<IUserService>(UserDITypes.SERVICE).to(UserService);
@@ -79,6 +119,7 @@ dIContainer.bind<IUserController>(UserDITypes.CONTROLLER).to(UserController);
 
 /**
  * Course Container
+ *
  */
 dIContainer
   .bind<ICourseRepository>(CourseDITypes.REPOSITORY)
@@ -87,9 +128,13 @@ dIContainer.bind<ICourseService>(CourseDITypes.SERVICE).to(CourseService);
 dIContainer
   .bind<ICourseController>(CourseDITypes.CONTROLLER)
   .to(CourseController);
+dIContainer
+  .bind<ICourseAuthorizationMiddleware>(CourseDITypes.AUTHORIZATION_MIDDLEWARE)
+  .to(CourseAuthorizationMiddleware);
 
 /**
  * Course Category
+ *
  */
 dIContainer
   .bind<ICourseCategoryRepository>(CourseCategoryDITypes.REPOSITORY)
@@ -103,6 +148,7 @@ dIContainer
 
 /**
  * Course Enrollment
+ *
  */
 dIContainer
   .bind<ICourseEnrollmentRepository>(CourseEnrollmentDITypes.REPOSITORY)
@@ -116,6 +162,7 @@ dIContainer
 
 /**
  * Course Lesson
+ *
  */
 dIContainer
   .bind<ICourseLessonRepository>(CourseLessonDITypes.REPOSITORY)
@@ -129,6 +176,7 @@ dIContainer
 
 /**
  * Course Lesson Video
+ *
  */
 dIContainer
   .bind<ICourseLessonVideoRepository>(CourseLessonVideoDITypes.REPOSITORY)

@@ -1,4 +1,4 @@
-import { Course, CourseEnrollment, CourseLike, Role } from "@prisma/client";
+import { Course, CourseEnrollmentRole, CourseLike, Role } from "@prisma/client";
 import { UserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
@@ -8,7 +8,9 @@ export const CourseDITypes = {
   REPOSITORY: Symbol.for("COURSE_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for("COURSE_AUTHORIZATION_MIDDLEWARE"),
 };
+
 export enum courseUrls {
   root = "/courses",
   course = "/:courseId",
@@ -27,13 +29,17 @@ export enum courseUrls {
 
 /**
  * Model Course
- * 
+ *
  */
 export type CourseModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<Course>;
 export type BasicCourseModel = Pick<
   CourseModel,
   "description" | "image" | "title" | "categoryId" | "material"
 >;
+export type UserRoleModel = Role;
+export const UserRoleModel = Role;
+export type CourseEnrollmentRoleModel = CourseEnrollmentRole;
+export const CourseEnrollmentRoleModel = CourseEnrollmentRole;
 
 /**
  * Model CourseLike
@@ -43,22 +49,11 @@ export type CourseLikeModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLike>;
 
 /**
- * Model Course Enrollment
- *
- */
-export type CourseEnrollmentModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
-export type BasicCourseEnrollmentModel = Pick<
-  CourseEnrollmentModel,
-  "userId" | "courseId" | "role"
->;
-
-/**
  * Model Enrolled Course
  *
  */
 export type EnrolledCourseModel = {
-  role: Role;
+  role: CourseEnrollmentRole;
   course: CourseModel;
 };
 
@@ -71,7 +66,7 @@ export type EnrolledCourseModel = {
  */
 
 /**
- * DtoCreateCourse
+ * Dto CreateCourse
  *
  */
 type CreateCourseDtoRequiredField = Pick<CourseModel, "title" | "categoryId">;
@@ -101,7 +96,7 @@ export type BasicCourseLesson = Pick<CourseLessonModel, "id" | "title">;
 export type GetCourseByIdResBody<
   U = BasicUser,
   C = BasicCategory,
-  L = BasicCourseLesson
+  L = BasicCourseLesson,
 > = Course & {
   author?: U;
   students?: U[];
@@ -131,7 +126,7 @@ type GetEnrolledCourseByIdIncludeQuery = {
   include_playlist?: boolean;
 };
 type GetEnrolledCourseByIdFilterQuery = {
-  role: Role;
+  role: CourseEnrollmentRole;
 };
 export type GetEnrolledCourseByIdQuery = GetEnrolledCourseByIdIncludeQuery &
   GetEnrolledCourseByIdFilterQuery;
@@ -145,12 +140,10 @@ type GetEnrolledCoursesIncludeQuery = {
   include_category?: boolean;
   include_student_courses?: boolean;
   include_instructor_courses?: boolean;
-  include_owned_courses?: boolean;
 };
 type GetEnrolledCoursesLimitQuery = {
   limit_student_courses: number;
   limit_instructor_courses: number;
-  limit_owned_courses: number;
 };
 export type GetEnrolledCoursesQuery = GetEnrolledCoursesIncludeQuery &
   GetEnrolledCoursesIncludeQuery &

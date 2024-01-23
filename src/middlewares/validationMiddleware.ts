@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { Request, Response, NextFunction } from "express";
-import HttpException from "../common/exceptions/HttpException";
+import HttpException from "../common/class/exceptions/HttpException";
 import { StatusCode } from "../common/constants/statusCode";
 import { ErrorCode } from "../common/constants/errorCode";
 import { ErrorMessage } from "../common/constants/errorMessage";

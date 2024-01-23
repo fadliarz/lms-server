@@ -4,13 +4,13 @@ import {
 } from "./course.authorization";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import { Request, Response, NextFunction } from "express";
-import { Role } from "@prisma/client";
+import { CourseEnrollmentRole, Role } from "@prisma/client";
 import errorMiddleware from "../../../middlewares/errorMiddleware";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ErrorCode } from "../../../common/constants/errorCode";
-import HttpException from "../../../common/exceptions/HttpException";
+import HttpException from "../../../common/class/exceptions/HttpException";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
-import RecordNotFoundException from "../../../common/exceptions/RecordNotFoundException";
+import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 
 jest.mock(
   "../../../common/functions/getRequestUserOrThrowAuthenticationException"
@@ -165,7 +165,7 @@ describe("", () => {
      *
      */
     describe("UpdateCourse Authorization", () => {
-      type EnrollmentRole = Exclude<Role, "OWNER"> | "AUTHOR" | null;
+      type EnrollmentRole = CourseEnrollmentRole | "AUTHOR" | null;
       type TestParams = {
         mockRequest: Request;
         mockResponse: Response;
@@ -852,7 +852,9 @@ describe("", () => {
             );
 
             expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith(expect.any(RecordNotFoundException));
+            expect(mockNext).toBeCalledWith(
+              expect.any(RecordNotFoundException)
+            );
             expect(mockResponse.status).toBeCalledTimes(1);
             expect(mockResponse.status).toBeCalledWith(StatusCode.NOT_FOUND);
             expect(mockResponse.json).toBeCalledTimes(1);

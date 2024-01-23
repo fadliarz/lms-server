@@ -13,15 +13,24 @@ import {
   CourseCategoryModel,
   CreateCourseCategoryDto,
 } from "../../../modules/category/category.type";
-import { Role } from "@prisma/client";
+import { CourseEnrollmentRole, Role } from "@prisma/client";
 import {
   CourseLessonModel,
   CreateCourseLessonDto,
 } from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
+import isEqualOrIncludeCourseEnrollmentRole from "../../functions/isEqualOrIncludeCourseEnrollmentRole";
 
 export default class RandPrisma implements RandDB {
   private readonly prisma = PrismaClientSingleton.getInstance();
+
+  /**
+   *
+   *
+   * Private Method
+   *
+   *
+   */
 
   private generateRandomString(length: number) {
     return faker.string.alpha(length);
@@ -53,11 +62,14 @@ export default class RandPrisma implements RandDB {
     };
   }
 
-  private generateCourseLessonVideoInputArg(lessonId: number) {
+  private generateCourseLessonVideoInputArg(
+    lessonId: number,
+    duration: number
+  ) {
     return {
       lessonId,
       name: this.generateRandomString(8),
-      totalDurations: this.generateRandomInteger(1, 5),
+      totalDurations: duration,
       youtubeLink: "https://www.youtube.com/".concat(
         this.generateRandomString(8),
         "/"
@@ -65,40 +77,20 @@ export default class RandPrisma implements RandDB {
     };
   }
 
+  /**
+   *
+   *
+   * Generate Row
+   *
+   *
+   */
+
   public async generateUser(userRole: Role): Promise<UserModel> {
     const user = await this.prisma.user.create({
       data: { ...this.generateUserInputArg(), role: userRole },
     });
 
     return getValuable(user);
-  }
-
-  public async generateCategory(): Promise<CourseCategoryModel> {
-    const category = await this.prisma.courseCategory.create({
-      data: this.generateCategoryInputArg(),
-    });
-
-    return getValuable(category);
-  }
-
-  public generateCreateCourseDto(categoryId: number): CreateCourseDto {
-    return {
-      title: this.generateRandomString(8),
-      categoryId,
-    };
-  }
-
-  public generateCreateCategoryDto(): CreateCourseCategoryDto {
-    return {
-      title: this.generateRandomString(8),
-    };
-  }
-
-  public generateCreateLessonDto(): CreateCourseLessonDto {
-    return {
-      title: this.generateRandomString(8),
-      description: this.generateRandomString(8),
-    };
   }
 
   public async generateCourse(): Promise<{
@@ -120,6 +112,14 @@ export default class RandPrisma implements RandDB {
       category: getValuable(category),
       course: getValuable(course),
     };
+  }
+
+  public async generateCategory(): Promise<CourseCategoryModel> {
+    const category = await this.prisma.courseCategory.create({
+      data: this.generateCategoryInputArg(),
+    });
+
+    return getValuable(category);
   }
 
   public async generateLesson(): Promise<{
@@ -151,49 +151,204 @@ export default class RandPrisma implements RandDB {
     };
   }
 
+  /**
+   *
+   *
+   * Generate Dto
+   *
+   *
+   */
+
+  public generateCreateCourseDto(categoryId: number): CreateCourseDto {
+    return {
+      title: this.generateRandomString(8),
+      categoryId,
+    };
+  }
+
+  public generateCreateCategoryDto(): CreateCourseCategoryDto {
+    return {
+      title: this.generateRandomString(8),
+    };
+  }
+
+  public generateCreateLessonDto(): CreateCourseLessonDto {
+    return {
+      title: this.generateRandomString(8),
+      description: this.generateRandomString(8),
+    };
+  }
+
+  /**
+   *
+   *
+   * Insert
+   *
+   *
+   */
+
+  /**
+   *
+   * @param courseId
+   * @param numberOfLessons
+   * @returns
+   *
+   * Update on Course [totalLessons]
+   */
   public async insertManyLessonsIntoCourse(
     courseId: number,
     numberOfLessons: number
   ): Promise<CourseLessonModel[]> {
     let lessons: CourseLessonModel[] = [];
-    for (let i = 0; i < numberOfLessons; i++) {
-      const lesson = await this.prisma.courseLesson.create({
-        data: this.generateCourseLessonInputArg(courseId),
-      });
 
-      lessons.push(getValuable(lesson));
-    }
+    await this.prisma.$transaction(async (tx) => {
+      for (let i = 0; i < numberOfLessons; i++) {
+        const lesson = await tx.courseLesson.create({
+          data: this.generateCourseLessonInputArg(courseId),
+        });
+
+        lessons.push(getValuable(lesson));
+      }
+
+      await tx.course.update({
+        where: {
+          id: courseId,
+        },
+        data: {
+          totalLessons: {
+            increment: numberOfLessons,
+          },
+        },
+      });
+    });
 
     return lessons;
   }
 
+  /**
+   *
+   * @param lessonId
+   * @param numberOfVideos
+   * @param durationEachVideo
+   * @returns
+   *
+   * Update on Course [totalVideos, totalDurations]
+   * Update on CourseLesson [totalVideos, totalDurations]
+   *
+   */
   public async insertManyVideosIntoLesson(
     lessonId: number,
-    numberOfVideos: number
+    numberOfVideos: number,
+    durationEachVideo: number
   ): Promise<CourseLessonVideoModel[]> {
     let videos: CourseLessonVideoModel[] = [];
-    for (let i = 0; i < numberOfVideos; i++) {
-      const video = await this.prisma.courseLessonVideo.create({
-        data: this.generateCourseLessonVideoInputArg(lessonId),
-      });
+    await this.prisma.$transaction(async (tx) => {
+      for (let i = 0; i < numberOfVideos; i++) {
+        const video = await this.prisma.courseLessonVideo.create({
+          data: this.generateCourseLessonVideoInputArg(
+            lessonId,
+            durationEachVideo
+          ),
+        });
 
-      videos.push(getValuable(video));
-    }
+        videos.push(getValuable(video));
+      }
+
+      const totalDurationIncrement = numberOfVideos * durationEachVideo;
+      const { courseId } = await tx.courseLesson.findUniqueOrThrow({
+        where: {
+          id: lessonId,
+        },
+        select: {
+          courseId: true,
+        },
+      });
+      await Promise.all([
+        tx.courseLesson.update({
+          where: {
+            id: lessonId,
+          },
+          data: {
+            totalVideos: {
+              increment: numberOfVideos,
+            },
+            totalDurations: {
+              increment: totalDurationIncrement,
+            },
+          },
+        }),
+        tx.course.update({
+          where: {
+            id: courseId,
+          },
+          data: {
+            totalVideos: {
+              increment: numberOfVideos,
+            },
+            totalDurations: {
+              increment: totalDurationIncrement,
+            },
+          },
+        }),
+      ]);
+    });
 
     return videos;
   }
 
+  /**
+   *
+   * @param userId
+   * @param courseId
+   * @param enrollmentRole
+   * @returns
+   *
+   * Update on Course [totalStudents/totalInstructors]
+   *
+   */
   public async insertOneEnrollmentIntoCourse(
     userId: number,
     courseId: number,
-    enrollmentRole: Role
+    enrollmentRole: CourseEnrollmentRole
   ): Promise<CourseEnrollmentModel> {
-    const enrollment = await this.prisma.courseEnrollment.create({
-      data: {
-        courseId,
-        userId,
-        role: enrollmentRole,
-      },
+    const enrollment = await this.prisma.$transaction(async (tx) => {
+      const enrollment = await tx.courseEnrollment.create({
+        data: {
+          courseId,
+          userId,
+          role: enrollmentRole,
+        },
+      });
+
+      if (isEqualOrIncludeCourseEnrollmentRole(enrollmentRole, Role.STUDENT)) {
+        await tx.course.update({
+          where: {
+            id: courseId,
+          },
+          data: {
+            totalStudents: {
+              increment: 1,
+            },
+          },
+        });
+      }
+
+      if (
+        isEqualOrIncludeCourseEnrollmentRole(enrollmentRole, Role.INSTRUCTOR)
+      ) {
+        await tx.course.update({
+          where: {
+            id: courseId,
+          },
+          data: {
+            totalInstructors: {
+              increment: 1,
+            },
+          },
+        });
+      }
+
+      return enrollment;
     });
 
     return getValuable(enrollment);

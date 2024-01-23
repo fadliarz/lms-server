@@ -1,18 +1,18 @@
-import { Role } from "@prisma/client";
+import { CourseEnrollmentRole } from "@prisma/client";
 import { GetEnrolledCoursesQuery } from "../../modules/course/course.type";
 
 export default function getCourseFilter(
   query: GetEnrolledCoursesQuery
-): Role[] | undefined {
+): CourseEnrollmentRole[] | undefined {
   const { include_student_courses, include_instructor_courses } = query;
-  let role: Role[] = [];
+  let enrollmentRole: CourseEnrollmentRole[] = [];
 
   if (include_student_courses) {
-    role.push(Role.STUDENT);
+    enrollmentRole.push(CourseEnrollmentRole.STUDENT);
   }
   if (include_instructor_courses) {
-    role.push(Role.INSTRUCTOR);
+    enrollmentRole.push(CourseEnrollmentRole.INSTRUCTOR);
   }
 
-  return role.length > 0 ? role : undefined;
+  return enrollmentRole.length > 0 ? enrollmentRole : undefined;
 }

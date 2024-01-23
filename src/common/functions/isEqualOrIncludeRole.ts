@@ -1,8 +1,8 @@
-import { Role } from "@prisma/client";
+import { UserRoleModel } from "../../modules/course/course.type";
 
 export default function isEqualOrIncludeRole(
-  firstRole: Role,
-  secondRole: Role | Role[]
+  firstRole: UserRoleModel,
+  secondRole: UserRoleModel | UserRoleModel[],
 ) {
   if (Array.isArray(secondRole)) {
     return secondRole

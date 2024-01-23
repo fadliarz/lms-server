@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
   CourseModel,
@@ -13,8 +14,6 @@ import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { CourseDITypes } from "../course.type";
 import getValuable from "../../../common/functions/getValuable";
 import { ICourseRepository } from "../repository/course.repository";
-
-import "reflect-metadata";
 
 export interface ICourseService {
   createCourse: (userId: number, dto: CreateCourseDto) => Promise<CourseModel>;

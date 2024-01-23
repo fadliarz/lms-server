@@ -1,17 +1,13 @@
 import { CourseEnrollment, Prisma } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
-export type CourseEnrollmentModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
-
-export type CourseEnrollmentDateKeys = "createdAt" | "updatedAt";
-export type CourseEnrollmentHasDefaultValue = "";
-export type ExcludeFromDto = "id" | CourseEnrollmentDateKeys;
-
 export const CourseEnrollmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_ENROLLMENT_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_ENROLLMENT_CONTROLLER"),
+  AUTHORIZATION_MIDDLEWARE: Symbol.for(
+    "COURSE_ENROLLMENT_AUTHORIZATION_MIDDLEWARE",
+  ),
 };
 
 export enum courseEnrollmentUrls {
@@ -20,28 +16,44 @@ export enum courseEnrollmentUrls {
 }
 
 /**
- * Dto
+ *
+ *
+ * Model
+ *
+ *
  */
-export type CreateCourseEnrollmentDto = Omit<
+export type CourseEnrollmentModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
+export type BasicCourseEnrollmentModel = Pick<
   CourseEnrollmentModel,
-  ExcludeFromDto
+  "userId" | "courseId" | "role"
 >;
-export type UpdateCourseEnrollmentDto = Pick<CreateCourseEnrollmentDto, "role">;
 
 /**
- * Ids
+ *
+ *
+ * Dto
+ *
+ *
  */
-export type UpdateCourseEnrollmentIds = {
-  courseId: number;
-};
-export type DeleteCourseEnrollmentIds = {
-  courseId: number;
-};
 
 /**
- * Select
+ * Dto CreateEnrollment
+ *
  */
-export type CourseEnrollmentSelect = Pick<
-  Prisma.CourseEnrollmentSelect,
-  keyof CourseEnrollment
+export type CreateCourseEnrollmentDto = Pick<
+  CourseEnrollmentModel,
+  "userId" | "courseId" | "role"
 >;
+export type UpdateCourseEnrollmentRoleDto = Pick<
+  CreateCourseEnrollmentDto,
+  "role"
+>;
+
+/**
+ * ResourceId CourseEnrollment
+ *
+ */
+export type CourseEnrollmentResourceId = {
+  courseId: number;
+};

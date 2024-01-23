@@ -1,29 +1,39 @@
-import { injectable, inject } from "inversify";
-import { CourseLessonVideoDITypes } from "../video.type";
-import { Request, Response, NextFunction } from "express";
+import { inject, injectable } from "inversify";
+import {
+  CourseLessonVideoDITypes,
+  CourseLessonVideoResourceId,
+} from "../video.type";
+import { NextFunction, Request, Response } from "express";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ICourseLessonVideoService } from "../service/video.service";
+import isNaNArray from "../../../common/functions/isNaNArray";
+import NaNException from "../../../common/class/exceptions/NaNException";
+import validateJoi from "../../../common/functions/validateJoi";
+import {
+  CreateCourseLessonVideoJoi,
+  UpdateCourseLessonVideoJoi,
+} from "./video.joi";
 
 export interface ICourseLessonVideoController {
   createVideo: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   getVideoById: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   updateVideo: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   deleteVideo: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
 }
 
@@ -37,13 +47,13 @@ export class CourseLessonVideoController
   public async createVideo(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const newVideo = await this.service.createVideo(
-        (req as any).resourceId,
-        req.body
-      );
+      await validateJoi({ body: CreateCourseLessonVideoJoi })(req, res, next);
+
+      const resourceId = this.validateResourceId(req);
+      const newVideo = await this.service.createVideo(resourceId, req.body);
 
       return res.status(StatusCode.RESOURCE_CREATED).json({ data: newVideo });
     } catch (error) {
@@ -54,10 +64,12 @@ export class CourseLessonVideoController
   public async getVideoById(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const video = await this.service.getVideoById((req as any).resourceId);
+      const videoId = this.validateVideoId(req);
+      const resourceId = this.validateResourceId(req);
+      const video = await this.service.getVideoById(videoId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({ data: video });
     } catch (error) {
@@ -68,12 +80,17 @@ export class CourseLessonVideoController
   public async updateVideo(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<Response | void> {
     try {
+      await validateJoi({ body: UpdateCourseLessonVideoJoi })(req, res, next);
+
+      const videoId = this.validateVideoId(req);
+      const resourceId = this.validateResourceId(req);
       const updatedVideo = await this.service.updateVideo(
-        (req as any).resourceId,
-        req.body
+        videoId,
+        resourceId,
+        req.body,
       );
 
       return res.status(StatusCode.SUCCESS).json({ data: updatedVideo });
@@ -85,14 +102,41 @@ export class CourseLessonVideoController
   public async deleteVideo(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await this.service.deleteVideo((req as any).resourceId);
+      const videoId = this.validateVideoId(req);
+      const resourceId = this.validateResourceId(req);
+      await this.service.deleteVideo(videoId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }
+  }
+
+  private validateResourceId(
+    req: Request,
+    error?: Error,
+  ): CourseLessonVideoResourceId {
+    const courseId: number = Number(req.params.courseId);
+    const lessonId: number = Number(req.params.lessonId);
+    if (isNaNArray([courseId, lessonId])) {
+      throw error || new NaNException("courseId || lessonId");
+    }
+
+    return {
+      courseId,
+      lessonId,
+    };
+  }
+
+  private validateVideoId(req: Request, error?: Error): number {
+    const videoId: number = Number(req.params.videoId);
+    if (isNaN(videoId)) {
+      throw error || new NaNException("courseId");
+    }
+
+    return videoId;
   }
 }

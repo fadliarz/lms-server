@@ -4,7 +4,7 @@ import { Role } from "@prisma/client";
 import errorMiddleware from "../../../middlewares/errorMiddleware";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ErrorCode } from "../../../common/constants/errorCode";
-import HttpException from "../../../common/exceptions/HttpException";
+import HttpException from "../../../common/class/exceptions/HttpException";
 import {
   CourseLessonAuthorizationMiddleware,
   ICourseLessonAuthorizationMiddleware,

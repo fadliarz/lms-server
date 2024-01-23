@@ -1,7 +1,7 @@
 import HttpException from "./HttpException";
-import { StatusCode } from "../../common/constants/statusCode";
-import { ErrorCode } from "../constants/errorCode";
-import { ErrorMessage } from "../constants/errorMessage";
+import { StatusCode } from "../../constants/statusCode";
+import { ErrorCode } from "../../constants/errorCode";
+import { ErrorMessage } from "../../constants/errorMessage";
 
 export default class AuthenticationException extends HttpException {
   constructor(message?: string) {

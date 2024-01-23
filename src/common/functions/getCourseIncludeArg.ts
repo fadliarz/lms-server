@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { CourseEnrollmentRole } from "@prisma/client";
 import { GetCourseByIdQuery } from "../../modules/course/course.type";
 
 export default function getCourseIncludeArg(query: GetCourseByIdQuery) {
@@ -10,14 +10,14 @@ export default function getCourseIncludeArg(query: GetCourseByIdQuery) {
     include_instructors,
   } = query;
 
-  let enrollmentRole: Role[] = [];
+  let enrollmentRole: CourseEnrollmentRole[] = [];
   if (include_students || include_instructors) {
     if (include_students) {
-      enrollmentRole.push(Role.STUDENT);
+      enrollmentRole.push(CourseEnrollmentRole.STUDENT);
     }
 
     if (include_instructors) {
-      enrollmentRole.push(Role.INSTRUCTOR);
+      enrollmentRole.push(CourseEnrollmentRole.INSTRUCTOR);
     }
   }
 

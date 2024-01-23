@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {
   BasicCourseModel,
   BasicUser,
@@ -16,8 +17,7 @@ import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import getCourseIncludeArg from "../../../common/functions/getCourseIncludeArg";
 import getCourseFilter from "../../../common/functions/getCourseFilterRole";
 import getCoursesIncludeQuery from "../../../common/functions/getCoursesIncludeQuery";
-
-import "reflect-metadata";
+import { PrismaUpdateOn } from "../../../common/constants/prismaUpdateOn";
 
 export interface ICourseRepository {
   createCourse: (userId: number, dto: CreateCourseDto) => Promise<Course>;
@@ -123,11 +123,7 @@ export class CourseRepository implements ICourseRepository {
   ) {
     let enrolledCourses: EnrolledCourseModel[] = [];
     const courseIncludeArg = getCourseIncludeArg(query);
-    const {
-      include_student_courses,
-      include_instructor_courses,
-      include_owned_courses,
-    } = query;
+    const { include_student_courses, include_instructor_courses } = query;
 
     if (include_student_courses) {
       const studentCourses = await this.courseEnrollmentTable.findMany({
@@ -161,24 +157,6 @@ export class CourseRepository implements ICourseRepository {
       enrolledCourses = enrolledCourses.concat(
         instructorCourses.map((instructorCourse) => {
           return { course: instructorCourse.course, role: Role.INSTRUCTOR };
-        }) as EnrolledCourseModel[]
-      );
-    }
-
-    if (include_owned_courses) {
-      const ownedCourses = await this.courseTable.findMany({
-        where: {
-          authorId: userId,
-        },
-        include: courseIncludeArg,
-      });
-
-      enrolledCourses = enrolledCourses.concat(
-        ownedCourses.map((ownedCourse) => {
-          return {
-            course: ownedCourse,
-            role: Role.OWNER,
-          };
         }) as EnrolledCourseModel[]
       );
     }
@@ -303,9 +281,7 @@ export class CourseRepository implements ICourseRepository {
           where: {
             id: courseId,
           },
-          data: {
-            totalLikes: { increment: 1 },
-          },
+          data: PrismaUpdateOn.course.event.createLike,
         }),
       ]);
 
@@ -319,7 +295,6 @@ export class CourseRepository implements ICourseRepository {
     const { courseId, likeId } = resourceId;
     await this.prisma.$transaction(async (tx) => {
       await Promise.all([
-        // delete like
         tx.courseLike.delete({
           where: {
             id: likeId,
@@ -328,14 +303,11 @@ export class CourseRepository implements ICourseRepository {
             id: true,
           },
         }),
-        // update course
         tx.course.update({
           where: {
             id: courseId,
           },
-          data: {
-            totalLikes: { decrement: 1 },
-          },
+          data: PrismaUpdateOn.course.event.deleteLike,
           select: {
             id: true,
           },

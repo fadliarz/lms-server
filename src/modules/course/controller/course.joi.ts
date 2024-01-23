@@ -5,6 +5,7 @@ import {
   GetCourseByIdQuery,
   GetCoursesQuery,
   GetEnrolledCourseByIdQuery,
+  GetEnrolledCoursesQuery,
   UpdateCourseDto,
 } from "../course.type";
 import { CourseStatus, Role } from "@prisma/client";
@@ -79,29 +80,23 @@ export const GetEnrolledCourseByIdQueryJoi =
  * GetEnrolledCourses
  *
  */
-// export const GetCoursesQueryJoi = Joi.object<GetCoursesQuery>({
-//   student_courses: Joi.boolean(),
-//   instructor_courses: Joi.boolean(),
-//   owned_courses: Joi.boolean(),
-//   limit_student_courses: Joi.number().integer(),
-//   limit_instructor_courses: Joi.number().integer(),
-//   limit_owned_courses: Joi.number().integer(),
-//   category_id: Joi.alternatives().try(
-//     Joi.number().integer(),
-//     Joi.array().items(Joi.number().integer())
-//   ),
-//   include_author: Joi.boolean(),
-//   include_category: Joi.boolean(),
-//   include_students: Joi.boolean(),
-//   include_instructors: Joi.boolean(),
-//   include_lessons: Joi.boolean(),
-//   include_likes: Joi.boolean(),
-//   include_videos: Joi.boolean(),
-// })
-//   .with("student_courses", "limit_student_courses")
-//   .with("instructor_courses", "limit_instructor_courses")
-//   .with("owned_courses", "limit_owned_courses")
-//   .or("student_courses", "instructor_courses", "owned_courses");
+export const GetEnrolledCoursesQueryJoi = Joi.object<GetEnrolledCoursesQuery>({
+  /**
+   * Include
+   */
+  include_author: Joi.boolean(),
+  include_category: Joi.boolean(),
+  include_student_courses: Joi.boolean(),
+  include_instructor_courses: Joi.boolean(),
+  /**
+   * Limit
+   */
+  limit_student_courses: Joi.number(),
+  limit_instructor_courses: Joi.number(),
+})
+  .with("include_student_courses", "limit_student_courses")
+  .with("include_instructor_courses", "limit_instructor_courses")
+  .or("student_courses", "instructor_courses");
 
 /**
  * UpdateCourse

@@ -1,6 +1,5 @@
 import "reflect-metadata";
-
-import { Request, Response, NextFunction, response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { StatusCode } from "../../common/constants/statusCode";
 import {
   CourseDITypes,
@@ -20,12 +19,16 @@ import { ICourseController } from "./controller/course.controller";
 import { generateRandomCreateCourseDto } from "../../common/functions/random/random";
 import errorMiddleware from "../../middlewares/errorMiddleware";
 import { UserModel } from "../user/user.type";
-import RandPrisma from "../../common/class/randprisma/RandPrisma";
-import { CourseStatus, Prisma, PrismaClient, Role } from "@prisma/client";
+import { CourseStatus, Prisma, Role } from "@prisma/client";
 import { CourseService } from "./service/course.service";
-import PrismaClientSingleton from "../../common/class/PrismaClientSingleton";
 import { ErrorCode } from "../../common/constants/errorCode";
-import HttpException from "../../common/exceptions/HttpException";
+import HttpException from "../../common/class/exceptions/HttpException";
+import RandPrisma from "../../common/class/randprisma/RandPrisma";
+import RandDB from "../../common/class/randprisma/rand.type";
+import { PrismaTableDITypes } from "../../common/class/table/PrismaTable";
+import { ITable } from "../../common/class/table/table.type";
+import RecordNotFoundException from "../../common/class/exceptions/RecordNotFoundException";
+import { PrismaClientValidationError } from "@prisma/client/runtime";
 
 /**
  *
@@ -42,30 +45,30 @@ import HttpException from "../../common/exceptions/HttpException";
  * @param mockResponse
  * @param next
  *
- * Mock next() function so it can simulates real wold scenario.
+ * Mock next() function, so it can simulate real world scenario.
  */
 function mockNextError(
   mockRequest: Request,
   mockResponse: Response,
-  next: NextFunction
+  mockNext: NextFunction
 ): void {
-  (next as jest.Mock).mockImplementation((error: Error) => {
-    errorMiddleware(error, mockRequest, mockResponse, next);
+  (mockNext as jest.Mock).mockImplementation((error: Error) => {
+    errorMiddleware(error, mockRequest, mockResponse, mockNext);
   });
 }
 
 describe("", () => {
   let controller: ICourseController;
-  let prisma: PrismaClient;
-  let randPrisma: RandPrisma;
+  let table: ITable;
+  let randDb: RandDB;
   let mockRequest: Request;
   let mockResponse: Response;
-  let next: NextFunction;
+  let mockNext: NextFunction;
 
   beforeAll(async () => {
     controller = dIContainer.get<ICourseController>(CourseDITypes.CONTROLLER);
-    prisma = PrismaClientSingleton.getInstance();
-    randPrisma = new RandPrisma();
+    table = dIContainer.get<ITable>(PrismaTableDITypes.TABLE);
+    randDb = new RandPrisma();
   });
 
   beforeEach(() => {
@@ -74,7 +77,7 @@ describe("", () => {
       status: jest.fn(() => mockResponse),
       json: jest.fn(),
     } as any as Response;
-    next = jest.fn();
+    mockNext = jest.fn();
   });
 
   afterEach(() => {
@@ -83,63 +86,60 @@ describe("", () => {
 
   describe("Course", () => {
     describe("CreateCourse", () => {
-      let user: UserModel;
-      let category: CourseCategoryModel;
-      let bodyTemplate: CreateCourseDto;
-
-      function bodyMatchCourse(
-        courseDto: CreateCourseDto,
+      function dtoMatchCourse(
+        dto: CreateCourseDto,
         createdCourse: CourseModel
       ) {
-        expect(courseDto.title).toEqual(createdCourse.title);
-        expect(courseDto.categoryId).toEqual(createdCourse.categoryId);
-        expect(courseDto.description).toEqual(createdCourse.description);
+        expect(dto.title).toEqual(createdCourse.title);
+        expect(dto.categoryId).toEqual(createdCourse.categoryId);
+        expect(dto.description).toEqual(createdCourse.description);
         expect(
-          courseDto.image ||
+          dto.image ||
             "https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg"
         ).toEqual(createdCourse.image);
-        expect(courseDto.material).toEqual(createdCourse.material);
+        expect(dto.material).toEqual(createdCourse.material);
       }
 
+      type TestParams = {
+        mockRequest: Request;
+        mockResponse: Response;
+        mockNext: NextFunction;
+      };
       type TestCase = {
         name: string;
-        modifyBody: (bodyTemplate: CreateCourseDto) => Partial<CreateCourseDto>;
-        test: (
-          mockRequest: Request,
-          mockResponse: Response,
-          next: NextFunction
-        ) => void;
+        modifyDto: (dto: CreateCourseDto) => Partial<CreateCourseDto>;
+        test: (params: TestParams) => void;
       };
 
       const testCases: TestCase[] = [
         {
           name: "OK: Complete Body",
-          modifyBody: (
-            bodyTemplate: CreateCourseDto
-          ): Partial<CreateCourseDto> => {
+          modifyDto: (dto: CreateCourseDto): Partial<CreateCourseDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
             };
           },
-          test: async (mockRequest, mockResponse, next) => {
+          test: async (params: TestParams) => {
+            const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
               "createCourse"
             );
 
-            await controller.createCourse(mockRequest, mockResponse, next);
+            await controller.createCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
               (mockRequest as any).user.id,
               mockRequest.body
             );
+
             const newCourseFromService = (await spyOnCreateCourseService.mock
               .results[0].value) satisfies CourseModel;
 
-            bodyMatchCourse(mockRequest.body, newCourseFromService);
+            dtoMatchCourse(mockRequest.body, newCourseFromService);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.RESOURCE_CREATED
@@ -152,21 +152,20 @@ describe("", () => {
         },
         {
           name: "OK: Missing image",
-          modifyBody: (
-            bodyTemplate: CreateCourseDto
-          ): Partial<CreateCourseDto> => {
+          modifyDto: (dto: CreateCourseDto): Partial<CreateCourseDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
               image: undefined,
             };
           },
-          test: async (mockRequest, mockResponse, next) => {
+          test: async (params: TestParams) => {
+            const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
               "createCourse"
             );
 
-            await controller.createCourse(mockRequest, mockResponse, next);
+            await controller.createCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
@@ -176,9 +175,9 @@ describe("", () => {
             const newCourseFromService = await spyOnCreateCourseService.mock
               .results[0].value;
 
-            bodyMatchCourse(mockRequest.body, newCourseFromService);
+            dtoMatchCourse(mockRequest.body, newCourseFromService);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.RESOURCE_CREATED
@@ -191,21 +190,20 @@ describe("", () => {
         },
         {
           name: "OK: Missing description",
-          modifyBody: (
-            bodyTemplate: CreateCourseDto
-          ): Partial<CreateCourseDto> => {
+          modifyDto: (dto: CreateCourseDto): Partial<CreateCourseDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
               description: undefined,
             };
           },
-          test: async (mockRequest, mockResponse, next) => {
+          test: async (params: TestParams) => {
+            const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
               "createCourse"
             );
 
-            await controller.createCourse(mockRequest, mockResponse, next);
+            await controller.createCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
@@ -215,9 +213,9 @@ describe("", () => {
             const newCourseFromService = await spyOnCreateCourseService.mock
               .results[0].value;
 
-            bodyMatchCourse(mockRequest.body, newCourseFromService);
+            dtoMatchCourse(mockRequest.body, newCourseFromService);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.RESOURCE_CREATED
@@ -230,21 +228,20 @@ describe("", () => {
         },
         {
           name: "OK: Missing material",
-          modifyBody: (
-            bodyTemplate: CreateCourseDto
-          ): Partial<CreateCourseDto> => {
+          modifyDto: (dto: CreateCourseDto): Partial<CreateCourseDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
               material: undefined,
             };
           },
-          test: async (mockRequest, mockResponse, next) => {
+          test: async (params: TestParams) => {
+            const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
               "createCourse"
             );
 
-            await controller.createCourse(mockRequest, mockResponse, next);
+            await controller.createCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
@@ -254,9 +251,9 @@ describe("", () => {
             const newCourseFromService = await spyOnCreateCourseService.mock
               .results[0].value;
 
-            bodyMatchCourse(mockRequest.body, newCourseFromService);
+            dtoMatchCourse(mockRequest.body, newCourseFromService);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
 
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
@@ -270,31 +267,26 @@ describe("", () => {
         },
         {
           name: "BadRequest: Missing title",
-          modifyBody: (
-            bodyTemplate: CreateCourseDto
-          ): Partial<CreateCourseDto> => {
+          modifyDto: (dto: CreateCourseDto): Partial<CreateCourseDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
               title: undefined,
             };
           },
-          test: async (
-            mockRequest: Request,
-            mockResponse: Response,
-            next: NextFunction
-          ) => {
+          test: async (params: TestParams) => {
+            const { mockRequest, mockResponse, mockNext } = params;
+            mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
               "createCourse"
             );
 
-            mockNextError(mockRequest, mockResponse, next);
-            await controller.createCourse(mockRequest, mockResponse, next);
+            await controller.createCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseService).not.toHaveBeenCalled();
 
-            expect(next).toHaveBeenCalledTimes(1);
-            expect(next).toHaveBeenCalledWith(expect.any(HttpException));
+            expect(mockNext).toHaveBeenCalledTimes(1);
+            expect(mockNext).toHaveBeenCalledWith(expect.any(HttpException));
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.BAD_REQUEST
@@ -310,31 +302,26 @@ describe("", () => {
         },
         {
           name: "BadRequest: Missing categoryId",
-          modifyBody: (
-            bodyTemplate: CreateCourseDto
-          ): Partial<CreateCourseDto> => {
+          modifyDto: (dto: CreateCourseDto): Partial<CreateCourseDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
               categoryId: undefined,
             };
           },
-          test: async (
-            mockRequest: Request,
-            mockResponse: Response,
-            next: NextFunction
-          ) => {
+          test: async (params: TestParams) => {
+            const { mockRequest, mockResponse, mockNext } = params;
+            mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
               "createCourse"
             );
 
-            mockNextError(mockRequest, mockResponse, next);
-            await controller.createCourse(mockRequest, mockResponse, next);
+            await controller.createCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseService).not.toHaveBeenCalled();
 
-            expect(next).toHaveBeenCalledTimes(1);
-            expect(next).toHaveBeenCalledWith(expect.any(HttpException));
+            expect(mockNext).toHaveBeenCalledTimes(1);
+            expect(mockNext).toHaveBeenCalledWith(expect.any(HttpException));
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.BAD_REQUEST
@@ -352,21 +339,20 @@ describe("", () => {
 
       testCases.forEach((tc) => {
         return it(tc.name, async () => {
-          user = await randPrisma.generateUser(Role.OWNER);
+          const user = await randDb.generateUser(Role.OWNER);
           (mockRequest as any).user = user;
 
-          category = await randPrisma.generateCategory();
-          bodyTemplate = generateRandomCreateCourseDto(category.id);
-          mockRequest.body = tc.modifyBody(bodyTemplate);
+          const category = await randDb.generateCategory();
+          const dto = generateRandomCreateCourseDto(category.id);
+          mockRequest.body = tc.modifyDto(dto);
 
-          await tc.test(mockRequest, mockResponse, next);
+          await tc.test({ mockRequest, mockResponse, mockNext });
         });
       });
     });
 
-    // TODO : check again
     describe("GetCourseById", () => {
-      function bodyMatchCourse(
+      function dtoMatchCourse(
         responseCourse: GetCourseByIdResBody,
         course: CourseModel
       ) {
@@ -380,7 +366,7 @@ describe("", () => {
         expect(responseCourse.material).toEqual(course.material);
       }
 
-      function bodyMatchAuthor(responseAuthor: BasicUser, author: UserModel) {
+      function resMatchAuthor(responseAuthor: BasicUser, author: UserModel) {
         expect(author.id).not.toBeUndefined();
         expect(author.name).not.toBeUndefined();
         expect(author.NIM).not.toBeUndefined();
@@ -412,10 +398,7 @@ describe("", () => {
       type TestParams = {
         mockRequest: Request;
         mockResponse: Response;
-        next: NextFunction;
-        author: UserModel;
-        category: CourseCategoryModel;
-        course: CourseModel;
+        mockNext: NextFunction;
       };
       type TestCase = {
         name: string;
@@ -436,36 +419,31 @@ describe("", () => {
             };
           },
           test: async (params: TestParams) => {
-            const {
-              mockRequest,
-              mockResponse,
-              next,
-              author,
-              category,
-              course,
-            } = params;
+            const { mockRequest, mockResponse, mockNext } = params;
+            const { course } = await randDb.generateCourse();
+            (mockRequest as any).params = { courseId: course.id };
             const spyOnGetCourseByIdService = jest.spyOn(
               CourseService.prototype,
               "getCourseById"
             );
-            await controller.getCourseById(mockRequest, mockResponse, next);
+            await controller.getCourseById(mockRequest, mockResponse, mockNext);
 
             expect(spyOnGetCourseByIdService).toHaveBeenCalledTimes(1);
             expect(spyOnGetCourseByIdService).toHaveBeenCalledWith(
-              (mockRequest as any).params.courseId,
-              (mockRequest as any).query
+              mockRequest.params.courseId,
+              mockRequest.query
             );
 
             const responseCourse: GetCourseByIdResBody =
               await spyOnGetCourseByIdService.mock.results[0].value;
-            bodyMatchCourse(responseCourse, course);
+            dtoMatchCourse(responseCourse, course);
             expect(responseCourse.author).toBe(undefined);
             expect(responseCourse.students).toBe(undefined);
             expect(responseCourse.instructors).toBe(undefined);
             expect(responseCourse.category).toBe(undefined);
             expect(responseCourse.playlist).toBe(undefined);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -487,19 +465,14 @@ describe("", () => {
             };
           },
           test: async (params: TestParams) => {
-            const {
-              mockRequest,
-              mockResponse,
-              next,
-              author,
-              category,
-              course,
-            } = params;
+            const { mockRequest, mockResponse, mockNext } = params;
+            const { author, course } = await randDb.generateCourse();
+            (mockRequest as any).params = { courseId: course.id };
             const spyOnGetCourseByIdService = jest.spyOn(
               CourseService.prototype,
               "getCourseById"
             );
-            await controller.getCourseById(mockRequest, mockResponse, next);
+            await controller.getCourseById(mockRequest, mockResponse, mockNext);
 
             expect(spyOnGetCourseByIdService).toHaveBeenCalledTimes(1);
             expect(spyOnGetCourseByIdService).toHaveBeenCalledWith(
@@ -509,15 +482,15 @@ describe("", () => {
 
             const responseCourse: GetCourseByIdResBody =
               await spyOnGetCourseByIdService.mock.results[0].value;
-            bodyMatchCourse(responseCourse, course);
+            dtoMatchCourse(responseCourse, course);
             expect(responseCourse.author).not.toBe(undefined);
-            bodyMatchAuthor(responseCourse.author as BasicUser, author);
+            resMatchAuthor(responseCourse.author as BasicUser, author);
             expect(responseCourse.students).toBe(undefined);
             expect(responseCourse.instructors).toBe(undefined);
             expect(responseCourse.category).toBe(undefined);
             expect(responseCourse.playlist).toBe(undefined);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -528,6 +501,8 @@ describe("", () => {
             });
           },
         },
+
+
         {
           name: "OK: Include Category",
           modifyQuery: (
@@ -539,19 +514,14 @@ describe("", () => {
             };
           },
           test: async (params: TestParams) => {
-            const {
-              mockRequest,
-              mockResponse,
-              next,
-              author,
-              category,
-              course,
-            } = params;
+            const { mockRequest, mockResponse, mockNext } = params;
+            const { category, course } = await randDb.generateCourse();
+            (mockRequest as any).params = { courseId: course.id };
             const spyOnGetCourseByIdService = jest.spyOn(
               CourseService.prototype,
               "getCourseById"
             );
-            await controller.getCourseById(mockRequest, mockResponse, next);
+            await controller.getCourseById(mockRequest, mockResponse, mockNext);
 
             expect(spyOnGetCourseByIdService).toHaveBeenCalledTimes(1);
             expect(spyOnGetCourseByIdService).toHaveBeenCalledWith(
@@ -561,7 +531,7 @@ describe("", () => {
 
             const responseCourse: GetCourseByIdResBody =
               await spyOnGetCourseByIdService.mock.results[0].value;
-            bodyMatchCourse(responseCourse, course);
+            dtoMatchCourse(responseCourse, course);
             expect(responseCourse.author).toBe(undefined);
             expect(responseCourse.students).toBe(undefined);
             expect(responseCourse.instructors).toBe(undefined);
@@ -572,7 +542,7 @@ describe("", () => {
             );
             expect(responseCourse.playlist).toBe(undefined);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -587,71 +557,46 @@ describe("", () => {
 
       testCases.forEach((tc) => {
         return it(tc.name, async () => {
-          const queryTemplate: GetCourseByIdQuery = {};
-          const { author, category, course } =
-            await randPrisma.generateCourse();
-          (mockRequest as any).params = { courseId: course.id };
-          (mockRequest as any).query = tc.modifyQuery(queryTemplate);
+          const query: GetCourseByIdQuery = {};
+          (mockRequest as any).query = tc.modifyQuery(query);
 
           await tc.test({
             mockRequest,
             mockResponse,
-            next,
-            author,
-            category,
-            course,
+            mockNext,
           });
         });
       });
     });
 
     describe("UpdateCourse", () => {
-      let user: UserModel;
-
-      function bodyMatchCourse(
+      function dtoMatchCourse(
         updatedCourse: CourseModel,
-        updateDto: UpdateCourseDto,
+        dto: UpdateCourseDto,
         oldCourse: CourseModel
       ) {
         expect(updatedCourse).toBeDefined();
         expect(oldCourse).toBeDefined();
-
-        updateDto.title
-          ? expect(updatedCourse.title).not.toEqual(oldCourse.title)
-          : expect(updatedCourse.title).toEqual(oldCourse.title);
-        updateDto.categoryId
-          ? expect(updatedCourse.categoryId).not.toEqual(oldCourse.categoryId)
-          : expect(updatedCourse.categoryId).toEqual(oldCourse.categoryId);
-        updateDto.image
-          ? expect(updatedCourse.image).not.toEqual(oldCourse.image)
-          : expect(updatedCourse.image).toEqual(oldCourse.image);
-        updateDto.description
-          ? expect(updatedCourse.description).not.toEqual(oldCourse.description)
-          : expect(updatedCourse.description).toEqual(oldCourse.description);
-        updateDto.material
-          ? expect(updatedCourse.material).not.toEqual(oldCourse.material)
-          : expect(updatedCourse.material).toEqual(oldCourse.material);
-        updateDto.status
-          ? expect(updatedCourse.status).not.toEqual(oldCourse.status)
-          : expect(updatedCourse.status).toEqual(oldCourse.status);
-
         expect(updatedCourse.id).toEqual(oldCourse.id);
 
-        // TODO: validate more field
+        const keys = Object.keys(dto) as Array<keyof typeof dto>;
+        keys.forEach((key) => {
+          dto[key]
+            ? expect(updatedCourse[key]).not.toEqual(oldCourse.title)
+            : expect(updatedCourse[key]).toEqual(oldCourse[key]);
+        });
       }
 
       type TestParams = {
         mockRequest: Request;
         mockResponse: Response;
-        next: NextFunction;
-        course: CourseModel;
+        mockNext: NextFunction;
+        oldCourse: CourseModel;
       };
       type TestCase = {
         name: string;
-        generateBody: (
-          course: CourseModel
-        ) => Promise<Partial<UpdateCourseDto>>;
-        test: (testParams: TestParams) => void;
+        generateDto: (course: CourseModel) => Promise<Partial<UpdateCourseDto>>;
+        test: (testParams: TestParams) => Promise<void>;
       };
 
       /**
@@ -665,7 +610,9 @@ describe("", () => {
       const testCases: TestCase[] = [
         {
           name: "OK: No Update",
-          generateBody: async (course: CourseModel) => {
+          generateDto: async (
+            course: CourseModel
+          ): Promise<Partial<UpdateCourseDto>> => {
             const bodyTemplate: UpdateCourseDto = {};
             const modifiedBody: UpdateCourseDto = {
               title: bodyTemplate.title
@@ -694,20 +641,21 @@ describe("", () => {
             }
 
             if (bodyTemplate.categoryId) {
-              const category = await randPrisma.generateCategory();
+              const category = await randDb.generateCategory();
               modifiedBody.categoryId = category.id;
             }
 
             return modifiedBody;
           },
-          test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next, course } = testParams;
+          test: async (testParams: TestParams): Promise<void> => {
+            const { mockRequest, mockResponse, mockNext, oldCourse } =
+              testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
               "updateCourse"
             );
 
-            await controller.updateCourse(mockRequest, mockResponse, next);
+            await controller.updateCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
@@ -717,16 +665,9 @@ describe("", () => {
 
             const updatedCourse = await spyOnUpdateCourseService.mock.results[0]
               .value;
-            expect(updatedCourse).toBeDefined();
-            bodyMatchCourse(
-              {
-                ...updatedCourse,
-              },
-              mockRequest.body,
-              course
-            );
+            dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
-            expect(next).toHaveBeenCalledTimes(0);
+            expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -739,7 +680,9 @@ describe("", () => {
         },
         {
           name: "OK: Update title",
-          generateBody: async (course: CourseModel) => {
+          generateDto: async (
+            course: CourseModel
+          ): Promise<Partial<UpdateCourseDto>> => {
             const bodyTemplate: UpdateCourseDto = {
               title: "any",
             };
@@ -770,20 +713,21 @@ describe("", () => {
             }
 
             if (bodyTemplate.categoryId) {
-              const category = await randPrisma.generateCategory();
+              const category = await randDb.generateCategory();
               modifiedBody.categoryId = category.id;
             }
 
             return modifiedBody;
           },
-          test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next, course } = testParams;
+          test: async (testParams: TestParams): Promise<void> => {
+            const { mockRequest, mockResponse, mockNext, oldCourse } =
+              testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
               "updateCourse"
             );
 
-            await controller.updateCourse(mockRequest, mockResponse, next);
+            await controller.updateCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
@@ -796,15 +740,9 @@ describe("", () => {
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.title).toBeDefined();
             expect(updatedCourse.title).toEqual(mockRequest.body.title);
-            bodyMatchCourse(
-              {
-                ...updatedCourse,
-              },
-              mockRequest.body,
-              course
-            );
+            dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
-            expect(next).toHaveBeenCalledTimes(0);
+            expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -817,7 +755,7 @@ describe("", () => {
         },
         {
           name: "OK: Update categoryId",
-          generateBody: async (course: CourseModel) => {
+          generateDto: async (course: CourseModel) => {
             const bodyTemplate: UpdateCourseDto = {
               categoryId: 1,
             };
@@ -848,20 +786,21 @@ describe("", () => {
             }
 
             if (bodyTemplate.categoryId) {
-              const category = await randPrisma.generateCategory();
+              const category = await randDb.generateCategory();
               modifiedBody.categoryId = category.id;
             }
 
             return modifiedBody;
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next, course } = testParams;
+            const { mockRequest, mockResponse, mockNext, oldCourse } =
+              testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
               "updateCourse"
             );
 
-            await controller.updateCourse(mockRequest, mockResponse, next);
+            await controller.updateCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
@@ -876,15 +815,9 @@ describe("", () => {
             expect(updatedCourse.categoryId).toEqual(
               mockRequest.body.categoryId
             );
-            bodyMatchCourse(
-              {
-                ...updatedCourse,
-              },
-              mockRequest.body,
-              course
-            );
+            dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
-            expect(next).toHaveBeenCalledTimes(0);
+            expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -897,7 +830,7 @@ describe("", () => {
         },
         {
           name: "OK: Update image",
-          generateBody: async (course: CourseModel) => {
+          generateDto: async (course: CourseModel) => {
             const bodyTemplate: UpdateCourseDto = {
               image: "any",
             };
@@ -928,20 +861,21 @@ describe("", () => {
             }
 
             if (bodyTemplate.categoryId) {
-              const category = await randPrisma.generateCategory();
+              const category = await randDb.generateCategory();
               modifiedBody.categoryId = category.id;
             }
 
             return modifiedBody;
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next, course } = testParams;
+            const { mockRequest, mockResponse, mockNext, oldCourse } =
+              testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
               "updateCourse"
             );
 
-            await controller.updateCourse(mockRequest, mockResponse, next);
+            await controller.updateCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
@@ -954,15 +888,9 @@ describe("", () => {
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.image).toBeDefined();
             expect(updatedCourse.image).toEqual(mockRequest.body.image);
-            bodyMatchCourse(
-              {
-                ...updatedCourse,
-              },
-              mockRequest.body,
-              course
-            );
+            dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
-            expect(next).toHaveBeenCalledTimes(0);
+            expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -975,7 +903,7 @@ describe("", () => {
         },
         {
           name: "OK: Update description",
-          generateBody: async (course: CourseModel) => {
+          generateDto: async (course: CourseModel) => {
             const bodyTemplate: UpdateCourseDto = {
               description: "any",
             };
@@ -1006,20 +934,21 @@ describe("", () => {
             }
 
             if (bodyTemplate.categoryId) {
-              const category = await randPrisma.generateCategory();
+              const category = await randDb.generateCategory();
               modifiedBody.categoryId = category.id;
             }
 
             return modifiedBody;
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next, course } = testParams;
+            const { mockRequest, mockResponse, mockNext, oldCourse } =
+              testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
               "updateCourse"
             );
 
-            await controller.updateCourse(mockRequest, mockResponse, next);
+            await controller.updateCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
@@ -1034,15 +963,9 @@ describe("", () => {
             expect(updatedCourse.description).toEqual(
               mockRequest.body.description
             );
-            bodyMatchCourse(
-              {
-                ...updatedCourse,
-              },
-              mockRequest.body,
-              course
-            );
+            dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
-            expect(next).toHaveBeenCalledTimes(0);
+            expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -1055,7 +978,7 @@ describe("", () => {
         },
         {
           name: "OK: Update material",
-          generateBody: async (course: CourseModel) => {
+          generateDto: async (course: CourseModel) => {
             const bodyTemplate: UpdateCourseDto = {
               material: "any",
             };
@@ -1086,20 +1009,21 @@ describe("", () => {
             }
 
             if (bodyTemplate.categoryId) {
-              const category = await randPrisma.generateCategory();
+              const category = await randDb.generateCategory();
               modifiedBody.categoryId = category.id;
             }
 
             return modifiedBody;
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next, course } = testParams;
+            const { mockRequest, mockResponse, mockNext, oldCourse } =
+              testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
               "updateCourse"
             );
 
-            await controller.updateCourse(mockRequest, mockResponse, next);
+            await controller.updateCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
@@ -1112,15 +1036,9 @@ describe("", () => {
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.material).toBeDefined();
             expect(updatedCourse.material).toEqual(mockRequest.body.material);
-            bodyMatchCourse(
-              {
-                ...updatedCourse,
-              },
-              mockRequest.body,
-              course
-            );
+            dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
-            expect(next).toHaveBeenCalledTimes(0);
+            expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -1133,7 +1051,7 @@ describe("", () => {
         },
         {
           name: "BadRequest: Non-existent Course",
-          generateBody: async (course: CourseModel) => {
+          generateDto: async (course: CourseModel) => {
             const bodyTemplate: UpdateCourseDto = {
               status: CourseStatus.DRAFT,
             };
@@ -1164,26 +1082,27 @@ describe("", () => {
             }
 
             if (bodyTemplate.categoryId) {
-              const category = await randPrisma.generateCategory();
+              const category = await randDb.generateCategory();
               modifiedBody.categoryId = category.id;
             }
 
             return modifiedBody;
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next, course } = testParams;
-            mockNextError(mockRequest, mockResponse, next);
+            const {
+              mockRequest,
+              mockResponse,
+              mockNext,
+              oldCourse: { id: courseId },
+            } = testParams;
+            mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
               "updateCourse"
             );
 
-            await prisma.course.delete({
-              where: {
-                id: course.id,
-              },
-            });
-            await controller.updateCourse(mockRequest, mockResponse, next);
+            await table.course.delete(courseId);
+            await controller.updateCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
@@ -1198,8 +1117,8 @@ describe("", () => {
             //   expect.any(Prisma.PrismaClientKnownRequestError)
             // );
 
-            expect(next).toHaveBeenCalledTimes(1);
-            expect(next).toHaveBeenCalledWith(
+            expect(mockNext).toHaveBeenCalledTimes(1);
+            expect(mockNext).toHaveBeenCalledWith(
               expect.any(Prisma.PrismaClientKnownRequestError)
             );
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
@@ -1219,21 +1138,21 @@ describe("", () => {
 
       testCases.forEach((tc) => {
         return it(tc.name, async () => {
-          user = await randPrisma.generateUser(Role.OWNER);
+          const user = await randDb.generateUser(Role.OWNER);
           (mockRequest as any).user = user;
 
-          const { course } = await randPrisma.generateCourse();
+          const { course } = await randDb.generateCourse();
           (mockRequest as any).params = {
             courseId: course.id,
           };
 
-          mockRequest.body = await tc.generateBody(course);
+          mockRequest.body = await tc.generateDto(course);
 
           await tc.test({
             mockRequest,
             mockResponse,
-            next,
-            course,
+            mockNext,
+            oldCourse: course,
           });
         });
       });
@@ -1243,43 +1162,45 @@ describe("", () => {
       type TestParams = {
         mockRequest: Request;
         mockResponse: Response;
-        next: NextFunction;
+        mockNext: NextFunction;
       };
       type TestCase = {
         name: string;
-        createParams: () => Promise<{ courseId: string }>;
+        generateParams: () => Promise<{ courseId: string }>;
         test: (testParams: TestParams) => Promise<void>;
       };
 
       const testCases: TestCase[] = [
         {
           name: "OK: Valid courseId and No lesson",
-          createParams: async () => {
-            const { course } = await randPrisma.generateCourse();
+          generateParams: async () => {
+            const { course } = await randDb.generateCourse();
 
             return {
               courseId: course.id.toString(),
             };
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next } = testParams;
+            const { mockRequest, mockResponse, mockNext } = testParams;
             const spyOnDeleteCourseService = jest.spyOn(
               CourseService.prototype,
               "deleteCourse"
             );
+            const courseId = Number(mockRequest.params.courseId);
 
-            await controller.deleteCourse(mockRequest, mockResponse, next);
+            await controller.deleteCourse(mockRequest, mockResponse, mockNext);
 
             expect(spyOnDeleteCourseService).toHaveBeenCalledTimes(1);
-            expect(spyOnDeleteCourseService).toBeCalledWith(
-              Number(mockRequest.params.courseId)
-            );
+            expect(spyOnDeleteCourseService).toBeCalledWith(courseId);
 
             const returnValueOfDeleteCourseService =
               await spyOnDeleteCourseService.mock.results[0].value;
             expect(returnValueOfDeleteCourseService).toEqual({});
 
-            expect(next).not.toBeCalled();
+            const courseAfter = await table.course.findUnique(courseId);
+            expect(courseAfter).toBeNull();
+
+            expect(mockNext).not.toBeCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toBeCalledWith(StatusCode.SUCCESS);
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
@@ -1287,118 +1208,137 @@ describe("", () => {
           },
         },
         {
-          // TODO : insert like and enrollment
           name: "OK: Valid courseId with Lesson, Video, Like, and Enrollment",
-          createParams: async () => {
-            const { course } = await randPrisma.generateCourse();
+          generateParams: async () => {
+            const { course } = await randDb.generateCourse();
 
             return {
               courseId: course.id.toString(),
             };
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next } = testParams;
+            const { mockRequest, mockResponse, mockNext } = testParams;
             const spyOnDeleteCourseService = jest.spyOn(
               CourseService.prototype,
               "deleteCourse"
             );
             const courseId = Number(mockRequest.params.courseId);
 
-            const user1 = await randPrisma.generateUser(Role.STUDENT);
-            const user2 = await randPrisma.generateUser(Role.STUDENT);
+            const course = await table.course.findUniqueOrThrow(courseId);
+            expect(course.totalStudents).toEqual(0);
+            expect(course.totalInstructors).toEqual(0);
+            expect(course.totalLikes).toEqual(0);
+            expect(course.totalLessons).toEqual(0);
+            expect(course.totalVideos).toEqual(0);
+            expect(course.totalDurations).toEqual(0);
 
-            const enrollment2 = await randPrisma.insertOneEnrollmentIntoCourse(
+            const user1 = await randDb.generateUser(Role.STUDENT);
+            const user2 = await randDb.generateUser(Role.STUDENT);
+            const enrollment2 = await randDb.insertOneEnrollmentIntoCourse(
               user2.id,
               courseId,
               Role.STUDENT
             );
-            const enrollment1 = await randPrisma.insertOneEnrollmentIntoCourse(
+            const enrollment1 = await randDb.insertOneEnrollmentIntoCourse(
               user1.id,
               courseId,
-              Role.STUDENT
+              Role.INSTRUCTOR
             );
 
-            const like1 = await randPrisma.insertOneLikeIntoCourse(
+            const like1 = await randDb.insertOneLikeIntoCourse(
               user1.id,
               courseId
             );
-            const like2 = await randPrisma.insertOneLikeIntoCourse(
+            const like2 = await randDb.insertOneLikeIntoCourse(
               user2.id,
               courseId
             );
 
-            const [lesson1, lesson2] =
-              await randPrisma.insertManyLessonsIntoCourse(courseId, 2);
+            const [lesson1, lesson2] = await randDb.insertManyLessonsIntoCourse(
+              courseId,
+              2
+            );
+
+            const durationEachVideo = 1;
             const [video1_1, video2_1] =
-              await randPrisma.insertManyVideosIntoLesson(lesson1.id, 2);
+              await randDb.insertManyVideosIntoLesson(
+                lesson1.id,
+                2,
+                durationEachVideo
+              );
             const [video1_2, video2_2] =
-              await randPrisma.insertManyVideosIntoLesson(lesson2.id, 2);
+              await randDb.insertManyVideosIntoLesson(
+                lesson2.id,
+                2,
+                durationEachVideo
+              );
 
-            await controller.deleteCourse(mockRequest, mockResponse, next);
+            const courseAfterInsertion = await table.course.findUniqueOrThrow(
+              courseId
+            );
+            expect(courseAfterInsertion.totalStudents).toEqual(1);
+            expect(courseAfterInsertion.totalInstructors).toEqual(1);
+            expect(courseAfterInsertion.totalLikes).toEqual(2);
+            expect(courseAfterInsertion.totalLessons).toEqual(2);
+            expect(courseAfterInsertion.totalVideos).toEqual(4);
+            expect(courseAfterInsertion.totalDurations).toEqual(
+              4 * durationEachVideo
+            );
+
+            await controller.deleteCourse(mockRequest, mockResponse, mockNext);
 
             await expect(spyOnDeleteCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnDeleteCourseService).toBeCalledWith(courseId);
 
-            const enrollment1After = await prisma.courseEnrollment.findUnique({
-              where: {
-                id: enrollment1.id,
-              },
-            });
-            const enrollment2After = await prisma.courseEnrollment.findUnique({
-              where: {
-                id: enrollment2.id,
-              },
-            });
+            const returnValueOfDeleteCourseService =
+              await spyOnDeleteCourseService.mock.results[0].value;
+            expect(returnValueOfDeleteCourseService).toEqual({});
+
+            const courseAfter = await table.course.findUnique(courseId);
+            expect(courseAfter).toBeNull();
+
+            const enrollment1After = await table.courseEnrollment.findUnique(
+              enrollment1.id
+            );
+            const enrollment2After = await table.courseEnrollment.findUnique(
+              enrollment2.id
+            );
             expect(enrollment1After).toBeNull();
             expect(enrollment2After).toBeNull();
 
-            const like1After = await prisma.courseLike.findUnique({
-              where: {
-                id: like1.id,
-              },
-            });
-            const like2After = await prisma.courseLike.findUnique({
-              where: {
-                id: like1.id,
-              },
-            });
+            const like1After = await table.courseLike.findUnique(like1.id);
+            const like2After = await table.courseLike.findUnique(like2.id);
             expect(like1After).toBeNull();
             expect(like2After).toBeNull();
 
-            const lesson1After = await prisma.courseLesson.findUnique({
-              where: {
-                id: lesson1.id,
-              },
-            });
-            const lesson2After = await prisma.courseLesson.findUnique({
-              where: { id: lesson2.id },
-            });
+            const lesson1After = await table.courseLesson.findUnique(
+              lesson1.id
+            );
+            const lesson2After = await table.courseLesson.findUnique(
+              lesson2.id
+            );
             expect(lesson1After).toBeNull();
             expect(lesson2After).toBeNull();
 
-            const video1_1After = await prisma.courseLessonVideo.findUnique({
-              where: { id: video1_1.id },
-            });
-            const video2_1After = await prisma.courseLessonVideo.findUnique({
-              where: { id: video2_1.id },
-            });
+            const video1_1After = await table.courseLessonVideo.findUnique(
+              video1_1.id
+            );
+            const video2_1After = await table.courseLessonVideo.findUnique(
+              video2_1.id
+            );
             expect(video1_1After).toBeNull();
             expect(video2_1After).toBeNull();
 
-            const video1_2After = await prisma.courseLessonVideo.findUnique({
-              where: { id: video1_2.id },
-            });
-            const video2_2After = await prisma.courseLessonVideo.findUnique({
-              where: { id: video2_2.id },
-            });
+            const video1_2After = await table.courseLessonVideo.findUnique(
+              video1_2.id
+            );
+            const video2_2After = await table.courseLessonVideo.findUnique(
+              video2_2.id
+            );
             expect(video1_2After).toBeNull();
             expect(video2_2After).toBeNull();
 
-            const returnValueOfDeleteCourseService =
-              await spyOnDeleteCourseService.mock.results[0].value;
-            expect(returnValueOfDeleteCourseService).toEqual({});
-
-            expect(next).not.toBeCalled();
+            expect(mockNext).not.toBeCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toBeCalledWith(StatusCode.SUCCESS);
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
@@ -1406,39 +1346,36 @@ describe("", () => {
           },
         },
         {
-          // TODO : insert like and enrollment
           name: "BadRequest: Non-existent Course",
-          createParams: async () => {
-            const { course } = await randPrisma.generateCourse();
+          generateParams: async () => {
+            const { course } = await randDb.generateCourse();
 
             return {
               courseId: course.id.toString(),
             };
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next } = testParams;
-            mockNextError(mockRequest, mockResponse, next);
+            const { mockRequest, mockResponse, mockNext } = testParams;
+            mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnDeleteCourseService = jest.spyOn(
               CourseService.prototype,
               "deleteCourse"
             );
             const courseId = Number(mockRequest.params.courseId);
 
-            await prisma.course.delete({
-              where: {
-                id: courseId,
-              },
-            });
-            await controller.deleteCourse(mockRequest, mockResponse, next);
+            await table.course.delete(courseId);
+            const course = await table.course.findUnique(courseId);
+            expect(course).toBeNull();
+
+            await controller.deleteCourse(mockRequest, mockResponse, mockNext);
 
             await expect(spyOnDeleteCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnDeleteCourseService).toBeCalledWith(courseId);
+            expect(spyOnDeleteCourseService).rejects.toThrowError(
+              expect.any(Error)
+            );
 
-            // const returnValueOfDeleteCourseService =
-            //   await spyOnDeleteCourseService.mock.results[0].value;
-            // expect(returnValueOfDeleteCourseService).toEqual({});
-
-            expect(next).toHaveBeenCalledTimes(1);
+            expect(mockNext).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toBeCalledWith(StatusCode.BAD_REQUEST);
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
@@ -1454,10 +1391,10 @@ describe("", () => {
 
       testCases.forEach((tc) => {
         return it(tc.name, async () => {
-          const params = await tc.createParams();
+          const params = await tc.generateParams();
           (mockRequest as Request).params = params;
 
-          await tc.test({ mockRequest, mockResponse, next });
+          await tc.test({ mockRequest, mockResponse, mockNext });
         });
       });
     });
@@ -1468,34 +1405,34 @@ describe("", () => {
       type TestParams = {
         mockRequest: Request;
         mockResponse: Response;
-        next: NextFunction;
+        mockNext: NextFunction;
       };
       type TestCase = {
         name: string;
-        modifyBody: (
-          bodyTemplate: CreateCourseLikeDto
-        ) => Partial<CreateCourseLikeDto>;
+        modifyDto: (dto: CreateCourseLikeDto) => Partial<CreateCourseLikeDto>;
         test: (testParams: TestParams) => Promise<void>;
       };
 
       const testCases: TestCase[] = [
         {
           name: "OK: Complete Body",
-          modifyBody: (
-            bodyTemplate: CreateCourseLikeDto
+          modifyDto: (
+            dto: CreateCourseLikeDto
           ): Partial<CreateCourseLikeDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
             };
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next } = testParams;
-            const user = await randPrisma.generateUser(Role.STUDENT);
-            const { course } = await randPrisma.generateCourse();
+            const { mockRequest, mockResponse, mockNext } = testParams;
+            const user = await randDb.generateUser(Role.STUDENT);
+            const {
+              course: { id: courseId },
+            } = await randDb.generateCourse();
 
             (mockRequest as any).user = user;
             (mockRequest as any).resourceId = {
-              courseId: course.id,
+              courseId,
             } satisfies CourseLikeResourceId;
 
             const spyOnCreateCourseLikeService = jest.spyOn(
@@ -1503,7 +1440,7 @@ describe("", () => {
               "createLike"
             );
 
-            await controller.createLike(mockRequest, mockResponse, next);
+            await controller.createLike(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledWith(
@@ -1513,14 +1450,10 @@ describe("", () => {
             const newCourseLikeFromService = await spyOnCreateCourseLikeService
               .mock.results[0].value;
 
-            const courseAfter = await prisma.course.findUnique({
-              where: {
-                id: course.id,
-              },
-            });
+            const courseAfter = await table.course.findUnique(courseId);
             expect(courseAfter?.totalLikes).toEqual(1);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.RESOURCE_CREATED
@@ -1533,30 +1466,28 @@ describe("", () => {
         },
         {
           name: "BadRequest: CourseLike Already Exist",
-          modifyBody: (
-            bodyTemplate: CreateCourseLikeDto
+          modifyDto: (
+            dto: CreateCourseLikeDto
           ): Partial<CreateCourseLikeDto> => {
             return {
-              ...bodyTemplate,
+              ...dto,
             };
           },
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next } = testParams;
-            mockNextError(mockRequest, mockResponse, next);
-            const user = await randPrisma.generateUser(Role.STUDENT);
-            const { course } = await randPrisma.generateCourse();
-            await randPrisma.insertOneLikeIntoCourse(user.id, course.id);
+            const { mockRequest, mockResponse, mockNext } = testParams;
+            mockNextError(mockRequest, mockResponse, mockNext);
+            const user = await randDb.generateUser(Role.STUDENT);
+            const {
+              course: { id: courseId },
+            } = await randDb.generateCourse();
+            await randDb.insertOneLikeIntoCourse(user.id, courseId);
 
-            const courseBefore = await prisma.course.findUniqueOrThrow({
-              where: {
-                id: course.id,
-              },
-            });
+            const courseBefore = await table.course.findUniqueOrThrow(courseId);
             expect(courseBefore.totalLikes).toEqual(1);
 
             (mockRequest as any).user = user;
             (mockRequest as any).resourceId = {
-              courseId: course.id,
+              courseId,
             } satisfies CourseLikeResourceId;
 
             const spyOnCreateCourseLikeService = jest.spyOn(
@@ -1564,7 +1495,7 @@ describe("", () => {
               "createLike"
             );
 
-            await controller.createLike(mockRequest, mockResponse, next);
+            await controller.createLike(mockRequest, mockResponse, mockNext);
 
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledWith(
@@ -1572,14 +1503,10 @@ describe("", () => {
               (mockRequest as any).resourceId
             );
 
-            const courseAfter = await prisma.course.findUnique({
-              where: {
-                id: course.id,
-              },
-            });
+            const courseAfter = await table.course.findUnique(courseId);
             expect(courseAfter?.totalLikes).toEqual(1);
 
-            expect(next).toHaveBeenCalledTimes(1);
+            expect(mockNext).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.BAD_REQUEST
@@ -1597,7 +1524,7 @@ describe("", () => {
 
       testCases.forEach((tc) => {
         return it(tc.name, async () => {
-          await tc.test({ mockRequest, mockResponse, next });
+          await tc.test({ mockRequest, mockResponse, mockNext });
         });
       });
     });
@@ -1606,7 +1533,7 @@ describe("", () => {
       type TestParams = {
         mockRequest: Request;
         mockResponse: Response;
-        next: NextFunction;
+        mockNext: NextFunction;
       };
       type TestCase = {
         name: string;
@@ -1617,24 +1544,22 @@ describe("", () => {
         {
           name: "OK",
           test: async (testParams: TestParams) => {
-            const { mockRequest, mockResponse, next } = testParams;
-            const user = await randPrisma.generateUser(Role.STUDENT);
-            const { course } = await randPrisma.generateCourse();
-            const like = await randPrisma.insertOneLikeIntoCourse(
+            const { mockRequest, mockResponse, mockNext } = testParams;
+            const user = await randDb.generateUser(Role.STUDENT);
+            const {
+              course: { id: courseId },
+            } = await randDb.generateCourse();
+            const { id: likeId } = await randDb.insertOneLikeIntoCourse(
               user.id,
-              course.id
+              courseId
             );
 
-            const courseBefore = await prisma.course.findUniqueOrThrow({
-              where: {
-                id: course.id,
-              },
-            });
+            const courseBefore = await table.course.findUniqueOrThrow(courseId);
             expect(courseBefore.totalLikes).toEqual(1);
 
             (mockRequest as any).resourceId = {
-              courseId: course.id,
-              likeId: like.id,
+              courseId,
+              likeId,
             } satisfies CourseLikeResourceId;
 
             const spyOnDeleteCourseLikeService = jest.spyOn(
@@ -1642,7 +1567,7 @@ describe("", () => {
               "deleteLike"
             );
 
-            await controller.deleteLike(mockRequest, mockResponse, next);
+            await controller.deleteLike(mockRequest, mockResponse, mockNext);
 
             expect(spyOnDeleteCourseLikeService).toHaveBeenCalledTimes(1);
             expect(spyOnDeleteCourseLikeService).toHaveBeenCalledWith(
@@ -1651,21 +1576,13 @@ describe("", () => {
             const newCourseLikeFromService = await spyOnDeleteCourseLikeService
               .mock.results[0].value;
 
-            const likeAfter = await prisma.courseLike.findUnique({
-              where: {
-                id: like.id,
-              },
-            });
+            const likeAfter = await table.courseLike.findUnique(likeId);
             expect(likeAfter).toBeNull();
 
-            const courseAfter = await prisma.course.findUnique({
-              where: {
-                id: course.id,
-              },
-            });
+            const courseAfter = await table.course.findUnique(courseId);
             expect(courseAfter?.totalLikes).toEqual(0);
 
-            expect(next).not.toHaveBeenCalled();
+            expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
               StatusCode.SUCCESS
@@ -1678,11 +1595,9 @@ describe("", () => {
 
       testCases.forEach((tc) => {
         return it(tc.name, async () => {
-          await tc.test({ mockRequest, mockResponse, next });
+          await tc.test({ mockRequest, mockResponse, mockNext });
         });
       });
     });
   });
-
-  describe("CourseCategory", () => {});
 });

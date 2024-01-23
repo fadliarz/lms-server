@@ -1,25 +1,37 @@
 import { CourseLessonVideo } from "@prisma/client";
 import { injectable } from "inversify";
 import {
-  CreateCourseLessonVideoDto,
   CourseLessonVideoResourceId,
+  CreateCourseLessonVideoDto,
   UpdateCourseLessonVideoDto,
 } from "../video.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
+import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 
 export interface ICourseLessonVideoRepository {
   createVideo: (
     resourceId: CourseLessonVideoResourceId,
-    videoDetails: CreateCourseLessonVideoDto
+    dto: CreateCourseLessonVideoDto,
   ) => Promise<CourseLessonVideo>;
-  getVideoById: (
-    resourceId: CourseLessonVideoResourceId
+  getVideoById: (videoId: number) => Promise<CourseLessonVideo | null>;
+  getVideoByIdOrThrow: (
+    videoId: number,
+    error?: Error,
   ) => Promise<CourseLessonVideo>;
   updateVideo: (
+    videoId: number,
     resourceId: CourseLessonVideoResourceId,
-    videoDetails: UpdateCourseLessonVideoDto
+    dto: UpdateCourseLessonVideoDto,
   ) => Promise<CourseLessonVideo>;
-  deleteVideo: (resourceId: CourseLessonVideoResourceId) => Promise<{}>;
+  deleteVideo: (
+    videoId: number,
+    resourceId: CourseLessonVideoResourceId,
+  ) => Promise<{}>;
+
+  /**
+   * Utils
+   *
+   */
 }
 
 @injectable()
@@ -31,21 +43,18 @@ export class CourseLessonVideoRepository
 
   public async createVideo(
     resourceId: CourseLessonVideoResourceId,
-    videoDetails: CreateCourseLessonVideoDto
+    dto: CreateCourseLessonVideoDto,
   ): Promise<CourseLessonVideo> {
     const { courseId, lessonId } = resourceId;
-    const { totalDurations } = videoDetails;
-
-    const video = await this.prisma.$transaction(async (tx) => {
+    const { totalDurations } = dto;
+    return await this.prisma.$transaction(async (tx) => {
       const [video] = await Promise.all([
-        // create video
         tx.courseLessonVideo.create({
           data: {
-            ...videoDetails,
+            ...dto,
             lessonId,
           },
         }),
-        // update lesson count
         tx.courseLesson.update({
           where: {
             id: lessonId,
@@ -55,7 +64,6 @@ export class CourseLessonVideoRepository
             totalDurations: { increment: totalDurations },
           },
         }),
-        // update course count
         tx.course.update({
           where: {
             id: courseId,
@@ -69,29 +77,37 @@ export class CourseLessonVideoRepository
 
       return video;
     });
-
-    return video;
   }
 
   public async getVideoById(
-    resourceId: CourseLessonVideoResourceId
-  ): Promise<CourseLessonVideo> {
-    const { videoId } = resourceId;
-    const video = await this.videoTable.findUniqueOrThrow({
+    videoId: number,
+  ): Promise<CourseLessonVideo | null> {
+    return await this.videoTable.findUnique({
       where: {
         id: videoId,
       },
     });
+  }
+
+  public async getVideoByIdOrThrow(
+    videoId: number,
+    error?: Error,
+  ): Promise<CourseLessonVideo> {
+    const video = await this.getVideoById(videoId);
+    if (!video) {
+      throw error || new RecordNotFoundException();
+    }
 
     return video;
   }
 
   public async updateVideo(
+    videoId: number,
     resourceId: CourseLessonVideoResourceId,
-    videoDetails: UpdateCourseLessonVideoDto
+    dto: UpdateCourseLessonVideoDto,
   ) {
-    const { courseId, lessonId, videoId } = resourceId;
-    const updatedVideo = await this.prisma.$transaction(async (tx) => {
+    const { courseId, lessonId } = resourceId;
+    return await this.prisma.$transaction(async (tx) => {
       const video = await tx.courseLessonVideo.findUniqueOrThrow({
         where: {
           id: videoId,
@@ -101,13 +117,13 @@ export class CourseLessonVideoRepository
         },
       });
       const { totalDurations: oldTotalDurations } = video;
-      const { totalDurations } = videoDetails;
+      const { totalDurations } = dto;
 
       const [updatedVideo] = await Promise.all([
         // update video
         tx.courseLessonVideo.update({
           where: { id: videoId },
-          data: videoDetails,
+          data: dto,
         }),
         totalDurations
           ? // update lesson
@@ -139,14 +155,13 @@ export class CourseLessonVideoRepository
 
       return updatedVideo;
     });
-
-    return updatedVideo;
   }
 
   public async deleteVideo(
-    resourceId: CourseLessonVideoResourceId
+    videoId: number,
+    resourceId: CourseLessonVideoResourceId,
   ): Promise<{}> {
-    const { courseId, lessonId, videoId } = resourceId;
+    const { courseId, lessonId } = resourceId;
     await this.prisma.$transaction(async (tx) => {
       const video = await tx.courseLessonVideo.findUniqueOrThrow({
         where: {

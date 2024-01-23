@@ -17,12 +17,14 @@ import CourseCategoryRouter from "./modules/category/router/category.router";
 import { courseCategoryUrls } from "./modules/category/category.type";
 
 /**
- * Validate environtment variables.
+ * Validate environment variables
+ * 
  */
 validateEnv();
 
 /**
  * Configuration
+ * 
  */
 const userApi = {
   router: UserRouter(getAuthMiddleWare()),
@@ -61,6 +63,7 @@ const port = Number(process.env.PORT) || 5000;
 
 /**
  * Make instance of application
+ * 
  */
 const app = new App(routers, port);
 

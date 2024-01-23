@@ -3,7 +3,6 @@ import { Request, Response, NextFunction } from "express";
 import errorMiddleware from "../../middlewares/errorMiddleware";
 import { ICourseLessonController } from "./controller/lesson.controller";
 import { PrismaClient } from "@prisma/client";
-import RandPrisma from "../../common/class/randprisma/RandPrisma";
 import dIContainer from "../../inversifyConfig";
 import {
   CourseLessonDITypes,
@@ -15,6 +14,8 @@ import PrismaClientSingleton from "../../common/class/PrismaClientSingleton";
 import { CourseLessonService } from "./service/lesson.service";
 import { StatusCode } from "../../common/constants/statusCode";
 import { ErrorCode } from "../../common/constants/errorCode";
+import RandDB from "../../common/class/randprisma/rand.type";
+import RandPrisma from "../../common/class/randprisma/RandPrisma";
 
 /**
  *
@@ -47,7 +48,7 @@ function mockNextError(
 describe("CourseLesson", () => {
   let controller: ICourseLessonController;
   let prisma: PrismaClient;
-  let randPrisma: RandPrisma;
+  let randDb: RandDB;
   let mockRequest: Request;
   let mockResponse: Response;
   let mockNext: NextFunction;
@@ -57,7 +58,7 @@ describe("CourseLesson", () => {
       CourseLessonDITypes.CONTROLLER
     );
     prisma = PrismaClientSingleton.getInstance();
-    randPrisma = new RandPrisma();
+    randDb = new RandPrisma();
   });
 
   beforeEach(() => {
@@ -205,11 +206,11 @@ describe("CourseLesson", () => {
       return it(tc.name, async () => {
         const {
           course: { id: courseId },
-        } = await randPrisma.generateCourse();
+        } = await randDb.generateCourse();
         (mockRequest as any).params = {
           courseId: courseId.toString(),
         };
-        const dto = randPrisma.generateCreateLessonDto();
+        const dto = randDb.generateCreateLessonDto();
         mockRequest.body = tc.modifyDto(dto);
 
         await tc.test({
@@ -350,11 +351,11 @@ describe("CourseLesson", () => {
       return it(tc.name, async () => {
         const {
           lesson: { id: lessonId },
-        } = await randPrisma.generateLesson();
+        } = await randDb.generateLesson();
         (mockRequest as any).params = {
           lessonId: lessonId.toString(),
         };
-        const dto = randPrisma.generateCreateLessonDto();
+        const dto = randDb.generateCreateLessonDto();
         mockRequest.body = tc.modifyDto(dto);
 
         await tc.test({

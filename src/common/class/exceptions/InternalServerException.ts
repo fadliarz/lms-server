@@ -1,6 +1,6 @@
-import { StatusCode } from "../../common/constants/statusCode";
-import { ErrorCode } from "../constants/errorCode";
-import { ErrorMessage } from "../constants/errorMessage";
+import { StatusCode } from "../../constants/statusCode";
+import { ErrorCode } from "../../constants/errorCode";
+import { ErrorMessage } from "../../constants/errorMessage";
 import HttpException from "./HttpException";
 
 export default class InternalServerException extends HttpException {

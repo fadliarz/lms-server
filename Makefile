@@ -55,8 +55,11 @@ prisma-dbpull:
 #
 # DOCKER
 #
-dockerrun:
+docker-run-lms-mysql:
 	docker run --name lms-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=lms -d mysql:latest
+
+docker-run-lms-redis:
+	docker run --name lms-redis -p 6379:6379 -d redis:latest 
 
 #
 #	PLAYGROUND

@@ -6,6 +6,7 @@ export const CourseLessonVideoDITypes = {
   SERVICE: Symbol.for("COURSE_VIDEO_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_VIDEO_CONTROLLER"),
 };
+
 export enum courseLessonVideoUrls {
   root = "/courses/:courseId/lessons/:lessonId/videos",
   video = courseLessonVideoUrls.root + "/:videoId",
@@ -47,5 +48,4 @@ export type UpdateCourseLessonVideoDto = Partial<CreateCourseLessonVideoDto>;
 export type CourseLessonVideoResourceId = {
   courseId: number;
   lessonId: number;
-  videoId: number;
 };

@@ -4,3 +4,4 @@ coverage
 .vscode
 .env
 src/playground.ts
+best_practices.md

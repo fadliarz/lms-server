@@ -2,18 +2,17 @@ import "reflect-metadata";
 import { Request, Response, NextFunction } from "express";
 import errorMiddleware from "../../middlewares/errorMiddleware";
 import { ICourseCategoryController } from "./controller/category.controller";
-import { PrismaClient } from "@prisma/client";
-import RandPrisma from "../../common/class/randprisma/RandPrisma";
 import dIContainer from "../../inversifyConfig";
 import {
   CourseCategoryDITypes,
   CourseCategoryModel,
   CreateCourseCategoryDto,
 } from "./category.type";
-import PrismaClientSingleton from "../../common/class/PrismaClientSingleton";
 import { CourseCategoryService } from "./service/category.service";
 import { StatusCode } from "../../common/constants/statusCode";
 import { ErrorCode } from "../../common/constants/errorCode";
+import RandPrisma from "../../common/class/randprisma/RandPrisma";
+import RandDB from "../../common/class/randprisma/rand.type";
 
 /**
  *
@@ -45,8 +44,7 @@ function mockNextError(
 
 describe("CourseCategory", () => {
   let controller: ICourseCategoryController;
-  let prisma: PrismaClient;
-  let randPrisma: RandPrisma;
+  let randDb: RandDB;
   let mockRequest: Request;
   let mockResponse: Response;
   let mockNext: NextFunction;
@@ -55,8 +53,7 @@ describe("CourseCategory", () => {
     controller = dIContainer.get<ICourseCategoryController>(
       CourseCategoryDITypes.CONTROLLER
     );
-    prisma = PrismaClientSingleton.getInstance();
-    randPrisma = new RandPrisma();
+    randDb = new RandPrisma();
   });
 
   beforeEach(() => {
@@ -164,7 +161,7 @@ describe("CourseCategory", () => {
 
     testCases.forEach(async (tc) => {
       return it(tc.name, async () => {
-        const dto = randPrisma.generateCreateCategoryDto();
+        const dto = randDb.generateCreateCategoryDto();
         mockRequest.body = tc.modifyDto(dto);
 
         await tc.test({

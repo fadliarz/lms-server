@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { BaseCourseAuthorization } from "../../../common/class/BaseCourseAuthorization";
+import { BaseCourseAuthorization } from "../../../common/class/authorization/BaseCourseAuthorization";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
-import AuthorizationException from "../../../common/exceptions/AuthorizationException";
+import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 
 export interface ICourseCategoryAuthorizationMiddleware {
   getCreateCategoryAuthorizationMiddleware: () => (

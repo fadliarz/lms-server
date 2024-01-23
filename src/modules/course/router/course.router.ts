@@ -5,7 +5,7 @@ import dIContainer from "../../../inversifyConfig";
 import { CourseDITypes } from "../course.type";
 import { courseUrls } from "../course.type";
 import { ICourseController } from "../controller/course.controller";
-import { CourseAuthorizationMiddleware } from "../authorization/course.authorization";
+import { ICourseAuthorizationMiddleware } from "../authorization/course.authorization";
 
 export default function CourseRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -13,7 +13,10 @@ export default function CourseRouter(authenticationMiddleware: any) {
   const controller = dIContainer.get<ICourseController>(
     CourseDITypes.CONTROLLER
   );
-  const authorizationMiddleware = new CourseAuthorizationMiddleware();
+  const authorizationMiddleware =
+    dIContainer.get<ICourseAuthorizationMiddleware>(
+      CourseDITypes.AUTHORIZATION_MIDDLEWARE
+    );
 
   /**
    * Create (Course)

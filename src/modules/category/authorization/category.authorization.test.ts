@@ -8,7 +8,7 @@ import {
   CourseCategoryAuthorizationMiddleware,
   ICourseCategoryAuthorizationMiddleware,
 } from "./category.authorization";
-import HttpException from "../../../common/exceptions/HttpException";
+import HttpException from "../../../common/class/exceptions/HttpException";
 
 jest.mock(
   "../../../common/functions/getRequestUserOrThrowAuthenticationException"

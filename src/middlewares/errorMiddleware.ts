@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import HttpException from "../common/exceptions/HttpException";
-import InternalServerException from "../common/exceptions/InternalServerException";
+import HttpException from "../common/class/exceptions/HttpException";
+import InternalServerException from "../common/class/exceptions/InternalServerException";
 import { Prisma } from "@prisma/client";
 import { StatusCode } from "../common/constants/statusCode";
 import { ErrorCode } from "../common/constants/errorCode";

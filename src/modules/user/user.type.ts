@@ -1,4 +1,4 @@
-import { Course, Prisma, User } from "@prisma/client";
+import { Course, Prisma, Role, User } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
 export const UserDITypes = {
@@ -16,30 +16,11 @@ export enum userUrls {
 }
 
 /**
- * Role Enum
- */
-export type EnumUserRole = "STUDENT" | "INSTRUCTOR" | "OWNER";
-export enum enumUserRole {
-  "STUDENT",
-  "INSTRUCTOR",
-  "OWNER",
-}
-export type EnumCourseRole = "STUDENT" | "INSTRUCTOR" | "OWNER";
-export enum enumCourseRole {
-  "STUDENT",
-  "INSTRUCTOR",
-  "OWNER",
-}
-export type EnumCourseEnrollmentRole = "STUDENT" | "INSTRUCTOR";
-export enum enumCourseEnrollmentRole {
-  "STUDENT",
-  "INSTRUCTOR",
-}
-
-/**
  * Model
  */
 export type UserModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<User>;
+export type UserRole = Role;
+export const UserRole = Role;
 export type PublicUserModel = Omit<
   UserModel,
   "accessToken" | "refreshToken" | "password"

@@ -6,10 +6,12 @@ export const CourseLessonDITypes = {
   SERVICE: Symbol.for("COURSE_LESSON_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_LESSON_CONTROLLER"),
 };
+
 export enum courseLessonUrls {
   root = "/lessons",
   lesson = "/:lessonId",
 }
+
 /**
  * Model CourseLesson
  *
@@ -48,5 +50,4 @@ export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;
  */
 export type CourseLessonResourceId = {
   courseId: number;
-  lessonId?: number;
 };

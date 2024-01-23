@@ -1,6 +1,6 @@
 import { injectable, inject } from "inversify";
 import {
-  CourseDITypes,
+  CourseDITypes, CourseLikeResourceId,
   GetCourseByIdQuery,
   GetCoursesQuery,
   GetEnrolledCourseByIdQuery,
@@ -22,6 +22,8 @@ import {
 } from "./course.joi";
 
 import "reflect-metadata";
+import ClientException from "../../../common/class/exceptions/ClientException";
+import isNaNArray from "../../../common/functions/isNaNArray";
 
 export interface ICourseController {
   createCourse: (
@@ -104,8 +106,13 @@ export class CourseController implements ICourseController {
     try {
       await validateJoi({ query: GetCourseByIdQueryJoi })(req, res, next);
 
+      const courseId = Number(req.params.courseId);
+      if(isNaN(courseId)) {
+        throw new ClientException();
+      }
+
       const course = await this.service.getCourseById(
-        Number(req.params.courseId),
+        courseId,
         req.query as unknown as GetCourseByIdQuery
       );
 
@@ -145,11 +152,15 @@ export class CourseController implements ICourseController {
         next
       );
 
+      const courseId = Number(req.params.courseId);
+      if(isNaN(courseId)) {
+        throw new ClientException();
+      }
+
       const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
       const enrolledCourse = await this.service.getEnrolledCourseById(
         userId,
-        // examined by authorization middleware
-        req.params.courseId as unknown as number,
+        courseId,
         req.query as unknown as GetEnrolledCourseByIdQuery
       );
 
@@ -168,7 +179,7 @@ export class CourseController implements ICourseController {
       const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
       const courses = await this.service.getEnrolledCourses(
         userId,
-        req.query as unknown as GetEnrolledCoursesQuery // validated with validation middleware
+        req.query as unknown as GetEnrolledCoursesQuery
       );
 
       return res.status(StatusCode.SUCCESS).json({ data: courses });
@@ -185,8 +196,13 @@ export class CourseController implements ICourseController {
     try {
       await validateJoi({ body: UpdateCourseDtoJoi })(req, res, next);
 
+      const courseId = Number(req.params.courseId);
+      if(isNaN(courseId)) {
+        throw new ClientException();
+      }
+
       const updatedCourse = await this.service.updateCourse(
-        Number(req.params.courseId),
+        courseId,
         req.body as UpdateCourseDto
       );
 
@@ -202,7 +218,12 @@ export class CourseController implements ICourseController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
-      await this.service.deleteCourse(Number(req.params.courseId));
+      const courseId = Number(req.params.courseId);
+      if(isNaN(courseId)) {
+        throw new ClientException();
+      }
+
+      await this.service.deleteCourse(courseId);
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
@@ -217,6 +238,12 @@ export class CourseController implements ICourseController {
   ): Promise<Response | void> {
     try {
       await validateJoi({ body: CreateCourseLikeDtoJoi })(req, res, next);
+
+      const resource: CourseLikeResourceId = (req as any).resourceId
+      const courseId = resource.courseId;
+      if(isNaN(courseId)) {
+        throw new ClientException();
+      }
 
       const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
       const newLike = await this.service.createLike(
@@ -236,6 +263,13 @@ export class CourseController implements ICourseController {
     next: NextFunction
   ): Promise<Response | void> {
     try {
+      const resource: CourseLikeResourceId = (req as any).resourceId;
+      const courseId = resource.courseId;
+      const likeId = resource.courseId;
+      if(isNaNArray([courseId, likeId])) {
+        throw new ClientException();
+      }
+
       await this.service.deleteLike((req as any).resourceId);
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });

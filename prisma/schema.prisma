@@ -32,14 +32,14 @@ model User {
 }
 
 model CourseEnrollment {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  courseId  Int      @map("course_id")
-  role      Role     @default(STUDENT)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  course    Course   @relation(fields: [courseId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id        Int                  @id @default(autoincrement())
+  userId    Int                  @map("user_id")
+  courseId  Int                  @map("course_id")
+  role      CourseEnrollmentRole @default(STUDENT)
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+  course    Course               @relation(fields: [courseId], references: [id])
+  user      User                 @relation(fields: [userId], references: [id])
 
   @@unique([userId, courseId])
   @@index([courseId], map: "course_enrollment_course_id_fkey")
@@ -132,6 +132,11 @@ model CourseCategory {
 
 enum Role {
   OWNER
+  INSTRUCTOR
+  STUDENT
+}
+
+enum CourseEnrollmentRole {
   INSTRUCTOR
   STUDENT
 }

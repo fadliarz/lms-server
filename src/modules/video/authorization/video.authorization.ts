@@ -7,38 +7,39 @@ import { Request, Response, NextFunction } from "express";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import { CourseLessonVideoResourceId } from "../video.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
-import AuthorizationException from "../../../common/exceptions/AuthorizationException";
+import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import { Role } from "@prisma/client";
-import HttpException from "../../../common/exceptions/HttpException";
+import HttpException from "../../../common/class/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
-import ClientException from "../../../common/exceptions/ClientException";
+import ClientException from "../../../common/class/exceptions/ClientException";
 import isNaNArray from "../../../common/functions/isNaNArray";
-import InternalServerException from "../../../common/exceptions/InternalServerException";
+import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import { ErrorCode } from "../../../common/constants/errorCode";
 import { ErrorMessage } from "../../../common/constants/errorMessage";
+import NaNException from "../../../common/class/exceptions/NaNException";
 
 export interface ICourseLessonVideoAuthorizationMiddleware
   extends ICourseLessonAuthorizationMiddleware {
   getCreateVideoAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
   getGetVideoAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
   getUpdateVideoAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
   getDeleteVideoAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
 }
 
@@ -51,57 +52,34 @@ export class CourseLessonVideoAuthorizationMiddleware
     return async (
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ): Promise<void> => {
       try {
         const courseId = Number(req.params.courseId);
-        const lessonId = Number(req.params.lessonId);
-        if (isNaNArray([courseId, lessonId])) {
-          throw new HttpException(
-            StatusCode.BAD_REQUEST,
-            ErrorCode.INVALID_QUERY,
-            (ErrorMessage.NAN_PARAMS as (params: string) => string)(
-              "courseId || lessonId"
-            ),
-            true
-          );
+        if (isNaN(courseId)) {
+          throw new NaNException("courseId");
         }
 
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        const { id: userId, role: userRole } =
+          getRequestUserOrThrowAuthenticationException(req);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
         let isAuthorized = false;
         if (isStudent) {
         }
 
         if (isInstructor || isAdmin) {
-          const courseIdFromLessonId = await this.getCourseIdByLessonId(
-            lessonId
-          );
-          if (courseId !== courseIdFromLessonId) {
-            throw new ClientException("lessonId doesn't match courseId");
-          }
-
-          const authorId = await this.getAuthorIdOrThrow(
-            courseId,
-            new InternalServerException()
-          );
-          const isAuthor = user.id === authorId;
+          const authorId = await this.getAuthorIdOrThrow(courseId);
+          const isAuthor = userId === authorId;
           if (isAuthor || isAdmin) {
             isAuthorized = true;
           }
 
           if (!isAuthorized) {
-            const enrollment = await this.courseEnrollmentTable.findUnique({
-              where: {
-                userId_courseId: {
-                  userId: user.id,
-                  courseId,
-                },
-              },
-              select: {
-                role: true,
-              },
-            });
+            const enrollment =
+              await this.table.courseEnrollment.findUniqueByUserIdAndCourseId(
+                userId,
+                courseId,
+              );
             if (
               enrollment &&
               isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
@@ -109,11 +87,6 @@ export class CourseLessonVideoAuthorizationMiddleware
               isAuthorized = true;
             }
           }
-
-          (req as any).resourceId = {
-            courseId,
-            lessonId,
-          } as CourseLessonVideoResourceId;
         }
 
         if (!isAuthorized) {
@@ -131,73 +104,36 @@ export class CourseLessonVideoAuthorizationMiddleware
     return async (
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ): Promise<void> => {
       try {
         const courseId = Number(req.params.courseId);
-        const lessonId = Number(req.params.courseId);
-        const videoId = Number(req.params.videoId);
-        if (isNaNArray([courseId, lessonId, videoId])) {
-          throw new HttpException(
-            StatusCode.BAD_REQUEST,
-            ErrorCode.INVALID_QUERY,
-            (ErrorMessage.NAN_PARAMS as (params: string) => string)(
-              "courseId || lessonId || videoId"
-            ),
-            true
-          );
+        if (isNaN(courseId)) {
+          throw new NaNException("courseId");
         }
 
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+        const { id: userId, role: userRole } =
+          getRequestUserOrThrowAuthenticationException(req);
+        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
         let isAuthorized = false;
         if (isStudent || isInstructor) {
-          const lessonIdFromVideoId = await this.getLessonIdByVideoIdOrThrow(
-            videoId
-          );
-          if (lessonId !== lessonIdFromVideoId) {
-            throw new ClientException("videoId doesn't match lessonId");
-          }
-
-          const courseIdFromLessonId = await this.getCourseIdByLessonId(
-            lessonId
-          );
-          if (courseId !== courseIdFromLessonId) {
-            throw new ClientException("lessonId doesn't match courseId");
-          }
-
-          const authorId = await this.getAuthorIdOrThrow(
-            courseId,
-            new InternalServerException()
-          );
-          const isAuthor = user.id === authorId;
+          const authorId = await this.getAuthorIdOrThrow(courseId);
+          const isAuthor = userId === authorId;
           if (isAuthor) {
             isAuthorized = true;
           }
 
           if (!isAuthorized) {
-            const enrollment = await this.courseEnrollmentTable.findUnique({
-              where: {
-                userId_courseId: {
-                  userId: user.id,
-                  courseId: courseId,
-                },
-              },
-              select: {
-                role: true,
-              },
-            });
+            const enrollment =
+              await this.table.courseEnrollment.findUniqueByUserIdAndCourseId(
+                userId,
+                courseId,
+              );
 
             if (enrollment) {
               isAuthorized = true;
             }
           }
-
-          (req as any).resourceId = {
-            lessonId,
-            courseId,
-            videoId,
-          } as CourseLessonVideoResourceId;
         }
 
         if (isAdmin) {
@@ -216,182 +152,10 @@ export class CourseLessonVideoAuthorizationMiddleware
   }
 
   public getUpdateVideoAuthorizationMiddleware() {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        const courseId = Number(req.params.courseId);
-        const lessonId = Number(req.params.courseId);
-        const videoId = Number(req.params.videoId);
-        if (isNaNArray([courseId, lessonId, videoId])) {
-          throw new HttpException(
-            StatusCode.BAD_REQUEST,
-            ErrorCode.INVALID_QUERY,
-            (ErrorMessage.NAN_PARAMS as (params: string) => string)(
-              "courseId || lessonId || videoId"
-            ),
-            true
-          );
-        }
-
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-        let isAuthorized = false;
-        if (isStudent) {
-        }
-
-        if (isInstructor || isAdmin) {
-          const lessonIdFromVideoId = await this.getLessonIdByVideoIdOrThrow(
-            videoId
-          );
-          if (lessonId !== lessonIdFromVideoId) {
-            throw new ClientException("videoId doesn't match lessonId");
-          }
-
-          const courseIdFromLessonId = await this.getCourseIdByLessonId(
-            lessonId
-          );
-          if (courseId !== courseIdFromLessonId) {
-            throw new ClientException("lessonId doesn't match courseId");
-          }
-
-          const authorId = await this.getAuthorIdOrThrow(
-            courseId,
-            new InternalServerException()
-          );
-          const isAuthor = user.id === authorId;
-          if (isAuthor || isAdmin) {
-            isAuthorized = true;
-          }
-
-          if (!isAuthorized) {
-            const enrollment = await this.courseEnrollmentTable.findUnique({
-              where: {
-                userId_courseId: {
-                  userId: user.id,
-                  courseId: courseId,
-                },
-              },
-              select: {
-                role: true,
-              },
-            });
-
-            if (
-              enrollment &&
-              isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
-            ) {
-              isAuthorized = true;
-            }
-          }
-
-          (req as any).resourceId = {
-            lessonId,
-            courseId,
-            videoId,
-          } as CourseLessonVideoResourceId;
-        }
-
-        if (!isAuthorized) {
-          throw new AuthorizationException();
-        }
-
-        next();
-      } catch (error) {
-        next(error);
-      }
-    };
+    return this.getCreateVideoAuthorizationMiddleware();
   }
 
   public getDeleteVideoAuthorizationMiddleware() {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        const courseId = Number(req.params.courseId);
-        const lessonId = Number(req.params.courseId);
-        const videoId = Number(req.params.videoId);
-        if (isNaNArray([courseId, lessonId, videoId])) {
-          throw new HttpException(
-            StatusCode.BAD_REQUEST,
-            ErrorCode.INVALID_QUERY,
-            (ErrorMessage.NAN_PARAMS as (params: string) => string)(
-              "courseId || lessonId || videoId"
-            ),
-            true
-          );
-        }
-
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-        let isAuthorized = false;
-        if (isStudent) {
-        }
-
-        if (isInstructor || isAdmin) {
-          const lessonIdFromVideoId = await this.getLessonIdByVideoIdOrThrow(
-            videoId
-          );
-          if (lessonId !== lessonIdFromVideoId) {
-            throw new ClientException("videoId doesn't match lessonId");
-          }
-
-          const courseIdFromLessonId = await this.getCourseIdByLessonId(
-            lessonId
-          );
-          if (courseId !== courseIdFromLessonId) {
-            throw new ClientException("lessonId doesn't match courseId");
-          }
-
-          const authorId = await this.getAuthorIdOrThrow(
-            courseId,
-            new InternalServerException()
-          );
-          const isAuthor = user.id === authorId;
-          if (isAuthor || isAdmin) {
-            isAuthorized = true;
-          }
-
-          if (!isAuthorized) {
-            const enrollment = await this.courseEnrollmentTable.findUnique({
-              where: {
-                userId_courseId: {
-                  userId: user.id,
-                  courseId: courseId,
-                },
-              },
-              select: {
-                role: true,
-              },
-            });
-
-            if (
-              enrollment &&
-              isEqualOrIncludeRole(enrollment.role, Role.INSTRUCTOR)
-            ) {
-              isAuthorized = true;
-            }
-          }
-
-          (req as any).resourceId = {
-            lessonId,
-            courseId,
-            videoId,
-          } as CourseLessonVideoResourceId;
-        }
-
-        if (!isAuthorized) {
-          throw new AuthorizationException();
-        }
-
-        next();
-      } catch (error) {
-        next(error);
-      }
-    };
+    return this.getCreateVideoAuthorizationMiddleware();
   }
 }

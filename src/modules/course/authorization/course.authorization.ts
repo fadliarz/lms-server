@@ -1,67 +1,59 @@
+import "reflect-metadata";
 import { Request, Response, NextFunction } from "express";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import { Role } from "@prisma/client";
-import AuthorizationException from "../../../common/exceptions/AuthorizationException";
+import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
-import { BaseCourseAuthorization } from "../../../common/class/BaseCourseAuthorization";
+import { BaseCourseAuthorization } from "../../../common/class/authorization/BaseCourseAuthorization";
 import { CourseLikeResourceId } from "../course.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
-import HttpException from "../../../common/exceptions/HttpException";
+import HttpException from "../../../common/class/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
-import ClientException from "../../../common/exceptions/ClientException";
+import ClientException from "../../../common/class/exceptions/ClientException";
 import isNaNArray from "../../../common/functions/isNaNArray";
 import { ErrorCode } from "../../../common/constants/errorCode";
 import { ErrorMessage } from "../../../common/constants/errorMessage";
+import { injectable } from "inversify";
+import NaNException from "../../../common/class/exceptions/NaNException";
 
 export interface ICourseAuthorizationMiddleware {
-  /**
-   * Course
-   *
-   */
   getCreateCourseAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
   getUpdateCourseAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
   getDeleteCourseAuthorizationMiddleware: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
-  /**
-   * CourseLike
-   *
-   */
   getCreateCourseLikeAuthorization: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
   getDeleteCourseLikeAuthorization: () => (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<void>;
 }
 
+@injectable()
 export class CourseAuthorizationMiddleware
   extends BaseCourseAuthorization
   implements ICourseAuthorizationMiddleware
 {
-  /**
-   * Course
-   *
-   */
   public getCreateCourseAuthorizationMiddleware() {
     return async (
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ): Promise<void> => {
       try {
         const { id: userId, role: userRole } =
@@ -90,12 +82,12 @@ export class CourseAuthorizationMiddleware
     return async (
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ): Promise<void> => {
       try {
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
-          throw new ClientException();
+          throw new NaNException("courseId");
         }
 
         const { id: userId, role: userRole } =
@@ -115,7 +107,7 @@ export class CourseAuthorizationMiddleware
           if (!isAuthorized) {
             const enrollmentRole = await this.getEnrollmentRoleById(
               userId,
-              courseId
+              courseId,
             );
 
             if (
@@ -146,12 +138,12 @@ export class CourseAuthorizationMiddleware
     return async (
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ): Promise<void> => {
       try {
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
-          throw new ClientException();
+          throw new NaNException("courseId");
         }
         const { id: userId, role: userRole } =
           getRequestUserOrThrowAuthenticationException(req);
@@ -184,25 +176,16 @@ export class CourseAuthorizationMiddleware
     };
   }
 
-  /**
-   * Course Like
-   *
-   */
   public getCreateCourseLikeAuthorization() {
     return async (
       req: Request,
       res: Response,
-      next: NextFunction
+      next: NextFunction,
     ): Promise<void> => {
       try {
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
-          throw new HttpException(
-            StatusCode.BAD_REQUEST,
-            ErrorCode.INVALID_QUERY,
-            (ErrorMessage.NAN_PARAMS as (params: string) => string)("courseId"),
-            true
-          );
+          throw new NaNException("courseId");
         }
 
         const { id: userId, role: userRole } =
@@ -210,7 +193,10 @@ export class CourseAuthorizationMiddleware
         const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
         let isAuthorized = false;
         if (isStudent || isInstructor || isAdmin) {
-          const enrollmentRole = await this.getEnrollmentRoleById(userId, courseId);
+          const enrollmentRole = await this.getEnrollmentRoleById(
+            userId,
+            courseId,
+          );
 
           if (
             enrollmentRole &&
@@ -228,10 +214,6 @@ export class CourseAuthorizationMiddleware
           throw new AuthorizationException();
         }
 
-        (req as any).resourceId = {
-          courseId,
-        } satisfies CourseLikeResourceId;
-
         next();
       } catch (error) {
         next(error);
@@ -240,41 +222,6 @@ export class CourseAuthorizationMiddleware
   }
 
   public getDeleteCourseLikeAuthorization() {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        const courseId = Number(req.params.courseId);
-        const likeId = Number(req.params.likeId);
-        if (isNaNArray([courseId, likeId])) {
-          throw new ClientException();
-        }
-
-        const { id: userId, role: userRole } =
-          getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-        let isAuthorized = false;
-        if (isStudent || isInstructor || isAdmin) {
-          await this.getLikeByIdOrThrow(courseId, likeId, userId);
-
-          isAuthorized = true;
-        }
-
-        if (!isAuthorized) {
-          throw new AuthorizationException();
-        }
-
-        (req as any).resourceId = {
-          courseId: courseId,
-          likeId: likeId,
-        } satisfies CourseLikeResourceId;
-
-        next();
-      } catch (error) {
-        next(error);
-      }
-    };
+    return this.getCreateCourseAuthorizationMiddleware();
   }
 }

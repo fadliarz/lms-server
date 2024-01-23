@@ -1,7 +1,7 @@
-import { StatusCode } from "../constants/statusCode";
+import { StatusCode } from "../../constants/statusCode";
 import HttpException from "./HttpException";
-import { ErrorCode } from "../constants/errorCode";
-import { ErrorMessage } from "../constants/errorMessage";
+import { ErrorCode } from "../../constants/errorCode";
+import { ErrorMessage } from "../../constants/errorMessage";
 
 export default class ClientException extends HttpException {
   constructor(message?: string) {

@@ -1,5 +1,5 @@
-import { ErrorCode } from "../constants/errorCode";
-import { StatusCode } from "../constants/statusCode";
+import { ErrorCode } from "../../constants/errorCode";
+import { StatusCode } from "../../constants/statusCode";
 
 export default class HttpException extends Error {
   public status: StatusCode;
