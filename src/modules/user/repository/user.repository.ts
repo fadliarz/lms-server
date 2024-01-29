@@ -1,56 +1,75 @@
-import { CreateUserDto, Me, UpdateUserDto } from "../user.type";
-import { injectable } from "inversify";
+import "reflect-metadata";
+import { CreateUserDto, Me } from "../user.type";
+import { inject, injectable } from "inversify";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import { User } from "@prisma/client";
 import getValuable from "../../../common/functions/getValuable";
+import {
+  PrismaDefaultTransactionConfigForRead,
+  PrismaDefaultTransactionConfigForWrite,
+} from "../../../common/constants/prismaDefaultConfig";
+import {
+  IPrismaQueryRaw,
+  PrismaQueryRawDITypes,
+} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 
 export interface IUserRepository {
   createUser: (
-    userDetails: CreateUserDto,
+    dto: CreateUserDto,
     accessToken: string,
-    refreshToken: string
+    refreshToken: string[],
   ) => Promise<User>;
   getUserById: (userId: number) => Promise<User | null>;
   getUserByEmail: (email: string) => Promise<User | null>;
+  getUserByRefreshToken: (refreshToken: string) => Promise<User | null>;
   getMe: (userId: number) => Promise<Me>;
-  updateUser: (userId: number, userDetails: Partial<User>) => Promise<User>;
+  updateUser: (userId: number, dto: Partial<User>) => Promise<User>;
   updateUserPassword: (userId: number, password: string) => Promise<User>;
-  deleteUser: (userId: number) => Promise<{}>;
+  deleteUser: (userId: number) => Promise<User>;
 }
 
 @injectable()
 export class UserRepository implements IUserRepository {
+  @inject(PrismaQueryRawDITypes.USER)
+  private readonly prismaQueryRaw: IPrismaQueryRaw;
+
   private readonly prisma = PrismaClientSingleton.getInstance();
   private readonly userTable = this.prisma.user;
 
   public async createUser(
-    userDetails: CreateUserDto,
+    dto: CreateUserDto,
     accessToken: string,
-    refreshToken: string
+    refreshToken: string[],
   ): Promise<User> {
     const newUser = await this.userTable.create({
-      data: { ...userDetails, accessToken, refreshToken },
+      data: { ...dto, accessToken, refreshToken },
     });
 
     return newUser;
   }
 
   public async getUserById(userId: number) {
-    const user = await this.userTable.findUnique({ where: { id: userId } });
-
-    return user;
+    return await this.prisma.$transaction(async (tx) => {
+      return tx.user.findUnique({ where: { id: userId } });
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
-  public async getUserByEmail(email: string) {
-    const user = await this.userTable.findUnique({
+  public async getUserByEmail(email: string): Promise<User | null> {
+    return await this.prisma.$transaction(async (tx) => {
+      return tx.user.findUnique({ where: { email } });
+    }, PrismaDefaultTransactionConfigForRead);
+  }
+
+  public async getUserByRefreshToken(
+    refreshToken: string,
+  ): Promise<User | null> {
+    return await this.userTable.findFirst({
       where: {
-        email,
+        refreshToken: { has: refreshToken },
       },
     });
-
-    return user;
   }
-  
+
   public async getMe(userId: number) {
     const { courseEnrollments, ...user } =
       await this.userTable.findUniqueOrThrow({
@@ -86,20 +105,22 @@ export class UserRepository implements IUserRepository {
     return me;
   }
 
-  public async updateUser(userId: number, userDetails: Partial<User>) {
-    const updatedUser = await this.userTable.update({
-      where: {
-        id: userId,
-      },
-      data: userDetails,
-    });
+  public async updateUser(userId: number, dto: Partial<User>): Promise<User> {
+    return await this.prisma.$transaction(async (tx) => {
+      await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
 
-    return updatedUser;
+      return await this.userTable.update({
+        where: {
+          id: userId,
+        },
+        data: dto,
+      });
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
   public async updateUserPassword(
     userId: number,
-    password: string
+    password: string,
   ): Promise<User> {
     const updatedUser = await this.userTable.update({
       where: {
@@ -113,13 +134,11 @@ export class UserRepository implements IUserRepository {
     return updatedUser;
   }
 
-  public async deleteUser(userId: number) {
-    await this.userTable.delete({
+  public async deleteUser(userId: number): Promise<User> {
+    return await this.userTable.delete({
       where: {
         id: userId,
       },
     });
-
-    return {};
   }
 }

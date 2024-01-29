@@ -1,22 +1,34 @@
-import { CourseEnrollment, Role } from "@prisma/client";
+import "reflect-metadata";
+import { CourseEnrollment, Prisma, User } from "@prisma/client";
 import {
+  CourseEnrollmentDITypes,
   CourseEnrollmentResourceId,
   CreateCourseEnrollmentDto,
   UpdateCourseEnrollmentRoleDto,
 } from "../enrollment.type";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
+import CourseEnrollmentAuthorization from "../authorization/enrollment.authorization";
+import getRoleStatus from "../../../common/functions/getRoleStatus";
+import ClientException from "../../../common/class/exceptions/ClientException";
+import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
+import {
+  CourseEnrollmentRoleModel,
+  UserRoleModel,
+} from "../../course/course.type";
+import InternalServerException from "../../../common/class/exceptions/InternalServerException";
+import PrismaPromise from "../../../common/class/prisma_promise/PrismaPromise";
+import { PrismaPromiseDITypes } from "../../../common/class/prisma_promise/prisma_promise.type";
+import {
+  IPrismaQueryRaw,
+  PrismaQueryRawDITypes,
+} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 
 export interface ICourseEnrollmentRepository {
   createEnrollment: (
     resourceId: CourseEnrollmentResourceId,
     dto: CreateCourseEnrollmentDto,
-  ) => Promise<CourseEnrollment>;
-  getEnrollmentById: (enrollmentId: number) => Promise<CourseEnrollment | null>;
-  getEnrollmentByIdOrThrow: (
-    enrollmentId: number,
-    error?: Error,
   ) => Promise<CourseEnrollment>;
   updateEnrollmentRole: (
     enrollmentId: number,
@@ -29,39 +41,112 @@ export interface ICourseEnrollmentRepository {
   ) => Promise<CourseEnrollment>;
 }
 
+// TODO : Implement MAX_RETRIES if transaction failed or timed out!
+
 @injectable()
-export class CourseEnrollmentRepository implements ICourseEnrollmentRepository {
+export default class CourseEnrollmentRepository
+  implements ICourseEnrollmentRepository
+{
+  @inject(CourseEnrollmentDITypes.AUTHORIZATION)
+  private readonly authorization: CourseEnrollmentAuthorization;
+
+  @inject(PrismaPromiseDITypes.PRISMA_PROMISE)
+  private readonly prismaPromise: PrismaPromise;
+
+  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
+  private readonly prismaQueryRaw: IPrismaQueryRaw;
+
   private readonly prisma = PrismaClientSingleton.getInstance();
-  private readonly enrollmentTable = this.prisma.courseEnrollment;
 
   public async createEnrollment(
     resourceId: CourseEnrollmentResourceId,
     dto: CreateCourseEnrollmentDto,
   ): Promise<CourseEnrollment> {
-    return await this.prisma.$transaction(async (tx) => {
-      const { courseId } = resourceId;
-      const { role: enrollmentRole } = dto;
-      const [enrollment] = await Promise.all([
-        tx.courseEnrollment.create({
-          data: dto,
-        }),
-        tx.course.update({
-          where: {
-            id: courseId,
-          },
-          data: {
-            [isEqualOrIncludeRole(enrollmentRole, Role.STUDENT)
-              ? "totalStudents"
-              : "totalInstructors"]: { increment: 1 },
-          },
-          select: {
-            id: true,
-          },
-        }),
-      ]);
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const { userId, courseId } = resourceId;
+        const { userId: targetUserId, role: enrollmentRole } = dto;
+        const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+          tx,
+          userId,
+        );
+        const course =
+          await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(
+            tx,
+            courseId,
+          );
 
-      return enrollment;
-    });
+        const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+        if (!(isStudent || isInstructor || isAdmin)) {
+          throw new InternalServerException();
+        }
+
+        this.authorization.authorizeCreateEnrollment(user, course, dto);
+
+        /**
+         *
+         * At this point, user is authorized to create enrollment.
+         *
+         * validate the create enrollment logic.
+         *
+         */
+        let targetUser: User = user;
+        const isUserIdEqual = userId === targetUserId;
+        if (!isUserIdEqual) {
+          targetUser =
+            await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+              tx,
+              targetUserId,
+            );
+        }
+
+        const existingTargetEnrollments =
+          await this.prismaQueryRaw.courseEnrollment.selectForUpdateByUserIdAndCourseId(
+            tx,
+            {
+              userId: targetUserId,
+              courseId,
+            },
+          );
+
+        if (existingTargetEnrollments) {
+          throw new ClientException("Enrollment already exists!");
+        }
+
+        if (
+          isEqualOrIncludeCourseEnrollmentRole(
+            dto.role,
+            CourseEnrollmentRoleModel.INSTRUCTOR,
+          ) &&
+          isEqualOrIncludeRole(targetUser.role, UserRoleModel.STUDENT)
+        ) {
+          throw new ClientException();
+        }
+
+        const [newEnrollment] = await Promise.all([
+          tx.courseEnrollment.create({
+            data: dto,
+          }),
+          isEqualOrIncludeCourseEnrollmentRole(
+            dto.role,
+            CourseEnrollmentRoleModel.STUDENT,
+          )
+            ? this.prismaPromise.course.incrementTotalStudents(tx, courseId, 1)
+            : this.prismaPromise.course.incrementTotalInstructors(
+                tx,
+                courseId,
+                1,
+              ),
+        ]);
+
+        return newEnrollment;
+      },
+      {
+        maxWait: 5000,
+        timeout: 8000,
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
   }
 
   public async updateEnrollmentRole(
@@ -69,61 +154,167 @@ export class CourseEnrollmentRepository implements ICourseEnrollmentRepository {
     resourceId: CourseEnrollmentResourceId,
     dto: UpdateCourseEnrollmentRoleDto,
   ): Promise<CourseEnrollment> {
-    return await this.prisma.$transaction(async (tx) => {
-      const { courseId } = resourceId;
-      const { role: updatedEnrollmentRole } = dto;
-      const [updatedEnrollment] = await Promise.all([
-        tx.courseEnrollment.update({
-          where: {
-            id: enrollmentId,
-          },
-          data: dto,
-        }),
-        tx.course.update({
-          where: {
-            id: courseId,
-          },
-          data: {
-            [isEqualOrIncludeRole(updatedEnrollmentRole, Role.STUDENT)
-              ? "totalStudents"
-              : "totalInstructors"]: { increment: 1 },
-            [isEqualOrIncludeRole(updatedEnrollmentRole.role, Role.STUDENT)
-              ? "totalInstructors"
-              : "totalStudents"]: { decrement: 1 },
-          },
-        }),
-      ]);
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const { userId, courseId } = resourceId;
+        const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+          tx,
+          userId,
+        );
+        const course =
+          await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(
+            tx,
+            courseId,
+          );
+        const enrollment =
+          await this.prismaQueryRaw.courseEnrollment.selectForUpdateByIdOrThrow(
+            tx,
+            enrollmentId,
+          );
 
-      return updatedEnrollment;
-    });
+        const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+        if (!(isStudent || isInstructor || isAdmin)) {
+          throw new InternalServerException();
+        }
+
+        this.authorization.authorizeUpdateEnrollmentRole(
+          user,
+          course,
+          enrollment,
+        );
+
+        /**
+         *
+         * At this point, user is authorized to update enrollment.
+         *
+         * validate the update enrollment logic.
+         *
+         */
+        let targetUser: User = user;
+        const isUserIdEqual = userId === enrollment.userId;
+        if (!isUserIdEqual) {
+          targetUser =
+            await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+              tx,
+              enrollment.userId,
+            );
+        }
+
+        if (enrollment.role === dto.role) {
+          return enrollment;
+        }
+
+        if (
+          isEqualOrIncludeCourseEnrollmentRole(
+            dto.role,
+            CourseEnrollmentRoleModel.INSTRUCTOR,
+          ) &&
+          isEqualOrIncludeRole(targetUser.role, UserRoleModel.STUDENT)
+        ) {
+          throw new ClientException();
+        }
+
+        const [updatedEnrollment] = await Promise.all([
+          tx.courseEnrollment.update({
+            where: {
+              id: enrollmentId,
+            },
+            data: dto,
+          }),
+          ...(isEqualOrIncludeCourseEnrollmentRole(
+            dto.role,
+            CourseEnrollmentRoleModel.STUDENT,
+          )
+            ? [
+                this.prismaPromise.course.incrementTotalStudents(
+                  tx,
+                  courseId,
+                  1,
+                ),
+                this.prismaPromise.course.incrementTotalInstructors(
+                  tx,
+                  courseId,
+                  -1,
+                ),
+              ]
+            : [
+                this.prismaPromise.course.incrementTotalStudents(
+                  tx,
+                  courseId,
+                  -1,
+                ),
+                this.prismaPromise.course.incrementTotalInstructors(
+                  tx,
+                  courseId,
+                  1,
+                ),
+              ]),
+        ]);
+
+        return updatedEnrollment;
+      },
+      {
+        maxWait: 5000,
+        timeout: 8000,
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
   }
 
   public async deleteEnrollment(
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
   ): Promise<CourseEnrollment> {
-    const deletedEnrollment = await this.prisma.$transaction(async (tx) => {
-      const [deletedEnrollment] = await Promise.all([
-        tx.courseEnrollment.delete({
-          where: {
-            id: enrollmentId,
-          },
-        }),
-        tx.course.update({
-          where: {
-            id: ids.courseId,
-          },
-          data: {
-            [isEqualOrIncludeRole(enrollment.role, Role.STUDENT)
-              ? "totalStudents"
-              : "totalInstructors"]: { decrement: 1 },
-          },
-        }),
-      ]);
+    return await this.prisma.$transaction(
+      async (tx) => {
+        const { userId, courseId } = resourceId;
+        const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+          tx,
+          userId,
+        );
+        const course =
+          await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(
+            tx,
+            courseId,
+          );
+        const enrollment =
+          await this.prismaQueryRaw.courseEnrollment.selectForUpdateByIdOrThrow(
+            tx,
+            enrollmentId,
+          );
 
-      return deletedEnrollment;
-    });
+        const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+        if (!(isStudent || isInstructor || isAdmin)) {
+          throw new InternalServerException();
+        }
 
-    return deletedEnrollment;
+        this.authorization.authorizeDeleteEnrollment(user, course, enrollment);
+
+        const [deletedEnrollment] = await this.prisma.$transaction([
+          tx.courseEnrollment.delete({
+            where: {
+              id: enrollmentId,
+            },
+          }),
+          isEqualOrIncludeCourseEnrollmentRole(
+            enrollment.role,
+            CourseEnrollmentRoleModel.STUDENT,
+          )
+            ? this.prismaPromise.course.incrementTotalStudents(tx, courseId, -1)
+            : this.prismaPromise.course.incrementTotalInstructors(
+                tx,
+                courseId,
+                -1,
+              ),
+        ]);
+
+        return deletedEnrollment;
+      },
+      {
+        maxWait: 5000,
+        timeout: 8000,
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      },
+    );
   }
 }

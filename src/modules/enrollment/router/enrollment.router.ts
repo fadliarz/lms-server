@@ -1,5 +1,4 @@
 import "reflect-metadata";
-
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { ICourseEnrollmentController } from "../controller/enrollment.controller";
@@ -7,48 +6,30 @@ import {
   CourseEnrollmentDITypes,
   courseEnrollmentUrls,
 } from "../enrollment.type";
-import { CourseEnrollmentAuthorizationMiddleware } from "../authorization/enrollment.authorization";
-import { validationMiddleware } from "../../../middlewares/validationMiddleware";
-import {
-  CreateCourseEnrollmentDtoJoi,
-  UpdateCourseEnrollmentDtoJoi,
-} from "../controller/enrollment.joi";
 
 export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
   const router = express.Router();
 
   const controller = dIContainer.get<ICourseEnrollmentController>(
-    CourseEnrollmentDITypes.CONTROLLER
+    CourseEnrollmentDITypes.CONTROLLER,
   );
-  const authorizationMiddleware = new CourseEnrollmentAuthorizationMiddleware();
 
   router.post(
     "/",
     authenticationMiddleware,
-    validationMiddleware({ body: CreateCourseEnrollmentDtoJoi }),
-    authorizationMiddleware
-      .getCreateCourseEnrollmentAuthorizationMiddleware()
-      .bind(authorizationMiddleware),
-    controller.create.bind(controller)
+    controller.createEnrollment.bind(controller),
   );
 
-  router.put(
-    courseEnrollmentUrls.enrollment,
+  router.patch(
+    courseEnrollmentUrls.role,
     authenticationMiddleware,
-    validationMiddleware({ body: UpdateCourseEnrollmentDtoJoi }),
-    authorizationMiddleware
-      .getUpdateCourseEnrollmentAuthorizationMiddleWare()
-      .bind(authorizationMiddleware),
-    controller.update.bind(controller)
+    controller.updateEnrollmentRole.bind(controller),
   );
 
   router.delete(
     courseEnrollmentUrls.enrollment,
     authenticationMiddleware,
-    authorizationMiddleware
-      .getDeleteCourseEnrollmentAuthorizationMiddleware()
-      .bind(authorizationMiddleware),
-    controller.delete.bind(controller)
+    controller.deleteEnrollment.bind(controller),
   );
 
   return router;

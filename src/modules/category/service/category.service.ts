@@ -1,9 +1,9 @@
 import "reflect-metadata";
-
 import { inject, injectable } from "inversify";
 import {
   CourseCategoryDITypes,
   CourseCategoryModel,
+  CourseCategoryResourceId,
   CreateCourseCategoryDto,
   UpdateCourseCategoryDto,
 } from "../category.type";
@@ -12,12 +12,14 @@ import getValuable from "../../../common/functions/getValuable";
 
 export interface ICourseCategoryService {
   createCategory: (
-    dto: CreateCourseCategoryDto
+    resourceId: CourseCategoryResourceId,
+    dto: CreateCourseCategoryDto,
   ) => Promise<CourseCategoryModel>;
   getCategories: () => Promise<CourseCategoryModel[]>;
   updateCategory: (
     categoryId: number,
-    dto: UpdateCourseCategoryDto
+    resourceId: CourseCategoryResourceId,
+    dto: UpdateCourseCategoryDto,
   ) => Promise<CourseCategoryModel>;
 }
 
@@ -27,9 +29,10 @@ export class CourseCategoryService implements ICourseCategoryService {
   private readonly repository: ICourseCategoryRepository;
 
   public async createCategory(
-    dto: CreateCourseCategoryDto
+    resourceId: CourseCategoryResourceId,
+    dto: CreateCourseCategoryDto,
   ): Promise<CourseCategoryModel> {
-    const newCategory = await this.repository.createCategory(dto);
+    const newCategory = await this.repository.createCategory(resourceId, dto);
 
     return getValuable(newCategory);
   }
@@ -45,11 +48,13 @@ export class CourseCategoryService implements ICourseCategoryService {
 
   public async updateCategory(
     categoryId: number,
-    dto: UpdateCourseCategoryDto
+    resourceId: CourseCategoryResourceId,
+    dto: UpdateCourseCategoryDto,
   ): Promise<CourseCategoryModel> {
     const updatedCategory = await this.repository.updateCategory(
       categoryId,
-      dto
+      resourceId,
+      dto,
     );
 
     return getValuable(updatedCategory);

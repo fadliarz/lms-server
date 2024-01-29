@@ -1,6 +1,5 @@
 import { CourseEnrollmentRole } from "@prisma/client";
 import {
-  CourseEnrollmentModel,
   CourseLikeModel,
   CourseModel,
   CreateCourseDto,
@@ -15,6 +14,7 @@ import {
   CourseCategoryModel,
   CreateCourseCategoryDto,
 } from "../../../modules/category/category.type";
+import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
 
 export default interface RandDB {
   /**
@@ -61,20 +61,20 @@ export default interface RandDB {
 
   insertManyLessonsIntoCourse: (
     courseId: number,
-    numberOfLessons: number
+    numberOfLessons: number,
   ) => Promise<CourseLessonModel[]>;
   insertManyVideosIntoLesson: (
     lessonId: number,
     numberOfVideos: number,
-    durationEachVideo: number
+    durationEachVideo: number,
   ) => Promise<CourseLessonVideoModel[]>;
   insertOneEnrollmentIntoCourse: (
     userId: number,
     courseId: number,
-    enrollmentRole: CourseEnrollmentRole
+    enrollmentRole: CourseEnrollmentRole,
   ) => Promise<CourseEnrollmentModel>;
   insertOneLikeIntoCourse: (
     userId: number,
-    courseId: number
+    courseId: number,
   ) => Promise<CourseLikeModel>;
 }

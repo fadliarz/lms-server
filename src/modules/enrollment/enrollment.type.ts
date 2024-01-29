@@ -5,14 +5,13 @@ export const CourseEnrollmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_ENROLLMENT_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_ENROLLMENT_CONTROLLER"),
-  AUTHORIZATION_MIDDLEWARE: Symbol.for(
-    "COURSE_ENROLLMENT_AUTHORIZATION_MIDDLEWARE",
-  ),
+  AUTHORIZATION: Symbol.for("COURSE_ENROLLMENT_AUTHORIZATION"),
 };
 
 export enum courseEnrollmentUrls {
   root = "/enrollments",
   enrollment = "/:enrollmentId",
+  role = courseEnrollmentUrls.enrollment + "/role",
 }
 
 /**
@@ -55,5 +54,6 @@ export type UpdateCourseEnrollmentRoleDto = Pick<
  *
  */
 export type CourseEnrollmentResourceId = {
+  userId: number;
   courseId: number;
 };

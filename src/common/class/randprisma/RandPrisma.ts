@@ -4,7 +4,6 @@ import RandDB from "./rand.type";
 import getValuable from "../../functions/getValuable";
 import { UserModel } from "../../../modules/user/user.type";
 import {
-  CourseEnrollmentModel,
   CourseLikeModel,
   CourseModel,
   CreateCourseDto,
@@ -20,62 +19,10 @@ import {
 } from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
 import isEqualOrIncludeCourseEnrollmentRole from "../../functions/isEqualOrIncludeCourseEnrollmentRole";
+import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
 
 export default class RandPrisma implements RandDB {
   private readonly prisma = PrismaClientSingleton.getInstance();
-
-  /**
-   *
-   *
-   * Private Method
-   *
-   *
-   */
-
-  private generateRandomString(length: number) {
-    return faker.string.alpha(length);
-  }
-
-  private generateRandomInteger(min: number, max: number) {
-    return faker.number.int({ min, max });
-  }
-
-  private generateUserInputArg() {
-    return {
-      email: this.generateRandomString(8).concat("@gmail.com"),
-      password: this.generateRandomString(8),
-      name: this.generateRandomString(8),
-      NIM: this.generateRandomInteger(1, 1000).toString(),
-    };
-  }
-
-  private generateCategoryInputArg() {
-    return {
-      title: this.generateRandomString(8),
-    };
-  }
-
-  private generateCourseLessonInputArg(courseId: number) {
-    return {
-      courseId,
-      title: this.generateRandomString(8),
-    };
-  }
-
-  private generateCourseLessonVideoInputArg(
-    lessonId: number,
-    duration: number
-  ) {
-    return {
-      lessonId,
-      name: this.generateRandomString(8),
-      totalDurations: duration,
-      youtubeLink: "https://www.youtube.com/".concat(
-        this.generateRandomString(8),
-        "/"
-      ),
-    };
-  }
 
   /**
    *
@@ -181,14 +128,6 @@ export default class RandPrisma implements RandDB {
 
   /**
    *
-   *
-   * Insert
-   *
-   *
-   */
-
-  /**
-   *
    * @param courseId
    * @param numberOfLessons
    * @returns
@@ -197,7 +136,7 @@ export default class RandPrisma implements RandDB {
    */
   public async insertManyLessonsIntoCourse(
     courseId: number,
-    numberOfLessons: number
+    numberOfLessons: number,
   ): Promise<CourseLessonModel[]> {
     let lessons: CourseLessonModel[] = [];
 
@@ -239,7 +178,7 @@ export default class RandPrisma implements RandDB {
   public async insertManyVideosIntoLesson(
     lessonId: number,
     numberOfVideos: number,
-    durationEachVideo: number
+    durationEachVideo: number,
   ): Promise<CourseLessonVideoModel[]> {
     let videos: CourseLessonVideoModel[] = [];
     await this.prisma.$transaction(async (tx) => {
@@ -247,7 +186,7 @@ export default class RandPrisma implements RandDB {
         const video = await this.prisma.courseLessonVideo.create({
           data: this.generateCourseLessonVideoInputArg(
             lessonId,
-            durationEachVideo
+            durationEachVideo,
           ),
         });
 
@@ -309,7 +248,7 @@ export default class RandPrisma implements RandDB {
   public async insertOneEnrollmentIntoCourse(
     userId: number,
     courseId: number,
-    enrollmentRole: CourseEnrollmentRole
+    enrollmentRole: CourseEnrollmentRole,
   ): Promise<CourseEnrollmentModel> {
     const enrollment = await this.prisma.$transaction(async (tx) => {
       const enrollment = await tx.courseEnrollment.create({
@@ -356,7 +295,7 @@ export default class RandPrisma implements RandDB {
 
   public async insertOneLikeIntoCourse(
     userId: number,
-    courseId: number
+    courseId: number,
   ): Promise<CourseLikeModel> {
     const like = await this.prisma.$transaction(async (tx) => {
       const like = await this.prisma.courseLike.create({
@@ -381,5 +320,66 @@ export default class RandPrisma implements RandDB {
     });
 
     return getValuable(like);
+  }
+
+  /**
+   *
+   *
+   * Private Method
+   *
+   *
+   */
+
+  private generateRandomString(length: number) {
+    return faker.string.alpha(length);
+  }
+
+  private generateRandomInteger(min: number, max: number) {
+    return faker.number.int({ min, max });
+  }
+
+  /**
+   *
+   *
+   * Insert
+   *
+   *
+   */
+
+  private generateUserInputArg() {
+    return {
+      email: this.generateRandomString(8).concat("@gmail.com"),
+      password: this.generateRandomString(8),
+      name: this.generateRandomString(8),
+      NIM: this.generateRandomInteger(1, 1000).toString(),
+    };
+  }
+
+  private generateCategoryInputArg() {
+    return {
+      title: this.generateRandomString(8),
+    };
+  }
+
+  private generateCourseLessonInputArg(courseId: number) {
+    return {
+      courseId,
+      title: this.generateRandomString(8),
+    };
+  }
+
+  private generateCourseLessonVideoInputArg(
+    lessonId: number,
+    duration: number,
+  ) {
+    return {
+      lessonId,
+      name: this.generateRandomString(8),
+      totalDurations: duration,
+      youtubeLink: "https://www.youtube.com/".concat(
+        this.generateRandomString(8),
+        "/",
+      ),
+    };
   }
 }

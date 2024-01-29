@@ -1,26 +1,30 @@
 import "reflect-metadata";
-
 import { Request, Response, NextFunction } from "express";
 import { inject, injectable } from "inversify";
 import { ICourseCategoryService } from "../service/category.service";
-import { CourseCategoryDITypes } from "../category.type";
+import {
+  CourseCategoryDITypes,
+  CourseCategoryResourceId,
+} from "../category.type";
 import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseCategoryDtoJoi,
   UpdateCourseCategoryDtoJoi,
 } from "./category.joi";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import NaNException from "../../../common/class/exceptions/NaNException";
 
 export interface ICourseCategoryController {
   createCategory: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   getCategories: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
 }
 
@@ -32,12 +36,16 @@ export class CourseCategoryController implements ICourseCategoryController {
   public async createCategory(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<Response | void> {
     try {
       await validateJoi({ body: CreateCourseCategoryDtoJoi })(req, res, next);
 
-      const newCategory = await this.service.createCategory(req.body);
+      const resourceId = this.validateResourceId(req);
+      const newCategory = await this.service.createCategory(
+        resourceId,
+        req.body,
+      );
 
       return res.status(StatusCode.RESOURCE_CREATED).json({
         data: newCategory,
@@ -50,7 +58,7 @@ export class CourseCategoryController implements ICourseCategoryController {
   public async getCategories(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<Response | void> {
     try {
       const categories = await this.service.getCategories();
@@ -64,19 +72,42 @@ export class CourseCategoryController implements ICourseCategoryController {
   public async updateCategory(
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<Response | void> {
     try {
       await validateJoi({ body: UpdateCourseCategoryDtoJoi })(req, res, next);
 
+      const categoryId = this.validateCategoryId(req);
+      const resourceId = this.validateResourceId(req);
       const updatedCategory = await this.service.updateCategory(
-        (req.params as any).categoryId,
-        req.body
+        categoryId,
+        resourceId,
+        req.body,
       );
 
       return res.status(StatusCode.SUCCESS).json({ data: updatedCategory });
     } catch (error) {
       next(error);
     }
+  }
+
+  private validateResourceId(
+    req: Request,
+    error?: Error,
+  ): CourseCategoryResourceId {
+    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+
+    return {
+      userId,
+    };
+  }
+
+  private validateCategoryId(req: Request, error?: Error): number {
+    const categoryId: number = Number(req.params.lessonId);
+    if (isNaN(categoryId)) {
+      throw error || new NaNException("categoryId");
+    }
+
+    return categoryId;
   }
 }

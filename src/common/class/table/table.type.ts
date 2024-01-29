@@ -1,10 +1,10 @@
 import {
-  CourseEnrollmentModel,
   CourseLikeModel,
   CourseModel,
 } from "../../../modules/course/course.type";
 import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
+import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
 
 export interface ITable {
   course: ICourseTable;

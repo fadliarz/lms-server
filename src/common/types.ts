@@ -42,3 +42,8 @@ export type ModifyFieldWithNullToBeOptionalAndRemoveNull<T> = {
 } & {
   [K in keyof PickNotNullable<T>]: T[K];
 };
+
+export type PrismaTransaction = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
+>;

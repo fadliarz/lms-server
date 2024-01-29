@@ -12,21 +12,21 @@ import RecordNotFoundException from "../../../common/class/exceptions/RecordNotF
 
 export interface ICourseLessonService {
   createLesson: (
-    courseId: number,
+    resourceId: CourseLessonResourceId,
     dto: CreateCourseLessonDto,
   ) => Promise<CourseLessonModel>;
   getLessonById: (
     lessonId: number,
-    resource: CourseLessonResourceId,
+    resourceId: CourseLessonResourceId,
   ) => Promise<CourseLessonModel>;
   updateLesson: (
     lessonId: number,
-    resource: CourseLessonResourceId,
+    resourceId: CourseLessonResourceId,
     dto: UpdateCourseLessonDto,
   ) => Promise<CourseLessonModel>;
   deleteLesson: (
     lessonId: number,
-    resource: CourseLessonResourceId,
+    resourceId: CourseLessonResourceId,
   ) => Promise<{}>;
 }
 
@@ -36,19 +36,19 @@ export class CourseLessonService implements ICourseLessonService {
   private readonly repository: ICourseLessonRepository;
 
   public async createLesson(
-    courseId: number,
+    resourceId: CourseLessonResourceId,
     dto: CreateCourseLessonDto,
   ): Promise<CourseLessonModel> {
-    const lesson = await this.repository.createLesson(courseId, dto);
+    const lesson = await this.repository.createLesson(resourceId, dto);
 
     return getValuable(lesson);
   }
 
   public async getLessonById(
     lessonId: number,
-    resource: CourseLessonResourceId,
+    resourceId: CourseLessonResourceId,
   ): Promise<CourseLessonModel> {
-    const { courseId } = resource;
+    const { courseId } = resourceId;
     const lesson = await this.repository.getLessonByIdOrThrow(lessonId);
     if (!lesson || lesson.courseId !== courseId) {
       throw new RecordNotFoundException();
@@ -59,31 +59,35 @@ export class CourseLessonService implements ICourseLessonService {
 
   public async updateLesson(
     lessonId: number,
-    resource: CourseLessonResourceId,
+    resourceId: CourseLessonResourceId,
     dto: UpdateCourseLessonDto,
   ): Promise<CourseLessonModel> {
-    const { courseId } = resource;
+    const { courseId } = resourceId;
     const lesson = await this.repository.getLessonById(lessonId);
     if (!lesson || lesson.courseId !== courseId) {
       throw new RecordNotFoundException();
     }
 
-    const updatedLesson = await this.repository.updateLesson(lessonId, dto);
+    const updatedLesson = await this.repository.updateLesson(
+      lessonId,
+      resourceId,
+      dto,
+    );
 
     return getValuable(updatedLesson);
   }
 
   public async deleteLesson(
     lessonId: number,
-    resource: CourseLessonResourceId,
+    resourceId: CourseLessonResourceId,
   ): Promise<{}> {
-    const { courseId } = resource;
+    const { courseId } = resourceId;
     const lesson = await this.repository.getLessonById(lessonId);
     if (!lesson || lesson.courseId !== courseId) {
       throw new RecordNotFoundException();
     }
 
-    await this.repository.deleteLesson(lessonId, resource);
+    await this.repository.deleteLesson(lessonId, resourceId);
 
     return {};
   }

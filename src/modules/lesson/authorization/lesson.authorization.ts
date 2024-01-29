@@ -1,97 +1,63 @@
-import { Request, Response, NextFunction } from "express";
-import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
-import { Role } from "@prisma/client";
-import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import "reflect-metadata";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
-import ClientException from "../../../common/class/exceptions/ClientException";
-import { BaseCourseAuthorization } from "../../../common/class/authorization/BaseCourseAuthorization";
-import NaNException from "../../../common/class/exceptions/NaNException";
+import { Course, CourseEnrollment, Role, User } from "@prisma/client";
+import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
+import { ICourseLessonAuthorization } from "../lesson.type";
+import { injectable } from "inversify";
 
-export class ICourseLessonAuthorizationMiddleware {
-  getCreateLessonAuthorizationMiddleware: () => (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<void>;
-  getUpdateLessonAuthorizationMiddleware: () => (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<void>;
-  getDeleteLessonAuthorizationMiddleware: () => (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<void>;
-}
-
-export class CourseLessonAuthorizationMiddleware
-  extends BaseCourseAuthorization
-  implements ICourseLessonAuthorizationMiddleware
+@injectable()
+export default class CourseLessonAuthorization
+  implements ICourseLessonAuthorization
 {
-  public getCreateLessonAuthorizationMiddleware() {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction,
-    ): Promise<void> => {
-      try {
-        const courseId = Number(req.params.courseId);
-        if (isNaN(courseId)) {
-          throw new NaNException("courseId");
-        }
+  public authorizeCreateLesson(
+    user: User,
+    course: Course,
+    enrollment: CourseEnrollment | null,
+  ): void {
+    const { id: userId, role: userRole } = user;
+    const { authorId } = course;
+    const isAuthor = userId === authorId;
+    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    let isAuthorized = false;
+    if (isStudent) {
+    }
 
-        const { id: userId, role: userRole } =
-          getRequestUserOrThrowAuthenticationException(req);
-        const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-        let isAuthorized = false;
-        if (isStudent) {
-        }
-
-        if (isInstructor || isAdmin) {
-          const authorId = await this.getAuthorIdOrThrow(courseId);
-          const isAuthor = userId === authorId;
-
-          if (isAuthor) {
-            isAuthorized = true;
-          }
-
-          if (!isAuthorized) {
-            const enrollmentRole = await this.getEnrollmentRoleById(
-              userId,
-              courseId,
-            );
-
-            if (
-              enrollmentRole &&
-              isEqualOrIncludeRole(enrollmentRole, Role.INSTRUCTOR)
-            ) {
-              isAuthorized = true;
-            }
-          }
-        }
-
-        if (isAdmin) {
-          isAuthorized = true;
-        }
-
-        if (!isAuthorized) {
-          throw new AuthorizationException();
-        }
-
-        next();
-      } catch (error) {
-        next(error);
+    if (isInstructor) {
+      if (
+        isAuthor ||
+        (enrollment &&
+          isEqualOrIncludeCourseEnrollmentRole(
+            enrollment.role,
+            Role.INSTRUCTOR,
+          ))
+      ) {
+        isAuthorized = true;
       }
-    };
+    }
+
+    if (isAdmin) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
   }
 
-  public getUpdateLessonAuthorizationMiddleware() {
-    return this.getCreateLessonAuthorizationMiddleware();
+  public authorizeUpdateLesson(
+    user: User,
+    course: Course,
+    enrollment: CourseEnrollment | null,
+  ): void {
+    this.authorizeCreateLesson(user, course, enrollment);
   }
 
-  public getDeleteLessonAuthorizationMiddleware() {
-    return this.getCreateLessonAuthorizationMiddleware();
+  public authorizeDeleteLesson(
+    user: User,
+    course: Course,
+    enrollment: CourseEnrollment | null,
+  ): void {
+    this.authorizeCreateLesson(user, course, enrollment);
   }
 }

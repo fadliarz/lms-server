@@ -6,47 +6,53 @@ import { UserDITypes } from "../user.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import filterPublicData from "../../../common/functions/filterPublicData";
 import getValuable from "../../../common/functions/getValuable";
+import validateJoi from "../../../common/functions/validateJoi";
+import { SignIn } from "./user.joi";
+import { Cookie } from "../../../common/constants/Cookie";
+import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
+import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import NaNException from "../../../common/class/exceptions/NaNException";
 
 export interface IUserController {
   createUser: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   getUserById: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   getUserByEmail: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   getMe: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   updateUser: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   deleteUser: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
   signIn: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
-  logOut: (
+  signOut: (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => Promise<Response | void>;
 }
 
@@ -54,30 +60,40 @@ export interface IUserController {
 export class UserController implements IUserController {
   @inject(UserDITypes.SERVICE) private service: IUserService;
 
-  public async createUser(req: Request, res: Response, next: NextFunction) {
+  public async createUser(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
     try {
+      await validateJoi({ body: "" })(req, res, next);
+
       const newUser = await this.service.createUser(req.body);
 
       return res
-        .cookie("access_token", newUser.accessToken, {
+        .cookie(Cookie.ACCESS_TOKEN, newUser.accessToken, {
           httpOnly: false,
-          maxAge: 1000 * 60 * 60 * 24 * 30, // 30 Days
+          maxAge: 1000 * 60 * 60 * Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
           secure: process.env.NODE_ENV === "production",
         })
-        .cookie("refresh_token", newUser.refreshToken, {
+        .cookie(Cookie.REFRESH_TOKEN, newUser.refreshToken, {
           httpOnly: true,
-          maxAge: 1000 * 60 * 60 * 24 * 30, // 30 Days
+          maxAge: 1000 * 60 * 60 * 24 * Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
           secure: process.env.NODE_ENV === "production",
           sameSite: "strict",
         })
         .status(StatusCode.RESOURCE_CREATED)
-        .json({ data: getValuable(newUser) });
+        .json({ data: getValuable({ ...newUser, password: null }) });
     } catch (error) {
       next(error);
     }
   }
 
-  public async getUserById(req: Request, res: Response, next: NextFunction) {
+  public async getUserById(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
       const userData = await this.service.getUserById(user.id);
@@ -88,9 +104,17 @@ export class UserController implements IUserController {
     }
   }
 
-  public async getUserByEmail(req: Request, res: Response, next: NextFunction) {
+  public async getUserByEmail(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
     try {
       const userData = await this.service.getUserByEmail(req.params.email);
+
+      if (!userData) {
+        throw new RecordNotFoundException();
+      }
 
       return res.status(StatusCode.SUCCESS).json({ data: userData });
     } catch (error) {
@@ -98,7 +122,11 @@ export class UserController implements IUserController {
     }
   }
 
-  public async getMe(req: Request, res: Response, next: NextFunction) {
+  public async getMe(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
       const me = await this.service.getMe(user.id);
@@ -109,11 +137,14 @@ export class UserController implements IUserController {
     }
   }
 
-  public async updateUser(req: Request, res: Response, next: NextFunction) {
+  public async updateUser(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
     try {
-      const payload = req.body;
-      const userId = Number(req.params.userId) as number;
-      const updatedUser = await this.service.updateUser(userId, payload);
+      const userId = this.validateUserId(req);
+      const updatedUser = await this.service.updateUser(userId, req.body);
 
       return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
     } catch (error) {
@@ -123,7 +154,7 @@ export class UserController implements IUserController {
 
   public async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = Number(req.params.userId) as number;
+      const userId = this.validateUserId(req);
       await this.service.deleteUser(userId);
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
@@ -134,42 +165,46 @@ export class UserController implements IUserController {
 
   public async signIn(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, password } = req.body;
-      const user = await this.service.signInUser(email, password);
-      const expiresIn = 30; // days
+      await validateJoi({ body: SignIn })(req, res, next);
 
-      return res
-        .cookie("access_token", user.accessToken, {
-          httpOnly: false,
-          maxAge: 1000 * 60 * 60 * 24 * expiresIn,
-          secure: process.env.NODE_ENV === "production",
-        })
-        .cookie("refresh_token", user.refreshToken, {
-          httpOnly: true,
-          maxAge: 1000 * 60 * 60 * 24 * expiresIn,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-        })
-        .status(StatusCode.SUCCESS)
-        .json({
-          data: { expiresAtt: expiresIn.toString, ...filterPublicData(user) },
-        });
+      const { email, password } = req.body;
+      const user = await this.service.signInUser(req, res, { email, password });
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: filterPublicData(user),
+      });
     } catch (error) {
       next(error);
     }
   }
 
-  public async logOut(req: Request, res: Response, next: NextFunction) {
+  public async signOut(req: Request, res: Response, next: NextFunction) {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
-      await this.service.clearUserAuthenticationToken(user.id);
 
       return res
         .clearCookie("access_token")
         .status(StatusCode.SUCCESS)
         .json({ data: {} });
     } catch (error) {
+      if (error instanceof AuthenticationException) {
+        res.clearCookie(Cookie.REFRESH_TOKEN, {
+          httpOnly: true,
+          sameSite: "none",
+          secure: true,
+        });
+      }
+
       next(error);
     }
+  }
+
+  private validateUserId(req: Request, error?: Error): number {
+    const userId = Number(req.params.userId);
+    if (isNaN(userId)) {
+      throw error || new NaNException("userId");
+    }
+
+    return userId;
   }
 }

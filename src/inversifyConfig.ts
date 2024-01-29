@@ -24,15 +24,17 @@ import {
   CourseEnrollmentService,
   ICourseEnrollmentService,
 } from "./modules/enrollment/service/enrollment.service";
-import {
-  CourseEnrollmentRepository,
+import CourseEnrollmentRepository, {
   ICourseEnrollmentRepository,
 } from "./modules/enrollment/repository/enrollment.repository";
 import {
   CourseLessonRepository,
   ICourseLessonRepository,
 } from "./modules/lesson/repository/lesson.repository";
-import { CourseLessonDITypes } from "./modules/lesson/lesson.type";
+import {
+  CourseLessonDITypes,
+  ICourseLessonAuthorization,
+} from "./modules/lesson/lesson.type";
 import {
   CourseLessonService,
   ICourseLessonService,
@@ -45,7 +47,10 @@ import {
   CourseLessonVideoRepository,
   ICourseLessonVideoRepository,
 } from "./modules/video/repository/video.repository";
-import { CourseLessonVideoDITypes } from "./modules/video/video.type";
+import {
+  CourseLessonVideoDITypes,
+  ICourseLessonVideoAuthorization,
+} from "./modules/video/video.type";
 import {
   CourseLessonVideoService,
   ICourseLessonVideoService,
@@ -66,7 +71,10 @@ import {
   CourseCategoryController,
   ICourseCategoryController,
 } from "./modules/category/controller/category.controller";
-import { CourseCategoryDITypes } from "./modules/category/category.type";
+import {
+  CourseCategoryDITypes,
+  ICourseCategoryAuthorization,
+} from "./modules/category/category.type";
 import {
   CourseAuthorizationMiddleware,
   ICourseAuthorizationMiddleware,
@@ -83,12 +91,81 @@ import PrismaTable, {
   PrismaTableDITypes,
 } from "./common/class/table/PrismaTable";
 import PrismaCourseTable from "./common/class/table/PrismaCourseTable";
-import PrismaCourseEnrollmenTable from "./common/class/table/PrismaCourseEnrollmentTable";
+import PrismaCourseEnrollmentTable from "./common/class/table/PrismaCourseEnrollmentTable";
 import PrismaCourseLessonTable from "./common/class/table/PrismaCourseLessonTable";
 import PrismaCourseLessonVideoTable from "./common/class/table/PrismaCourseLessonVideoTable";
 import PrismaCourseLikeTable from "./common/class/table/PrismaCourseLikeTable";
+import CourseEnrollmentAuthorization from "./modules/enrollment/authorization/enrollment.authorization";
+import {
+  ICoursePrismaPromise,
+  IPrismaPromise,
+  PrismaPromiseDITypes,
+} from "./common/class/prisma_promise/prisma_promise.type";
+import PrismaPromise from "./common/class/prisma_promise/PrismaPromise";
+import CoursePrismaPromise from "./common/class/prisma_promise/CoursePrismaPromise";
+import {
+  ICourseCategoryPrismaQueryRaw,
+  ICourseEnrollmentPrismaQueryRaw,
+  ICourseLessonPrismaQueryRaw,
+  ICourseLessonVideoPrismaQueryRaw,
+  ICoursePrismaQueryRaw,
+  IPrismaQueryRaw,
+  IUserPrismaQueryRaw,
+  PrismaQueryRawDITypes,
+} from "./common/class/prisma_query_raw/prisma_query_raw.type";
+import PrismaQueryRaw from "./common/class/prisma_query_raw/PrismaQueryRaw";
+import UserPrismaQueryRaw from "./common/class/prisma_query_raw/UserPrismaQueryRaw";
+import CoursePrismaQueryRaw from "./common/class/prisma_query_raw/CoursePrismaQueryRaw";
+import CourseEnrollmentPrismaQueryRaw from "./common/class/prisma_query_raw/CourseEnrollmentPrismaQueryRaw";
+import CourseLessonPrismaQueryRaw from "./common/class/prisma_query_raw/CourseLessonPrismaQueryRaw";
+import CourseLessonAuthorization from "./modules/lesson/authorization/lesson.authorization";
+import CourseLessonVideoAuthorization from "./modules/video/authorization/video.authorization";
+import CourseLessonVideoPrismaQueryRaw from "./common/class/prisma_query_raw/CourseLessonVideoPrismaQueryRaw";
+import CourseCategoryAuthorization from "./modules/category/authorization/category.authorization";
+import CourseCategoryPrismaQueryRaw from "./common/class/prisma_query_raw/CourseCategoryPrismaQueryRaw";
 
 const dIContainer = new Container();
+
+/**
+ * PrismaQueryRaw
+ *
+ */
+dIContainer
+  .bind<IPrismaQueryRaw>(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
+  .to(PrismaQueryRaw);
+dIContainer
+  .bind<IUserPrismaQueryRaw>(PrismaQueryRawDITypes.USER)
+  .to(UserPrismaQueryRaw);
+dIContainer
+  .bind<ICoursePrismaQueryRaw>(PrismaQueryRawDITypes.COURSE)
+  .to(CoursePrismaQueryRaw);
+dIContainer
+  .bind<ICourseCategoryPrismaQueryRaw>(PrismaQueryRawDITypes.COURSE_CATEGORY)
+  .to(CourseCategoryPrismaQueryRaw);
+dIContainer
+  .bind<ICourseEnrollmentPrismaQueryRaw>(
+    PrismaQueryRawDITypes.COURSE_ENROLLMENT,
+  )
+  .to(CourseEnrollmentPrismaQueryRaw);
+dIContainer
+  .bind<ICourseLessonPrismaQueryRaw>(PrismaQueryRawDITypes.COURSE)
+  .to(CourseLessonPrismaQueryRaw);
+dIContainer
+  .bind<ICourseLessonVideoPrismaQueryRaw>(
+    PrismaQueryRawDITypes.COURSE_LESSON_VIDEO,
+  )
+  .to(CourseLessonVideoPrismaQueryRaw);
+
+/**
+ * PrismaPromise
+ *
+ */
+dIContainer
+  .bind<IPrismaPromise>(PrismaPromiseDITypes.PRISMA_PROMISE)
+  .to(PrismaPromise);
+dIContainer
+  .bind<ICoursePrismaPromise>(PrismaPromiseDITypes.COURSE)
+  .to(CoursePrismaPromise);
 
 /**
  * PrismaTable Container
@@ -98,7 +175,7 @@ dIContainer.bind<ITable>(PrismaTableDITypes.TABLE).to(PrismaTable);
 dIContainer.bind<ICourseTable>(PrismaTableDITypes.COURSE).to(PrismaCourseTable);
 dIContainer
   .bind<ICourseEnrollmentTable>(PrismaTableDITypes.COURSE_ENROLLMENT)
-  .to(PrismaCourseEnrollmenTable);
+  .to(PrismaCourseEnrollmentTable);
 dIContainer
   .bind<ICourseLessonTable>(PrismaTableDITypes.COURSE_LESSON)
   .to(PrismaCourseLessonTable);
@@ -145,6 +222,9 @@ dIContainer
 dIContainer
   .bind<ICourseCategoryController>(CourseCategoryDITypes.CONTROLLER)
   .to(CourseCategoryController);
+dIContainer
+  .bind<ICourseCategoryAuthorization>(CourseCategoryDITypes.AUTHORIZATION)
+  .to(CourseCategoryAuthorization);
 
 /**
  * Course Enrollment
@@ -159,6 +239,9 @@ dIContainer
 dIContainer
   .bind<ICourseEnrollmentController>(CourseEnrollmentDITypes.CONTROLLER)
   .to(CourseEnrollmentController);
+dIContainer
+  .bind<CourseEnrollmentAuthorization>(CourseEnrollmentDITypes.AUTHORIZATION)
+  .to(CourseEnrollmentAuthorization);
 
 /**
  * Course Lesson
@@ -173,6 +256,9 @@ dIContainer
 dIContainer
   .bind<ICourseLessonController>(CourseLessonDITypes.CONTROLLER)
   .to(CourseLessonController);
+dIContainer
+  .bind<ICourseLessonAuthorization>(CourseLessonDITypes.AUTHORIZATION)
+  .to(CourseLessonAuthorization);
 
 /**
  * Course Lesson Video
@@ -187,5 +273,8 @@ dIContainer
 dIContainer
   .bind<ICourseLessonVideoController>(CourseLessonVideoDITypes.CONTROLLER)
   .to(CourseLessonVideoController);
+dIContainer
+  .bind<ICourseLessonVideoAuthorization>(CourseLessonVideoDITypes.AUTHORIZATION)
+  .to(CourseLessonVideoAuthorization);
 
 export default dIContainer;

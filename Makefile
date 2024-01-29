@@ -45,27 +45,35 @@ test-lesson-authorization:
 #
 # MIGRATION
 #
-prisma-init-migrate:
-	prisma migrate dev --name init
+prisma-migrate-dev:
+	prisma migrate dev --name $(MIGRATION_NAME)
 
-prisma-dbpull:
+prisma-migrate-reset:
+	prisma migrate reset
+
+prisma-db-pull:
 	prisma db pull
 
+prisma-db-push:
+	prisma db push
 
 #
 # DOCKER
 #
-docker-run-lms-mysql:
+docker-run--lms-mysql:
 	docker run --name lms-mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -e MYSQL_DATABASE=lms -d mysql:latest
 
-docker-run-lms-redis:
-	docker run --name lms-redis -p 6379:6379 -d redis:latest 
+docker-run--lms-redis:
+	docker run --name lms-redis -p 6379:6379 -d redis:latest
+
+docker-run-lms_postgres:
+	docker run --name $(CONTAINER_NAME) -p $(PORT) -e POSTGRES_DB=$(POSTGRES_DB) -e POSTGRES_USER=$(POSTGRES_USER) -e POSTGRES_PASSWORD=$(POSTGRES_PASSWORD) -d postgres:16.1-alpine3.19
 
 #
 #	PLAYGROUND
 #
 playground:
-	ts-node ./src/playground.ts"
+	ts-node ./src/playground.ts
 
 .PHONY: dockerrun
 

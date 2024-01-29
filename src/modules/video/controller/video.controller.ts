@@ -11,8 +11,9 @@ import NaNException from "../../../common/class/exceptions/NaNException";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseLessonVideoJoi,
-  UpdateCourseLessonVideoJoi,
+  UpdateCourseLessonVideoSourceJoi,
 } from "./video.joi";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface ICourseLessonVideoController {
   createVideo: (
@@ -25,7 +26,7 @@ export interface ICourseLessonVideoController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  updateVideo: (
+  updateVideoSource: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -77,17 +78,21 @@ export class CourseLessonVideoController
     }
   }
 
-  public async updateVideo(
+  public async updateVideoSource(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await validateJoi({ body: UpdateCourseLessonVideoJoi })(req, res, next);
+      await validateJoi({ body: UpdateCourseLessonVideoSourceJoi })(
+        req,
+        res,
+        next,
+      );
 
       const videoId = this.validateVideoId(req);
       const resourceId = this.validateResourceId(req);
-      const updatedVideo = await this.service.updateVideo(
+      const updatedVideo = await this.service.updateVideoSource(
         videoId,
         resourceId,
         req.body,
@@ -119,6 +124,7 @@ export class CourseLessonVideoController
     req: Request,
     error?: Error,
   ): CourseLessonVideoResourceId {
+    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
     const courseId: number = Number(req.params.courseId);
     const lessonId: number = Number(req.params.lessonId);
     if (isNaNArray([courseId, lessonId])) {
@@ -126,6 +132,7 @@ export class CourseLessonVideoController
     }
 
     return {
+      userId,
       courseId,
       lessonId,
     };

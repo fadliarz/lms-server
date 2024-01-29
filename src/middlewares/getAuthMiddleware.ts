@@ -1,22 +1,24 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { PrismaClient } from "@prisma/client";
 import getValuable from "../common/functions/getValuable";
 import AuthenticationException from "../common/class/exceptions/AuthenticationException";
 import RecordNotFoundException from "../common/class/exceptions/RecordNotFoundException";
+import PrismaClientSingleton from "../common/class/PrismaClientSingleton";
+import { Cookie } from "../common/constants/Cookie";
 
 export const getAuthMiddleWare = () => {
-  const userTable = new PrismaClient().user;
+  const userTable = PrismaClientSingleton.getInstance().user;
 
   return async (req: any, res: Response, next: NextFunction) => {
     try {
-      const accessToken = req.cookies.access_token || req.headers.cookie;
+      const accessToken =
+        req.cookies[Cookie.ACCESS_TOKEN] || req.headers.cookie;
 
       let decoded: { email: string };
       try {
         decoded = jwt.verify(
           accessToken,
-          process.env.ACCESS_TOKEN_PRIVATE_KEY as string
+          process.env.ACCESS_TOKEN_PRIVATE_KEY as string,
         ) as {
           email: string;
         };

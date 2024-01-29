@@ -1,7 +1,7 @@
 import Joi from "joi";
 import {
   CreateCourseLessonVideoDto,
-  UpdateCourseLessonVideoDto,
+  UpdateCourseLessonVideoSourceDto,
 } from "../video.type";
 
 export const CreateCourseLessonVideoJoi =
@@ -11,8 +11,18 @@ export const CreateCourseLessonVideoJoi =
     totalDurations: Joi.number().required(),
     youtubeLink: Joi.string().required(),
   });
-export const UpdateCourseLessonVideoJoi =
-  Joi.object<UpdateCourseLessonVideoDto>({
+export const UpdateCourseLessonVideoSourceJoi =
+  Joi.object<UpdateCourseLessonVideoSourceDto>({
+    /**
+     * Required Field
+     *
+     */
+    youtubeLink: Joi.number().required(),
+    totalDurations: Joi.number().required(),
+    /**
+     * Optional
+     *
+     */
     name: Joi.string(),
     description: Joi.string(),
   });

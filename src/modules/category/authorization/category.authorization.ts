@@ -1,46 +1,31 @@
-import { Request, Response, NextFunction } from "express";
-import { BaseCourseAuthorization } from "../../../common/class/authorization/BaseCourseAuthorization";
-import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import "reflect-metadata";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import { ICourseCategoryAuthorization } from "../category.type";
+import { Course, CourseEnrollment, User } from "@prisma/client";
+import { injectable } from "inversify";
 
-export interface ICourseCategoryAuthorizationMiddleware {
-  getCreateCategoryAuthorizationMiddleware: () => (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => Promise<void>;
-}
-
-export class CourseCategoryAuthorizationMiddleware
-  extends BaseCourseAuthorization
-  implements ICourseCategoryAuthorizationMiddleware
+@injectable()
+export default class CourseCategoryAuthorization
+  implements ICourseCategoryAuthorization
 {
-  public getCreateCategoryAuthorizationMiddleware() {
-    return async (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ): Promise<void> => {
-      try {
-        const user = getRequestUserOrThrowAuthenticationException(req);
-        const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
-        let isAuthorized = false;
-        if (isStudent) {
-        }
+  public authorizeCreateCategory(user: User): void {
+    const { id: userId, role: userRole } = user;
+    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    let isAuthorized = false;
+    if (isStudent) {
+    }
 
-        if (isInstructor || isAdmin) {
-          isAuthorized = true;
-        }
+    if (isInstructor || isAdmin) {
+      isAuthorized = true;
+    }
 
-        if (!isAuthorized) {
-          throw new AuthorizationException();
-        }
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
 
-        next();
-      } catch (error) {
-        next(error);
-      }
-    };
+  public authorizeUpdateCategory(user: User): void {
+    this.authorizeCreateCategory(user);
   }
 }

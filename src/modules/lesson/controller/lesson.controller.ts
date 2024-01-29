@@ -11,6 +11,7 @@ import {
 import ClientException from "../../../common/class/exceptions/ClientException";
 import isNaNArray from "../../../common/functions/isNaNArray";
 import NaNException from "../../../common/class/exceptions/NaNException";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 export interface ICourseLessonController {
   createLesson: (
@@ -48,12 +49,8 @@ export class CourseLessonController implements ICourseLessonController {
     try {
       await validateJoi({ body: CreateCourseLessonDtoJoi })(req, res, next);
 
-      const courseId = Number(req.params.courseId);
-      if (isNaN(courseId)) {
-        throw new NaNException("courseId");
-      }
-
-      const newLesson = await this.service.createLesson(courseId, req.body);
+      const resourceId = this.validateResourceId(req);
+      const newLesson = await this.service.createLesson(resourceId, req.body);
 
       return res.status(StatusCode.RESOURCE_CREATED).json({ data: newLesson });
     } catch (error) {
@@ -67,16 +64,9 @@ export class CourseLessonController implements ICourseLessonController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const courseId = Number(req.params.courseId);
-      const lessonId = Number(req.params.lessonId);
-      if (isNaNArray([courseId, lessonId])) {
-        throw new NaNException("courseId || lessonId");
-      }
-
-      const resource: CourseLessonResourceId = {
-        courseId,
-      };
-      const lesson = await this.service.getLessonById(lessonId, resource);
+      const lessonId = this.validateLessonId(req);
+      const resourceId = this.validateResourceId(req);
+      const lesson = await this.service.getLessonById(lessonId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({ data: lesson });
     } catch (error) {
@@ -92,18 +82,11 @@ export class CourseLessonController implements ICourseLessonController {
     try {
       await validateJoi({ body: UpdateCourseLessonDtoJoi })(req, res, next);
 
-      const courseId = Number(req.params.courseId);
-      const lessonId = Number(req.params.lessonId);
-      if (isNaNArray([courseId, lessonId])) {
-        throw new NaNException("courseId || lessonId");
-      }
-
-      const resource: CourseLessonResourceId = {
-        courseId,
-      };
+      const lessonId = this.validateLessonId(req);
+      const resourceId = this.validateResourceId(req);
       const updatedLesson = await this.service.updateLesson(
         lessonId,
-        resource,
+        resourceId,
         req.body,
       );
 
@@ -119,20 +102,38 @@ export class CourseLessonController implements ICourseLessonController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const courseId = Number(req.params.courseId);
-      const lessonId = Number(req.params.lessonId);
-      if (isNaNArray([courseId, lessonId])) {
-        throw new NaNException("courseId || lessonId");
-      }
-
-      const resource: CourseLessonResourceId = {
-        courseId,
-      };
-      await this.service.deleteLesson(lessonId, resource);
+      const lessonId = this.validateLessonId(req);
+      const resourceId = this.validateResourceId(req);
+      await this.service.deleteLesson(lessonId, resourceId);
 
       res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }
+  }
+
+  private validateResourceId(
+    req: Request,
+    error?: Error,
+  ): CourseLessonResourceId {
+    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const courseId = Number(req.params.courseId);
+    if (isNaN(courseId)) {
+      throw error || new NaNException("courseId");
+    }
+
+    return {
+      userId,
+      courseId,
+    };
+  }
+
+  private validateLessonId(req: Request, error?: Error): number {
+    const lessonId: number = Number(req.params.lessonId);
+    if (isNaN(lessonId)) {
+      throw error || new NaNException("lessonId");
+    }
+
+    return lessonId;
   }
 }

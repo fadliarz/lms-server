@@ -2,10 +2,10 @@ import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import PrismaClientSingleton from "../PrismaClientSingleton";
 import getValuable from "../../functions/getValuable";
-import { CourseEnrollmentModel } from "../../../modules/course/course.type";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
 import { injectable } from "inversify";
 import { ICourseEnrollmentTable } from "./table.type";
+import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
 
 @injectable()
 export default class PrismaCourseEnrollmentTable

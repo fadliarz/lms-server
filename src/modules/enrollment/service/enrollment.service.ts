@@ -1,29 +1,30 @@
+import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
   CourseEnrollmentDITypes,
   CourseEnrollmentModel,
+  CourseEnrollmentResourceId,
   CreateCourseEnrollmentDto,
-  DeleteCourseEnrollmentIds,
-  UpdateCourseEnrollmentDto,
-  UpdateCourseEnrollmentIds,
+  UpdateCourseEnrollmentRoleDto,
 } from "../enrollment.type";
 import { ICourseEnrollmentRepository } from "../repository/enrollment.repository";
 import getValuable from "../../../common/functions/getValuable";
-import { CourseEnrollment } from "@prisma/client";
+import { CourseDITypes } from "../../course/course.type";
+import { ICourseRepository } from "../../course/repository/course.repository";
 
 export interface ICourseEnrollmentService {
-  delete: (
-    enrollmentId: number,
-    ids: DeleteCourseEnrollmentIds,
-    enrollment: CourseEnrollment
+  createEnrollment: (
+    resourceId: CourseEnrollmentResourceId,
+    dto: CreateCourseEnrollmentDto,
   ) => Promise<CourseEnrollmentModel>;
-  update: (
+  updateEnrollmentRole: (
     enrollmentId: number,
-    ids: UpdateCourseEnrollmentIds,
-    enrollmentDetails: UpdateCourseEnrollmentDto
+    resourceId: CourseEnrollmentResourceId,
+    dto: UpdateCourseEnrollmentRoleDto,
   ) => Promise<CourseEnrollmentModel>;
-  create: (
-    enrollmentDetails: CreateCourseEnrollmentDto
+  deleteEnrollment: (
+    enrollmentId: number,
+    resourceId: CourseEnrollmentResourceId,
   ) => Promise<CourseEnrollmentModel>;
 }
 
@@ -32,39 +33,53 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
   @inject(CourseEnrollmentDITypes.REPOSITORY)
   repository: ICourseEnrollmentRepository;
 
-  public async delete(
-    enrollmentId: number,
-    ids: DeleteCourseEnrollmentIds,
-    enrollment: CourseEnrollment
+  @inject(CourseDITypes.REPOSITORY)
+  courseRepository: ICourseRepository;
+
+  /**
+   *
+   * Course & Enrollment existence and their relation should be checked in Repository layer while authorizing because
+   * it's necessary to lock the rows while performing the features.
+   *
+   * So no need to implement those type of business logic in Service layer.
+   *
+   */
+
+  public async createEnrollment(
+    resourceId: CourseEnrollmentResourceId,
+    dto: CreateCourseEnrollmentDto,
   ): Promise<CourseEnrollmentModel> {
-    const deletedEnrollment = await this.repository.delete(
-      enrollmentId,
-      ids,
-      enrollment
+    const newEnrollment = await this.repository.createEnrollment(
+      resourceId,
+      dto,
     );
 
-    return getValuable(deletedEnrollment);
+    return getValuable(newEnrollment);
   }
 
-  public async update(
+  public async updateEnrollmentRole(
     enrollmentId: number,
-    ids: UpdateCourseEnrollmentIds,
-    enrollmentDetails: UpdateCourseEnrollmentDto
+    resourceId: CourseEnrollmentResourceId,
+    dto: UpdateCourseEnrollmentRoleDto,
   ): Promise<CourseEnrollmentModel> {
-    const updatedEnrollment = await this.repository.update(
+    const updatedEnrollment = await this.repository.updateEnrollmentRole(
       enrollmentId,
-      ids,
-      enrollmentDetails
+      resourceId,
+      dto,
     );
 
     return getValuable(updatedEnrollment);
   }
 
-  public async create(
-    enrollmentDetails: CreateCourseEnrollmentDto
+  public async deleteEnrollment(
+    enrollmentId: number,
+    resourceId: CourseEnrollmentResourceId,
   ): Promise<CourseEnrollmentModel> {
-    const enrollment = await this.repository.create(enrollmentDetails);
+    const deletedEnrollment = await this.repository.deleteEnrollment(
+      enrollmentId,
+      resourceId,
+    );
 
-    return getValuable(enrollment);
+    return getValuable(deletedEnrollment);
   }
 }
