@@ -84,11 +84,13 @@ type GetCourseByIdIncludeQuery = {
   include_category?: boolean;
   include_students?: boolean;
   include_instructors?: boolean;
-  include_playlist?: boolean;
+  include_basic_lessons_and_videos?: boolean;
 };
 type GetCourseByIdFilterQuery = {};
+type GetCourseByIdLimitQuery = {};
 export type GetCourseByIdQuery = GetCourseByIdIncludeQuery &
-  GetCourseByIdFilterQuery;
+  GetCourseByIdFilterQuery &
+  GetCourseByIdLimitQuery;
 
 export type BasicUser = Pick<UserModel, "id" | "name" | "NIM" | "avatar">;
 export type BasicCategory = Pick<CourseCategoryModel, "id" | "title">;

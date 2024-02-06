@@ -27,8 +27,6 @@ import RandPrisma from "../../common/class/randprisma/RandPrisma";
 import RandDB from "../../common/class/randprisma/rand.type";
 import { PrismaTableDITypes } from "../../common/class/table/PrismaTable";
 import { ITable } from "../../common/class/table/table.type";
-import RecordNotFoundException from "../../common/class/exceptions/RecordNotFoundException";
-import { PrismaClientValidationError } from "@prisma/client/runtime";
 
 /**
  *
@@ -50,7 +48,7 @@ import { PrismaClientValidationError } from "@prisma/client/runtime";
 function mockNextError(
   mockRequest: Request,
   mockResponse: Response,
-  mockNext: NextFunction
+  mockNext: NextFunction,
 ): void {
   (mockNext as jest.Mock).mockImplementation((error: Error) => {
     errorMiddleware(error, mockRequest, mockResponse, mockNext);
@@ -88,14 +86,14 @@ describe("", () => {
     describe("CreateCourse", () => {
       function dtoMatchCourse(
         dto: CreateCourseDto,
-        createdCourse: CourseModel
+        createdCourse: CourseModel,
       ) {
         expect(dto.title).toEqual(createdCourse.title);
         expect(dto.categoryId).toEqual(createdCourse.categoryId);
         expect(dto.description).toEqual(createdCourse.description);
         expect(
           dto.image ||
-            "https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg"
+            "https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg",
         ).toEqual(createdCourse.image);
         expect(dto.material).toEqual(createdCourse.material);
       }
@@ -123,7 +121,7 @@ describe("", () => {
             const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
-              "createCourse"
+              "createCourse",
             );
 
             await controller.createCourse(mockRequest, mockResponse, mockNext);
@@ -131,7 +129,7 @@ describe("", () => {
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
               (mockRequest as any).user.id,
-              mockRequest.body
+              mockRequest.body,
             );
 
             const newCourseFromService = (await spyOnCreateCourseService.mock
@@ -142,7 +140,7 @@ describe("", () => {
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.RESOURCE_CREATED
+              StatusCode.RESOURCE_CREATED,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -162,7 +160,7 @@ describe("", () => {
             const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
-              "createCourse"
+              "createCourse",
             );
 
             await controller.createCourse(mockRequest, mockResponse, mockNext);
@@ -170,17 +168,17 @@ describe("", () => {
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
               (mockRequest as any).user.id,
-              mockRequest.body
+              mockRequest.body,
             );
-            const newCourseFromService = await spyOnCreateCourseService.mock
-              .results[0].value;
+            const newCourseFromService =
+              await spyOnCreateCourseService.mock.results[0].value;
 
             dtoMatchCourse(mockRequest.body, newCourseFromService);
 
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.RESOURCE_CREATED
+              StatusCode.RESOURCE_CREATED,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -200,7 +198,7 @@ describe("", () => {
             const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
-              "createCourse"
+              "createCourse",
             );
 
             await controller.createCourse(mockRequest, mockResponse, mockNext);
@@ -208,17 +206,17 @@ describe("", () => {
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
               (mockRequest as any).user.id,
-              mockRequest.body
+              mockRequest.body,
             );
-            const newCourseFromService = await spyOnCreateCourseService.mock
-              .results[0].value;
+            const newCourseFromService =
+              await spyOnCreateCourseService.mock.results[0].value;
 
             dtoMatchCourse(mockRequest.body, newCourseFromService);
 
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.RESOURCE_CREATED
+              StatusCode.RESOURCE_CREATED,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -238,7 +236,7 @@ describe("", () => {
             const { mockRequest, mockResponse, mockNext } = params;
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
-              "createCourse"
+              "createCourse",
             );
 
             await controller.createCourse(mockRequest, mockResponse, mockNext);
@@ -246,10 +244,10 @@ describe("", () => {
             expect(spyOnCreateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseService).toHaveBeenCalledWith(
               (mockRequest as any).user.id,
-              mockRequest.body
+              mockRequest.body,
             );
-            const newCourseFromService = await spyOnCreateCourseService.mock
-              .results[0].value;
+            const newCourseFromService =
+              await spyOnCreateCourseService.mock.results[0].value;
 
             dtoMatchCourse(mockRequest.body, newCourseFromService);
 
@@ -257,7 +255,7 @@ describe("", () => {
 
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.RESOURCE_CREATED
+              StatusCode.RESOURCE_CREATED,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -278,7 +276,7 @@ describe("", () => {
             mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
-              "createCourse"
+              "createCourse",
             );
 
             await controller.createCourse(mockRequest, mockResponse, mockNext);
@@ -289,7 +287,7 @@ describe("", () => {
             expect(mockNext).toHaveBeenCalledWith(expect.any(HttpException));
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.BAD_REQUEST
+              StatusCode.BAD_REQUEST,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -313,7 +311,7 @@ describe("", () => {
             mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnCreateCourseService = jest.spyOn(
               CourseService.prototype,
-              "createCourse"
+              "createCourse",
             );
 
             await controller.createCourse(mockRequest, mockResponse, mockNext);
@@ -324,7 +322,7 @@ describe("", () => {
             expect(mockNext).toHaveBeenCalledWith(expect.any(HttpException));
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.BAD_REQUEST
+              StatusCode.BAD_REQUEST,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -354,14 +352,14 @@ describe("", () => {
     describe("GetCourseById", () => {
       function dtoMatchCourse(
         responseCourse: GetCourseByIdResBody,
-        course: CourseModel
+        course: CourseModel,
       ) {
         expect(responseCourse.title).toEqual(course.title);
         expect(responseCourse.categoryId).toEqual(course.categoryId);
         expect(responseCourse.description).toEqual(course.description);
         expect(
           responseCourse.image ||
-            "https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg"
+            "https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg",
         ).toEqual(course.image);
         expect(responseCourse.material).toEqual(course.material);
       }
@@ -380,7 +378,7 @@ describe("", () => {
 
       function bodyMatchCategory(
         responseCategory: BasicCategory,
-        category: CourseCategoryModel
+        category: CourseCategoryModel,
       ) {
         expect(category.id).not.toBeUndefined();
         expect(category.title).not.toBeUndefined();
@@ -403,7 +401,7 @@ describe("", () => {
       type TestCase = {
         name: string;
         modifyQuery: (
-          queryTemplate: GetCourseByIdQuery
+          queryTemplate: GetCourseByIdQuery,
         ) => Partial<GetCourseByIdQuery>;
         test: (params: TestParams) => Promise<void>;
       };
@@ -412,7 +410,7 @@ describe("", () => {
         {
           name: "OK: No Query",
           modifyQuery: (
-            queryTemplate: GetCourseByIdQuery
+            queryTemplate: GetCourseByIdQuery,
           ): Partial<GetCourseByIdQuery> => {
             return {
               ...queryTemplate,
@@ -424,14 +422,14 @@ describe("", () => {
             (mockRequest as any).params = { courseId: course.id };
             const spyOnGetCourseByIdService = jest.spyOn(
               CourseService.prototype,
-              "getCourseById"
+              "getCourseById",
             );
             await controller.getCourseById(mockRequest, mockResponse, mockNext);
 
             expect(spyOnGetCourseByIdService).toHaveBeenCalledTimes(1);
             expect(spyOnGetCourseByIdService).toHaveBeenCalledWith(
               mockRequest.params.courseId,
-              mockRequest.query
+              mockRequest.query,
             );
 
             const responseCourse: GetCourseByIdResBody =
@@ -446,7 +444,7 @@ describe("", () => {
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -457,7 +455,7 @@ describe("", () => {
         {
           name: "OK: Include Author",
           modifyQuery: (
-            queryTemplate: GetCourseByIdQuery
+            queryTemplate: GetCourseByIdQuery,
           ): Partial<GetCourseByIdQuery> => {
             return {
               ...queryTemplate,
@@ -470,14 +468,14 @@ describe("", () => {
             (mockRequest as any).params = { courseId: course.id };
             const spyOnGetCourseByIdService = jest.spyOn(
               CourseService.prototype,
-              "getCourseById"
+              "getCourseById",
             );
             await controller.getCourseById(mockRequest, mockResponse, mockNext);
 
             expect(spyOnGetCourseByIdService).toHaveBeenCalledTimes(1);
             expect(spyOnGetCourseByIdService).toHaveBeenCalledWith(
               (mockRequest as any).params.courseId,
-              (mockRequest as any).query
+              (mockRequest as any).query,
             );
 
             const responseCourse: GetCourseByIdResBody =
@@ -493,7 +491,7 @@ describe("", () => {
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -502,11 +500,10 @@ describe("", () => {
           },
         },
 
-
         {
           name: "OK: Include Category",
           modifyQuery: (
-            queryTemplate: GetCourseByIdQuery
+            queryTemplate: GetCourseByIdQuery,
           ): Partial<GetCourseByIdQuery> => {
             return {
               ...queryTemplate,
@@ -519,14 +516,14 @@ describe("", () => {
             (mockRequest as any).params = { courseId: course.id };
             const spyOnGetCourseByIdService = jest.spyOn(
               CourseService.prototype,
-              "getCourseById"
+              "getCourseById",
             );
             await controller.getCourseById(mockRequest, mockResponse, mockNext);
 
             expect(spyOnGetCourseByIdService).toHaveBeenCalledTimes(1);
             expect(spyOnGetCourseByIdService).toHaveBeenCalledWith(
               (mockRequest as any).params.courseId,
-              (mockRequest as any).query
+              (mockRequest as any).query,
             );
 
             const responseCourse: GetCourseByIdResBody =
@@ -538,14 +535,14 @@ describe("", () => {
             expect(responseCourse.category).not.toBe(undefined);
             bodyMatchCategory(
               responseCourse.category as BasicCategory,
-              category
+              category,
             );
             expect(responseCourse.playlist).toBe(undefined);
 
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -573,7 +570,7 @@ describe("", () => {
       function dtoMatchCourse(
         updatedCourse: CourseModel,
         dto: UpdateCourseDto,
-        oldCourse: CourseModel
+        oldCourse: CourseModel,
       ) {
         expect(updatedCourse).toBeDefined();
         expect(oldCourse).toBeDefined();
@@ -611,7 +608,7 @@ describe("", () => {
         {
           name: "OK: No Update",
           generateDto: async (
-            course: CourseModel
+            course: CourseModel,
           ): Promise<Partial<UpdateCourseDto>> => {
             const bodyTemplate: UpdateCourseDto = {};
             const modifiedBody: UpdateCourseDto = {
@@ -652,7 +649,7 @@ describe("", () => {
               testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
-              "updateCourse"
+              "updateCourse",
             );
 
             await controller.updateCourse(mockRequest, mockResponse, mockNext);
@@ -660,17 +657,17 @@ describe("", () => {
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
               mockRequest.params.courseId,
-              mockRequest.body
+              mockRequest.body,
             );
 
-            const updatedCourse = await spyOnUpdateCourseService.mock.results[0]
-              .value;
+            const updatedCourse =
+              await spyOnUpdateCourseService.mock.results[0].value;
             dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
             expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -681,7 +678,7 @@ describe("", () => {
         {
           name: "OK: Update title",
           generateDto: async (
-            course: CourseModel
+            course: CourseModel,
           ): Promise<Partial<UpdateCourseDto>> => {
             const bodyTemplate: UpdateCourseDto = {
               title: "any",
@@ -724,7 +721,7 @@ describe("", () => {
               testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
-              "updateCourse"
+              "updateCourse",
             );
 
             await controller.updateCourse(mockRequest, mockResponse, mockNext);
@@ -732,11 +729,11 @@ describe("", () => {
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
               mockRequest.params.courseId,
-              mockRequest.body
+              mockRequest.body,
             );
 
-            const updatedCourse = await spyOnUpdateCourseService.mock.results[0]
-              .value;
+            const updatedCourse =
+              await spyOnUpdateCourseService.mock.results[0].value;
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.title).toBeDefined();
             expect(updatedCourse.title).toEqual(mockRequest.body.title);
@@ -745,7 +742,7 @@ describe("", () => {
             expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -797,7 +794,7 @@ describe("", () => {
               testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
-              "updateCourse"
+              "updateCourse",
             );
 
             await controller.updateCourse(mockRequest, mockResponse, mockNext);
@@ -805,22 +802,22 @@ describe("", () => {
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
               mockRequest.params.courseId,
-              mockRequest.body
+              mockRequest.body,
             );
 
-            const updatedCourse = await spyOnUpdateCourseService.mock.results[0]
-              .value;
+            const updatedCourse =
+              await spyOnUpdateCourseService.mock.results[0].value;
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.categoryId).toBeDefined();
             expect(updatedCourse.categoryId).toEqual(
-              mockRequest.body.categoryId
+              mockRequest.body.categoryId,
             );
             dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
             expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -872,7 +869,7 @@ describe("", () => {
               testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
-              "updateCourse"
+              "updateCourse",
             );
 
             await controller.updateCourse(mockRequest, mockResponse, mockNext);
@@ -880,11 +877,11 @@ describe("", () => {
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
               mockRequest.params.courseId,
-              mockRequest.body
+              mockRequest.body,
             );
 
-            const updatedCourse = await spyOnUpdateCourseService.mock.results[0]
-              .value;
+            const updatedCourse =
+              await spyOnUpdateCourseService.mock.results[0].value;
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.image).toBeDefined();
             expect(updatedCourse.image).toEqual(mockRequest.body.image);
@@ -893,7 +890,7 @@ describe("", () => {
             expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -945,7 +942,7 @@ describe("", () => {
               testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
-              "updateCourse"
+              "updateCourse",
             );
 
             await controller.updateCourse(mockRequest, mockResponse, mockNext);
@@ -953,22 +950,22 @@ describe("", () => {
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
               mockRequest.params.courseId,
-              mockRequest.body
+              mockRequest.body,
             );
 
-            const updatedCourse = await spyOnUpdateCourseService.mock.results[0]
-              .value;
+            const updatedCourse =
+              await spyOnUpdateCourseService.mock.results[0].value;
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.description).toBeDefined();
             expect(updatedCourse.description).toEqual(
-              mockRequest.body.description
+              mockRequest.body.description,
             );
             dtoMatchCourse(updatedCourse, mockRequest.body, oldCourse);
 
             expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -1020,7 +1017,7 @@ describe("", () => {
               testParams;
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
-              "updateCourse"
+              "updateCourse",
             );
 
             await controller.updateCourse(mockRequest, mockResponse, mockNext);
@@ -1028,11 +1025,11 @@ describe("", () => {
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
               mockRequest.params.courseId,
-              mockRequest.body
+              mockRequest.body,
             );
 
-            const updatedCourse = await spyOnUpdateCourseService.mock.results[0]
-              .value;
+            const updatedCourse =
+              await spyOnUpdateCourseService.mock.results[0].value;
             expect(updatedCourse).toBeDefined();
             expect(updatedCourse.material).toBeDefined();
             expect(updatedCourse.material).toEqual(mockRequest.body.material);
@@ -1041,7 +1038,7 @@ describe("", () => {
             expect(mockNext).toHaveBeenCalledTimes(0);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -1098,7 +1095,7 @@ describe("", () => {
             mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnUpdateCourseService = jest.spyOn(
               CourseService.prototype,
-              "updateCourse"
+              "updateCourse",
             );
 
             await table.course.delete(courseId);
@@ -1107,7 +1104,7 @@ describe("", () => {
             expect(spyOnUpdateCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnUpdateCourseService).toBeCalledWith(
               mockRequest.params.courseId,
-              mockRequest.body
+              mockRequest.body,
             );
 
             // const newCourseFromService = await spyOnUpdateCourseService.mock
@@ -1119,11 +1116,11 @@ describe("", () => {
 
             expect(mockNext).toHaveBeenCalledTimes(1);
             expect(mockNext).toHaveBeenCalledWith(
-              expect.any(Prisma.PrismaClientKnownRequestError)
+              expect.any(Prisma.PrismaClientKnownRequestError),
             );
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.BAD_REQUEST
+              StatusCode.BAD_REQUEST,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -1184,7 +1181,7 @@ describe("", () => {
             const { mockRequest, mockResponse, mockNext } = testParams;
             const spyOnDeleteCourseService = jest.spyOn(
               CourseService.prototype,
-              "deleteCourse"
+              "deleteCourse",
             );
             const courseId = Number(mockRequest.params.courseId);
 
@@ -1220,7 +1217,7 @@ describe("", () => {
             const { mockRequest, mockResponse, mockNext } = testParams;
             const spyOnDeleteCourseService = jest.spyOn(
               CourseService.prototype,
-              "deleteCourse"
+              "deleteCourse",
             );
             const courseId = Number(mockRequest.params.courseId);
 
@@ -1237,26 +1234,26 @@ describe("", () => {
             const enrollment2 = await randDb.insertOneEnrollmentIntoCourse(
               user2.id,
               courseId,
-              Role.STUDENT
+              Role.STUDENT,
             );
             const enrollment1 = await randDb.insertOneEnrollmentIntoCourse(
               user1.id,
               courseId,
-              Role.INSTRUCTOR
+              Role.INSTRUCTOR,
             );
 
             const like1 = await randDb.insertOneLikeIntoCourse(
               user1.id,
-              courseId
+              courseId,
             );
             const like2 = await randDb.insertOneLikeIntoCourse(
               user2.id,
-              courseId
+              courseId,
             );
 
             const [lesson1, lesson2] = await randDb.insertManyLessonsIntoCourse(
               courseId,
-              2
+              2,
             );
 
             const durationEachVideo = 1;
@@ -1264,25 +1261,24 @@ describe("", () => {
               await randDb.insertManyVideosIntoLesson(
                 lesson1.id,
                 2,
-                durationEachVideo
+                durationEachVideo,
               );
             const [video1_2, video2_2] =
               await randDb.insertManyVideosIntoLesson(
                 lesson2.id,
                 2,
-                durationEachVideo
+                durationEachVideo,
               );
 
-            const courseAfterInsertion = await table.course.findUniqueOrThrow(
-              courseId
-            );
+            const courseAfterInsertion =
+              await table.course.findUniqueOrThrow(courseId);
             expect(courseAfterInsertion.totalStudents).toEqual(1);
             expect(courseAfterInsertion.totalInstructors).toEqual(1);
             expect(courseAfterInsertion.totalLikes).toEqual(2);
             expect(courseAfterInsertion.totalLessons).toEqual(2);
             expect(courseAfterInsertion.totalVideos).toEqual(4);
             expect(courseAfterInsertion.totalDurations).toEqual(
-              4 * durationEachVideo
+              4 * durationEachVideo,
             );
 
             await controller.deleteCourse(mockRequest, mockResponse, mockNext);
@@ -1298,10 +1294,10 @@ describe("", () => {
             expect(courseAfter).toBeNull();
 
             const enrollment1After = await table.courseEnrollment.findUnique(
-              enrollment1.id
+              enrollment1.id,
             );
             const enrollment2After = await table.courseEnrollment.findUnique(
-              enrollment2.id
+              enrollment2.id,
             );
             expect(enrollment1After).toBeNull();
             expect(enrollment2After).toBeNull();
@@ -1312,28 +1308,28 @@ describe("", () => {
             expect(like2After).toBeNull();
 
             const lesson1After = await table.courseLesson.findUnique(
-              lesson1.id
+              lesson1.id,
             );
             const lesson2After = await table.courseLesson.findUnique(
-              lesson2.id
+              lesson2.id,
             );
             expect(lesson1After).toBeNull();
             expect(lesson2After).toBeNull();
 
             const video1_1After = await table.courseLessonVideo.findUnique(
-              video1_1.id
+              video1_1.id,
             );
             const video2_1After = await table.courseLessonVideo.findUnique(
-              video2_1.id
+              video2_1.id,
             );
             expect(video1_1After).toBeNull();
             expect(video2_1After).toBeNull();
 
             const video1_2After = await table.courseLessonVideo.findUnique(
-              video1_2.id
+              video1_2.id,
             );
             const video2_2After = await table.courseLessonVideo.findUnique(
-              video2_2.id
+              video2_2.id,
             );
             expect(video1_2After).toBeNull();
             expect(video2_2After).toBeNull();
@@ -1359,7 +1355,7 @@ describe("", () => {
             mockNextError(mockRequest, mockResponse, mockNext);
             const spyOnDeleteCourseService = jest.spyOn(
               CourseService.prototype,
-              "deleteCourse"
+              "deleteCourse",
             );
             const courseId = Number(mockRequest.params.courseId);
 
@@ -1372,7 +1368,7 @@ describe("", () => {
             await expect(spyOnDeleteCourseService).toHaveBeenCalledTimes(1);
             expect(spyOnDeleteCourseService).toBeCalledWith(courseId);
             expect(spyOnDeleteCourseService).rejects.toThrowError(
-              expect.any(Error)
+              expect.any(Error),
             );
 
             expect(mockNext).toHaveBeenCalledTimes(1);
@@ -1417,7 +1413,7 @@ describe("", () => {
         {
           name: "OK: Complete Body",
           modifyDto: (
-            dto: CreateCourseLikeDto
+            dto: CreateCourseLikeDto,
           ): Partial<CreateCourseLikeDto> => {
             return {
               ...dto,
@@ -1437,7 +1433,7 @@ describe("", () => {
 
             const spyOnCreateCourseLikeService = jest.spyOn(
               CourseService.prototype,
-              "createLike"
+              "createLike",
             );
 
             await controller.createLike(mockRequest, mockResponse, mockNext);
@@ -1445,10 +1441,10 @@ describe("", () => {
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledWith(
               user.id,
-              (mockRequest as any).resourceId
+              (mockRequest as any).resourceId,
             );
-            const newCourseLikeFromService = await spyOnCreateCourseLikeService
-              .mock.results[0].value;
+            const newCourseLikeFromService =
+              await spyOnCreateCourseLikeService.mock.results[0].value;
 
             const courseAfter = await table.course.findUnique(courseId);
             expect(courseAfter?.totalLikes).toEqual(1);
@@ -1456,7 +1452,7 @@ describe("", () => {
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.RESOURCE_CREATED
+              StatusCode.RESOURCE_CREATED,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -1467,7 +1463,7 @@ describe("", () => {
         {
           name: "BadRequest: CourseLike Already Exist",
           modifyDto: (
-            dto: CreateCourseLikeDto
+            dto: CreateCourseLikeDto,
           ): Partial<CreateCourseLikeDto> => {
             return {
               ...dto,
@@ -1492,7 +1488,7 @@ describe("", () => {
 
             const spyOnCreateCourseLikeService = jest.spyOn(
               CourseService.prototype,
-              "createLike"
+              "createLike",
             );
 
             await controller.createLike(mockRequest, mockResponse, mockNext);
@@ -1500,7 +1496,7 @@ describe("", () => {
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledTimes(1);
             expect(spyOnCreateCourseLikeService).toHaveBeenCalledWith(
               user.id,
-              (mockRequest as any).resourceId
+              (mockRequest as any).resourceId,
             );
 
             const courseAfter = await table.course.findUnique(courseId);
@@ -1509,7 +1505,7 @@ describe("", () => {
             expect(mockNext).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.BAD_REQUEST
+              StatusCode.BAD_REQUEST,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({
@@ -1551,7 +1547,7 @@ describe("", () => {
             } = await randDb.generateCourse();
             const { id: likeId } = await randDb.insertOneLikeIntoCourse(
               user.id,
-              courseId
+              courseId,
             );
 
             const courseBefore = await table.course.findUniqueOrThrow(courseId);
@@ -1564,17 +1560,17 @@ describe("", () => {
 
             const spyOnDeleteCourseLikeService = jest.spyOn(
               CourseService.prototype,
-              "deleteLike"
+              "deleteLike",
             );
 
             await controller.deleteLike(mockRequest, mockResponse, mockNext);
 
             expect(spyOnDeleteCourseLikeService).toHaveBeenCalledTimes(1);
             expect(spyOnDeleteCourseLikeService).toHaveBeenCalledWith(
-              (mockRequest as any).resourceId
+              (mockRequest as any).resourceId,
             );
-            const newCourseLikeFromService = await spyOnDeleteCourseLikeService
-              .mock.results[0].value;
+            const newCourseLikeFromService =
+              await spyOnDeleteCourseLikeService.mock.results[0].value;
 
             const likeAfter = await table.courseLike.findUnique(likeId);
             expect(likeAfter).toBeNull();
@@ -1585,7 +1581,7 @@ describe("", () => {
             expect(mockNext).not.toHaveBeenCalled();
             expect(mockResponse.status).toHaveBeenCalledTimes(1);
             expect(mockResponse.status).toHaveBeenCalledWith(
-              StatusCode.SUCCESS
+              StatusCode.SUCCESS,
             );
             expect(mockResponse.json).toHaveBeenCalledTimes(1);
             expect(mockResponse.json).toHaveBeenCalledWith({ data: {} });

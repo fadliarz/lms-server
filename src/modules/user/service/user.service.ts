@@ -179,7 +179,7 @@ export class UserService implements IUserService {
        * 1. User logged in before but never uses refreshToken and doesn't signOut
        * 2. refreshToken is stolen
        *
-       * If that's the case, then clear all refreshToken' when use signs in (reuse detection).
+       * If that's the case, then clear all refreshTokens when user signs in (reuse detection).
        *
        */
 

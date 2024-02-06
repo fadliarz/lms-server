@@ -14,6 +14,7 @@ import {
   UpdateCourseLessonVideoSourceJoi,
 } from "./video.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import Joi from "joi";
 
 export interface ICourseLessonVideoController {
   createVideo: (
@@ -100,6 +101,8 @@ export class CourseLessonVideoController
 
       return res.status(StatusCode.SUCCESS).json({ data: updatedVideo });
     } catch (error) {
+      // console.log(error);
+
       next(error);
     }
   }

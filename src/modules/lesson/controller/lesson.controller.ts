@@ -8,8 +8,6 @@ import {
   CreateCourseLessonDtoJoi,
   UpdateCourseLessonDtoJoi,
 } from "./lesson.joi";
-import ClientException from "../../../common/class/exceptions/ClientException";
-import isNaNArray from "../../../common/functions/isNaNArray";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 

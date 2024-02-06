@@ -5,6 +5,7 @@ import { PrismaTransaction } from "../../types";
 import { Course, User } from "@prisma/client";
 import { TableName } from "../../constants/tableName";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
+import { mapPrismaQueryRawObject } from "./prisma_query_raw.utils";
 
 @injectable()
 export default class CoursePrismaQueryRaw implements ICoursePrismaQueryRaw {
@@ -19,7 +20,7 @@ export default class CoursePrismaQueryRaw implements ICoursePrismaQueryRaw {
       return null;
     }
 
-    return courses[0];
+    return mapPrismaQueryRawObject<Course>(courses[0]);
   }
 
   public async selectForUpdateByIdOrThrow(

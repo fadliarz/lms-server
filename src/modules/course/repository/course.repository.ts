@@ -12,190 +12,216 @@ import {
   GetEnrolledCoursesQuery,
 } from "../course.type";
 import { Course, CourseLesson, CourseStatus, Role } from "@prisma/client";
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import getCourseIncludeArg from "../../../common/functions/getCourseIncludeArg";
 import getCourseFilter from "../../../common/functions/getCourseFilterRole";
 import getCoursesIncludeQuery from "../../../common/functions/getCoursesIncludeQuery";
 import { PrismaUpdateOn } from "../../../common/constants/prismaUpdateOn";
+import {
+  PrismaDefaultTransactionConfigForRead,
+  PrismaDefaultTransactionConfigForWrite,
+} from "../../../common/constants/prismaDefaultConfig";
+import {
+  IPrismaQueryRaw,
+  PrismaQueryRawDITypes,
+} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 
 export interface ICourseRepository {
   createCourse: (userId: number, dto: CreateCourseDto) => Promise<Course>;
   getCourseById: (
     courseId: number,
-    query: GetCourseByIdQuery
+    query: GetCourseByIdQuery,
   ) => Promise<Course>;
   getCourses: (query: GetCoursesQuery) => Promise<Course[]>;
   getEnrolledCourseById: (
     userId: number,
     courseId: number,
-    query: GetEnrolledCourseByIdQuery
+    query: GetEnrolledCourseByIdQuery,
   ) => Promise<Course>;
   getEnrolledCourses: (
     userId: number,
-    query: GetEnrolledCoursesQuery
+    query: GetEnrolledCoursesQuery,
   ) => Promise<EnrolledCourseModel[]>;
   getAuthor: (courseId: number) => Promise<BasicUser>;
   updateCourse: (
     courseId: number,
-    dto: Partial<BasicCourseModel>
+    dto: Partial<BasicCourseModel>,
   ) => Promise<Course>;
   deleteCourse: (courseId: number) => Promise<{}>;
   createLike: (
     userId: number,
-    resourceId: CourseLikeResourceId
+    resourceId: CourseLikeResourceId,
   ) => Promise<CourseLikeModel>;
   deleteLike: (resourceId: CourseLikeResourceId) => Promise<{}>;
 }
 
 @injectable()
 export class CourseRepository implements ICourseRepository {
+  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
+  private readonly prismaQueryRaw: IPrismaQueryRaw;
+
   private readonly prisma = PrismaClientSingleton.getInstance();
-  private readonly courseTable = this.prisma.course;
-  private readonly courseEnrollmentTable = this.prisma.courseEnrollment;
-  private readonly courseCategoryTable = this.prisma.courseCategory;
 
   public async createCourse(
     userId: number,
-    courseDetails: CreateCourseDto
+    courseDetails: CreateCourseDto,
   ): Promise<Course> {
-    const newCourse = await this.courseTable.create({
-      data: {
-        ...courseDetails,
-        authorId: userId,
-      },
-    });
+    return await this.prisma.$transaction(async (tx) => {
+      const newCourse = await tx.course.create({
+        data: {
+          ...courseDetails,
+          authorId: userId,
+        },
+      });
 
-    return newCourse;
+      return newCourse;
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
   public async getCourseById(
     courseId: number,
-    query: GetCourseByIdQuery
+    query: GetCourseByIdQuery,
   ): Promise<Course> {
-    const includeArg = getCourseIncludeArg(query);
+    return await this.prisma.$transaction(async (tx) => {
+      const includeArg = getCourseIncludeArg(query);
 
-    let course = await this.courseTable.findFirstOrThrow({
-      where: { id: courseId, status: CourseStatus.PUBLISHED },
-      include: includeArg,
-    });
+      const course = await tx.course.findFirstOrThrow({
+        where: { id: courseId, status: CourseStatus.PUBLISHED },
+        include: includeArg,
+      });
 
-    return course;
+      return course;
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async getCourses(query: GetCoursesQuery) {
-    const { pageNumber, pageSize } = query;
-    const includeArg = getCoursesIncludeQuery(query);
+    return await this.prisma.$transaction(async (tx) => {
+      const { pageNumber, pageSize } = query;
+      const includeArg = getCoursesIncludeQuery(query);
 
-    const courses = await this.courseTable.findMany({
-      skip: (pageNumber - 1) * pageSize,
-      take: pageSize,
-      include: includeArg,
-    });
+      const courses = await tx.course.findMany({
+        skip: (pageNumber - 1) * pageSize,
+        take: pageSize,
+        include: includeArg,
+      });
 
-    return courses;
+      return courses;
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async getEnrolledCourseById(
     userId: number,
     courseId: number,
-    query: GetEnrolledCourseByIdQuery
+    query: GetEnrolledCourseByIdQuery,
   ): Promise<Course> {
-    const { role } = query;
-    const { course: enrolledCourse } =
-      await this.courseEnrollmentTable.findFirstOrThrow({
-        where: {
-          userId,
-          courseId,
-          role,
-        },
-        select: {
-          course: true,
-        },
-      });
+    return await this.prisma.$transaction(async (tx) => {
+      const { role } = query;
+      const { course: enrolledCourse } =
+        await tx.courseEnrollment.findFirstOrThrow({
+          where: {
+            userId,
+            courseId,
+            role,
+          },
+          select: {
+            course: true,
+          },
+        });
 
-    return enrolledCourse;
+      return enrolledCourse;
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async getEnrolledCourses(
     userId: number,
-    query: GetEnrolledCoursesQuery
+    query: GetEnrolledCoursesQuery,
   ) {
-    let enrolledCourses: EnrolledCourseModel[] = [];
-    const courseIncludeArg = getCourseIncludeArg(query);
-    const { include_student_courses, include_instructor_courses } = query;
+    return await this.prisma.$transaction(async (tx) => {
+      let enrolledCourses: EnrolledCourseModel[] = [];
+      const courseIncludeArg = getCourseIncludeArg(query);
+      const { include_student_courses, include_instructor_courses } = query;
 
-    if (include_student_courses) {
-      const studentCourses = await this.courseEnrollmentTable.findMany({
-        where: {
-          userId,
-          role: {
-            in: getCourseFilter(query),
+      if (include_student_courses) {
+        const studentCourses = await tx.courseEnrollment.findMany({
+          where: {
+            userId,
+            role: {
+              in: getCourseFilter(query),
+            },
           },
-        },
-        select: { course: { include: courseIncludeArg } },
-      });
+          select: { course: { include: courseIncludeArg } },
+        });
 
-      enrolledCourses = enrolledCourses.concat(
-        studentCourses.map((studentCourse) => {
-          return { course: studentCourse.course, role: Role.STUDENT };
-        }) as EnrolledCourseModel[]
-      );
-    }
+        enrolledCourses = enrolledCourses.concat(
+          studentCourses.map((studentCourse) => {
+            return { course: studentCourse.course, role: Role.STUDENT };
+          }) as EnrolledCourseModel[],
+        );
+      }
 
-    if (include_instructor_courses) {
-      const instructorCourses = await this.courseEnrollmentTable.findMany({
-        where: {
-          userId,
-          role: {
-            in: getCourseFilter(query),
+      if (include_instructor_courses) {
+        const instructorCourses = await tx.courseEnrollment.findMany({
+          where: {
+            userId,
+            role: {
+              in: getCourseFilter(query),
+            },
           },
-        },
-        select: { course: { include: courseIncludeArg } },
-      });
+          select: { course: { include: courseIncludeArg } },
+        });
 
-      enrolledCourses = enrolledCourses.concat(
-        instructorCourses.map((instructorCourse) => {
-          return { course: instructorCourse.course, role: Role.INSTRUCTOR };
-        }) as EnrolledCourseModel[]
-      );
-    }
+        enrolledCourses = enrolledCourses.concat(
+          instructorCourses.map((instructorCourse) => {
+            return { course: instructorCourse.course, role: Role.INSTRUCTOR };
+          }) as EnrolledCourseModel[],
+        );
+      }
 
-    return enrolledCourses;
+      return enrolledCourses;
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async getAuthor(courseId: number) {
-    const { author } = await this.courseTable.findUniqueOrThrow({
-      where: { id: courseId },
-      select: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            NIM: true,
-            avatar: true,
+    return await this.prisma.$transaction(async (tx) => {
+      const { author } = await tx.course.findUniqueOrThrow({
+        where: { id: courseId },
+        select: {
+          author: {
+            select: {
+              id: true,
+              name: true,
+              NIM: true,
+              avatar: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    return author;
+      return author;
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async updateCourse(
     courseId: number,
-    dto: Partial<BasicCourseModel>
+    dto: Partial<BasicCourseModel>,
   ): Promise<Course> {
-    const updatedCourse = await this.courseTable.update({
-      where: { id: courseId },
-      data: dto,
-    });
+    return await this.prisma.$transaction(async (tx) => {
+      await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId);
 
-    return updatedCourse;
+      const updatedCourse = await tx.course.update({
+        where: { id: courseId },
+        data: dto,
+      });
+
+      return updatedCourse;
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
   public async deleteCourse(courseId: number): Promise<{}> {
     await this.prisma.$transaction(async (tx) => {
+      await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId);
+
       let myCursor = -1;
       const findLesson = await tx.courseLesson.findFirst({
         where: {
@@ -259,17 +285,19 @@ export class CourseRepository implements ICourseRepository {
           id: courseId,
         },
       });
-    });
+    }, PrismaDefaultTransactionConfigForWrite);
 
     return {};
   }
 
   public async createLike(
     userId: number,
-    resourceId: CourseLikeResourceId
+    resourceId: CourseLikeResourceId,
   ): Promise<CourseLikeModel> {
-    const { courseId } = resourceId;
-    const newLike = await this.prisma.$transaction(async (tx) => {
+    return await this.prisma.$transaction(async (tx) => {
+      const { courseId } = resourceId;
+      await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId);
+
       const [newLike] = await Promise.all([
         tx.courseLike.create({
           data: {
@@ -286,14 +314,14 @@ export class CourseRepository implements ICourseRepository {
       ]);
 
       return newLike;
-    });
-
-    return newLike;
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
   public async deleteLike(resourceId: CourseLikeResourceId): Promise<{}> {
-    const { courseId, likeId } = resourceId;
     await this.prisma.$transaction(async (tx) => {
+      const { courseId, likeId } = resourceId;
+      await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId);
+
       await Promise.all([
         tx.courseLike.delete({
           where: {
@@ -313,7 +341,7 @@ export class CourseRepository implements ICourseRepository {
           },
         }),
       ]);
-    });
+    }, PrismaDefaultTransactionConfigForWrite);
 
     return {};
   }

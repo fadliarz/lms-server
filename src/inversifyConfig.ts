@@ -148,7 +148,7 @@ dIContainer
   )
   .to(CourseEnrollmentPrismaQueryRaw);
 dIContainer
-  .bind<ICourseLessonPrismaQueryRaw>(PrismaQueryRawDITypes.COURSE)
+  .bind<ICourseLessonPrismaQueryRaw>(PrismaQueryRawDITypes.COURSE_LESSON)
   .to(CourseLessonPrismaQueryRaw);
 dIContainer
   .bind<ICourseLessonVideoPrismaQueryRaw>(
@@ -190,9 +190,9 @@ dIContainer
  * User Container
  *
  */
-dIContainer.bind<IUserRepository>(UserDITypes.REPOSITORY).to(UserRepository);
-dIContainer.bind<IUserService>(UserDITypes.SERVICE).to(UserService);
-dIContainer.bind<IUserController>(UserDITypes.CONTROLLER).to(UserController);
+// dIContainer.bind<IUserRepository>(UserDITypes.REPOSITORY).to(UserRepository);
+// dIContainer.bind<IUserService>(UserDITypes.SERVICE).to(UserService);
+// dIContainer.bind<IUserController>(UserDITypes.CONTROLLER).to(UserController);
 
 /**
  * Course Container

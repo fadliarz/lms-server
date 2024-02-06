@@ -27,6 +27,7 @@ import { PrismaTransaction } from "../../../common/types";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import CourseLessonVideoAuthorization from "../authorization/video.authorization";
+import { TableName } from "../../../common/constants/tableName";
 
 export interface ICourseLessonVideoRepository {
   createVideo: (

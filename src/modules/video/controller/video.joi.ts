@@ -17,7 +17,7 @@ export const UpdateCourseLessonVideoSourceJoi =
      * Required Field
      *
      */
-    youtubeLink: Joi.number().required(),
+    youtubeLink: Joi.string().required(),
     totalDurations: Joi.number().required(),
     /**
      * Optional

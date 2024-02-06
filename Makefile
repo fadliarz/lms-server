@@ -42,6 +42,12 @@ test-lesson:
 test-lesson-authorization:
 	jest -- --watchAll --verbose --runInBand --coverage src/modules/lesson/authorization/lesson.authorization.test.ts
 
+test-video:
+	jest -- --watchAll --verbose --runInBand --coverage src/modules/video/video.test.ts
+
+test-video-authorization:
+	jest --watchAll --verbose --runInBand --collectCoverage --collectCoverageFrom src/modules/video/authorization/*.ts --testMatch src/modules/video/authorization/*.ts
+
 #
 # MIGRATION
 #

@@ -5,6 +5,7 @@ import { PrismaTransaction } from "../../types";
 import { Course, User } from "@prisma/client";
 import { TableName } from "../../constants/tableName";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
+import { mapPrismaQueryRawObject } from "./prisma_query_raw.utils";
 
 @injectable()
 export default class UserPrismaQueryRaw implements IUserPrismaQueryRaw {
@@ -13,13 +14,13 @@ export default class UserPrismaQueryRaw implements IUserPrismaQueryRaw {
     userId: number,
   ): Promise<User | null> {
     const users = (await tx.$queryRawUnsafe(`SELECT *
-                                             FROM ${TableName.USER}
+                                             FROM "${TableName.USER}"
                                              WHERE id = ${userId} FOR UPDATE`)) as Array<User>;
     if (users.length == 0) {
       return null;
     }
 
-    return users[0];
+    return mapPrismaQueryRawObject<User>(users[0]);
   }
 
   public async selectForUpdateByIdOrThrow(

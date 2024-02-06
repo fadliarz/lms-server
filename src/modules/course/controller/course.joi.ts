@@ -36,7 +36,7 @@ export const GetCourseByIdQueryJoi = Joi.object<GetCourseByIdQuery>({
   include_category: Joi.boolean(),
   include_students: Joi.boolean(),
   include_instructors: Joi.boolean(),
-  include_playlist: Joi.boolean(),
+  include_basic_lessons_and_videos: Joi.boolean(),
 });
 
 /**

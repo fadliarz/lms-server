@@ -5,6 +5,7 @@ import { PrismaTransaction } from "../../types";
 import { CourseEnrollment } from "@prisma/client";
 import { TableName } from "../../constants/tableName";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
+import { mapPrismaQueryRawObject } from "./prisma_query_raw.utils";
 
 @injectable()
 export default class CourseEnrollmentPrismaQueryRaw
@@ -21,7 +22,7 @@ export default class CourseEnrollmentPrismaQueryRaw
       return null;
     }
 
-    return enrollments[0];
+    return mapPrismaQueryRawObject<CourseEnrollment>(enrollments[0]);
   }
 
   public async selectForUpdateByIdOrThrow(
@@ -48,14 +49,14 @@ export default class CourseEnrollmentPrismaQueryRaw
     const { userId, courseId } = userId_courseId;
     const enrollments = (await tx.$queryRawUnsafe(`SELECT *
                                                    FROM ${TableName.COURSE_ENROLLMENT}
-                                                   WHERE userId = ${userId}
-                                                     AND courseId = ${courseId} FOR UPDATE`)) as Array<CourseEnrollment>;
+                                                   WHERE user_id = ${userId}
+                                                     AND course_id = ${courseId} FOR UPDATE`)) as Array<CourseEnrollment>;
 
     if (enrollments.length == 0) {
       return null;
     }
 
-    return enrollments[0];
+    return mapPrismaQueryRawObject<CourseEnrollment>(enrollments[0]);
   }
 
   public async selectForUpdateByUserIdAndCourseIdOrThrow(

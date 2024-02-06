@@ -38,6 +38,13 @@ export default interface RandDB {
     course: CourseModel;
     lesson: CourseLessonModel;
   }>;
+  generateVideo: () => Promise<{
+    author: UserModel;
+    category: CourseCategoryModel;
+    course: CourseModel;
+    lesson: CourseLessonModel;
+    video: CourseLessonVideoModel;
+  }>;
 
   /**
    *

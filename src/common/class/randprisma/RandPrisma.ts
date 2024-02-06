@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import { faker } from "@faker-js/faker";
 import PrismaClientSingleton from "../PrismaClientSingleton";
 import RandDB from "./rand.type";
@@ -81,6 +82,7 @@ export default class RandPrisma implements RandDB {
       data: {
         ...this.generateCreateCourseDto(category.id),
         authorId: user.id,
+        totalLessons: 1,
       },
     });
     const lesson = await this.prisma.courseLesson.create({
@@ -95,6 +97,48 @@ export default class RandPrisma implements RandDB {
       category: getValuable(category),
       course: getValuable(course),
       lesson: getValuable(lesson),
+    };
+  }
+
+  public async generateVideo(): Promise<{
+    author: UserModel;
+    category: CourseCategoryModel;
+    course: CourseModel;
+    lesson: CourseLessonModel;
+    video: CourseLessonVideoModel;
+  }> {
+    const resources = await this.generateLesson();
+    const video = await this.prisma.courseLessonVideo.create({
+      data: {
+        lessonId: resources.lesson.id,
+        name: this.generateRandomString(8),
+        youtubeLink: this.generateRandomString(32),
+        totalDurations: this.generateRandomInteger(5, 10),
+      },
+    });
+
+    await this.prisma.course.update({
+      where: {
+        id: resources.course.id,
+      },
+      data: {
+        totalVideos: 1,
+        totalDurations: video.totalDurations,
+      },
+    });
+    resources.course.totalVideos = 1;
+    resources.course.totalDurations = video.totalDurations;
+
+    await this.prisma.courseLesson.update({
+      where: { id: resources.lesson.id },
+      data: { totalVideos: 1, totalDurations: video.totalDurations },
+    });
+    resources.lesson.totalVideos = 1;
+    resources.lesson.totalDurations = video.totalDurations;
+
+    return {
+      ...resources,
+      video: getValuable(video),
     };
   }
 

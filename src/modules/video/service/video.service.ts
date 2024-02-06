@@ -8,7 +8,6 @@ import {
   UpdateCourseLessonVideoSourceDto,
 } from "../video.type";
 import getValuable from "../../../common/functions/getValuable";
-import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseLessonRepository } from "../../lesson/repository/lesson.repository";
 import { CourseLessonDITypes } from "../../lesson/lesson.type";
 
@@ -53,6 +52,8 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     resourceId: CourseLessonVideoResourceId,
     dto: CreateCourseLessonVideoDto,
   ): Promise<CourseLessonVideoModel> {
+    console.log("Creating video");
+
     const video = await this.repository.createVideo(resourceId, dto);
 
     return getValuable(video);

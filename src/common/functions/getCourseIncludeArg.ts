@@ -5,7 +5,7 @@ export default function getCourseIncludeArg(query: GetCourseByIdQuery) {
   const {
     include_author,
     include_category,
-    include_playlist,
+    include_basic_lessons_and_videos,
     include_students,
     include_instructors,
   } = query;
@@ -54,11 +54,15 @@ export default function getCourseIncludeArg(query: GetCourseByIdQuery) {
             },
           }
         : false,
-    lessons: include_playlist
+    lessons: include_basic_lessons_and_videos
       ? {
           select: {
             id: true,
             title: true,
+            video: {
+              id: true,
+              name: true,
+            },
           },
         }
       : false,

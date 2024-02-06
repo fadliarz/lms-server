@@ -5,6 +5,7 @@ import { PrismaTransaction } from "../../types";
 import { CourseLessonVideo } from "@prisma/client";
 import { TableName } from "../../constants/tableName";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
+import { mapPrismaQueryRawObject } from "./prisma_query_raw.utils";
 
 @injectable()
 export default class CourseLessonVideoPrismaQueryRaw
@@ -21,7 +22,7 @@ export default class CourseLessonVideoPrismaQueryRaw
       return null;
     }
 
-    return videos[0];
+    return mapPrismaQueryRawObject<CourseLessonVideo>(videos[0]);
   }
 
   public async selectForUpdateByIdOrThrow(

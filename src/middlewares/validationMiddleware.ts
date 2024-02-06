@@ -12,7 +12,7 @@ export function validationMiddleware(obj: {
   return async (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ): Promise<void> => {
     let errorMessage: string[] = [];
     const validationOptions = {
@@ -21,46 +21,46 @@ export function validationMiddleware(obj: {
       stripUnkown: false,
     };
 
-    try {
-      if (obj.body) {
+    if (obj.body) {
+      try {
         await obj.body.validateAsync(req.body, validationOptions);
+      } catch (error: any) {
+        error.details.forEach((error: Joi.ValidationErrorItem) => {
+          errorMessage.push(error.message);
+        });
+
+        next(
+          new HttpException(
+            StatusCode.BAD_REQUEST,
+            ErrorCode.INVALID_BODY,
+            errorMessage || (ErrorMessage[ErrorCode.INVALID_BODY] as string),
+            true,
+          ),
+        );
+
+        return;
       }
-    } catch (error: any) {
-      error.details.forEach((error: Joi.ValidationErrorItem) => {
-        errorMessage.push(error.message);
-      });
-
-      next(
-        new HttpException(
-          StatusCode.BAD_REQUEST,
-          ErrorCode.INVALID_BODY,
-          errorMessage || (ErrorMessage[ErrorCode.INVALID_BODY] as string),
-          true
-        )
-      );
-
-      return;
     }
 
-    try {
-      if (obj.query) {
+    if (obj.query) {
+      try {
         await obj.query.validateAsync(req.query, validationOptions);
+      } catch (error: any) {
+        error.details.forEach((error: Joi.ValidationErrorItem) => {
+          errorMessage.push(error.message);
+        });
+
+        next(
+          new HttpException(
+            StatusCode.BAD_REQUEST,
+            ErrorCode.INVALID_QUERY,
+            errorMessage || ErrorMessage[ErrorCode.INVALID_QUERY],
+            true,
+          ),
+        );
+
+        return;
       }
-    } catch (error: any) {
-      error.details.forEach((error: Joi.ValidationErrorItem) => {
-        errorMessage.push(error.message);
-      });
-
-      next(
-        new HttpException(
-          StatusCode.BAD_REQUEST,
-          ErrorCode.INVALID_QUERY,
-          errorMessage || ErrorMessage[ErrorCode.INVALID_QUERY],
-          true
-        )
-      );
-
-      return;
     }
 
     next();

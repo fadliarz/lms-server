@@ -66,7 +66,7 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await validateJoi({ body: "" })(req, res, next);
+      // await validateJoi({ body: "" })(req, res, next);
 
       const newUser = await this.service.createUser(req.body);
 
