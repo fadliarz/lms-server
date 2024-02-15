@@ -50,33 +50,36 @@ Link: _currently unavailable_
 
 - ### Creating Enrollment
 
-| Role                     | Enrolling for Themselves | Enrolling for Others      |
-|--------------------------|--------------------------|---------------------------| 
-| **Student**              | `[STUDENT]`              | `Unauthorized`            
-| **Instructor & !Author** | `[STUDENT]`              | `Unauthorized`            
-| **Instructor & Author**  | `Unauthorized`           | `Unauthorized`            
-| **Admin & !Author**      | `[STUDENT, INSTRUCTOR]`  | `[STUDENT*, INSTRUCTOR*]` 
-| **Admin & Author**       | `Unauthorized`           | `[STUDENT*, INSTRUCTOR*]` 
+| Role                    | Enrolling for Themselves   | Enrolling for Others       |
+|-------------------------|----------------------------|----------------------------| 
+| **Student**             | `[STUDENT]`T               | `Unauthorized`T            
+| **Student & Author**    | `InternalServerException`T | `InternalServerException`T 
+| **Instructor**          | `[STUDENT]`T               | `Unauthorized`T            
+| **Instructor & Author** | `Unauthorized`T            | `Unauthorized`T            
+| **Admin**               | `Permitted`T               | `Permitted`T               
+| **Admin & Author**      | `Unauthorized`T            | `Permitted`T               
 
 - ### Updating Enrollment
 
-| Role & Authorship        | Updating for Themselves | Updating for Others |
-|--------------------------|-------------------------|---------------------|
-| **Student**              | `Unauthorized`          | `Unauthorized`      |
-| **Instructor & !Author** | `Unauthorized`          | `Unauthorized`      |
-| **Instructor & Author**  | ``Unauthorized``        | `Permitted`         |
-| **Admin & !Author**      | `Permitted`             | `Permitted`         |
-| **Admin & Author**       | `-`                     | `Permitted`         |
+| Role & Authorship       | Updating for Themselves   | Updating for Others       |
+|-------------------------|---------------------------|---------------------------|
+| **Student**             | `Unauthorized`            | `Unauthorized`            |
+| **Student & Author**    | `InternalServerException` | `InternalServerException` |
+| **Instructor**          | `Unauthorized`            | `Unauthorized`            |
+| **Instructor & Author** | `InternalServerException` | `Permitted`               |
+| **Admin**               | `Permitted`               | `Permitted`               |
+| **Admin & Author**      | `InternalServerException` | `Permitted`               |
 
 - ### Deleting Enrollment
 
-| Role & Authorship        | Updating for Themselves | Deleting for Others |
-|--------------------------|-------------------------|---------------------|
-| **Student**              | `Permitted`             | `Unauthorized`      |
-| **Instructor & !Author** | `Permitted`             | `Unauthorized`      |
-| **Instructor & Author**  | `-`                     | `Permitted`         |
-| **Admin & !Author**      | `Permitted`             | `Permitted`         |
-| **Admin & Author**       | `-`                     | `Permitted`         |
+| Role & Authorship       | Deleting for Themselves   | Deleting for Others       |
+|-------------------------|---------------------------|---------------------------|
+| **Student**             | `Permitted`               | `Unauthorized`            |
+| **Student & Author**    | `InternalServerException` | `InternalServerException` |
+| **Instructor**          | `Permitted`               | `Unauthorized`            |
+| **Instructor & Author** | `InternalServerException` | `Permitted`               |
+| **Admin**               | `Permitted`               | `Permitted`               |
+| **Admin & Author**      | `InternalServerException` | `Permitted`               |
 
 - ### Updating Role Rule
 

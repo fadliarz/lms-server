@@ -5,18 +5,13 @@ import dIContainer from "../../../inversifyConfig";
 import { CourseDITypes } from "../course.type";
 import { courseUrls } from "../course.type";
 import { ICourseController } from "../controller/course.controller";
-import { ICourseAuthorizationMiddleware } from "../authorization/course.authorization";
 
 export default function CourseRouter(authenticationMiddleware: any) {
   const router = express.Router();
 
   const controller = dIContainer.get<ICourseController>(
-    CourseDITypes.CONTROLLER
+    CourseDITypes.CONTROLLER,
   );
-  const authorizationMiddleware =
-    dIContainer.get<ICourseAuthorizationMiddleware>(
-      CourseDITypes.AUTHORIZATION_MIDDLEWARE
-    );
 
   /**
    * Create (Course)
@@ -25,8 +20,7 @@ export default function CourseRouter(authenticationMiddleware: any) {
   router.post(
     "/",
     authenticationMiddleware,
-    authorizationMiddleware.getCreateCourseAuthorizationMiddleware(),
-    controller.createCourse.bind(controller)
+    controller.createCourse.bind(controller),
   );
 
   /**
@@ -36,7 +30,7 @@ export default function CourseRouter(authenticationMiddleware: any) {
   router.get(
     courseUrls.course,
     authenticationMiddleware,
-    controller.getCourseById.bind(controller)
+    controller.getCourseById.bind(controller),
   );
 
   // router.get(
@@ -56,8 +50,7 @@ export default function CourseRouter(authenticationMiddleware: any) {
   router.put(
     courseUrls.course,
     authenticationMiddleware,
-    authorizationMiddleware.getUpdateCourseAuthorizationMiddleware(),
-    controller.updateCourse.bind(controller)
+    controller.updateBasicCourse.bind(controller),
   );
 
   /**
@@ -67,31 +60,28 @@ export default function CourseRouter(authenticationMiddleware: any) {
   router.delete(
     courseUrls.course,
     authenticationMiddleware,
-    authorizationMiddleware.getDeleteCourseAuthorizationMiddleware(),
-    controller.deleteCourse.bind(controller)
+    controller.deleteCourse.bind(controller),
   );
 
-  /**
-   * Create (CourseLike)
-   *
-   */
-  router.post(
-    courseUrls.likes,
-    authenticationMiddleware,
-    authorizationMiddleware.getCreateCourseLikeAuthorization(),
-    controller.createLike.bind(controller)
-  );
-
-  /**
-   * Delete (CourseLike)
-   *
-   */
-  router.delete(
-    courseUrls.like,
-    authenticationMiddleware,
-    authorizationMiddleware.getDeleteCourseLikeAuthorization(),
-    controller.deleteLike.bind(controller)
-  );
+  // /**
+  //  * Create (CourseLike)
+  //  *
+  //  */
+  // router.post(
+  //   courseUrls.likes,
+  //   authenticationMiddleware,
+  //   controller.createLike.bind(controller),
+  // );
+  //
+  // /**
+  //  * Delete (CourseLike)
+  //  *
+  //  */
+  // router.delete(
+  //   courseUrls.like,
+  //   authenticationMiddleware,
+  //   controller.deleteLike.bind(controller),
+  // );
 
   return router;
 }

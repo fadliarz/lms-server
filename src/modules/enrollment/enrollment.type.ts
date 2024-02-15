@@ -1,5 +1,6 @@
 import { CourseEnrollment, Prisma } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import { CourseEnrollmentRoleModel } from "../course/course.type";
 
 export const CourseEnrollmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
@@ -21,8 +22,9 @@ export enum courseEnrollmentUrls {
  *
  *
  */
-export type CourseEnrollmentModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollment>;
+export type CourseEnrollmentModel = CourseEnrollment;
+export type ValuableCourseEnrollmentModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollmentModel>;
 export type BasicCourseEnrollmentModel = Pick<
   CourseEnrollmentModel,
   "userId" | "courseId" | "role"
@@ -42,7 +44,7 @@ export type BasicCourseEnrollmentModel = Pick<
  */
 export type CreateCourseEnrollmentDto = Pick<
   CourseEnrollmentModel,
-  "userId" | "courseId" | "role"
+  "userId" | "role"
 >;
 export type UpdateCourseEnrollmentRoleDto = Pick<
   CreateCourseEnrollmentDto,

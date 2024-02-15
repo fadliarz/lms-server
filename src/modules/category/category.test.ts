@@ -12,7 +12,7 @@ import { CourseCategoryService } from "./service/category.service";
 import { StatusCode } from "../../common/constants/statusCode";
 import { ErrorCode } from "../../common/constants/errorCode";
 import RandPrisma from "../../common/class/randprisma/RandPrisma";
-import RandDB from "../../common/class/randprisma/rand.type";
+import { IRandDB } from "../../common/class/randprisma/rand.type";
 
 /**
  *
@@ -35,7 +35,7 @@ import RandDB from "../../common/class/randprisma/rand.type";
 function mockNextError(
   mockRequest: Request,
   mockResponse: Response,
-  mockNext: NextFunction
+  mockNext: NextFunction,
 ): void {
   (mockNext as jest.Mock).mockImplementation((error: Error) => {
     errorMiddleware(error, mockRequest, mockResponse, mockNext);
@@ -44,14 +44,14 @@ function mockNextError(
 
 describe("CourseCategory", () => {
   let controller: ICourseCategoryController;
-  let randDb: RandDB;
+  let randDb: IRandDB;
   let mockRequest: Request;
   let mockResponse: Response;
   let mockNext: NextFunction;
 
   beforeAll(async () => {
     controller = dIContainer.get<ICourseCategoryController>(
-      CourseCategoryDITypes.CONTROLLER
+      CourseCategoryDITypes.CONTROLLER,
     );
     randDb = new RandPrisma();
   });
@@ -78,7 +78,7 @@ describe("CourseCategory", () => {
     type TestCase = {
       name: string;
       modifyDto: (
-        dto: CreateCourseCategoryDto
+        dto: CreateCourseCategoryDto,
       ) => Partial<CreateCourseCategoryDto>;
       test: (params: TestParams) => Promise<void>;
     };
@@ -87,7 +87,7 @@ describe("CourseCategory", () => {
       {
         name: "OK: Complete Dto",
         modifyDto: (
-          dto: CreateCourseCategoryDto
+          dto: CreateCourseCategoryDto,
         ): Partial<CreateCourseCategoryDto> => {
           return {
             ...dto,
@@ -97,14 +97,14 @@ describe("CourseCategory", () => {
           const { mockRequest, mockResponse, mockNext } = params;
           const spyOnCreateCategoryService = jest.spyOn(
             CourseCategoryService.prototype,
-            "createCategory"
+            "createCategory",
           );
 
           await controller.createCategory(mockRequest, mockResponse, mockNext);
 
           expect(spyOnCreateCategoryService).toHaveBeenCalledTimes(1);
           expect(spyOnCreateCategoryService).toHaveBeenCalledWith(
-            mockRequest.body
+            mockRequest.body,
           );
 
           const newCategory = (await spyOnCreateCategoryService.mock.results[0]
@@ -113,7 +113,7 @@ describe("CourseCategory", () => {
           expect(mockNext).not.toHaveBeenCalled();
           expect(mockResponse.status).toHaveBeenCalledTimes(1);
           expect(mockResponse.status).toHaveBeenCalledWith(
-            StatusCode.RESOURCE_CREATED
+            StatusCode.RESOURCE_CREATED,
           );
           expect(mockResponse.json).toHaveBeenCalledTimes(1);
           expect(mockResponse.json).toHaveBeenCalledWith({
@@ -124,7 +124,7 @@ describe("CourseCategory", () => {
       {
         name: "BadRequest: Missing title",
         modifyDto: (
-          dto: CreateCourseCategoryDto
+          dto: CreateCourseCategoryDto,
         ): Partial<CreateCourseCategoryDto> => {
           return {
             ...dto,
@@ -136,7 +136,7 @@ describe("CourseCategory", () => {
           mockNextError(mockRequest, mockResponse, mockNext);
           const spyOnCreateCategoryService = jest.spyOn(
             CourseCategoryService.prototype,
-            "createCategory"
+            "createCategory",
           );
 
           await controller.createCategory(mockRequest, mockResponse, mockNext);
@@ -146,7 +146,7 @@ describe("CourseCategory", () => {
           expect(mockNext).toHaveBeenCalledTimes(1);
           expect(mockResponse.status).toHaveBeenCalledTimes(1);
           expect(mockResponse.status).toHaveBeenCalledWith(
-            StatusCode.BAD_REQUEST
+            StatusCode.BAD_REQUEST,
           );
           expect(mockResponse.json).toHaveBeenCalledTimes(1);
           expect(mockResponse.json).toHaveBeenCalledWith({
@@ -161,7 +161,7 @@ describe("CourseCategory", () => {
 
     testCases.forEach(async (tc) => {
       return it(tc.name, async () => {
-        const dto = randDb.generateCreateCategoryDto();
+        const dto: CreateCourseCategoryDto = { title: "someTitle" };
         mockRequest.body = tc.modifyDto(dto);
 
         await tc.test({

@@ -14,8 +14,8 @@ import { Request, Response } from "express";
 import https from "https";
 
 class App {
-  private readonly prisma = PrismaClientSingleton.getInstance();
   public readonly express: Application;
+  private readonly prisma = PrismaClientSingleton.getInstance();
   private readonly port: number;
   private readonly httpsServer: any;
 
@@ -32,7 +32,7 @@ class App {
         key: process.env.SSL_KEY,
         cert: process.env.SSL_CERT,
       },
-      this.express
+      this.express,
     );
 
     this.initialiseMiddlewares();
@@ -50,8 +50,22 @@ class App {
     this.express.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(yaml.load("src/swagger.yaml"))
+      swaggerUi.setup(yaml.load("src/swagger.yaml")),
     );
+  }
+
+  /**
+   * Listen to app to a port
+   *
+   */
+  public listen(): void {
+    let port =
+      process.env.NODE_ENV == "test"
+        ? Math.floor(Math.random() * 60000) + 5000
+        : this.port;
+    this.httpsServer.listen(port, () => {
+      console.log("HTTPS server is listening on the port", port);
+    });
   }
 
   /**
@@ -64,7 +78,7 @@ class App {
         origin: "http://localhost:4444",
         credentials: true, //access-control-allow-credentials:true
         optionsSuccessStatus: 200,
-      })
+      }),
     );
 
     if (process.env.NODE_ENV === "development") {
@@ -113,22 +127,10 @@ class App {
 
       console.log("Successfully establishing database connection!");
     } catch (error) {
+      console.error("error: ", error);
+
       throw Error("Failed establishing a database connection!");
     }
-  }
-
-  /**
-   * Listen to app to a port
-   *
-   */
-  public listen(): void {
-    let port =
-      process.env.NODE_ENV == "test"
-        ? Math.floor(Math.random() * 60000) + 5000
-        : this.port;
-    this.httpsServer.listen(port, () => {
-      console.log("HTTPS server is listening on the port ", port);
-    });
   }
 
   /**
@@ -137,10 +139,14 @@ class App {
    */
   private async setup(): Promise<void> {
     try {
+      console.log("Initialising database connection!");
+
       await this.initialiseDatabaseConnection();
 
       this.listen();
     } catch (error) {
+      console.error("error: ", error);
+
       throw Error("Failed setting up!");
     }
   }

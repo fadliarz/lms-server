@@ -9,7 +9,19 @@ import {
 } from "../video.type";
 import getValuable from "../../../common/functions/getValuable";
 import { ICourseLessonRepository } from "../../lesson/repository/lesson.repository";
-import { CourseLessonDITypes } from "../../lesson/lesson.type";
+import {
+  CourseLessonDITypes,
+  CourseLessonModel,
+} from "../../lesson/lesson.type";
+import { PrismaTransaction } from "../../../common/types";
+import { CourseLesson, CourseLessonVideo } from "@prisma/client";
+import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { CourseModel } from "../../course/course.type";
+import {
+  IRepository,
+  RepositoryDITypes,
+} from "../../../common/class/repository/repository.type";
+import Repository from "../../../common/class/repository/Repository";
 
 export interface ICourseLessonVideoService {
   createVideo: (
@@ -33,11 +45,8 @@ export interface ICourseLessonVideoService {
 
 @injectable()
 export class CourseLessonVideoService implements ICourseLessonVideoService {
-  @inject(CourseLessonVideoDITypes.REPOSITORY)
-  repository: ICourseLessonVideoRepository;
-
-  @inject(CourseLessonDITypes.REPOSITORY)
-  lessonRepository: ICourseLessonRepository;
+  @inject(RepositoryDITypes.FACADE)
+  repository: IRepository;
 
   /**
    *
@@ -52,45 +61,136 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     resourceId: CourseLessonVideoResourceId,
     dto: CreateCourseLessonVideoDto,
   ): Promise<CourseLessonVideoModel> {
-    console.log("Creating video");
+    await this.validateRelationBetweenResources(
+      { resourceId },
+      new RecordNotFoundException(),
+    );
 
-    const video = await this.repository.createVideo(resourceId, dto);
-
-    return getValuable(video);
+    return await this.repository.courseLessonVideo.createVideo(resourceId, dto);
   }
 
   public async getVideoById(
     videoId: number,
     resourceId: CourseLessonVideoResourceId,
   ): Promise<CourseLessonVideoModel> {
-    const video = await this.repository.getVideoByIdOrThrow(
+    const resources = await this.validateRelationBetweenResources({
       videoId,
       resourceId,
-    );
+    });
 
-    return getValuable(video);
+    if (!resources) {
+      throw new RecordNotFoundException();
+    }
+
+    return resources.video;
   }
 
   public async updateVideoSource(
     videoId: number,
     resourceId: CourseLessonVideoResourceId,
-    videoDetails: UpdateCourseLessonVideoSourceDto,
+    dto: UpdateCourseLessonVideoSourceDto,
   ): Promise<CourseLessonVideoModel> {
-    const updatedVideo = await this.repository.updateVideoSource(
-      videoId,
-      resourceId,
-      videoDetails,
+    await this.validateRelationBetweenResources(
+      { resourceId },
+      new RecordNotFoundException(),
     );
 
-    return getValuable(updatedVideo);
+    return await this.repository.courseLessonVideo.updateVideoSource(
+      videoId,
+      resourceId,
+      dto,
+    );
   }
 
   public async deleteVideo(
     videoId: number,
     resourceId: CourseLessonVideoResourceId,
   ): Promise<{}> {
-    await this.repository.deleteVideo(videoId, resourceId);
+    await this.repository.courseLessonVideo.deleteVideo(videoId, resourceId);
 
     return {};
+  }
+
+  private async validateRelationBetweenResources(
+    id: {
+      resourceId: CourseLessonVideoResourceId;
+    },
+    error?: Error,
+  ): Promise<{
+    course: CourseModel;
+    lesson: CourseLessonModel;
+  } | null>;
+  private async validateRelationBetweenResources(
+    id: {
+      videoId: number;
+      resourceId: CourseLessonVideoResourceId;
+    },
+    error?: Error,
+  ): Promise<{
+    course: CourseModel;
+    lesson: CourseLessonModel;
+    video: CourseLessonVideoModel;
+  } | null>;
+  private async validateRelationBetweenResources<
+    T1 extends {
+      resourceId: CourseLessonVideoResourceId;
+    },
+    T2 extends {
+      videoId: number;
+      resourceId: CourseLessonVideoResourceId;
+    },
+  >(
+    id: T1 | T2,
+    error?: Error,
+  ): Promise<
+    | {
+        lesson: CourseLesson;
+      }
+    | {
+        lesson: CourseLessonModel;
+        video: CourseLessonVideoModel;
+      }
+    | null
+  > {
+    const { resourceId } = id;
+    const { courseId, lessonId } = resourceId;
+
+    const lesson = await this.repository.courseLesson.getLessonById(
+      lessonId,
+      resourceId,
+    );
+
+    if (!lesson || lesson.courseId !== courseId) {
+      if (error) {
+        throw error;
+      }
+
+      return null;
+    }
+
+    if ((id as T2).videoId) {
+      const { videoId } = id as T2;
+      const video = await this.repository.courseLessonVideo.getVideoById(
+        videoId,
+        resourceId,
+      );
+
+      if (!video || video.lessonId !== lessonId) {
+        if (error) {
+          throw error;
+        }
+
+        return null;
+      }
+
+      if (videoId) {
+        return {
+          lesson,
+          video,
+        };
+      }
+    }
+
+    return { lesson };
   }
 }

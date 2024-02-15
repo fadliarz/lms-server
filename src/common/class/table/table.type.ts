@@ -55,6 +55,7 @@ export interface ICourseLessonVideoTable {
     videoId: number,
     errorObject?: Error,
   ) => Promise<CourseLessonVideoModel>;
+  delete: (videoId: number) => Promise<CourseLessonVideoModel>;
 }
 
 export interface ICourseLikeTable {

@@ -1,4 +1,4 @@
-import "reflect-metadata"
+import "reflect-metadata";
 
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
@@ -20,7 +20,7 @@ export default function UserRouter(authenticationMiddleware: any) {
     validationMiddleware({
       body: SignUp,
     }),
-    controller.createUser.bind(controller)
+    controller.createUser.bind(controller),
   );
 
   /**
@@ -30,13 +30,13 @@ export default function UserRouter(authenticationMiddleware: any) {
 
   router.get(
     userUrls.user.concat("/:email"),
-    controller.getUserByEmail.bind(controller)
+    controller.getUserByEmail.bind(controller),
   );
-  
+
   router.get(
     userUrls.user,
     authenticationMiddleware,
-    controller.getMe.bind(controller)
+    controller.getMe.bind(controller),
   );
 
   /**
@@ -45,13 +45,13 @@ export default function UserRouter(authenticationMiddleware: any) {
   router.post(
     userUrls.signIn,
     validationMiddleware({ body: SignIn }),
-    controller.signIn.bind(controller)
+    controller.signIn.bind(controller),
   );
 
   router.put(
     userUrls.logOut,
     authenticationMiddleware,
-    controller.logOut.bind(controller)
+    controller.signOut.bind(controller),
   );
 
   return router;

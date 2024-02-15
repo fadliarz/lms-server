@@ -4,7 +4,6 @@ import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { CourseLessonDITypes, courseLessonUrls } from "../lesson.type";
 import { ICourseLessonController } from "../controller/lesson.controller";
-import { CourseLessonAuthorizationMiddleware } from "../authorization/lesson.authorization";
 import { validationMiddleware } from "../../../middlewares/validationMiddleware";
 import {
   CreateCourseLessonDtoJoi,
@@ -15,9 +14,8 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
   const router = express.Router();
 
   const controller = dIContainer.get<ICourseLessonController>(
-    CourseLessonDITypes.CONTROLLER
+    CourseLessonDITypes.CONTROLLER,
   );
-  const authorizationMiddleware = new CourseLessonAuthorizationMiddleware();
 
   router.post(
     "/",
@@ -25,14 +23,13 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
     validationMiddleware({
       body: CreateCourseLessonDtoJoi,
     }),
-    authorizationMiddleware.getCreateLessonAuthorizationMiddleware(),
-    controller.createLesson.bind(controller)
+    controller.createLesson.bind(controller),
   );
 
   router.get(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    controller.getLessonById.bind(controller)
+    controller.getLessonById.bind(controller),
   );
 
   router.put(
@@ -41,15 +38,13 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
     validationMiddleware({
       body: UpdateCourseLessonDtoJoi,
     }),
-    authorizationMiddleware.getUpdateLessonAuthorizationMiddleware(),
-    controller.updateLesson.bind(controller)
+    controller.updateLesson.bind(controller),
   );
 
   router.delete(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    authorizationMiddleware.getDeleteLessonAuthorizationMiddleware(),
-    controller.deleteLesson.bind(controller)
+    controller.deleteLesson.bind(controller),
   );
 
   return router;

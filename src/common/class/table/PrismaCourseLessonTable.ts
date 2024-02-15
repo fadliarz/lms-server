@@ -4,7 +4,6 @@ import { ICourseLessonTable } from "./table.type";
 import PrismaClientSingleton from "../PrismaClientSingleton";
 import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
 import { PrismaClient } from "@prisma/client";
-import getValuable from "../../functions/getValuable";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
 
 @injectable()
@@ -18,12 +17,12 @@ export default class PrismaCourseLessonTable implements ICourseLessonTable {
       },
     });
 
-    return lesson ? getValuable(lesson) : lesson;
+    return lesson;
   }
 
   public async findUniqueOrThrow(
     lessonId: number,
-    errorObject?: Error
+    errorObject?: Error,
   ): Promise<CourseLessonModel> {
     const lesson = await this.findUnique(lessonId);
 
@@ -31,6 +30,6 @@ export default class PrismaCourseLessonTable implements ICourseLessonTable {
       throw errorObject || new RecordNotFoundException();
     }
 
-    return getValuable(lesson);
+    return lesson;
   }
 }

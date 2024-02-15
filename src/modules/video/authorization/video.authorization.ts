@@ -5,11 +5,11 @@ import getRoleStatus from "../../../common/functions/getRoleStatus";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import { ICourseLessonVideoAuthorization } from "../video.type";
-import InternalServerException from "../../../common/class/exceptions/InternalServerException";
-import { CourseEnrollmentRoleModel } from "../../course/course.type";
+import BaseAuthorization from "../../../common/class/BaseAuthorization";
 
 @injectable()
 export default class CourseLessonVideoAuthorization
+  extends BaseAuthorization
   implements ICourseLessonVideoAuthorization
 {
   public authorizeCreateVideo(
@@ -92,37 +92,5 @@ export default class CourseLessonVideoAuthorization
     enrollment: CourseEnrollment | null,
   ): void {
     this.authorizeCreateVideo(user, course, enrollment);
-  }
-
-  private validateUnexpectedScenarios(
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isStudent } = getRoleStatus(userRole);
-
-    /**
-     * Some unexpected scenario:
-     *
-     * 1. isStudent but enrolled as Instructor
-     * 2. isStudent but also isAuthor
-     * 3. isAuthor but also enrolled
-     *
-     */
-    if (
-      (isStudent &&
-        enrollment &&
-        isEqualOrIncludeCourseEnrollmentRole(
-          enrollment.role,
-          CourseEnrollmentRoleModel.INSTRUCTOR,
-        )) ||
-      (isStudent && isAuthor) ||
-      (isAuthor && enrollment)
-    ) {
-      throw new InternalServerException();
-    }
   }
 }

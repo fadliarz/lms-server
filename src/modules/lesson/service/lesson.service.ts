@@ -7,7 +7,6 @@ import {
   UpdateCourseLessonDto,
 } from "../lesson.type";
 import { ICourseLessonRepository } from "../repository/lesson.repository";
-import getValuable from "../../../common/functions/getValuable";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 
 export interface ICourseLessonService {
@@ -28,6 +27,13 @@ export interface ICourseLessonService {
     lessonId: number,
     resourceId: CourseLessonResourceId,
   ) => Promise<{}>;
+  validateRelationBetweenResources: (
+    id: {
+      lessonId: number;
+      resourceId: CourseLessonResourceId;
+    },
+    error?: Error,
+  ) => Promise<CourseLessonModel | null>;
 }
 
 @injectable()
@@ -39,22 +45,23 @@ export class CourseLessonService implements ICourseLessonService {
     resourceId: CourseLessonResourceId,
     dto: CreateCourseLessonDto,
   ): Promise<CourseLessonModel> {
-    const lesson = await this.repository.createLesson(resourceId, dto);
-
-    return getValuable(lesson);
+    return await this.repository.createLesson(resourceId, dto);
   }
 
   public async getLessonById(
     lessonId: number,
     resourceId: CourseLessonResourceId,
   ): Promise<CourseLessonModel> {
-    const { courseId } = resourceId;
-    const lesson = await this.repository.getLessonByIdOrThrow(lessonId);
-    if (!lesson || lesson.courseId !== courseId) {
+    const lesson = await this.validateRelationBetweenResources({
+      lessonId,
+      resourceId,
+    });
+
+    if (!lesson) {
       throw new RecordNotFoundException();
     }
 
-    return getValuable(lesson);
+    return lesson;
   }
 
   public async updateLesson(
@@ -62,33 +69,43 @@ export class CourseLessonService implements ICourseLessonService {
     resourceId: CourseLessonResourceId,
     dto: UpdateCourseLessonDto,
   ): Promise<CourseLessonModel> {
-    const { courseId } = resourceId;
-    const lesson = await this.repository.getLessonById(lessonId);
-    if (!lesson || lesson.courseId !== courseId) {
-      throw new RecordNotFoundException();
-    }
-
-    const updatedLesson = await this.repository.updateLesson(
-      lessonId,
-      resourceId,
-      dto,
+    await this.validateRelationBetweenResources(
+      { lessonId, resourceId },
+      new RecordNotFoundException(),
     );
 
-    return getValuable(updatedLesson);
+    return await this.repository.updateLesson(lessonId, resourceId, dto);
   }
 
   public async deleteLesson(
     lessonId: number,
     resourceId: CourseLessonResourceId,
   ): Promise<{}> {
-    const { courseId } = resourceId;
-    const lesson = await this.repository.getLessonById(lessonId);
-    if (!lesson || lesson.courseId !== courseId) {
-      throw new RecordNotFoundException();
-    }
-
+    await this.validateRelationBetweenResources(
+      { lessonId, resourceId },
+      new RecordNotFoundException(),
+    );
     await this.repository.deleteLesson(lessonId, resourceId);
 
     return {};
+  }
+
+  public async validateRelationBetweenResources(
+    id: {
+      lessonId: number;
+      resourceId: CourseLessonResourceId;
+    },
+    error?: Error,
+  ): Promise<CourseLessonModel | null> {
+    const { lessonId, resourceId } = id;
+    const lesson = await this.repository.getLessonById(lessonId, resourceId);
+
+    if (!lesson) {
+      if (error) {
+        throw error;
+      }
+    }
+
+    return lesson;
   }
 }

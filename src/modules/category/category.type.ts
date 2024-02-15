@@ -42,9 +42,8 @@ export interface ICourseCategoryAuthorization {
  * Model CourseCategory
  *
  */
-export type CourseCategoryModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseCategory>;
-export type BasicCourseCategoryModel =
+export type CourseCategoryModel = CourseCategory;
+export type ValuableCourseCategoryModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseCategoryModel>;
 
 /**

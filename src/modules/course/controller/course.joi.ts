@@ -1,24 +1,22 @@
 import Joi from "joi";
 import {
+  CourseEnrollmentRoleModel,
   CreateCourseDto,
   CreateCourseLikeDto,
   GetCourseByIdQuery,
   GetCoursesQuery,
-  GetEnrolledCourseByIdQuery,
   GetEnrolledCoursesQuery,
   UpdateCourseDto,
 } from "../course.type";
-import { CourseStatus, Role } from "@prisma/client";
+import { CourseStatus } from "@prisma/client";
 
 /**
  * CreateCourse
  *
  */
 export const CreateCourseDtoJoi = Joi.object<CreateCourseDto>({
-  // required
   title: Joi.string().required(),
   categoryId: Joi.number().required(),
-  // optional
   image: Joi.string(),
   description: Joi.string(),
   material: Joi.string(),
@@ -34,9 +32,6 @@ export const GetCourseByIdQueryJoi = Joi.object<GetCourseByIdQuery>({
    */
   include_author: Joi.boolean(),
   include_category: Joi.boolean(),
-  include_students: Joi.boolean(),
-  include_instructors: Joi.boolean(),
-  include_basic_lessons_and_videos: Joi.boolean(),
 });
 
 /**
@@ -57,26 +52,6 @@ export const GetCoursesQueryJoi = Joi.object<GetCoursesQuery>({
 });
 
 /**
- * GetEnrolledCourseById
- *
- */
-export const GetEnrolledCourseByIdQueryJoi =
-  Joi.object<GetEnrolledCourseByIdQuery>({
-    /**
-     * Include
-     */
-    include_author: Joi.boolean(),
-    include_category: Joi.boolean(),
-    include_students: Joi.boolean(),
-    include_instructors: Joi.boolean(),
-    include_playlist: Joi.boolean(),
-    /**
-     * Role
-     */
-    role: Joi.valid(Role.STUDENT, Role.INSTRUCTOR),
-  });
-
-/**
  * GetEnrolledCourses
  *
  */
@@ -86,17 +61,13 @@ export const GetEnrolledCoursesQueryJoi = Joi.object<GetEnrolledCoursesQuery>({
    */
   include_author: Joi.boolean(),
   include_category: Joi.boolean(),
-  include_student_courses: Joi.boolean(),
-  include_instructor_courses: Joi.boolean(),
+  // role: "addSoon",
   /**
    * Limit
    */
   limit_student_courses: Joi.number(),
   limit_instructor_courses: Joi.number(),
-})
-  .with("include_student_courses", "limit_student_courses")
-  .with("include_instructor_courses", "limit_instructor_courses")
-  .or("student_courses", "instructor_courses");
+});
 
 /**
  * UpdateCourse

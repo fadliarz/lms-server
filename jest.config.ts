@@ -1,15 +1,67 @@
 import type { Config } from "@jest/types";
 
-type TestIsolationKeyForFunction = "getValuable";
+type TestIsolationKeyForClass = "BaseAuthorization";
+type TestIsolationKeyForFunction =
+  | "getValuable"
+  | "processQuery"
+  | "processBoolean";
 type TestIsolationKey =
+  | TestIsolationKeyForClass
   | TestIsolationKeyForFunction
+  | "course"
+  | "courseController"
+  | "courseService"
+  | "courseRepository"
+  | "courseAuthorization"
   | "videoController"
   | "videoRepository"
-  | "videoAuthorization";
+  | "videoAuthorization"
+  | "enrollmentRepository"
+  | "enrollmentAuthorization"
+  | "courseLessonRepository"
+  | "courseLessonAuthorization";
 const testIsolation: Record<
   TestIsolationKey,
   Pick<Config.InitialOptions, "collectCoverageFrom" | "testMatch">
 > = {
+  BaseAuthorization: {
+    collectCoverageFrom: [`<rootDir>/src/common/class/BaseAuthorization.ts`],
+    testMatch: [`<rootDir>/src/common/class/BaseAuthorization.test.ts`],
+  },
+  course: {
+    collectCoverageFrom: [`<rootDir>/src/modules/course/**/*.ts`],
+    testMatch: [`<rootDir>/src/modules/course/**/*.test.ts`],
+  },
+  courseController: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/course/controller/course.controller.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/course/controller/course.controller.test.ts`,
+    ],
+  },
+  courseService: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/course/service/course.service.ts`,
+    ],
+    testMatch: [`<rootDir>/src/modules/course/service/course.service.test.ts`],
+  },
+  courseRepository: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/course/repository/course.repository.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/course/repository/course.repository.test.ts`,
+    ],
+  },
+  courseAuthorization: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/course/authorization/course.authorization.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/course/authorization/course.authorization.test.ts`,
+    ],
+  },
   videoController: {
     collectCoverageFrom: [
       `<rootDir>/src/modules/video/controller/video.controller.ts`,
@@ -27,12 +79,56 @@ const testIsolation: Record<
     ],
   },
   videoAuthorization: {
-    collectCoverageFrom: [`<rootDir>/src/modules/video/**/*.ts`],
-    testMatch: [`<rootDir>/src/modules/video/authorization/**/*.test.ts`],
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/video/authorization/video.authorization.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/video/authorization/video.authorization.test.ts`,
+    ],
+  },
+  enrollmentRepository: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/enrollment/repository/enrollment.repository.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/enrollment/repository/enrollment.repository.test.ts`,
+    ],
+  },
+  enrollmentAuthorization: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/enrollment/authorization/enrollment.authorization.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/enrollment/authorization/enrollment.authorization.test.ts`,
+    ],
+  },
+  courseLessonRepository: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/lesson/repository/lesson.repository.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/lesson/repository/lesson.repository.test.ts`,
+    ],
+  },
+  courseLessonAuthorization: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/lesson/authorization/lesson.authorization.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/lesson/authorization/lesson.authorization.test.ts`,
+    ],
   },
   getValuable: {
     collectCoverageFrom: [`<rootDir>/src/common/functions/getValuable.ts`],
     testMatch: [`<rootDir>/src/common/functions/getValuable.test.ts`],
+  },
+  processQuery: {
+    collectCoverageFrom: [`<rootDir>/src/common/functions/processQuery.ts`],
+    testMatch: [`<rootDir>/src/common/functions/processQuery.test.ts`],
+  },
+  processBoolean: {
+    collectCoverageFrom: [`<rootDir>/src/common/functions/processBoolean.ts`],
+    testMatch: [`<rootDir>/src/common/functions/processBoolean.test.ts`],
   },
 };
 
@@ -41,7 +137,8 @@ const config: Config.InitialOptions = {
   testEnvironment: "node",
   verbose: true,
   collectCoverage: true,
-  ...testIsolation.videoRepository,
+  coverageDirectory: "<rootDir>/coverage",
+  ...testIsolation.BaseAuthorization,
 };
 
 export default config;

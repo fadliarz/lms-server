@@ -37,7 +37,7 @@ export const getAuthMiddleWare = () => {
         throw new RecordNotFoundException("User not found!");
       }
 
-      user.refreshToken = null;
+      user.refreshToken = [];
 
       req.accessToken = accessToken;
       req.user = getValuable(user);

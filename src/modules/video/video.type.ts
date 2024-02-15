@@ -5,6 +5,7 @@ import {
   User,
 } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import { CourseLessonModel } from "../lesson/lesson.type";
 
 export const CourseLessonVideoDITypes = {
   REPOSITORY: Symbol.for("COURSE_VIDEO_REPOSITORY"),
@@ -60,8 +61,9 @@ export interface ICourseLessonVideoAuthorization {
  *
  *
  */
-export type CourseLessonVideoModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonVideo>;
+export type CourseLessonVideoModel = CourseLessonVideo;
+export type ValuableCourseLessonVideoModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonModel>;
 
 /**
  *

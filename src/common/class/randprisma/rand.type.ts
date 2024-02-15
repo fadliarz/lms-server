@@ -1,8 +1,10 @@
 import { CourseEnrollmentRole } from "@prisma/client";
 import {
+  CourseEnrollmentRoleModel,
   CourseLikeModel,
   CourseModel,
   CreateCourseDto,
+  UserRoleModel,
 } from "../../../modules/course/course.type";
 import { UserModel, UserRole } from "../../../modules/user/user.type";
 import {
@@ -16,72 +18,74 @@ import {
 } from "../../../modules/category/category.type";
 import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
 
-export default interface RandDB {
-  /**
-   *
-   *
-   * Generate Row
-   *
-   *
-   */
+export const PrismaRandDBDITypes = {
+  FACADE: Symbol.for("FACACDE_PRISMA_RAND_DB"),
+  USER: Symbol.for("PRISMA_USER_RAND_DB"),
+  COURSE_CATEGORY: Symbol.for("PRISMA_COURSE_CATEGORY_RAND_DB"),
+  COURSE_ENROLLMENT: Symbol.for("PRISMA_COURSE_ENROLLMENT_RAND_DB"),
+  COURSE: Symbol.for("PRISMA_COURSE_RAND_DB"),
+  COURSE_LESSON: Symbol.for("PRISMA_COURSE_LESSON_RAND_DB"),
+  COURSE_LESSON_VIDEO: Symbol.for("PRISMA_COURSE_LESSON_VIDEO_RAND_DB"),
+};
 
-  generateUser: (role: UserRole) => Promise<UserModel>;
-  generateCourse: () => Promise<{
+export interface IRandDB {
+  user: IUserRandDB;
+  courseCategory: ICourseCategoryRandDB;
+  courseEnrollment: ICourseEnrollmentRandDB;
+  course: ICourseRandDB;
+  courseLesson: ICourseLessonRandDB;
+  courseLessonVideo: ICourseLessonVideoRandBD;
+}
+
+export interface IUserRandDB {
+  generateOne: (role: UserRole) => Promise<UserModel>;
+}
+
+export interface ICourseCategoryRandDB {
+  generateOne: () => Promise<CourseCategoryModel>;
+}
+
+export interface ICourseEnrollmentRandDB {
+  generateOne: ({
+    authorUserRole,
+    userRole,
+    enrollmentRole,
+  }: {
+    authorUserRole: UserRoleModel;
+    userRole: UserRoleModel;
+    enrollmentRole: CourseEnrollmentRoleModel;
+  }) => Promise<{
+    author: UserModel;
+    enrolledUser: UserModel;
+    category: CourseCategoryModel;
+    course: CourseModel;
+    enrollment: CourseEnrollmentModel;
+  }>;
+}
+
+export interface ICourseRandDB {
+  generateOne: (authorUserRole: UserRoleModel) => Promise<{
     author: UserModel;
     category: CourseCategoryModel;
     course: CourseModel;
   }>;
-  generateCategory: () => Promise<CourseCategoryModel>;
-  generateLesson: () => Promise<{
+}
+
+export interface ICourseLessonRandDB {
+  generateOne: (authorUserRole: UserRoleModel) => Promise<{
     author: UserModel;
     category: CourseCategoryModel;
     course: CourseModel;
     lesson: CourseLessonModel;
   }>;
-  generateVideo: () => Promise<{
+}
+
+export interface ICourseLessonVideoRandBD {
+  generateOne: (authorUserRole: UserRoleModel) => Promise<{
     author: UserModel;
     category: CourseCategoryModel;
     course: CourseModel;
     lesson: CourseLessonModel;
     video: CourseLessonVideoModel;
   }>;
-
-  /**
-   *
-   *
-   * Generate Dto
-   *
-   *
-   */
-
-  generateCreateCourseDto: (categoryId: number) => CreateCourseDto;
-  generateCreateCategoryDto: () => CreateCourseCategoryDto;
-  generateCreateLessonDto: () => CreateCourseLessonDto;
-
-  /**
-   *
-   *
-   * Insert
-   *
-   *
-   */
-
-  insertManyLessonsIntoCourse: (
-    courseId: number,
-    numberOfLessons: number,
-  ) => Promise<CourseLessonModel[]>;
-  insertManyVideosIntoLesson: (
-    lessonId: number,
-    numberOfVideos: number,
-    durationEachVideo: number,
-  ) => Promise<CourseLessonVideoModel[]>;
-  insertOneEnrollmentIntoCourse: (
-    userId: number,
-    courseId: number,
-    enrollmentRole: CourseEnrollmentRole,
-  ) => Promise<CourseEnrollmentModel>;
-  insertOneLikeIntoCourse: (
-    userId: number,
-    courseId: number,
-  ) => Promise<CourseLikeModel>;
 }

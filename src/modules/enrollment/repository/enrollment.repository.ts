@@ -38,7 +38,7 @@ export interface ICourseEnrollmentRepository {
   deleteEnrollment: (
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
-  ) => Promise<CourseEnrollment>;
+  ) => Promise<{}>;
 }
 
 // TODO : Implement MAX_RETRIES if transaction failed or timed out!
@@ -113,6 +113,10 @@ export default class CourseEnrollmentRepository
           throw new ClientException("Enrollment already exists!");
         }
 
+        /**
+         * STUDENT shouldn't be enrolled as Instructor
+         *
+         */
         if (
           isEqualOrIncludeCourseEnrollmentRole(
             dto.role,
@@ -123,9 +127,20 @@ export default class CourseEnrollmentRepository
           throw new ClientException();
         }
 
+        /**
+         * Author shouldn't be enrolled
+         *
+         */
+        if (course.authorId === dto.userId) {
+          throw new ClientException();
+        }
+
         const [newEnrollment] = await Promise.all([
           tx.courseEnrollment.create({
-            data: dto,
+            data: {
+              ...dto,
+              courseId,
+            },
           }),
           isEqualOrIncludeCourseEnrollmentRole(
             dto.role,
@@ -200,6 +215,20 @@ export default class CourseEnrollmentRepository
             );
         }
 
+        /**
+         * Check for unexpected scenario
+         *
+         */
+        if (
+          isEqualOrIncludeCourseEnrollmentRole(
+            enrollment.role,
+            CourseEnrollmentRoleModel.INSTRUCTOR,
+          ) &&
+          isEqualOrIncludeRole(targetUser.role, UserRoleModel.STUDENT)
+        ) {
+          throw new InternalServerException();
+        }
+
         if (enrollment.role === dto.role) {
           return enrollment;
         }
@@ -264,8 +293,8 @@ export default class CourseEnrollmentRepository
   public async deleteEnrollment(
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
-  ): Promise<CourseEnrollment> {
-    return await this.prisma.$transaction(
+  ): Promise<{}> {
+    await this.prisma.$transaction(
       async (tx) => {
         const { userId, courseId } = resourceId;
         const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
@@ -290,7 +319,38 @@ export default class CourseEnrollmentRepository
 
         this.authorization.authorizeDeleteEnrollment(user, course, enrollment);
 
-        const [deletedEnrollment] = await this.prisma.$transaction([
+        /**
+         *
+         * At this point, user is authorized to update enrollment.
+         *
+         * validate the update enrollment logic.
+         *
+         */
+        let targetUser: User = user;
+        const isUserIdEqual = userId === enrollment.userId;
+        if (!isUserIdEqual) {
+          targetUser =
+            await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+              tx,
+              enrollment.userId,
+            );
+        }
+
+        /**
+         * Check for unexpected scenario
+         *
+         */
+        if (
+          isEqualOrIncludeCourseEnrollmentRole(
+            enrollment.role,
+            CourseEnrollmentRoleModel.INSTRUCTOR,
+          ) &&
+          isEqualOrIncludeRole(targetUser.role, UserRoleModel.STUDENT)
+        ) {
+          throw new InternalServerException();
+        }
+
+        const [deletedEnrollment] = await Promise.all([
           tx.courseEnrollment.delete({
             where: {
               id: enrollmentId,
@@ -316,5 +376,7 @@ export default class CourseEnrollmentRepository
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
       },
     );
+
+    return {};
   }
 }

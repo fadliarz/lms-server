@@ -7,40 +7,54 @@ import {
   EnrolledCourseModel,
   CourseLikeResourceId,
   CourseLikeModel,
-  GetEnrolledCourseByIdQuery,
   GetEnrolledCoursesQuery,
+  CourseResourceId,
+  UpdateBasicCourseDto,
+  GetCourseByIdData,
+  GetEnrolledCoursesData,
 } from "../course.type";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { CourseDITypes } from "../course.type";
-import getValuable from "../../../common/functions/getValuable";
 import { ICourseRepository } from "../repository/course.repository";
+import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import {
+  CourseLessonModel,
+  CourseLessonResourceId,
+} from "../../lesson/lesson.type";
 
 export interface ICourseService {
-  createCourse: (userId: number, dto: CreateCourseDto) => Promise<CourseModel>;
+  createCourse: (
+    resourceId: CourseResourceId,
+    dto: CreateCourseDto,
+  ) => Promise<CourseModel>;
   getCourseById: (
     courseId: number,
-    query: GetCourseByIdQuery
-  ) => Promise<CourseModel>;
-  getCourses: (query: GetCoursesQuery) => Promise<CourseModel[]>;
-  getEnrolledCourseById: (
-    userId: number,
+    resourceId: CourseResourceId,
+    query: GetCourseByIdQuery,
+  ) => Promise<GetCourseByIdData>;
+  // getCourses: (
+  //   resourceId: CourseResourceId,
+  //   query: GetCoursesQuery,
+  // ) => Promise<GetCourseByIdData[]>;
+  // getEnrolledCourses: (
+  //   resourceId: CourseResourceId,
+  //   query: GetEnrolledCoursesQuery,
+  // ) => Promise<GetEnrolledCoursesData>;
+  updateBasicCourse: (
     courseId: number,
-    query: GetEnrolledCourseByIdQuery
+    resourceId: CourseResourceId,
+    dto: UpdateBasicCourseDto,
   ) => Promise<CourseModel>;
-  getEnrolledCourses: (
-    userId: number,
-    query: GetEnrolledCoursesQuery
-  ) => Promise<EnrolledCourseModel[]>;
-  updateCourse: (
-    courseId: number,
-    dto: UpdateCourseDto
-  ) => Promise<CourseModel>;
-  deleteCourse: (courseId: number) => Promise<{}>;
-  createLike: (
-    userId: number,
-    resourceId: CourseLikeResourceId
-  ) => Promise<CourseLikeModel>;
-  deleteLike: (resourceId: CourseLikeResourceId) => Promise<{}>;
+  deleteCourse: (courseId: number, resourceId: CourseResourceId) => Promise<{}>;
+  createLike: (resourceId: CourseLikeResourceId) => Promise<CourseLikeModel>;
+  deleteLike: (likeId: number, resourceId: CourseLikeResourceId) => Promise<{}>;
+  validateRelationBetweenResources: (
+    id: {
+      likeId: number;
+      resourceId: CourseLikeResourceId;
+    },
+    error?: Error,
+  ) => Promise<CourseLikeModel | null>;
 }
 
 @injectable()
@@ -49,91 +63,98 @@ export class CourseService implements ICourseService {
   private readonly repository: ICourseRepository;
 
   public async createCourse(
-    userId: number,
-    dto: CreateCourseDto
+    resourceId: CourseResourceId,
+    dto: CreateCourseDto,
   ): Promise<CourseModel> {
-    const newCourse = await this.repository.createCourse(userId, dto);
-
-    return getValuable(newCourse);
+    return await this.repository.createCourse(resourceId, dto);
   }
 
   public async getCourseById(
     courseId: number,
-    query: GetCourseByIdQuery
-  ): Promise<CourseModel> {
-    let course = await this.repository.getCourseById(courseId, query);
-
-    return getValuable(course);
-  }
-
-  public async getCourses(query: GetCoursesQuery): Promise<CourseModel[]> {
-    const courses = await this.repository.getCourses(query);
-    const valuableCourses = courses.map((course) => {
-      return getValuable(course) satisfies CourseModel;
-    });
-
-    return valuableCourses;
-  }
-
-  public async getEnrolledCourseById(
-    userId: number,
-    courseId: number,
-    query: GetEnrolledCourseByIdQuery
-  ): Promise<CourseModel> {
-    const enrolledCourse = await this.repository.getEnrolledCourseById(
-      userId,
+    resourceId: CourseResourceId,
+    query: GetCourseByIdQuery,
+  ): Promise<GetCourseByIdData> {
+    return await this.repository.getCourseByIdOrThrow(
       courseId,
-      query
+      resourceId,
+      query,
+      new RecordNotFoundException(),
     );
-
-    return getValuable(enrolledCourse);
   }
 
-  public async getEnrolledCourses(
-    userId: number,
-    query: GetEnrolledCoursesQuery
-  ): Promise<EnrolledCourseModel[]> {
-    const enrolledCourses = await this.repository.getEnrolledCourses(
-      userId,
-      query
-    );
-    const valuableEnrolledCourses = enrolledCourses.map((enrolledCourse) => {
-      enrolledCourse.course = getValuable(
-        enrolledCourse.course
-      ) satisfies CourseModel;
-      return enrolledCourse;
-    });
+  // public async getCourses(
+  //   resourceId: CourseResourceId,
+  //   query: GetCoursesQuery,
+  // ): Promise<GetCourseByIdData[]> {
+  //   return await this.repository.getCourses(resourceId, query);
+  // }
+  //
+  // public async getEnrolledCourses(
+  //   resourceId: CourseResourceId,
+  //   query: GetEnrolledCoursesQuery,
+  // ): Promise<GetEnrolledCoursesData> {
+  //   return await this.repository.getEnrolledCourses(resourceId, query);
+  // }
 
-    return valuableEnrolledCourses;
-  }
-
-  public async updateCourse(
+  public async updateBasicCourse(
     courseId: number,
-    dto: UpdateCourseDto
+    resourceId: CourseResourceId,
+    dto: UpdateBasicCourseDto,
   ): Promise<CourseModel> {
-    const updatedCourse = await this.repository.updateCourse(courseId, dto);
-
-    return getValuable(updatedCourse);
+    return await this.repository.updateBasicCourse(courseId, resourceId, dto);
   }
 
-  public async deleteCourse(courseId: number): Promise<{}> {
-    await this.repository.deleteCourse(courseId);
+  public async deleteCourse(
+    courseId: number,
+    resourceId: CourseResourceId,
+  ): Promise<{}> {
+    await this.repository.deleteCourse(courseId, resourceId);
 
     return {};
   }
 
   public async createLike(
-    userId: number,
-    resourceId: CourseLikeResourceId
+    resourceId: CourseLikeResourceId,
   ): Promise<CourseLikeModel> {
-    const newLike = await this.repository.createLike(userId, resourceId);
-
-    return getValuable(newLike);
+    return await this.repository.createLike(resourceId);
   }
 
-  public async deleteLike(resourceId: CourseLikeResourceId): Promise<{}> {
-    await this.repository.deleteLike(resourceId);
+  public async deleteLike(
+    likeId: number,
+    resourceId: CourseLikeResourceId,
+  ): Promise<{}> {
+    await this.validateRelationBetweenResources(
+      {
+        likeId,
+        resourceId,
+      },
+      new RecordNotFoundException(),
+    );
+    await this.repository.deleteLike(likeId, resourceId);
 
     return {};
+  }
+
+  public async validateRelationBetweenResources(
+    id: {
+      likeId: number;
+      resourceId: CourseLikeResourceId;
+    },
+    error?: Error,
+  ): Promise<CourseLikeModel | null> {
+    const { likeId, resourceId } = id;
+    const { courseId } = resourceId;
+
+    const like = await this.repository.getLikeById(likeId, resourceId);
+
+    if (!like || like.courseId !== courseId) {
+      if (error) {
+        throw error;
+      }
+
+      return null;
+    }
+
+    return like;
   }
 }

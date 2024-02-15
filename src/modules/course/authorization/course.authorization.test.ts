@@ -1,899 +1,628 @@
 import {
-  CourseAuthorizationMiddleware,
-  ICourseAuthorizationMiddleware,
-} from "./course.authorization";
-import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import { Request, Response, NextFunction } from "express";
-import { CourseEnrollmentRole, Role } from "@prisma/client";
-import errorMiddleware from "../../../middlewares/errorMiddleware";
-import { StatusCode } from "../../../common/constants/statusCode";
-import { ErrorCode } from "../../../common/constants/errorCode";
-import HttpException from "../../../common/class/exceptions/HttpException";
-import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
-import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+  CourseDITypes,
+  CourseEnrollmentRoleModel,
+  CourseModel,
+  ICourseAuthorization,
+  UserRoleModel,
+} from "../../course/course.type";
+import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import dIContainer from "../../../inversifyConfig";
+import { UserModel } from "../../user/user.type";
+import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
 
-jest.mock(
-  "../../../common/functions/getRequestUserOrThrowAuthenticationException"
-);
-
-/**
- *
- * @param mockRequest
- * @param mockResponse
- * @param next
- *
- * Mock next() function so it can simulates real wold scenario.
- */
-function mockNextError(
-  mockRequest: Request,
-  mockResponse: Response,
-  mockNext: NextFunction
-): void {
-  (mockNext as jest.Mock).mockImplementation((error: Error) => {
-    errorMiddleware(error, mockRequest, mockResponse, mockNext);
-  });
+enum Fail {
+  SHOULD_THROW_AN_ERROR = "Should throw an error",
+  SHOULD_NOT_THROW_AN_ERROR = "Shouldn't throw an error",
 }
 
-describe("", () => {
-  let middleware: ICourseAuthorizationMiddleware;
-  let mockRequest: Request;
-  let mockResponse: Response;
-  let mockNext: NextFunction;
+describe("CourseAuthorization Test Suites", () => {
+  let sut: ICourseAuthorization;
 
   beforeEach(() => {
-    middleware = new CourseAuthorizationMiddleware();
-    mockRequest = {} as Request;
-    mockResponse = {
-      status: jest.fn(() => mockResponse),
-      json: jest.fn(),
-    } as any as Response;
-    mockNext = jest.fn();
+    sut = dIContainer.get<ICourseAuthorization>(CourseDITypes.AUTHORIZATION);
   });
 
-  afterEach(() => {
-    jest.resetAllMocks();
+  /**
+   * Create
+   *
+   */
+  describe("CreateCourse Authorization", () => {
+    type TestCase = {
+      name: string;
+      userRole: UserRoleModel;
+      isAuthorized: boolean;
+    };
+    it.each([
+      {
+        name: "",
+        userRole: UserRoleModel.STUDENT,
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        userRole: UserRoleModel.STUDENT,
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        userRole: UserRoleModel.INSTRUCTOR,
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        userRole: UserRoleModel.INSTRUCTOR,
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        userRole: UserRoleModel.OWNER,
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        userRole: UserRoleModel.OWNER,
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({ name, userRole, isAuthorized }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+
+        try {
+          sut.authorizeCreateCourse(user);
+
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 
-  describe("CourseAuthorizationMiddleware", () => {
-    /**
-     * Create
-     *
-     */
-    describe("CreateCourse Authorization", () => {
-      type TestParams = {
-        mockRequest: Request;
-        mockResponse: Response;
-        mockNext: NextFunction;
-        userRole: Role;
-      };
+  /**
+   * Update
+   *
+   */
+  describe("UpdateCourse Authorization", () => {
+    {
+      type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
       type TestCase = {
-        name: (userRole: Role) => string;
-        getRole: () => Role;
-        test: (params: TestParams) => Promise<void>;
-      };
-
-      function getAuthorizedTestCase(role: Role): TestCase {
-        return {
-          name: (userRole: Role): string => {
-            return `Authorized: [userRole: ${userRole}]`;
-          },
-          getRole: (): Role => {
-            return role;
-          },
-          test: async (params: TestParams): Promise<void> => {
-            const { mockRequest, mockResponse, mockNext, userRole } = params;
-
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              role: userRole,
-            });
-
-            await middleware.getCreateCourseAuthorizationMiddleware()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith();
-            expect(mockResponse.status).not.toBeCalled();
-            expect(mockResponse.json).not.toBeCalled();
-          },
-        };
-      }
-
-      function getUnauthorizedTestCase(role: Role): TestCase {
-        return {
-          name: (userRole: Role): string => {
-            return `Unauthorized: [userRole: ${userRole}]`;
-          },
-          getRole: (): Role => {
-            return role;
-          },
-          test: async (params: TestParams): Promise<void> => {
-            const { mockRequest, mockResponse, mockNext, userRole } = params;
-
-            mockNextError(mockRequest, mockResponse, mockNext);
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              role: userRole,
-            });
-
-            await middleware.getCreateCourseAuthorizationMiddleware()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith(expect.any(HttpException));
-            expect(mockResponse.status).toBeCalledTimes(1);
-            expect(mockResponse.status).toBeCalledWith(StatusCode.UNAUTHORIZED);
-            expect(mockResponse.json).toBeCalledTimes(1);
-            expect(mockResponse.json).toBeCalledWith({
-              error: {
-                errorCode: ErrorCode.UNAUTHORIZED,
-                message: expect.any(String),
-              },
-            });
-          },
-        };
-      }
-
-      const testCases: TestCase[] = [
-        getUnauthorizedTestCase(Role.STUDENT),
-        getAuthorizedTestCase(Role.INSTRUCTOR),
-        getAuthorizedTestCase(Role.OWNER),
-      ];
-      testCases.forEach((tc) => {
-        const userRole = tc.getRole();
-        return it(tc.name(userRole), async () => {
-          await tc.test({
-            mockRequest,
-            mockResponse,
-            mockNext,
-            userRole,
-          });
-        });
-      });
-    });
-
-    /**
-     * Update
-     *
-     */
-    describe("UpdateCourse Authorization", () => {
-      type EnrollmentRole = CourseEnrollmentRole | "AUTHOR" | null;
-      type TestParams = {
-        mockRequest: Request;
-        mockResponse: Response;
-        mockNext: NextFunction;
-        userRole: Role;
-        enrollmentRole: EnrollmentRole;
-      };
-      type TestCase = {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-        getRole: () => {
-          userRole: Role;
+        name: string;
+        role: {
+          userRole: UserRoleModel;
           enrollmentRole: EnrollmentRole;
         };
-        test: (params: TestParams) => Promise<void>;
+        isAuthorized: boolean;
       };
-
-      function getAuthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
+      it.each([
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.STUDENT,
+            enrollmentRole: null,
           },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
+          isAuthorized: false,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.STUDENT,
+            enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
           },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
-
-            mockRequest.params = {
-              courseId: courseId.toString(),
-            };
-
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getAuthorIdOrThrow"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? userId : userId + 1
-              );
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getEnrollmentRoleById"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? null : enrollmentRole
-              );
-
-            await middleware.getUpdateCourseAuthorizationMiddleware()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith();
-            expect(mockResponse.status).not.toBeCalled();
-            expect(mockResponse.json).not.toBeCalled();
+          isAuthorized: false,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.INSTRUCTOR,
+            enrollmentRole: null,
           },
-        };
-      }
-
-      function getUnauthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
+          isAuthorized: false,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.INSTRUCTOR,
+            enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
           },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
+          isAuthorized: false,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.INSTRUCTOR,
+            enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
           },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
-
-            mockRequest.params = {
-              courseId: courseId.toString(),
-            };
-
-            mockNextError(mockRequest, mockResponse, mockNext);
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getAuthorIdOrThrow"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? userId : userId + 1
-              );
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getEnrollmentRoleById"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? null : enrollmentRole
-              );
-
-            await middleware.getUpdateCourseAuthorizationMiddleware()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith(expect.any(HttpException));
-            expect(mockResponse.status).toBeCalledTimes(1);
-            expect(mockResponse.status).toBeCalledWith(StatusCode.UNAUTHORIZED);
-            expect(mockResponse.json).toBeCalledTimes(1);
-            expect(mockResponse.json).toBeCalledWith({
-              error: {
-                errorCode: ErrorCode.UNAUTHORIZED,
-                message: expect.any(String),
-              },
-            });
+          isAuthorized: true,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.INSTRUCTOR,
+            enrollmentRole: "AUTHOR",
           },
-        };
-      }
-
-      const testCases: TestCase[] = [
-        getUnauthorizedTestCase(Role.STUDENT, null),
-        getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-        getUnauthorizedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-        getUnauthorizedTestCase(Role.STUDENT, "AUTHOR"),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-        getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-        getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-        getAuthorizedTestCase(Role.OWNER, null),
-        getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-        getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-        getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-      ];
-      testCases.forEach((tc) => {
-        const { userRole, enrollmentRole } = tc.getRole();
-        return it(tc.name(userRole, enrollmentRole), async () => {
-          await tc.test({
-            mockRequest,
-            mockResponse,
-            mockNext,
-            userRole,
-            enrollmentRole,
-          });
-        });
-      });
-    });
-
-    /**
-     * Delete
-     *
-     */
-    describe("DeleteCourse Authorization", () => {
-      type EnrollmentRole = Exclude<Role, "OWNER"> | "AUTHOR" | null;
-      type TestParams = {
-        mockRequest: Request;
-        mockResponse: Response;
-        mockNext: NextFunction;
-        userRole: Role;
-        enrollmentRole: EnrollmentRole;
-      };
-      type TestCase = {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-        getRole: () => {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        };
-        test: (params: TestParams) => Promise<void>;
-      };
-
-      function getAuthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
+          isAuthorized: true,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.OWNER,
+            enrollmentRole: null,
           },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
+          isAuthorized: true,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.OWNER,
+            enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
           },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
-
-            mockRequest.params = {
-              courseId: courseId.toString(),
-            };
-
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getAuthorIdOrThrow"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? userId : userId + 1
-              );
-
-            await middleware.getDeleteCourseAuthorizationMiddleware()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith();
-            expect(mockResponse.status).not.toBeCalled();
-            expect(mockResponse.json).not.toBeCalled();
+          isAuthorized: true,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.OWNER,
+            enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
           },
-        };
-      }
-
-      function getUnauthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
+          isAuthorized: true,
+        },
+        {
+          name: "",
+          role: {
+            userRole: UserRoleModel.OWNER,
+            enrollmentRole: "AUTHOR",
           },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
-          },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
+          isAuthorized: true,
+        },
+      ] satisfies TestCase[])(
+        "",
+        ({
+          name,
+          role: { userRole, enrollmentRole },
+          isAuthorized,
+        }: TestCase) => {
+          const user = {
+            id: 1,
+            role: userRole,
+          } as UserModel;
+          const course = {
+            authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+          } as CourseModel;
+          const enrollment = (
+            enrollmentRole === null || enrollmentRole === "AUTHOR"
+              ? null
+              : {
+                  role: enrollmentRole,
+                }
+          ) as CourseEnrollmentModel | null;
 
-            mockRequest.params = {
-              courseId: courseId.toString(),
-            };
+          try {
+            sut.authorizeUpdateBasicCourse(user, course, enrollment);
 
-            mockNextError(mockRequest, mockResponse, mockNext);
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getAuthorIdOrThrow"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? userId : userId + 1
-              );
-
-            await middleware.getDeleteCourseAuthorizationMiddleware()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith(expect.any(HttpException));
-            expect(mockResponse.status).toBeCalledTimes(1);
-            expect(mockResponse.status).toBeCalledWith(StatusCode.UNAUTHORIZED);
-            expect(mockResponse.json).toBeCalledTimes(1);
-            expect(mockResponse.json).toBeCalledWith({
-              error: {
-                errorCode: ErrorCode.UNAUTHORIZED,
-                message: expect.any(String),
-              },
-            });
-          },
-        };
-      }
-
-      const testCases: TestCase[] = [
-        getUnauthorizedTestCase(Role.STUDENT, null),
-        getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-        getUnauthorizedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-        getUnauthorizedTestCase(Role.STUDENT, "AUTHOR"),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-        getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-        getAuthorizedTestCase(Role.OWNER, null),
-        getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-        getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-        getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-      ];
-      testCases.forEach((tc) => {
-        const { userRole, enrollmentRole } = tc.getRole();
-        return it(tc.name(userRole, enrollmentRole), async () => {
-          await tc.test({
-            mockRequest,
-            mockResponse,
-            mockNext,
-            userRole,
-            enrollmentRole,
-          });
-        });
-      });
-    });
-  });
-
-  describe("CourseLikeAuthorizationMiddleware", () => {
-    describe("CreateLike Authorization", () => {
-      type EnrollmentRole = Exclude<Role, "OWNER"> | "AUTHOR" | null;
-      type TestParams = {
-        mockRequest: Request;
-        mockResponse: Response;
-        mockNext: NextFunction;
-        userRole: Role;
-        enrollmentRole: EnrollmentRole;
-      };
-      type TestCase = {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-        getRole: () => {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        };
-        test: (params: TestParams) => Promise<void>;
-      };
-
-      function getAuthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-          },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
-          },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
-
-            mockRequest.params = {
-              courseId: courseId.toString(),
-            };
-
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getEnrollmentRoleById"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? null : enrollmentRole
-              );
-
-            await middleware.getCreateCourseLikeAuthorization()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith();
-            expect(mockResponse.status).not.toBeCalled();
-            expect(mockResponse.json).not.toBeCalled();
-          },
-        };
-      }
-
-      function getUnauthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-          },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
-          },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
-
-            mockRequest.params = {
-              courseId: courseId.toString(),
-            };
-
-            mockNextError(mockRequest, mockResponse, mockNext);
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
-            jest
-              .spyOn(
-                CourseAuthorizationMiddleware.prototype as any,
-                "getEnrollmentRoleById"
-              )
-              .mockResolvedValue(
-                enrollmentRole === "AUTHOR" ? null : enrollmentRole
-              );
-
-            await middleware.getCreateCourseLikeAuthorization()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
-
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith(expect.any(HttpException));
-            expect(mockResponse.status).toBeCalledTimes(1);
-            expect(mockResponse.status).toBeCalledWith(StatusCode.UNAUTHORIZED);
-            expect(mockResponse.json).toBeCalledTimes(1);
-            expect(mockResponse.json).toBeCalledWith({
-              error: {
-                errorCode: ErrorCode.UNAUTHORIZED,
-                message: expect.any(String),
-              },
-            });
-          },
-        };
-      }
-
-      const testCases: TestCase[] = [
-        getUnauthorizedTestCase(Role.STUDENT, null),
-        getAuthorizedTestCase(Role.STUDENT, Role.STUDENT),
-        getUnauthorizedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-        getUnauthorizedTestCase(Role.STUDENT, "AUTHOR"),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-        getAuthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-        getAuthorizedTestCase(Role.OWNER, null),
-        getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-        getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-        getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-      ];
-      testCases.forEach((tc) => {
-        const { userRole, enrollmentRole } = tc.getRole();
-        return it(tc.name(userRole, enrollmentRole), async () => {
-          await tc.test({
-            mockRequest,
-            mockResponse,
-            mockNext,
-            userRole,
-            enrollmentRole,
-          });
-        });
-      });
-    });
-
-    describe("DeleteLike Authorization", () => {
-      type EnrollmentRole = Exclude<Role, "OWNER"> | "AUTHOR" | null;
-      type TestParams = {
-        mockRequest: Request;
-        mockResponse: Response;
-        mockNext: NextFunction;
-        userRole: Role;
-        enrollmentRole: EnrollmentRole;
-      };
-      type TestCase = {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-        getRole: () => {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        };
-        test: (params: TestParams) => Promise<void>;
-      };
-
-      function getAuthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-          },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
-          },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
-            const likeId = 1;
-
-            mockRequest.params = {
-              courseId: courseId.toString(),
-              likeId: likeId.toString(),
-            };
-
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
-
-            if (
-              enrollmentRole !== null &&
-              enrollmentRole !== "AUTHOR" &&
-              isEqualOrIncludeRole(enrollmentRole, [Role.STUDENT])
-            ) {
-              jest
-                .spyOn(
-                  CourseAuthorizationMiddleware.prototype as any,
-                  "getLikeByIdOrThrow"
-                )
-                .mockResolvedValue({});
-            } else {
-              jest
-                .spyOn(
-                  CourseAuthorizationMiddleware.prototype as any,
-                  "getLikeByIdOrThrow"
-                )
-                .mockRejectedValue(new RecordNotFoundException());
+            if (!isAuthorized) {
+              fail(Fail.SHOULD_THROW_AN_ERROR);
+            }
+          } catch (error) {
+            if (isAuthorized) {
+              fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
             }
 
-            await middleware.getDeleteCourseLikeAuthorization()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
+            expect(error).toBeInstanceOf(AuthorizationException);
+          }
+        },
+      );
+    }
+  });
 
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith();
-            expect(mockResponse.status).not.toBeCalled();
-            expect(mockResponse.json).not.toBeCalled();
-          },
-        };
-      }
+  /**
+   * Delete
+   *
+   */
+  describe("DeleteCourse Authorization", () => {
+    type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
+    type TestCase = {
+      name: string;
+      role: {
+        userRole: UserRoleModel;
+        enrollmentRole: EnrollmentRole;
+      };
+      isAuthorized: boolean;
+    };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-      function getUnauthorizedTestCase(
-        userRole: Role,
-        enrollmentRole: EnrollmentRole
-      ): TestCase {
-        return {
-          name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-            return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-          },
-          getRole: (): {
-            userRole: Role;
-            enrollmentRole: EnrollmentRole;
-          } => {
-            return { userRole, enrollmentRole };
-          },
-          test: async (params: TestParams): Promise<void> => {
-            const {
-              mockRequest,
-              mockResponse,
-              mockNext,
-              userRole,
-              enrollmentRole,
-            } = params;
-            const userId = 1;
-            const courseId = 1;
-            const likeId = 1;
+        try {
+          sut.authorizeDeleteCourse(user, course, enrollment);
 
-            mockRequest.params = {
-              courseId: courseId.toString(),
-              likeId: likeId.toString(),
-            };
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
 
-            mockNextError(mockRequest, mockResponse, mockNext);
-            (
-              getRequestUserOrThrowAuthenticationException as jest.Mock
-            ).mockReturnValue({
-              id: userId,
-              role: userRole,
-            });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
+  });
 
-            if (
-              enrollmentRole !== null &&
-              enrollmentRole !== "AUTHOR" &&
-              isEqualOrIncludeRole(enrollmentRole, [Role.STUDENT])
-            ) {
-              jest
-                .spyOn(
-                  CourseAuthorizationMiddleware.prototype as any,
-                  "getLikeByIdOrThrow"
-                )
-                .mockResolvedValue({});
-            } else {
-              jest
-                .spyOn(
-                  CourseAuthorizationMiddleware.prototype as any,
-                  "getLikeByIdOrThrow"
-                )
-                .mockRejectedValue(new RecordNotFoundException());
-            }
+  /**
+   * CreateLike
+   *
+   */
+  describe("CreateLike Authorization", () => {
+    type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
+    type TestCase = {
+      name: string;
+      role: {
+        userRole: UserRoleModel;
+        enrollmentRole: EnrollmentRole;
+      };
+      isAuthorized: boolean;
+    };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: false,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-            await middleware.getDeleteCourseLikeAuthorization()(
-              mockRequest,
-              mockResponse,
-              mockNext
-            );
+        try {
+          sut.authorizeCreateLike(user, course, enrollment);
 
-            expect(mockNext).toBeCalledTimes(1);
-            expect(mockNext).toBeCalledWith(
-              expect.any(RecordNotFoundException)
-            );
-            expect(mockResponse.status).toBeCalledTimes(1);
-            expect(mockResponse.status).toBeCalledWith(StatusCode.NOT_FOUND);
-            expect(mockResponse.json).toBeCalledTimes(1);
-            expect(mockResponse.json).toBeCalledWith({
-              error: {
-                errorCode: ErrorCode.RESOURCE_NOT_FOUND,
-                message: expect.any(String),
-              },
-            });
-          },
-        };
-      }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
 
-      const testCases: TestCase[] = [
-        getUnauthorizedTestCase(Role.STUDENT, null),
-        getAuthorizedTestCase(Role.STUDENT, Role.STUDENT),
-        getUnauthorizedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-        getUnauthorizedTestCase(Role.STUDENT, "AUTHOR"),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-        getAuthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-        getUnauthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-        getUnauthorizedTestCase(Role.OWNER, null),
-        getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-        getUnauthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-        getUnauthorizedTestCase(Role.OWNER, "AUTHOR"),
-      ];
-      testCases.forEach((tc) => {
-        const { userRole, enrollmentRole } = tc.getRole();
-        return it(tc.name(userRole, enrollmentRole), async () => {
-          await tc.test({
-            mockRequest,
-            mockResponse,
-            mockNext,
-            userRole,
-            enrollmentRole,
-          });
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
+  });
+
+  /**
+   * DeleteLike
+   *
+   */
+  describe("DeleteLike Authorization", () => {
+    type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
+    type TestCase = {
+      name: string;
+      role: {
+        userRole: UserRoleModel;
+        enrollmentRole: EnrollmentRole;
+      };
+      isAuthorized: boolean;
+    };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: false,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
+
+        try {
+          sut.authorizeDeleteLike(user, course, enrollment);
+
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 });

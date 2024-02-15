@@ -6,6 +6,7 @@ export const UserDITypes = {
   SERVICE: Symbol.for("USER_SERVICE"),
   CONTROLLER: Symbol.for("USER_CONTROLLER"),
 };
+
 export enum userUrls {
   root = "/users",
   me = "/me",
@@ -18,7 +19,9 @@ export enum userUrls {
 /**
  * Model
  */
-export type UserModel = ModifyFieldWithNullToBeOptionalAndRemoveNull<User>;
+export type UserModel = User;
+export type ValuableUserModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<UserModel>;
 export type UserRole = Role;
 export const UserRole = Role;
 export type PublicUserModel = Omit<

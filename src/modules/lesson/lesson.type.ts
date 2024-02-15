@@ -1,5 +1,8 @@
-import { Course, CourseEnrollment, CourseLesson, User } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import { UserModel } from "../user/user.type";
+import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
+import { CourseModel } from "../course/course.type";
+import { CourseLesson } from "@prisma/client";
 
 export const CourseLessonDITypes = {
   REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
@@ -27,28 +30,37 @@ export enum courseLessonUrls {
  */
 export interface ICourseLessonAuthorization {
   authorizeCreateLesson: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
   authorizeUpdateLesson: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
   authorizeDeleteLesson: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
 }
+
+/**
+ *
+ *
+ * Model
+ *
+ *
+ */
 
 /**
  * Model CourseLesson
  *
  */
-export type CourseLessonModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLesson>;
+export type CourseLessonModel = CourseLesson;
+export type ValuableCourseLessonModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonModel>;
 
 /**
  *
@@ -74,6 +86,14 @@ export type CreateCourseLessonDto = CreateCourseLessonDtoRequiredField &
  *
  */
 export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;
+
+/**
+ *
+ *
+ * ResourceId
+ *
+ *
+ */
 
 /**
  * ResourceId CourseLesson

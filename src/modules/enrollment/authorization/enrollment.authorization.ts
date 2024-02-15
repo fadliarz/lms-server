@@ -3,8 +3,15 @@ import getRoleStatus from "../../../common/functions/getRoleStatus";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import { UserRoleModel } from "../../course/course.type";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
-import { Course, CourseEnrollment, User } from "@prisma/client";
+import {
+  Course,
+  CourseEnrollment,
+  CourseEnrollmentRole,
+  User,
+} from "@prisma/client";
 import { injectable } from "inversify";
+import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
+import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 
 export interface ICourseEnrollmentAuthorization {
   authorizeCreateEnrollment: (
@@ -17,7 +24,7 @@ export interface ICourseEnrollmentAuthorization {
     course: Course,
     enrollment: CourseEnrollment,
   ) => void;
-  authorizeDeleteEnrollmentRole: (
+  authorizeDeleteEnrollment: (
     user: User,
     course: Course,
     enrollment: CourseEnrollment,
@@ -38,6 +45,10 @@ export default class CourseEnrollmentAuthorization {
     const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
     let isAuthorized = false;
     if (isStudent) {
+      if (isAuthor) {
+        throw new InternalServerException();
+      }
+
       if (
         isUserIdEqual &&
         isEqualOrIncludeRole(dto.role, [UserRoleModel.STUDENT])
@@ -50,7 +61,9 @@ export default class CourseEnrollmentAuthorization {
       if (
         isUserIdEqual &&
         !isAuthor &&
-        isEqualOrIncludeRole(dto.role, [UserRoleModel.STUDENT])
+        isEqualOrIncludeCourseEnrollmentRole(dto.role, [
+          CourseEnrollmentRole.STUDENT,
+        ])
       ) {
         isAuthorized = true;
       }
@@ -79,7 +92,15 @@ export default class CourseEnrollmentAuthorization {
     const isAuthor = userId === authorId;
     const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
     let isAuthorized = false;
+
+    if (course.authorId === enrollment.userId) {
+      throw new InternalServerException();
+    }
+
     if (isStudent) {
+      if (isAuthor) {
+        throw new InternalServerException();
+      }
     }
 
     if (isInstructor) {
@@ -112,14 +133,22 @@ export default class CourseEnrollmentAuthorization {
     const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
     let isAuthorized = false;
 
+    if (course.authorId === enrollment.userId) {
+      throw new InternalServerException();
+    }
+
     if (isStudent) {
+      if (isAuthor) {
+        throw new InternalServerException();
+      }
+
       if (isUserIdEqual) {
         isAuthorized = true;
       }
     }
 
     if (isInstructor) {
-      if ((isUserIdEqual && !isAuthor) || (!isUserIdEqual && isAuthorized)) {
+      if ((isUserIdEqual && !isAuthor) || (!isUserIdEqual && isAuthor)) {
         isAuthorized = true;
       }
     }
@@ -128,10 +157,6 @@ export default class CourseEnrollmentAuthorization {
       if (!(isUserIdEqual && isAuthor)) {
         isAuthorized = true;
       }
-    }
-
-    if (!isAuthorized) {
-      throw new AuthorizationException();
     }
 
     if (!isAuthorized) {

@@ -8,7 +8,6 @@ import { CourseEnrollmentRoleModel } from "../../course/course.type";
 export const CreateCourseEnrollmentDtoJoi =
   Joi.object<CreateCourseEnrollmentDto>({
     userId: Joi.number().required(),
-    courseId: Joi.number().required(),
     role: Joi.string()
       .required()
       .valid(

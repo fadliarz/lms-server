@@ -1,396 +1,433 @@
-import { Course, CourseEnrollment, Role, User } from "@prisma/client";
-import CourseLessonAuthorization from "./lesson.authorization";
-import { ICourseLessonAuthorization } from "../lesson.type";
+import {
+  CourseLessonDITypes,
+  ICourseLessonAuthorization,
+} from "../lesson.type";
 import {
   CourseEnrollmentRoleModel,
+  CourseModel,
   UserRoleModel,
 } from "../../course/course.type";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import { UserModel } from "../../user/user.type";
+import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
+import dIContainer from "../../../inversifyConfig";
 
-describe("CourseAuthorization Test Suite", () => {
-  let authorization: ICourseLessonAuthorization;
+enum Fail {
+  SHOULD_THROW_AN_ERROR = "Should throw an error",
+  SHOULD_NOT_THROW_AN_ERROR = "Shouldn't throw an error",
+}
+
+describe("CourseLessonAuthorization Test Suite", () => {
+  let sut: ICourseLessonAuthorization;
+
+  beforeEach(() => {
+    sut = dIContainer.get<ICourseLessonAuthorization>(
+      CourseLessonDITypes.AUTHORIZATION,
+    );
+  });
 
   /**
    * Create
    *
    */
   describe("CreateLesson Authorization", () => {
-    beforeEach(() => {
-      authorization = new CourseLessonAuthorization();
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
-
     type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
-    type TestParams = {
-      userRole: UserRoleModel;
-      enrollmentRole: EnrollmentRole;
-    };
     type TestCase = {
-      name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-      getRole: () => {
-        userRole: Role;
+      name: string;
+      role: {
+        userRole: UserRoleModel;
         enrollmentRole: EnrollmentRole;
       };
-      test: (params: TestParams) => Promise<void>;
+      isAuthorized: boolean;
     };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-    function getAuthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
+        try {
+          sut.authorizeCreateLesson(user, course, enrollment);
 
-          expect(() => {
-            authorization.authorizeCreateLesson(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).not.toThrow();
-        },
-      };
-    }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+          console.log(error);
 
-    function getUnauthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeCreateLesson(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrow(AuthorizationException);
-        },
-      };
-    }
-
-    const testCases: TestCase[] = [
-      getUnauthorizedTestCase(Role.STUDENT, null),
-      getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-      getUnauthorizedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-      getUnauthorizedTestCase(Role.STUDENT, "AUTHOR"),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-      getAuthorizedTestCase(Role.OWNER, null),
-      getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-      getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-    ];
-    testCases.forEach((tc) => {
-      const { userRole, enrollmentRole } = tc.getRole();
-      return it(tc.name(userRole, enrollmentRole), async () => {
-        await tc.test({
-          userRole,
-          enrollmentRole,
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 
   /**
    * Update
    *
    */
-  describe("DeleteLesson Authorization", () => {
-    beforeEach(() => {
-      authorization = new CourseLessonAuthorization();
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
-
+  describe("UpdateLesson Authorization", () => {
     type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
-    type TestParams = {
-      userRole: UserRoleModel;
-      enrollmentRole: EnrollmentRole;
-    };
     type TestCase = {
-      name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-      getRole: () => {
-        userRole: Role;
+      name: string;
+      role: {
+        userRole: UserRoleModel;
         enrollmentRole: EnrollmentRole;
       };
-      test: (params: TestParams) => Promise<void>;
+      isAuthorized: boolean;
     };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-    function getAuthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
+        try {
+          sut.authorizeUpdateLesson(user, course, enrollment);
 
-          expect(() => {
-            authorization.authorizeDeleteLesson(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).not.toThrow();
-        },
-      };
-    }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+          console.log(error);
 
-    function getUnauthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeDeleteLesson(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrow(AuthorizationException);
-        },
-      };
-    }
-
-    const testCases: TestCase[] = [
-      getUnauthorizedTestCase(Role.STUDENT, null),
-      getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-      getUnauthorizedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-      getUnauthorizedTestCase(Role.STUDENT, "AUTHOR"),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-      getAuthorizedTestCase(Role.OWNER, null),
-      getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-      getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-    ];
-    testCases.forEach((tc) => {
-      const { userRole, enrollmentRole } = tc.getRole();
-      return it(tc.name(userRole, enrollmentRole), async () => {
-        await tc.test({
-          userRole,
-          enrollmentRole,
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 
   /**
    * Delete
    *
    */
-  describe("UpdateLesson Authorization", () => {
-    beforeEach(() => {
-      authorization = new CourseLessonAuthorization();
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
-
+  describe("DeleteLesson Authorization", () => {
     type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
-    type TestParams = {
-      userRole: UserRoleModel;
-      enrollmentRole: EnrollmentRole;
-    };
     type TestCase = {
-      name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-      getRole: () => {
-        userRole: Role;
+      name: string;
+      role: {
+        userRole: UserRoleModel;
         enrollmentRole: EnrollmentRole;
       };
-      test: (params: TestParams) => Promise<void>;
+      isAuthorized: boolean;
     };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-    function getAuthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
+        try {
+          sut.authorizeDeleteLesson(user, course, enrollment);
 
-          expect(() => {
-            authorization.authorizeUpdateLesson(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).not.toThrow();
-        },
-      };
-    }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+          console.log(error);
 
-    function getUnauthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeUpdateLesson(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrow(AuthorizationException);
-        },
-      };
-    }
-
-    const testCases: TestCase[] = [
-      getUnauthorizedTestCase(Role.STUDENT, null),
-      getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-      getUnauthorizedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-      getUnauthorizedTestCase(Role.STUDENT, "AUTHOR"),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-      getAuthorizedTestCase(Role.OWNER, null),
-      getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-      getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-    ];
-    testCases.forEach((tc) => {
-      const { userRole, enrollmentRole } = tc.getRole();
-      return it(tc.name(userRole, enrollmentRole), async () => {
-        await tc.test({
-          userRole,
-          enrollmentRole,
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 });

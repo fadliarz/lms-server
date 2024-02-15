@@ -3,7 +3,6 @@ import { injectable } from "inversify";
 import { ICourseLessonVideoTable } from "./table.type";
 import PrismaClientSingleton from "../PrismaClientSingleton";
 import { PrismaClient } from "@prisma/client";
-import getValuable from "../../functions/getValuable";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
 
@@ -14,7 +13,7 @@ export default class PrismaCourseLessonVideoTable
   private readonly prisma: PrismaClient = PrismaClientSingleton.getInstance();
 
   public async findUnique(
-    videoId: number
+    videoId: number,
   ): Promise<CourseLessonVideoModel | null> {
     const video = await this.prisma.courseLessonVideo.findUnique({
       where: {
@@ -22,12 +21,12 @@ export default class PrismaCourseLessonVideoTable
       },
     });
 
-    return video ? getValuable(video) : video;
+    return video;
   }
 
   public async findUniqueOrThrow(
     videoId: number,
-    errorObject?: Error
+    errorObject?: Error,
   ): Promise<CourseLessonVideoModel> {
     const video = await this.findUnique(videoId);
 
@@ -35,6 +34,16 @@ export default class PrismaCourseLessonVideoTable
       throw errorObject || new RecordNotFoundException();
     }
 
-    return getValuable(video);
+    return video;
+  }
+
+  public async delete(videoId: number): Promise<CourseLessonVideoModel> {
+    const deletedVideo = await this.prisma.courseLessonVideo.delete({
+      where: {
+        id: videoId,
+      },
+    });
+
+    return deletedVideo;
   }
 }

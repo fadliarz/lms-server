@@ -1,12 +1,10 @@
-import {
-  Course,
-  CourseCategory,
-  CourseEnrollment,
-  CourseLesson,
-  CourseLessonVideo,
-  User,
-} from "@prisma/client";
 import { PrismaTransaction } from "../../types";
+import { UserModel } from "../../../modules/user/user.type";
+import { CourseModel } from "../../../modules/course/course.type";
+import { CourseCategoryModel } from "../../../modules/category/category.type";
+import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
+import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
+import { CourseLessonVideoModel } from "../../../modules/video/video.type";
 
 export const PrismaQueryRawDITypes = {
   PRISMA_QUERY_RAW: Symbol.for("PRISMA_QUERY_RAW"),
@@ -31,55 +29,55 @@ export interface IUserPrismaQueryRaw {
   selectForUpdateById: (
     tx: PrismaTransaction,
     userId: number,
-  ) => Promise<User | null>;
+  ) => Promise<UserModel | null>;
   selectForUpdateByIdOrThrow: (
     tx: PrismaTransaction,
     userId: number,
     error?: Error,
-  ) => Promise<User>;
+  ) => Promise<UserModel>;
 }
 
 export interface ICoursePrismaQueryRaw {
   selectForUpdateById: (
     tx: PrismaTransaction,
     courseId: number,
-  ) => Promise<Course | null>;
+  ) => Promise<CourseModel | null>;
   selectForUpdateByIdOrThrow: (
     tx: PrismaTransaction,
     courseId: number,
     error?: Error,
-  ) => Promise<Course>;
+  ) => Promise<CourseModel>;
 }
 
 export interface ICourseCategoryPrismaQueryRaw {
   selectForUpdateById: (
     tx: PrismaTransaction,
     categoryId: number,
-  ) => Promise<CourseCategory | null>;
+  ) => Promise<CourseCategoryModel | null>;
   selectForUpdateByIdOrThrow: (
     tx: PrismaTransaction,
     categoryId: number,
     error?: Error,
-  ) => Promise<CourseCategory>;
+  ) => Promise<CourseCategoryModel>;
 }
 
 export interface ICourseEnrollmentPrismaQueryRaw {
   selectForUpdateById: (
     tx: PrismaTransaction,
     enrollmentId: number,
-  ) => Promise<CourseEnrollment | null>;
+  ) => Promise<CourseEnrollmentModel | null>;
   selectForUpdateByIdOrThrow: (
     tx: PrismaTransaction,
     enrollmentId: number,
     error?: Error,
-  ) => Promise<CourseEnrollment>;
+  ) => Promise<CourseEnrollmentModel>;
   selectForUpdateByUserIdAndCourseId: (
     tx: PrismaTransaction,
     userId_courseId: {
       userId: number;
       courseId: number;
     },
-  ) => Promise<CourseEnrollment | null>;
+  ) => Promise<CourseEnrollmentModel | null>;
   selectForUpdateByUserIdAndCourseIdOrThrow: (
     tx: PrismaTransaction,
     userId_courseId: {
@@ -87,29 +85,29 @@ export interface ICourseEnrollmentPrismaQueryRaw {
       courseId: number;
     },
     error?: Error,
-  ) => Promise<CourseEnrollment>;
+  ) => Promise<CourseEnrollmentModel>;
 }
 
 export interface ICourseLessonPrismaQueryRaw {
   selectForUpdateById: (
     tx: PrismaTransaction,
     lessonId: number,
-  ) => Promise<CourseLesson | null>;
+  ) => Promise<CourseLessonModel | null>;
   selectForUpdateByIdOrThrow: (
     tx: PrismaTransaction,
     lessonId: number,
     error?: Error,
-  ) => Promise<CourseLesson>;
+  ) => Promise<CourseLessonModel>;
 }
 
 export interface ICourseLessonVideoPrismaQueryRaw {
   selectForUpdateById: (
     tx: PrismaTransaction,
     videoId: number,
-  ) => Promise<CourseLessonVideo | null>;
+  ) => Promise<CourseLessonVideoModel | null>;
   selectForUpdateByIdOrThrow: (
     tx: PrismaTransaction,
     videoId: number,
     error?: Error,
-  ) => Promise<CourseLessonVideo>;
+  ) => Promise<CourseLessonVideoModel>;
 }

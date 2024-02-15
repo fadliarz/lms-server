@@ -12,6 +12,7 @@ import {
   IPrismaQueryRaw,
   PrismaQueryRawDITypes,
 } from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
+import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 
 export interface IUserRepository {
   createUser: (
@@ -20,6 +21,7 @@ export interface IUserRepository {
     refreshToken: string[],
   ) => Promise<User>;
   getUserById: (userId: number) => Promise<User | null>;
+  getUserByIdOrThrow: (userId: number, error?: Error) => Promise<User>;
   getUserByEmail: (email: string) => Promise<User | null>;
   getUserByRefreshToken: (refreshToken: string) => Promise<User | null>;
   getMe: (userId: number) => Promise<Me>;
@@ -30,7 +32,7 @@ export interface IUserRepository {
 
 @injectable()
 export class UserRepository implements IUserRepository {
-  @inject(PrismaQueryRawDITypes.USER)
+  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
   private readonly prismaQueryRaw: IPrismaQueryRaw;
 
   private readonly prisma = PrismaClientSingleton.getInstance();
@@ -48,10 +50,23 @@ export class UserRepository implements IUserRepository {
     return newUser;
   }
 
-  public async getUserById(userId: number) {
+  public async getUserById(userId: number): Promise<User | null> {
     return await this.prisma.$transaction(async (tx) => {
       return tx.user.findUnique({ where: { id: userId } });
     }, PrismaDefaultTransactionConfigForRead);
+  }
+
+  public async getUserByIdOrThrow(
+    userId: number,
+    error?: Error,
+  ): Promise<User> {
+    const user = await this.getUserById(userId);
+
+    if (!user) {
+      throw error || new RecordNotFoundException();
+    }
+
+    return user;
   }
 
   public async getUserByEmail(email: string): Promise<User | null> {
@@ -109,7 +124,7 @@ export class UserRepository implements IUserRepository {
     return await this.prisma.$transaction(async (tx) => {
       await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
 
-      return await this.userTable.update({
+      return await tx.user.update({
         where: {
           id: userId,
         },

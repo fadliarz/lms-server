@@ -1,11 +1,5 @@
 import "reflect-metadata";
-import {
-  Course,
-  CourseEnrollment,
-  CourseLesson,
-  Prisma,
-  User,
-} from "@prisma/client";
+import { CourseLessonModel } from "../lesson.type";
 import { inject, injectable } from "inversify";
 import {
   CourseLessonDITypes,
@@ -16,37 +10,31 @@ import {
 } from "../lesson.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import getRoleStatus from "../../../common/functions/getRoleStatus";
-import InternalServerException from "../../../common/class/exceptions/InternalServerException";
-import {
-  IPrismaPromise,
-  PrismaPromiseDITypes,
-} from "../../../common/class/prisma_promise/prisma_promise.type";
-import {
-  IPrismaQueryRaw,
-  PrismaQueryRawDITypes,
-} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
-import { PrismaTransaction } from "../../../common/types";
 import {
   PrismaDefaultTransactionConfigForRead,
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
+import BaseAuthorization from "../../../common/class/BaseAuthorization";
 
 export interface ICourseLessonRepository {
   createLesson: (
     resourceId: CourseLessonResourceId,
     dto: CreateCourseLessonDto,
-  ) => Promise<CourseLesson>;
-  getLessonById: (lessonId: number) => Promise<CourseLesson | null>;
+  ) => Promise<CourseLessonModel>;
+  getLessonById: (
+    lessonId: number,
+    resourceId: CourseLessonResourceId,
+  ) => Promise<CourseLessonModel | null>;
   getLessonByIdOrThrow: (
     lessonId: number,
+    resourceId: CourseLessonResourceId,
     error?: Error,
-  ) => Promise<CourseLesson>;
+  ) => Promise<CourseLessonModel>;
   updateLesson: (
     lessonId: number,
     resourceId: CourseLessonResourceId,
     dto: UpdateCourseLessonDto,
-  ) => Promise<CourseLesson>;
+  ) => Promise<CourseLessonModel>;
   deleteLesson: (
     lessonId: number,
     resourceId: CourseLessonResourceId,
@@ -54,48 +42,43 @@ export interface ICourseLessonRepository {
 }
 
 @injectable()
-export class CourseLessonRepository implements ICourseLessonRepository {
+export class CourseLessonRepository
+  extends BaseAuthorization
+  implements ICourseLessonRepository
+{
   @inject(CourseLessonDITypes.AUTHORIZATION)
   private readonly authorization: ICourseLessonAuthorization;
 
-  @inject(PrismaPromiseDITypes.PRISMA_PROMISE)
-  private readonly prismaPromise: IPrismaPromise;
-
-  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
-  private readonly prismaQueryRaw: IPrismaQueryRaw;
-
   private readonly prisma = PrismaClientSingleton.getInstance();
-  private readonly courseLessonTable = this.prisma.courseLesson;
 
   public async createLesson(
     resourceId: CourseLessonResourceId,
     dto: CreateCourseLessonDto,
-  ): Promise<CourseLesson> {
+  ): Promise<CourseLessonModel> {
     return await this.prisma.$transaction(async (tx) => {
-      const { courseId } = resourceId;
       await this.authorize(
         tx,
         resourceId,
-        this.authorization.authorizeCreateLesson,
+        this.authorization.authorizeCreateLesson.bind(this.authorization),
       );
 
-      const [newLesson] = await Promise.all([
-        tx.courseLesson.create({
-          data: {
-            ...dto,
-            courseId,
-          },
-        }),
-        this.prismaPromise.course.incrementTotalLessons(tx, courseId, 1),
-      ]);
+      const { courseId } = resourceId;
 
-      return newLesson;
+      return await tx.courseLesson.create({
+        data: {
+          ...dto,
+          courseId,
+        },
+      });
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
-  public async getLessonById(lessonId: number): Promise<CourseLesson | null> {
+  public async getLessonById(
+    lessonId: number,
+    resourceId: CourseLessonResourceId,
+  ): Promise<CourseLessonModel | null> {
     return await this.prisma.$transaction(async (tx) => {
-      return tx.courseLesson.findUnique({
+      return await tx.courseLesson.findUnique({
         where: {
           id: lessonId,
         },
@@ -105,9 +88,10 @@ export class CourseLessonRepository implements ICourseLessonRepository {
 
   public async getLessonByIdOrThrow(
     lessonId: number,
+    resourceId: CourseLessonResourceId,
     error?: Error,
-  ): Promise<CourseLesson> {
-    const lesson = await this.getLessonById(lessonId);
+  ): Promise<CourseLessonModel> {
+    const lesson = await this.getLessonById(lessonId, resourceId);
 
     if (!lesson) {
       throw error || new RecordNotFoundException();
@@ -120,26 +104,20 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     lessonId: number,
     resourceId: CourseLessonResourceId,
     dto: UpdateCourseLessonDto,
-  ): Promise<CourseLesson> {
+  ): Promise<CourseLessonModel> {
     return await this.prisma.$transaction(async (tx) => {
       await this.authorize(
         tx,
         resourceId,
-        this.authorization.authorizeUpdateLesson,
+        this.authorization.authorizeUpdateLesson.bind(this.authorization),
       );
-      await this.validateRelationBetweenResources(tx, {
-        lessonId,
-        resourceId,
-      });
 
-      const updatedLesson = await tx.courseLesson.update({
+      return await tx.courseLesson.update({
         where: {
           id: lessonId,
         },
         data: dto,
       });
-
-      return updatedLesson;
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
@@ -148,111 +126,19 @@ export class CourseLessonRepository implements ICourseLessonRepository {
     resourceId: CourseLessonResourceId,
   ): Promise<{}> {
     await this.prisma.$transaction(async (tx) => {
-      const { courseId } = resourceId;
       await this.authorize(
         tx,
         resourceId,
-        this.authorization.authorizeDeleteLesson,
+        this.authorization.authorizeDeleteLesson.bind(this.authorization),
       );
-      const lesson = await this.validateRelationBetweenResources(tx, {
-        lessonId,
-        resourceId,
-      });
 
-      await tx.courseLessonVideo.deleteMany({
+      await tx.courseLesson.delete({
         where: {
-          lessonId,
+          id: lessonId,
         },
       });
-
-      await Promise.all([
-        tx.courseLesson.delete({
-          where: {
-            id: lessonId,
-          },
-        }),
-        tx.course.update({
-          where: {
-            id: courseId,
-          },
-          data: {
-            totalDurations: { decrement: lesson.totalDurations },
-            totalLessons: { decrement: 1 },
-          },
-        }),
-      ]);
     }, PrismaDefaultTransactionConfigForWrite);
 
     return {};
-  }
-
-  private async authorize(
-    tx: PrismaTransaction,
-    resourceId: CourseLessonResourceId,
-    fn: (
-      user: User,
-      course: Course,
-      enrollment: CourseEnrollment | null,
-    ) => void,
-  ): Promise<{
-    user: User;
-    course: Course;
-    enrollment: CourseEnrollment | null;
-  }> {
-    const { userId, courseId } = resourceId;
-    const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-      tx,
-      userId,
-    );
-    const course = await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(
-      tx,
-      courseId,
-    );
-    const enrollment =
-      await this.prismaQueryRaw.courseEnrollment.selectForUpdateByUserIdAndCourseId(
-        tx,
-        {
-          userId,
-          courseId,
-        },
-      );
-
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
-    if (!(isStudent || isInstructor || isAdmin)) {
-      throw new InternalServerException();
-    }
-
-    fn(user, course, enrollment);
-
-    return {
-      user,
-      course,
-      enrollment,
-    };
-  }
-
-  private async validateRelationBetweenResources(
-    tx: PrismaTransaction,
-    id: {
-      lessonId: number;
-      resourceId: CourseLessonResourceId;
-    },
-    error?: Error,
-  ): Promise<CourseLesson> {
-    const {
-      lessonId,
-      resourceId: { courseId },
-    } = id;
-    const lesson =
-      await this.prismaQueryRaw.courseLesson.selectForUpdateByIdOrThrow(
-        tx,
-        lessonId,
-      );
-
-    if (lesson.courseId !== courseId) {
-      throw error || new RecordNotFoundException();
-    }
-
-    return lesson;
   }
 }

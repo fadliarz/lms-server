@@ -1,180 +1,164 @@
 import {
   CourseEnrollmentRoleModel,
+  CourseModel,
   UserRoleModel,
 } from "../../course/course.type";
-import { Course, CourseEnrollment, Role, User } from "@prisma/client";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
-import { ICourseLessonVideoAuthorization } from "../video.type";
-import CourseLessonVideoAuthorization from "./video.authorization";
-import InternalServerException from "../../../common/class/exceptions/InternalServerException";
+import {
+  CourseLessonVideoDITypes,
+  ICourseLessonVideoAuthorization,
+} from "../video.type";
+import { UserModel } from "../../user/user.type";
+import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
+import dIContainer from "../../../inversifyConfig";
+
+enum Fail {
+  SHOULD_THROW_AN_ERROR = "Should throw an error",
+  SHOULD_NOT_THROW_AN_ERROR = "Shouldn't throw an error",
+}
 
 describe("CourseLessonVideoAuthorization Test Suite", () => {
-  let authorization: ICourseLessonVideoAuthorization;
+  let sut: ICourseLessonVideoAuthorization;
+
+  beforeEach(() => {
+    sut = dIContainer.get<ICourseLessonVideoAuthorization>(
+      CourseLessonVideoDITypes.AUTHORIZATION,
+    );
+  });
 
   /**
    * Create
    *
    */
   describe("CreateVideo Authorization", () => {
-    beforeEach(() => {
-      authorization = new CourseLessonVideoAuthorization();
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
-
     type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
-    type TestParams = {
-      userRole: UserRoleModel;
-      enrollmentRole: EnrollmentRole;
-    };
     type TestCase = {
-      name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-      getRole: () => {
-        userRole: Role;
+      name: string;
+      role: {
+        userRole: UserRoleModel;
         enrollmentRole: EnrollmentRole;
       };
-      test: (params: TestParams) => Promise<void>;
+      isAuthorized: boolean;
     };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-    function getAuthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
+        try {
+          sut.authorizeCreateVideo(user, course, enrollment);
 
-          expect(() => {
-            authorization.authorizeCreateVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).not.toThrow();
-        },
-      };
-    }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+          console.log(error);
 
-    function getUnauthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeCreateVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrow(AuthorizationException);
-        },
-      };
-    }
-
-    function getUnexpectedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `UnexpectedScenario: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeCreateVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrowError(InternalServerException);
-        },
-      };
-    }
-
-    const testCases: TestCase[] = [
-      getUnauthorizedTestCase(Role.STUDENT, null),
-      getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-      getUnexpectedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-      getUnexpectedTestCase(Role.STUDENT, "AUTHOR"),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-      getAuthorizedTestCase(Role.OWNER, null),
-      getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-      getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-    ];
-    testCases.forEach((tc) => {
-      const { userRole, enrollmentRole } = tc.getRole();
-      return it(tc.name(userRole, enrollmentRole), async () => {
-        await tc.test({
-          userRole,
-          enrollmentRole,
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 
   /**
@@ -182,165 +166,134 @@ describe("CourseLessonVideoAuthorization Test Suite", () => {
    *
    */
   describe("GetVideo Authorization", () => {
-    beforeEach(() => {
-      authorization = new CourseLessonVideoAuthorization();
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
-
     type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
-    type TestParams = {
-      userRole: UserRoleModel;
-      enrollmentRole: EnrollmentRole;
-    };
     type TestCase = {
-      name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-      getRole: () => {
-        userRole: Role;
+      name: string;
+      role: {
+        userRole: UserRoleModel;
         enrollmentRole: EnrollmentRole;
       };
-      test: (params: TestParams) => Promise<void>;
+      isAuthorized: boolean;
     };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-    function getAuthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
+        try {
+          sut.authorizeGetVideo(user, course, enrollment);
 
-          expect(() => {
-            authorization.authorizeGetVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).not.toThrow();
-        },
-      };
-    }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+          console.log(error);
 
-    function getUnauthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeGetVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrow(AuthorizationException);
-        },
-      };
-    }
-
-    function getUnexpectedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `UnexpectedScenario: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeGetVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrowError(InternalServerException);
-        },
-      };
-    }
-
-    const testCases: TestCase[] = [
-      getUnauthorizedTestCase(Role.STUDENT, null),
-      getAuthorizedTestCase(Role.STUDENT, Role.STUDENT),
-      getUnexpectedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-      getUnexpectedTestCase(Role.STUDENT, "AUTHOR"),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-      getAuthorizedTestCase(Role.OWNER, null),
-      getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-      getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-    ];
-    testCases.forEach((tc) => {
-      const { userRole, enrollmentRole } = tc.getRole();
-      return it(tc.name(userRole, enrollmentRole), async () => {
-        await tc.test({
-          userRole,
-          enrollmentRole,
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 
   /**
@@ -348,165 +301,134 @@ describe("CourseLessonVideoAuthorization Test Suite", () => {
    *
    */
   describe("UpdateVideo Authorization", () => {
-    beforeEach(() => {
-      authorization = new CourseLessonVideoAuthorization();
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
-
     type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
-    type TestParams = {
-      userRole: UserRoleModel;
-      enrollmentRole: EnrollmentRole;
-    };
     type TestCase = {
-      name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-      getRole: () => {
-        userRole: Role;
+      name: string;
+      role: {
+        userRole: UserRoleModel;
         enrollmentRole: EnrollmentRole;
       };
-      test: (params: TestParams) => Promise<void>;
+      isAuthorized: boolean;
     };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-    function getAuthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
+        try {
+          sut.authorizeUpdateVideo(user, course, enrollment);
 
-          expect(() => {
-            authorization.authorizeUpdateVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).not.toThrow();
-        },
-      };
-    }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+          console.log(error);
 
-    function getUnauthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeUpdateVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrow(AuthorizationException);
-        },
-      };
-    }
-
-    function getUnexpectedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `UnexpectedScenario: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeUpdateVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrowError(InternalServerException);
-        },
-      };
-    }
-
-    const testCases: TestCase[] = [
-      getUnauthorizedTestCase(Role.STUDENT, null),
-      getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-      getUnexpectedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-      getUnexpectedTestCase(Role.STUDENT, "AUTHOR"),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-      getAuthorizedTestCase(Role.OWNER, null),
-      getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-      getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-    ];
-    testCases.forEach((tc) => {
-      const { userRole, enrollmentRole } = tc.getRole();
-      return it(tc.name(userRole, enrollmentRole), async () => {
-        await tc.test({
-          userRole,
-          enrollmentRole,
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 
   /**
@@ -514,164 +436,133 @@ describe("CourseLessonVideoAuthorization Test Suite", () => {
    *
    */
   describe("DeleteVideo Authorization", () => {
-    beforeEach(() => {
-      authorization = new CourseLessonVideoAuthorization();
-    });
-
-    afterEach(() => {
-      jest.resetAllMocks();
-    });
-
     type EnrollmentRole = CourseEnrollmentRoleModel | "AUTHOR" | null;
-    type TestParams = {
-      userRole: UserRoleModel;
-      enrollmentRole: EnrollmentRole;
-    };
     type TestCase = {
-      name: (userRole: Role, enrollmentRole: EnrollmentRole) => string;
-      getRole: () => {
-        userRole: Role;
+      name: string;
+      role: {
+        userRole: UserRoleModel;
         enrollmentRole: EnrollmentRole;
       };
-      test: (params: TestParams) => Promise<void>;
+      isAuthorized: boolean;
     };
+    it.each([
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.STUDENT,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: null,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: false,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.INSTRUCTOR,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: null,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.STUDENT,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: CourseEnrollmentRoleModel.INSTRUCTOR,
+        },
+        isAuthorized: true,
+      },
+      {
+        name: "",
+        role: {
+          userRole: UserRoleModel.OWNER,
+          enrollmentRole: "AUTHOR",
+        },
+        isAuthorized: true,
+      },
+    ] satisfies TestCase[])(
+      "",
+      ({
+        name,
+        role: { userRole, enrollmentRole },
+        isAuthorized,
+      }: TestCase) => {
+        const user = {
+          id: 1,
+          role: userRole,
+        } as UserModel;
+        const course = {
+          authorId: enrollmentRole === "AUTHOR" ? user.id : user.id + 1,
+        } as CourseModel;
+        const enrollment = (
+          enrollmentRole === null || enrollmentRole === "AUTHOR"
+            ? null
+            : {
+                role: enrollmentRole,
+              }
+        ) as CourseEnrollmentModel | null;
 
-    function getAuthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Authorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
+        try {
+          sut.authorizeDeleteVideo(user, course, enrollment);
 
-          expect(() => {
-            authorization.authorizeDeleteVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).not.toThrow();
-        },
-      };
-    }
+          if (!isAuthorized) {
+            fail(Fail.SHOULD_THROW_AN_ERROR);
+          }
+        } catch (error) {
+          if (isAuthorized) {
+            fail(Fail.SHOULD_NOT_THROW_AN_ERROR);
+          }
+          console.log(error);
 
-    function getUnauthorizedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `Unauthorized: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeDeleteVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrow(AuthorizationException);
-        },
-      };
-    }
-
-    function getUnexpectedTestCase(
-      userRole: Role,
-      enrollmentRole: EnrollmentRole,
-    ): TestCase {
-      return {
-        name: (userRole: Role, enrollmentRole: EnrollmentRole): string => {
-          return `UnexpectedScenario: [userRole: ${userRole}, enrollmentRole: ${enrollmentRole}]`;
-        },
-        getRole: (): {
-          userRole: Role;
-          enrollmentRole: EnrollmentRole;
-        } => {
-          return { userRole, enrollmentRole };
-        },
-        test: async (params: TestParams): Promise<void> => {
-          const { userRole, enrollmentRole } = params;
-          const userId = 1;
-          const authorId =
-            enrollmentRole && enrollmentRole.toString() === "AUTHOR"
-              ? userId
-              : userId + 1;
-
-          expect(() => {
-            authorization.authorizeDeleteVideo(
-              {
-                id: userId,
-                role: userRole,
-              } as User,
-              { authorId } as Course,
-              enrollmentRole !== null && enrollmentRole.toString() !== "AUTHOR"
-                ? ({ role: enrollmentRole } as CourseEnrollment)
-                : null,
-            );
-          }).toThrowError(InternalServerException);
-        },
-      };
-    }
-
-    const testCases: TestCase[] = [
-      getUnauthorizedTestCase(Role.STUDENT, null),
-      getUnauthorizedTestCase(Role.STUDENT, Role.STUDENT),
-      getUnexpectedTestCase(Role.STUDENT, Role.INSTRUCTOR),
-      getUnexpectedTestCase(Role.STUDENT, "AUTHOR"),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, null),
-      getUnauthorizedTestCase(Role.INSTRUCTOR, Role.STUDENT),
-      getAuthorizedTestCase(Role.INSTRUCTOR, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.INSTRUCTOR, "AUTHOR"),
-      getAuthorizedTestCase(Role.OWNER, null),
-      getAuthorizedTestCase(Role.OWNER, Role.STUDENT),
-      getAuthorizedTestCase(Role.OWNER, Role.INSTRUCTOR),
-      getAuthorizedTestCase(Role.OWNER, "AUTHOR"),
-    ];
-    testCases.forEach((tc) => {
-      const { userRole, enrollmentRole } = tc.getRole();
-      return it(tc.name(userRole, enrollmentRole), async () => {
-        await tc.test({
-          userRole,
-          enrollmentRole,
-        });
-      });
-    });
+          expect(error).toBeInstanceOf(AuthorizationException);
+        }
+      },
+    );
   });
 });

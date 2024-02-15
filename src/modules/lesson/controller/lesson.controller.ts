@@ -1,6 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import { CourseLessonDITypes, CourseLessonResourceId } from "../lesson.type";
+import {
+  CourseLessonDITypes,
+  CourseLessonResourceId,
+  ValuableCourseLessonModel,
+} from "../lesson.type";
 import { ICourseLessonService } from "../service/lesson.service";
 import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
@@ -10,6 +14,7 @@ import {
 } from "./lesson.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import getValuable from "../../../common/functions/removeNullFields";
 
 export interface ICourseLessonController {
   createLesson: (
@@ -50,7 +55,9 @@ export class CourseLessonController implements ICourseLessonController {
       const resourceId = this.validateResourceId(req);
       const newLesson = await this.service.createLesson(resourceId, req.body);
 
-      return res.status(StatusCode.RESOURCE_CREATED).json({ data: newLesson });
+      return res.status(StatusCode.RESOURCE_CREATED).json({
+        data: getValuable(newLesson) satisfies ValuableCourseLessonModel,
+      });
     } catch (error) {
       next(error);
     }
@@ -66,7 +73,9 @@ export class CourseLessonController implements ICourseLessonController {
       const resourceId = this.validateResourceId(req);
       const lesson = await this.service.getLessonById(lessonId, resourceId);
 
-      return res.status(StatusCode.SUCCESS).json({ data: lesson });
+      return res.status(StatusCode.SUCCESS).json({
+        data: getValuable(lesson) satisfies ValuableCourseLessonModel,
+      });
     } catch (error) {
       next(error);
     }
@@ -88,7 +97,9 @@ export class CourseLessonController implements ICourseLessonController {
         req.body,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: updatedLesson });
+      return res.status(StatusCode.SUCCESS).json({
+        data: getValuable(updatedLesson) satisfies ValuableCourseLessonModel,
+      });
     } catch (error) {
       next(error);
     }

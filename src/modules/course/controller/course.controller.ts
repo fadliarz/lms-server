@@ -3,15 +3,14 @@ import { injectable, inject } from "inversify";
 import {
   CourseDITypes,
   CourseLikeResourceId,
+  CourseResourceId,
   GetCourseByIdQuery,
   GetCoursesQuery,
-  GetEnrolledCourseByIdQuery,
   GetEnrolledCoursesQuery,
 } from "../course.type";
 import { Request, Response, NextFunction } from "express-serve-static-core";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ICourseService } from "../service/course.service";
-import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
@@ -19,11 +18,11 @@ import {
   CreateCourseLikeDtoJoi,
   GetCourseByIdQueryJoi,
   GetCoursesQueryJoi,
-  GetEnrolledCourseByIdQueryJoi,
+  GetEnrolledCoursesQueryJoi,
   UpdateCourseDtoJoi,
 } from "./course.joi";
-import ClientException from "../../../common/class/exceptions/ClientException";
-import isNaNArray from "../../../common/functions/isNaNArray";
+import NaNException from "../../../common/class/exceptions/NaNException";
+import processBoolean from "../../../common/functions/processBoolean";
 
 export interface ICourseController {
   createCourse: (
@@ -36,22 +35,17 @@ export interface ICourseController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  getCourses: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getEnrolledCourseById: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getEnrolledCourses: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateCourse: (
+  // getCourses: (
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction,
+  // ) => Promise<Response | void>;
+  // getEnrolledCourses: (
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction,
+  // ) => Promise<Response | void>;
+  updateBasicCourse: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -86,11 +80,8 @@ export class CourseController implements ICourseController {
     try {
       await validateJoi({ body: CreateCourseDtoJoi })(req, res, next);
 
-      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
-      const newCourse = await this.service.createCourse(
-        userId,
-        req.body as CreateCourseDto,
-      );
+      const resourceId = this.validateResourceId(req);
+      const newCourse = await this.service.createCourse(resourceId, req.body);
 
       return res.status(StatusCode.RESOURCE_CREATED).json({ data: newCourse });
     } catch (error) {
@@ -106,14 +97,15 @@ export class CourseController implements ICourseController {
     try {
       await validateJoi({ query: GetCourseByIdQueryJoi })(req, res, next);
 
-      const courseId = Number(req.params.courseId);
-      if (isNaN(courseId)) {
-        throw new ClientException();
-      }
-
+      const courseId = this.validateCourseId(req);
+      const resourceId = {} as CourseResourceId;
+      const query = req.query as unknown as GetCourseByIdQuery;
+      query.include_author = processBoolean(query.include_author as any);
+      query.include_category = processBoolean(query.include_category as any);
       const course = await this.service.getCourseById(
         courseId,
-        req.query as unknown as GetCourseByIdQuery,
+        resourceId,
+        query,
       );
 
       res.status(StatusCode.SUCCESS).json({ data: course });
@@ -122,73 +114,53 @@ export class CourseController implements ICourseController {
     }
   }
 
-  public async getCourses(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
+  // public async getCourses(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction,
+  // ): Promise<Response | void> {
+  //   try {
+  //     await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
+  //
+  //     const resourceId = {} as CourseResourceId;
+  //     const query = req.query as any as GetCoursesQuery;
+  //     query.pageNumber = Number(query.pageNumber);
+  //     query.pageSize = Number(query.pageSize);
+  //     const courses = await this.service.getCourses(resourceId, query);
+  //
+  //     return res.status(StatusCode.SUCCESS).json({ data: courses });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
+  //
+  // public async getEnrolledCourses(
+  //   req: Request,
+  //   res: Response,
+  //   next: NextFunction,
+  // ): Promise<Response | void> {
+  //   try {
+  //     await validateJoi({ query: GetEnrolledCoursesQueryJoi })(req, res, next);
+  //     const query = req.query as unknown as GetEnrolledCoursesQuery;
+  //     if (query.limit_student_courses) {
+  //       query.limit_student_courses = Number(query.limit_student_courses);
+  //     }
+  //     if (query.limit_instructor_courses) {
+  //       query.limit_instructor_courses = Number(query.limit_instructor_courses);
+  //     }
+  //     query.include_author = processBoolean(query.include_author as any);
+  //     query.include_category = processBoolean(query.include_category as any);
+  //
+  //     const resourceId = this.validateResourceId(req);
+  //     const courses = await this.service.getEnrolledCourses(resourceId, query);
+  //
+  //     return res.status(StatusCode.SUCCESS).json({ data: courses });
+  //   } catch (error) {
+  //     next(error);
+  //   }
+  // }
 
-      const courses = await this.service.getCourses(
-        (req as any).query as GetCoursesQuery,
-      );
-
-      return res.status(StatusCode.SUCCESS).json({ data: courses });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getEnrolledCourseById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) {
-    try {
-      await validateJoi({ query: GetEnrolledCourseByIdQueryJoi })(
-        req,
-        res,
-        next,
-      );
-
-      const courseId = Number(req.params.courseId);
-      if (isNaN(courseId)) {
-        throw new ClientException();
-      }
-
-      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
-      const enrolledCourse = await this.service.getEnrolledCourseById(
-        userId,
-        courseId,
-        req.query as unknown as GetEnrolledCourseByIdQuery,
-      );
-
-      return res.status(StatusCode.SUCCESS).json({ data: enrolledCourse });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getEnrolledCourses(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
-      const courses = await this.service.getEnrolledCourses(
-        userId,
-        req.query as unknown as GetEnrolledCoursesQuery,
-      );
-
-      return res.status(StatusCode.SUCCESS).json({ data: courses });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async updateCourse(
+  public async updateBasicCourse(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -196,14 +168,12 @@ export class CourseController implements ICourseController {
     try {
       await validateJoi({ body: UpdateCourseDtoJoi })(req, res, next);
 
-      const courseId = Number(req.params.courseId);
-      if (isNaN(courseId)) {
-        throw new ClientException();
-      }
-
-      const updatedCourse = await this.service.updateCourse(
+      const courseId = this.validateCourseId(req);
+      const resourceId = this.validateResourceId(req);
+      const updatedCourse = await this.service.updateBasicCourse(
         courseId,
-        req.body as UpdateCourseDto,
+        resourceId,
+        req.body,
       );
 
       return res.status(StatusCode.SUCCESS).json({ data: updatedCourse });
@@ -218,12 +188,9 @@ export class CourseController implements ICourseController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const courseId = Number(req.params.courseId);
-      if (isNaN(courseId)) {
-        throw new ClientException();
-      }
-
-      await this.service.deleteCourse(courseId);
+      const courseId = this.validateCourseId(req);
+      const resourceId = this.validateResourceId(req);
+      await this.service.deleteCourse(courseId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
@@ -239,17 +206,8 @@ export class CourseController implements ICourseController {
     try {
       await validateJoi({ body: CreateCourseLikeDtoJoi })(req, res, next);
 
-      const resource: CourseLikeResourceId = (req as any).resourceId;
-      const courseId = resource.courseId;
-      if (isNaN(courseId)) {
-        throw new ClientException();
-      }
-
-      const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
-      const newLike = await this.service.createLike(
-        userId,
-        (req as any).resourceId,
-      );
+      const resourceId = this.validateLikeResourceId(req);
+      const newLike = await this.service.createLike(resourceId);
 
       return res.status(StatusCode.RESOURCE_CREATED).json({ data: newLike });
     } catch (error) {
@@ -263,18 +221,52 @@ export class CourseController implements ICourseController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const resource: CourseLikeResourceId = (req as any).resourceId;
-      const courseId = resource.courseId;
-      const likeId = resource.courseId;
-      if (isNaNArray([courseId, likeId])) {
-        throw new ClientException();
-      }
-
-      await this.service.deleteLike((req as any).resourceId);
+      const likeId = this.validateLikeId(req);
+      const resourceId = this.validateLikeResourceId(req);
+      await this.service.deleteLike(likeId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }
+  }
+
+  private validateResourceId(req: Request, error?: Error): CourseResourceId {
+    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+
+    return {
+      userId,
+    };
+  }
+
+  private validateLikeResourceId(req: Request): CourseLikeResourceId {
+    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const courseId = Number(req.params.courseId);
+    if (isNaN(courseId)) {
+      throw new NaNException("courseId");
+    }
+
+    return {
+      userId,
+      courseId,
+    };
+  }
+
+  private validateCourseId(req: Request): number {
+    const courseId: number = Number(req.params.courseId);
+    if (isNaN(courseId)) {
+      throw new NaNException("courseId");
+    }
+
+    return courseId;
+  }
+
+  private validateLikeId(req: Request): number {
+    const likeId: number = Number(req.params.likeId);
+    if (isNaN(likeId)) {
+      throw new NaNException("likeId");
+    }
+
+    return likeId;
   }
 }

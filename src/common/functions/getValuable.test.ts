@@ -21,11 +21,9 @@ describe("getValuable Test Suite", () => {
     expect(actual).toEqual(expected);
   });
 
-  it("should change fields with value null to be undefined", () => {
+  it.only("should change fields with value null to be undefined", () => {
     const actual = getValuable(someOtherObject);
-    const expected = {
-      name: undefined,
-    };
+    const expected = {};
 
     expect(actual).toEqual(expected);
   });

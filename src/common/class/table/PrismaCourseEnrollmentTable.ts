@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import PrismaClientSingleton from "../PrismaClientSingleton";
-import getValuable from "../../functions/getValuable";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
 import { injectable } from "inversify";
 import { ICourseEnrollmentTable } from "./table.type";
@@ -22,7 +21,7 @@ export default class PrismaCourseEnrollmentTable
       },
     });
 
-    return enrollment ? getValuable(enrollment) : enrollment;
+    return enrollment;
   }
 
   public async findUniqueOrThrow(
@@ -35,7 +34,7 @@ export default class PrismaCourseEnrollmentTable
       throw errorObject || new RecordNotFoundException();
     }
 
-    return getValuable(enrollment);
+    return enrollment;
   }
 
   public async findUniqueByUserIdAndCourseId(
@@ -51,7 +50,7 @@ export default class PrismaCourseEnrollmentTable
       },
     });
 
-    return enrollment ? getValuable(enrollment) : enrollment;
+    return enrollment;
   }
 
   public async findUniqueByUserIdAndCourseIdOrThrow(
@@ -68,7 +67,7 @@ export default class PrismaCourseEnrollmentTable
       throw error || new RecordNotFoundException();
     }
 
-    return getValuable(enrollment);
+    return enrollment;
   }
 
   public async delete(enrollmentId: number): Promise<CourseEnrollmentModel> {
@@ -76,6 +75,6 @@ export default class PrismaCourseEnrollmentTable
       where: { id: enrollmentId },
     });
 
-    return getValuable(deletedEnrollment);
+    return deletedEnrollment;
   }
 }

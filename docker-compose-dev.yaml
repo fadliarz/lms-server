@@ -1,6 +1,9 @@
 version: "3"
 services:
-  node-app:
+  nodeapp:
+    container_name: lms-nodeapp
+    hostname: nodeapp
+    # restart: always
     build:
       context: .
       target: development
@@ -10,17 +13,28 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: mysql://$MYSQL_USER:$MYSQL_ROOT_PASSWORD@mysql:3306/$MYSQL_DATABASE?connection_limit=9
+      DATABASE_URL: postgresql://fadliarz:rootpassword@postgresql:5432/lms?connection_limit=9
+      PORT: 8000
     ports:
-      - $PORT:$PORT
-  mysql:
-    volumes:
-      - mysql_volume:/var/lib/mysql
+      - 8000:8000
+    depends_on:
+      - postgres
+    networks:
+      - lms-network
+  postgres:
+    container_name: lms-postgresql
+    hostname: postgresql
+    image: postgres:16.1-alpine
+    # restart: always
     environment:
-      MYSQL_USER: root
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: lms
+      POSTGRES_DB: lms
+      POSTGRES_USER: fadliarz
+      POSTGRES_USERNAME: fadliarz
+      POSTGRES_PASSWORD: rootpassword
     ports:
-      - 3306:3306
-volumes:
-  mysql_volume:
+      - 5432:5432
+    networks:
+      - lms-network
+networks:
+  lms-network:
+    driver: bridge

@@ -7,7 +7,6 @@ import { IUserRepository } from "../repository/user.repository";
 import { inject, injectable } from "inversify";
 import HttpException from "../../../common/class/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
-import getValuable from "../../../common/functions/getValuable";
 import validateEnv from "../../../common/functions/validateEnv";
 import { User } from "@prisma/client";
 import { ErrorCode } from "../../../common/constants/errorCode";
@@ -74,7 +73,7 @@ export class UserService implements IUserService {
       refreshToken,
     ]);
 
-    return getValuable(newUser);
+    return newUser;
   }
 
   public async getUserById(userId: number): Promise<UserModel | null> {
@@ -86,7 +85,7 @@ export class UserService implements IUserService {
 
     user.password = "";
 
-    return getValuable(user);
+    return user;
   }
 
   public async getUserByEmail(email: string): Promise<UserModel | null> {
@@ -98,7 +97,7 @@ export class UserService implements IUserService {
 
     user.password = "";
 
-    return getValuable(user);
+    return user;
   }
 
   public async getMe(userId: number) {
@@ -115,7 +114,7 @@ export class UserService implements IUserService {
   ): Promise<UserModel> {
     const updatedUser = await this.repository.updateUser(userId, userDetails);
 
-    return getValuable(updatedUser);
+    return updatedUser;
   }
 
   public async updateUserPassword(
@@ -127,13 +126,13 @@ export class UserService implements IUserService {
       password,
     );
 
-    return getValuable(updatedUser);
+    return updatedUser;
   }
 
   public async deleteUser(userId: number): Promise<UserModel> {
     const deletedUser = await this.repository.deleteUser(userId);
 
-    return getValuable(deletedUser);
+    return deletedUser;
   }
 
   async signInUser(
@@ -228,7 +227,7 @@ export class UserService implements IUserService {
         sameSite: "strict",
       });
 
-    return getValuable(user);
+    return user;
   }
 
   public async signOutUser(cookies: any): Promise<void> {

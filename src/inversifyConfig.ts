@@ -1,5 +1,4 @@
 import "reflect-metadata";
-
 import { Container } from "inversify";
 import { UserController } from "./modules/user/controller/user.controller";
 import { UserRepository } from "./modules/user/repository/user.repository";
@@ -11,7 +10,10 @@ import { UserDITypes } from "./modules/user/user.type";
 import { ICourseController } from "./modules/course/controller/course.controller";
 import { ICourseService } from "./modules/course/service/course.service";
 import { ICourseRepository } from "./modules/course/repository/course.repository";
-import { CourseDITypes } from "./modules/course/course.type";
+import {
+  CourseDITypes,
+  ICourseAuthorization,
+} from "./modules/course/course.type";
 import { CourseRepository } from "./modules/course/repository/course.repository";
 import { CourseService } from "./modules/course/service/course.service";
 import { CourseController } from "./modules/course/controller/course.controller";
@@ -76,10 +78,6 @@ import {
   ICourseCategoryAuthorization,
 } from "./modules/category/category.type";
 import {
-  CourseAuthorizationMiddleware,
-  ICourseAuthorizationMiddleware,
-} from "./modules/course/authorization/course.authorization";
-import {
   ICourseEnrollmentTable,
   ICourseLessonTable,
   ICourseLessonVideoTable,
@@ -123,8 +121,89 @@ import CourseLessonVideoAuthorization from "./modules/video/authorization/video.
 import CourseLessonVideoPrismaQueryRaw from "./common/class/prisma_query_raw/CourseLessonVideoPrismaQueryRaw";
 import CourseCategoryAuthorization from "./modules/category/authorization/category.authorization";
 import CourseCategoryPrismaQueryRaw from "./common/class/prisma_query_raw/CourseCategoryPrismaQueryRaw";
+import {
+  ICourseCategoryRandDB,
+  ICourseEnrollmentRandDB,
+  ICourseLessonRandDB,
+  ICourseLessonVideoRandBD,
+  ICourseRandDB,
+  IRandDB,
+  IUserRandDB,
+  PrismaRandDBDITypes,
+} from "./common/class/randprisma/rand.type";
+import PrismaRandDB from "./common/class/randprisma/RandPrisma";
+import PrismaUserRandDB from "./common/class/randprisma/PrismaUserRandDB";
+import PrismaCourseRandDB from "./common/class/randprisma/PrismaCourseRandDB";
+import PrismaCourseCategoryRandDB from "./common/class/randprisma/PrismaCourseCategoryRandDB";
+import PrismaCourseLessonRandDB from "./common/class/randprisma/PrismaCourseLessonRandDB";
+import PrismaCourseLessonVideoRandDB from "./common/class/randprisma/PrismaCourseLessonVideoRandDB";
+import PrismaCourseEnrollmentRandDB from "./common/class/randprisma/PrismaCourseEnrollmentRandDB";
+import {
+  ICourseLessonRandDTO,
+  ICourseLessonVideoRandDTO,
+  ICourseRandDTO,
+  IRandDTO,
+  IUserRandDTO,
+  RandDTODITypes,
+} from "./common/class/rand_dto/rand_dto.type";
+import RandDTO from "./common/class/rand_dto/RandDTO";
+import UserRandDTO from "./common/class/rand_dto/UserRandDTO";
+import CourseRandDTO from "./common/class/rand_dto/CourseRandDTO";
+import {
+  IRepository,
+  RepositoryDITypes,
+} from "./common/class/repository/repository.type";
+import Repository from "./common/class/repository/Repository";
+import { CourseAuthorization } from "./modules/course/authorization/course.authorization";
+import CourseLessonRandDTO from "./common/class/rand_dto/CourseLessonRandDTO";
+import CourseLessonVideoRandDTO from "./common/class/rand_dto/CourseLessonVideoRandDTO";
+import BaseAuthorization, {
+  BaseAuthorizationDITypes,
+} from "./common/class/BaseAuthorization";
 
 const dIContainer = new Container();
+
+/**
+ * Repository
+ *
+ */
+dIContainer.bind<IRepository>(RepositoryDITypes.FACADE).to(Repository);
+
+/**
+ * RandDTO
+ *
+ */
+dIContainer.bind<IRandDTO>(RandDTODITypes.FACADE).to(RandDTO);
+dIContainer.bind<IUserRandDTO>(RandDTODITypes.USER).to(UserRandDTO);
+dIContainer.bind<ICourseRandDTO>(RandDTODITypes.COURSE).to(CourseRandDTO);
+dIContainer
+  .bind<ICourseLessonRandDTO>(RandDTODITypes.COURSE_LESSON)
+  .to(CourseLessonRandDTO);
+dIContainer
+  .bind<ICourseLessonVideoRandDTO>(RandDTODITypes.COURSE_LESSON_VIDEO)
+  .to(CourseLessonVideoRandDTO);
+
+/**
+ * PrismaRandDB
+ *
+ */
+dIContainer.bind<IRandDB>(PrismaRandDBDITypes.FACADE).to(PrismaRandDB);
+dIContainer.bind<IUserRandDB>(PrismaRandDBDITypes.USER).to(PrismaUserRandDB);
+dIContainer
+  .bind<ICourseRandDB>(PrismaRandDBDITypes.COURSE)
+  .to(PrismaCourseRandDB);
+dIContainer
+  .bind<ICourseCategoryRandDB>(PrismaRandDBDITypes.COURSE_CATEGORY)
+  .to(PrismaCourseCategoryRandDB);
+dIContainer
+  .bind<ICourseEnrollmentRandDB>(PrismaRandDBDITypes.COURSE_ENROLLMENT)
+  .to(PrismaCourseEnrollmentRandDB);
+dIContainer
+  .bind<ICourseLessonRandDB>(PrismaRandDBDITypes.COURSE_LESSON)
+  .to(PrismaCourseLessonRandDB);
+dIContainer
+  .bind<ICourseLessonVideoRandBD>(PrismaRandDBDITypes.COURSE_LESSON_VIDEO)
+  .to(PrismaCourseLessonVideoRandDB);
 
 /**
  * PrismaQueryRaw
@@ -190,9 +269,9 @@ dIContainer
  * User Container
  *
  */
-// dIContainer.bind<IUserRepository>(UserDITypes.REPOSITORY).to(UserRepository);
-// dIContainer.bind<IUserService>(UserDITypes.SERVICE).to(UserService);
-// dIContainer.bind<IUserController>(UserDITypes.CONTROLLER).to(UserController);
+dIContainer.bind<IUserRepository>(UserDITypes.REPOSITORY).to(UserRepository);
+dIContainer.bind<IUserService>(UserDITypes.SERVICE).to(UserService);
+dIContainer.bind<IUserController>(UserDITypes.CONTROLLER).to(UserController);
 
 /**
  * Course Container
@@ -206,8 +285,8 @@ dIContainer
   .bind<ICourseController>(CourseDITypes.CONTROLLER)
   .to(CourseController);
 dIContainer
-  .bind<ICourseAuthorizationMiddleware>(CourseDITypes.AUTHORIZATION_MIDDLEWARE)
-  .to(CourseAuthorizationMiddleware);
+  .bind<ICourseAuthorization>(CourseDITypes.AUTHORIZATION)
+  .to(CourseAuthorization);
 
 /**
  * Course Category
@@ -276,5 +355,13 @@ dIContainer
 dIContainer
   .bind<ICourseLessonVideoAuthorization>(CourseLessonVideoDITypes.AUTHORIZATION)
   .to(CourseLessonVideoAuthorization);
+
+/**
+ * Common
+ *
+ */
+dIContainer
+  .bind<BaseAuthorization>(BaseAuthorizationDITypes)
+  .to(BaseAuthorization);
 
 export default dIContainer;

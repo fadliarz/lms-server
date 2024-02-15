@@ -18,12 +18,12 @@ export default class PrismaCourseTable implements ICourseTable {
       },
     });
 
-    return course ? getValuable(course) : course;
+    return course;
   }
 
   public async findUniqueOrThrow(
     courseId: number,
-    errorObject?: Error
+    errorObject?: Error,
   ): Promise<CourseModel> {
     const course = await this.findUnique(courseId);
 
@@ -31,7 +31,7 @@ export default class PrismaCourseTable implements ICourseTable {
       throw errorObject || new RecordNotFoundException();
     }
 
-    return getValuable(course);
+    return course;
   }
 
   public async delete(courseId: number): Promise<CourseModel> {
@@ -39,6 +39,6 @@ export default class PrismaCourseTable implements ICourseTable {
       where: { id: courseId },
     });
 
-    return getValuable(deletedCourse);
+    return deletedCourse;
   }
 }

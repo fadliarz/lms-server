@@ -28,6 +28,7 @@ export type Api = {
 
 /**
  * Modifying Prisma Model
+ *
  */
 export type PickNullable<T> = {
   [P in keyof T as null extends T[P] ? P : never]: T[P];
