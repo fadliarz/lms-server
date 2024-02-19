@@ -15,6 +15,7 @@ import {
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
+import { UnauthenticatedResourceId } from "../../../common/types";
 
 export interface ICourseLessonRepository {
   createLesson: (
@@ -23,11 +24,11 @@ export interface ICourseLessonRepository {
   ) => Promise<CourseLessonModel>;
   getLessonById: (
     lessonId: number,
-    resourceId: CourseLessonResourceId,
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
   ) => Promise<CourseLessonModel | null>;
   getLessonByIdOrThrow: (
     lessonId: number,
-    resourceId: CourseLessonResourceId,
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
     error?: Error,
   ) => Promise<CourseLessonModel>;
   updateLesson: (
@@ -75,7 +76,7 @@ export class CourseLessonRepository
 
   public async getLessonById(
     lessonId: number,
-    resourceId: CourseLessonResourceId,
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
   ): Promise<CourseLessonModel | null> {
     return await this.prisma.$transaction(async (tx) => {
       return await tx.courseLesson.findUnique({
@@ -88,7 +89,7 @@ export class CourseLessonRepository
 
   public async getLessonByIdOrThrow(
     lessonId: number,
-    resourceId: CourseLessonResourceId,
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
     error?: Error,
   ): Promise<CourseLessonModel> {
     const lesson = await this.getLessonById(lessonId, resourceId);

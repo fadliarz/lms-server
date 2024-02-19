@@ -14,10 +14,14 @@ type TestIsolationKey =
   | "courseRepository"
   | "courseAuthorization"
   | "videoController"
+  | "videoService"
   | "videoRepository"
   | "videoAuthorization"
   | "enrollmentRepository"
   | "enrollmentAuthorization"
+  | "courseLesson"
+  | "courseLessonController"
+  | "courseLessonService"
   | "courseLessonRepository"
   | "courseLessonAuthorization";
 const testIsolation: Record<
@@ -70,6 +74,12 @@ const testIsolation: Record<
       `<rootDir>/src/modules/video/controller/video.controller.test.ts`,
     ],
   },
+  videoService: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/video/service/video.service.ts`,
+    ],
+    testMatch: [`<rootDir>/src/modules/video/service/video.service.test.ts`],
+  },
   videoRepository: {
     collectCoverageFrom: [
       `<rootDir>/src/modules/video/repository/video.repository.ts`,
@@ -101,6 +111,24 @@ const testIsolation: Record<
     testMatch: [
       `<rootDir>/src/modules/enrollment/authorization/enrollment.authorization.test.ts`,
     ],
+  },
+  courseLesson: {
+    collectCoverageFrom: [`<rootDir>/src/modules/lesson/**/*.ts`],
+    testMatch: [`<rootDir>/src/modules/lesson/**/*.test.ts`],
+  },
+  courseLessonController: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/lesson/controller/lesson.controller.ts`,
+    ],
+    testMatch: [
+      `<rootDir>/src/modules/lesson/controller/lesson.controller.test.ts`,
+    ],
+  },
+  courseLessonService: {
+    collectCoverageFrom: [
+      `<rootDir>/src/modules/lesson/service/lesson.service.ts`,
+    ],
+    testMatch: [`<rootDir>/src/modules/lesson/service/lesson.service.test.ts`],
   },
   courseLessonRepository: {
     collectCoverageFrom: [
@@ -138,7 +166,7 @@ const config: Config.InitialOptions = {
   verbose: true,
   collectCoverage: true,
   coverageDirectory: "<rootDir>/coverage",
-  ...testIsolation.BaseAuthorization,
+  ...testIsolation.videoRepository,
 };
 
 export default config;

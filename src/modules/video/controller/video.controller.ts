@@ -100,8 +100,6 @@ export class CourseLessonVideoController
 
       return res.status(StatusCode.SUCCESS).json({ data: updatedVideo });
     } catch (error) {
-      // console.log(error);
-
       next(error);
     }
   }
@@ -122,15 +120,12 @@ export class CourseLessonVideoController
     }
   }
 
-  private validateResourceId(
-    req: Request,
-    error?: Error,
-  ): CourseLessonVideoResourceId {
+  private validateResourceId(req: Request): CourseLessonVideoResourceId {
     const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
     const courseId: number = Number(req.params.courseId);
     const lessonId: number = Number(req.params.lessonId);
     if (isNaNArray([courseId, lessonId])) {
-      throw error || new NaNException("courseId || lessonId");
+      throw new NaNException("courseId || lessonId");
     }
 
     return {
@@ -140,10 +135,10 @@ export class CourseLessonVideoController
     };
   }
 
-  private validateVideoId(req: Request, error?: Error): number {
+  private validateVideoId(req: Request): number {
     const videoId: number = Number(req.params.videoId);
     if (isNaN(videoId)) {
-      throw error || new NaNException("courseId");
+      throw new NaNException("videoId");
     }
 
     return videoId;

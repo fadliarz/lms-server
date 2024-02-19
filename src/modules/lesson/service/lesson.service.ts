@@ -8,6 +8,7 @@ import {
 } from "../lesson.type";
 import { ICourseLessonRepository } from "../repository/lesson.repository";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { UnauthenticatedResourceId } from "../../../common/types";
 
 export interface ICourseLessonService {
   createLesson: (
@@ -16,7 +17,7 @@ export interface ICourseLessonService {
   ) => Promise<CourseLessonModel>;
   getLessonById: (
     lessonId: number,
-    resourceId: CourseLessonResourceId,
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
   ) => Promise<CourseLessonModel>;
   updateLesson: (
     lessonId: number,
@@ -50,7 +51,7 @@ export class CourseLessonService implements ICourseLessonService {
 
   public async getLessonById(
     lessonId: number,
-    resourceId: CourseLessonResourceId,
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
   ): Promise<CourseLessonModel> {
     const lesson = await this.validateRelationBetweenResources({
       lessonId,
@@ -93,7 +94,7 @@ export class CourseLessonService implements ICourseLessonService {
   public async validateRelationBetweenResources(
     id: {
       lessonId: number;
-      resourceId: CourseLessonResourceId;
+      resourceId: UnauthenticatedResourceId<CourseLessonResourceId>;
     },
     error?: Error,
   ): Promise<CourseLessonModel | null> {

@@ -15,6 +15,7 @@ import {
 import NaNException from "../../../common/class/exceptions/NaNException";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import getValuable from "../../../common/functions/removeNullFields";
+import { UnauthenticatedResourceId } from "../../../common/types";
 
 export interface ICourseLessonController {
   createLesson: (
@@ -70,7 +71,7 @@ export class CourseLessonController implements ICourseLessonController {
   ): Promise<Response | void> {
     try {
       const lessonId = this.validateLessonId(req);
-      const resourceId = this.validateResourceId(req);
+      const resourceId = this.validateUnauthenticatedResourceId(req);
       const lesson = await this.service.getLessonById(lessonId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({
@@ -121,14 +122,11 @@ export class CourseLessonController implements ICourseLessonController {
     }
   }
 
-  private validateResourceId(
-    req: Request,
-    error?: Error,
-  ): CourseLessonResourceId {
+  private validateResourceId(req: Request): CourseLessonResourceId {
     const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
     const courseId = Number(req.params.courseId);
     if (isNaN(courseId)) {
-      throw error || new NaNException("courseId");
+      throw new NaNException("courseId");
     }
 
     return {
@@ -137,10 +135,23 @@ export class CourseLessonController implements ICourseLessonController {
     };
   }
 
-  private validateLessonId(req: Request, error?: Error): number {
+  private validateUnauthenticatedResourceId(
+    req: Request,
+  ): UnauthenticatedResourceId<CourseLessonResourceId> {
+    const courseId = Number(req.params.courseId);
+    if (isNaN(courseId)) {
+      throw new NaNException("courseId");
+    }
+
+    return {
+      courseId,
+    };
+  }
+
+  private validateLessonId(req: Request): number {
     const lessonId: number = Number(req.params.lessonId);
     if (isNaN(lessonId)) {
-      throw error || new NaNException("lessonId");
+      throw new NaNException("lessonId");
     }
 
     return lessonId;

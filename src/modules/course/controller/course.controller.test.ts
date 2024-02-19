@@ -82,7 +82,6 @@ describe("CourseController Test Suites", () => {
 
     it("userId is included: should create course", async () => {
       mockValidateJoiOnce();
-
       (mockRequest as any).user = {
         id: 1,
       };

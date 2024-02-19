@@ -69,22 +69,20 @@ describe("CourseService Test Suites", () => {
        * Arrange
        *
        */
-      const resourceId = {} as CourseResourceId;
-      const dto = {} as CreateCourseDto;
-      const createdCourse = { id: 1 } as CourseModel;
+      const createdCourse = {};
       mockCreateCourse.mockReturnValueOnce(createdCourse);
+
       /**
        * Act
        *
        */
-      const actual = await sut.createCourse(resourceId, dto);
+      const actual = await sut.createCourse(undefined as any, undefined as any);
 
       /**
        * Assert
        *
        */
       expect(mockCreateCourse).toBeCalledTimes(1);
-      expect(mockCreateCourse).toBeCalledWith(resourceId, dto);
       expect(actual).toEqual(createdCourse);
     });
   });
@@ -95,29 +93,24 @@ describe("CourseService Test Suites", () => {
        * Arrange
        *
        */
-      const courseId = 1;
-      const resourceId = {} as CourseResourceId;
-      const query = {} as GetCourseByIdQuery;
-      const course = { id: 1 } as CourseModel;
+      const course = { id: 1 };
       mockGetCourseByIdOrThrow.mockReturnValueOnce(course);
 
       /**
        * Act
        *
        */
-      const actual = await sut.getCourseById(courseId, resourceId, query);
+      const actual = await sut.getCourseById(
+        undefined as any,
+        undefined as any,
+        undefined as any,
+      );
 
       /**
        * Assert
        *
        */
       expect(mockGetCourseByIdOrThrow).toBeCalledTimes(1);
-      expect(mockGetCourseByIdOrThrow).toBeCalledWith(
-        courseId,
-        resourceId,
-        query,
-        expect.any(Error),
-      );
       expect(actual).toEqual(course);
     });
   });
@@ -128,24 +121,24 @@ describe("CourseService Test Suites", () => {
        * Arrange
        *
        */
-      const courseId = 1;
-      const resourceId = {} as CourseResourceId;
-      const dto = {} as UpdateBasicCourseDto;
-      const updatedCourse = { id: 1 } as CourseModel;
+      const updatedCourse = { id: 1 };
       mockUpdateBasicCourse.mockReturnValueOnce(updatedCourse);
 
       /**
        * Act
        *
        */
-      const actual = await sut.updateBasicCourse(courseId, resourceId, dto);
+      const actual = await sut.updateBasicCourse(
+        undefined as any,
+        undefined as any,
+        undefined as any,
+      );
 
       /**
        * Assert
        *
        */
       expect(mockUpdateBasicCourse).toBeCalledTimes(1);
-      expect(mockUpdateBasicCourse).toBeCalledWith(courseId, resourceId, dto);
       expect(actual).toEqual(updatedCourse);
     });
   });

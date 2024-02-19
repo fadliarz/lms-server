@@ -17,7 +17,7 @@ import {
   IRandDTO,
   RandDTODITypes,
 } from "../../../common/class/rand_dto/rand_dto.type";
-import { UserRoleModel } from "../../course/course.type";
+import { GetCourseByIdQuery, UserRoleModel } from "../../course/course.type";
 import { CourseLessonResourceId } from "../../lesson/lesson.type";
 import ClientException from "../../../common/class/exceptions/ClientException";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
@@ -126,7 +126,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         const updatedCourse = await repository.course.getCourseByIdOrThrow(
           course.id,
           courseLessonResourceId,
-          {},
+          {} as GetCourseByIdQuery,
         );
         expect(updatedCourse.totalVideos).toEqual(1);
         expect(updatedCourse.totalDurations).toEqual(dto.totalDurations);
@@ -198,7 +198,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         const updatedCourse = await repository.course.getCourseByIdOrThrow(
           course.id,
           courseLessonResourceId,
-          {},
+          {} as GetCourseByIdQuery,
         );
         expect(updatedCourse.totalVideos).toEqual(1);
         expect(updatedCourse.totalDurations).toEqual(video.totalDurations);
@@ -270,7 +270,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         const updatedCourse = await repository.course.getCourseByIdOrThrow(
           course.id,
           courseLessonResourceId,
-          {},
+          {} as GetCourseByIdQuery,
         );
         expect(updatedCourse.totalVideos).toEqual(1);
         expect(updatedCourse.totalDurations).toEqual(video.totalDurations);
@@ -429,7 +429,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         const updatedCourse = await repository.course.getCourseByIdOrThrow(
           course.id,
           courseLessonResourceId,
-          {},
+          {} as GetCourseByIdQuery,
         );
         expect(updatedCourse.totalVideos).toEqual(1);
         expect(updatedCourse.totalDurations).toEqual(dto.totalDurations);
@@ -506,7 +506,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         const updatedCourse = await repository.course.getCourseByIdOrThrow(
           course.id,
           courseLessonResourceId,
-          {},
+          {} as GetCourseByIdQuery,
         );
         expect(updatedCourse.totalVideos).toEqual(0);
         expect(updatedCourse.totalDurations).toEqual(0);

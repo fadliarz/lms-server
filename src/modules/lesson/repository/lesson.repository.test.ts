@@ -9,7 +9,7 @@ import {
 } from "../lesson.type";
 import { ICourseLessonRepository } from "./lesson.repository";
 import CourseLessonAuthorization from "../authorization/lesson.authorization";
-import { UserRoleModel } from "../../course/course.type";
+import { GetCourseByIdQuery, UserRoleModel } from "../../course/course.type";
 import {
   IRandDTO,
   RandDTODITypes,
@@ -118,7 +118,7 @@ describe("CourseLessonRepository Test Suite", () => {
       const updatedCourse = await repository.course.getCourseByIdOrThrow(
         course.id,
         resourceId,
-        {},
+        {} as GetCourseByIdQuery,
       );
       expect(updatedCourse).toBeDefined();
       expect({
@@ -165,7 +165,6 @@ describe("CourseLessonRepository Test Suite", () => {
       );
 
       const actual = await sut.getLessonById(lesson.id, {
-        userId: author.id,
         courseId: course.id,
       });
       expect(actual).not.toBeNull();
@@ -220,7 +219,6 @@ describe("CourseLessonRepository Test Suite", () => {
         const deletedLesson = await repository.courseLesson.getLessonById(
           lesson.id,
           {
-            userId: author.id,
             courseId: course.id,
           },
         );
@@ -230,7 +228,6 @@ describe("CourseLessonRepository Test Suite", () => {
           const actual = await sut.getLessonByIdOrThrow(
             lesson.id,
             {
-              userId: author.id,
               courseId: course.id,
             },
             exception,
@@ -359,7 +356,7 @@ describe("CourseLessonRepository Test Suite", () => {
       const course = await repository.course.getCourseByIdOrThrow(
         courseId,
         resourceId,
-        {},
+        {} as GetCourseByIdQuery,
       );
       expect(course).toBeDefined();
       expect(course.totalLessons).toBe(1);
@@ -369,7 +366,6 @@ describe("CourseLessonRepository Test Suite", () => {
       const lesson = await repository.courseLesson.getLessonByIdOrThrow(
         lessonId,
         {
-          userId: author.id,
           courseId: course.id,
         },
       );
@@ -392,7 +388,7 @@ describe("CourseLessonRepository Test Suite", () => {
       const courseAfterDeletion = await repository.course.getCourseByIdOrThrow(
         courseId,
         resourceId,
-        {},
+        {} as GetCourseByIdQuery,
       );
       expect(courseAfterDeletion).toBeDefined();
       expect(courseAfterDeletion.totalLessons).toBe(0);
@@ -415,7 +411,6 @@ describe("CourseLessonRepository Test Suite", () => {
       const lessonAfterDeletion = await repository.courseLesson.getLessonById(
         lessonId,
         {
-          userId: author.id,
           courseId: course.id,
         },
       );

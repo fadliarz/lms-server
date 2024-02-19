@@ -1,24 +1,24 @@
 import * as ValidateJoiModule from "../../../common/functions/validateJoi";
 import { NextFunction, Request, Response } from "express";
 import dIContainer from "../../../inversifyConfig";
-import { CourseLessonVideoDITypes } from "../video.type";
+import { ICourseLessonController } from "./lesson.controller";
+import { CourseLessonDITypes } from "../lesson.type";
 import {
-  CourseLessonVideoService,
-  ICourseLessonVideoService,
-} from "../service/video.service";
-import { ICourseLessonVideoController } from "./video.controller";
+  CourseLessonService,
+  ICourseLessonService,
+} from "../service/lesson.service";
 import validateJoi from "../../../common/functions/validateJoi";
-import { StatusCode } from "../../../common/constants/statusCode";
 import {
-  CreateCourseLessonVideoJoi,
-  UpdateCourseLessonVideoSourceJoi,
-} from "./video.joi";
+  CreateCourseLessonDtoJoi,
+  UpdateCourseLessonDtoJoi,
+} from "./lesson.joi";
+import { StatusCode } from "../../../common/constants/statusCode";
 import NaNException from "../../../common/class/exceptions/NaNException";
 
-const mockCreateVideo = jest.fn();
-const mockGetVideoById = jest.fn();
-const mockUpdateVideoSource = jest.fn();
-const mockDeleteVideo = jest.fn();
+const mockCreateLesson = jest.fn();
+const mockGetLessonById = jest.fn();
+const mockUpdateLesson = jest.fn();
+const mockDeleteLesson = jest.fn();
 
 enum Fail {
   SHOULD_THROW_AN_ERROR = "Should throw an error!",
@@ -31,29 +31,30 @@ function mockValidateJoiOnce(): void {
   });
 }
 
-describe("CourseLessonVideoController Test Suites", () => {
-  let sut: ICourseLessonVideoController;
+describe("CourseLessonController Test Suites", () => {
+  let sut: ICourseLessonController;
   let mockRequest: Request;
   let mockResponse: Response;
   let mockNext: NextFunction;
 
   beforeAll(() => {
-    dIContainer.unbind(CourseLessonVideoDITypes.SERVICE);
+    dIContainer.unbind(CourseLessonDITypes.SERVICE);
     dIContainer
-      .bind<ICourseLessonVideoService>(CourseLessonVideoDITypes.SERVICE)
+      .bind<ICourseLessonService>(CourseLessonDITypes.SERVICE)
       .toConstantValue({
-        createVideo: mockCreateVideo,
-        getVideoById: mockGetVideoById,
-        updateVideoSource: mockUpdateVideoSource,
-        deleteVideo: mockDeleteVideo,
+        createLesson: mockCreateLesson,
+        getLessonById: mockGetLessonById,
+        updateLesson: mockUpdateLesson,
+        deleteLesson: mockDeleteLesson,
+        validateRelationBetweenResources: jest.fn(),
       });
   });
 
   afterAll(() => {
-    dIContainer.unbind(CourseLessonVideoDITypes.SERVICE);
+    dIContainer.unbind(CourseLessonDITypes.SERVICE);
     dIContainer
-      .bind<ICourseLessonVideoService>(CourseLessonVideoDITypes.SERVICE)
-      .to(CourseLessonVideoService);
+      .bind<ICourseLessonService>(CourseLessonDITypes.SERVICE)
+      .to(CourseLessonService);
   });
 
   beforeEach(() => {
@@ -66,8 +67,8 @@ describe("CourseLessonVideoController Test Suites", () => {
       json: jest.fn(),
     } as any as Response;
     mockNext = jest.fn();
-    sut = dIContainer.get<ICourseLessonVideoController>(
-      CourseLessonVideoDITypes.CONTROLLER,
+    sut = dIContainer.get<ICourseLessonController>(
+      CourseLessonDITypes.CONTROLLER,
     );
   });
 
@@ -75,8 +76,8 @@ describe("CourseLessonVideoController Test Suites", () => {
     jest.clearAllMocks();
   });
 
-  describe("", () => {
-    it("createVideo", async () => {
+  describe("createLesson", () => {
+    it("", async () => {
       /**
        * Arrange
        *
@@ -88,33 +89,32 @@ describe("CourseLessonVideoController Test Suites", () => {
       };
       mockRequest.params = {
         courseId: "1",
-        lessonId: "1",
       };
 
-      const createdVideo = {};
-      mockCreateVideo.mockReturnValueOnce(createdVideo);
+      const createdLesson = {};
+      mockCreateLesson.mockReturnValueOnce(createdLesson);
 
       /**
        * Act
        *
        */
-      await sut.createVideo(mockRequest, mockResponse, mockNext);
+      await sut.createLesson(mockRequest, mockResponse, mockNext);
 
       /**
        * Assert
        *
        */
       expect(validateJoi).toBeCalledTimes(1);
-      expect(validateJoi).toBeCalledWith({ body: CreateCourseLessonVideoJoi });
+      expect(validateJoi).toBeCalledWith({ body: CreateCourseLessonDtoJoi });
 
-      expect(mockCreateVideo).toBeCalledTimes(1);
-      expect(mockCreateVideo).toReturnWith(createdVideo);
+      expect(mockCreateLesson).toBeCalledTimes(1);
+      expect(mockCreateLesson).toReturnWith(createdLesson);
 
       expect(mockNext).not.toBeCalledWith();
       expect(mockResponse.status).toBeCalledTimes(1);
       expect(mockResponse.status).toBeCalledWith(StatusCode.RESOURCE_CREATED);
       expect(mockResponse.json).toBeCalledTimes(1);
-      expect(mockResponse.json).toBeCalledWith({ data: createdVideo });
+      expect(mockResponse.json).toBeCalledWith({ data: createdLesson });
     });
 
     {
@@ -122,7 +122,6 @@ describe("CourseLessonVideoController Test Suites", () => {
         name: string;
         params: {
           courseId: string;
-          lessonId: string;
         };
         exception: Error;
       };
@@ -131,17 +130,8 @@ describe("CourseLessonVideoController Test Suites", () => {
           name: "",
           params: {
             courseId: "NaN",
-            lessonId: "1",
           },
-          exception: new NaNException("courseId || lessonId"),
-        },
-        {
-          name: "",
-          params: {
-            courseId: "1",
-            lessonId: "NaN",
-          },
-          exception: new NaNException("courseId || lessonId"),
+          exception: new NaNException("courseId"),
         },
       ] satisfies TestCase[])(
         "",
@@ -161,7 +151,7 @@ describe("CourseLessonVideoController Test Suites", () => {
            * Act
            *
            */
-          await sut.createVideo(mockRequest, mockResponse, mockNext);
+          await sut.createLesson(mockRequest, mockResponse, mockNext);
 
           /**
            * Assert
@@ -169,10 +159,10 @@ describe("CourseLessonVideoController Test Suites", () => {
            */
           expect(validateJoi).toBeCalledTimes(1);
           expect(validateJoi).toBeCalledWith({
-            body: CreateCourseLessonVideoJoi,
+            body: CreateCourseLessonDtoJoi,
           });
 
-          expect(mockCreateVideo).not.toBeCalled();
+          expect(mockCreateLesson).not.toBeCalled();
 
           expect(mockNext).toBeCalledTimes(1);
           expect((mockNext as jest.Mock).mock.calls[0][0]).toEqual(exception);
@@ -186,7 +176,7 @@ describe("CourseLessonVideoController Test Suites", () => {
     }
   });
 
-  describe("getVideoById", () => {
+  describe("getLessonById", () => {
     it("", async () => {
       /**
        * Arrange
@@ -194,23 +184,19 @@ describe("CourseLessonVideoController Test Suites", () => {
        */
       mockValidateJoiOnce();
 
-      (mockRequest as any).user = {
-        id: "1",
-      };
       mockRequest.params = {
         courseId: "1",
         lessonId: "1",
-        videoId: "1",
       };
 
-      const video = {};
-      mockGetVideoById.mockReturnValueOnce(video);
+      const lesson = {};
+      mockGetLessonById.mockReturnValueOnce(lesson);
 
       /**
        * Act
        *
        */
-      await sut.getVideoById(mockRequest, mockResponse, mockNext);
+      await sut.getLessonById(mockRequest, mockResponse, mockNext);
 
       /**
        * Assert
@@ -218,14 +204,14 @@ describe("CourseLessonVideoController Test Suites", () => {
        */
       expect(validateJoi).not.toBeCalled();
 
-      expect(mockGetVideoById).toBeCalledTimes(1);
-      expect(mockGetVideoById).toReturnWith(video);
+      expect(mockGetLessonById).toBeCalledTimes(1);
+      expect(mockGetLessonById).toReturnWith(lesson);
 
       expect(mockNext).not.toBeCalledWith();
       expect(mockResponse.status).toBeCalledTimes(1);
       expect(mockResponse.status).toBeCalledWith(StatusCode.SUCCESS);
       expect(mockResponse.json).toBeCalledTimes(1);
-      expect(mockResponse.json).toBeCalledWith({ data: video });
+      expect(mockResponse.json).toBeCalledWith({ data: lesson });
     });
 
     {
@@ -234,7 +220,6 @@ describe("CourseLessonVideoController Test Suites", () => {
         params: {
           courseId: string;
           lessonId: string;
-          videoId: string;
         };
         exception: Error;
       };
@@ -242,29 +227,18 @@ describe("CourseLessonVideoController Test Suites", () => {
         {
           name: "",
           params: {
-            courseId: "NaN",
-            lessonId: "1",
-            videoId: "1",
-          },
-          exception: new NaNException("courseId || lessonId"),
-        },
-        {
-          name: "",
-          params: {
             courseId: "1",
             lessonId: "NaN",
-            videoId: "1",
           },
-          exception: new NaNException("courseId || lessonId"),
+          exception: new NaNException("lessonId"),
         },
         {
           name: "",
           params: {
-            courseId: "1",
+            courseId: "NaN",
             lessonId: "1",
-            videoId: "NaN",
           },
-          exception: new NaNException("videoId"),
+          exception: new NaNException("courseId"),
         },
       ] satisfies TestCase[])(
         "",
@@ -273,16 +247,13 @@ describe("CourseLessonVideoController Test Suites", () => {
            * Arrange
            *
            */
-          (mockRequest as any).user = {
-            id: "1",
-          };
           mockRequest.params = params;
 
           /**
            * Act
            *
            */
-          await sut.getVideoById(mockRequest, mockResponse, mockNext);
+          await sut.getLessonById(mockRequest, mockResponse, mockNext);
 
           /**
            * Assert
@@ -290,7 +261,7 @@ describe("CourseLessonVideoController Test Suites", () => {
            */
           expect(validateJoi).not.toBeCalled();
 
-          expect(mockGetVideoById).not.toBeCalled();
+          expect(mockGetLessonById).not.toBeCalled();
 
           expect(mockNext).toBeCalledTimes(1);
           expect((mockNext as jest.Mock).mock.calls[0][0]).toEqual(exception);
@@ -304,7 +275,7 @@ describe("CourseLessonVideoController Test Suites", () => {
     }
   });
 
-  describe("updateVideo", () => {
+  describe("updateLesson", () => {
     it("", async () => {
       /**
        * Arrange
@@ -318,35 +289,32 @@ describe("CourseLessonVideoController Test Suites", () => {
       mockRequest.params = {
         courseId: "1",
         lessonId: "1",
-        videoId: "1",
       };
 
-      const updatedVideo = {};
-      mockUpdateVideoSource.mockReturnValueOnce(updatedVideo);
+      const updatedLesson = {};
+      mockUpdateLesson.mockReturnValueOnce(updatedLesson);
 
       /**
        * Act
        *
        */
-      await sut.updateVideoSource(mockRequest, mockResponse, mockNext);
+      await sut.updateLesson(mockRequest, mockResponse, mockNext);
 
       /**
        * Assert
        *
        */
       expect(validateJoi).toBeCalledTimes(1);
-      expect(validateJoi).toBeCalledWith({
-        body: UpdateCourseLessonVideoSourceJoi,
-      });
+      expect(validateJoi).toBeCalledWith({ body: UpdateCourseLessonDtoJoi });
 
-      expect(mockUpdateVideoSource).toBeCalledTimes(1);
-      expect(mockUpdateVideoSource).toReturnWith(updatedVideo);
+      expect(mockUpdateLesson).toBeCalledTimes(1);
+      expect(mockUpdateLesson).toReturnWith(updatedLesson);
 
       expect(mockNext).not.toBeCalledWith();
       expect(mockResponse.status).toBeCalledTimes(1);
       expect(mockResponse.status).toBeCalledWith(StatusCode.SUCCESS);
       expect(mockResponse.json).toBeCalledTimes(1);
-      expect(mockResponse.json).toBeCalledWith({ data: updatedVideo });
+      expect(mockResponse.json).toBeCalledWith({ data: updatedLesson });
     });
 
     {
@@ -355,7 +323,6 @@ describe("CourseLessonVideoController Test Suites", () => {
         params: {
           courseId: string;
           lessonId: string;
-          videoId: string;
         };
         exception: Error;
       };
@@ -363,29 +330,18 @@ describe("CourseLessonVideoController Test Suites", () => {
         {
           name: "",
           params: {
-            courseId: "NaN",
-            lessonId: "1",
-            videoId: "1",
-          },
-          exception: new NaNException("courseId || lessonId"),
-        },
-        {
-          name: "",
-          params: {
             courseId: "1",
             lessonId: "NaN",
-            videoId: "1",
           },
-          exception: new NaNException("courseId || lessonId"),
+          exception: new NaNException("lessonId"),
         },
         {
           name: "",
           params: {
-            courseId: "1",
+            courseId: "NaN",
             lessonId: "1",
-            videoId: "NaN",
           },
-          exception: new NaNException("videoId"),
+          exception: new NaNException("courseId"),
         },
       ] satisfies TestCase[])(
         "",
@@ -405,7 +361,7 @@ describe("CourseLessonVideoController Test Suites", () => {
            * Act
            *
            */
-          await sut.updateVideoSource(mockRequest, mockResponse, mockNext);
+          await sut.updateLesson(mockRequest, mockResponse, mockNext);
 
           /**
            * Assert
@@ -413,10 +369,10 @@ describe("CourseLessonVideoController Test Suites", () => {
            */
           expect(validateJoi).toBeCalledTimes(1);
           expect(validateJoi).toBeCalledWith({
-            body: UpdateCourseLessonVideoSourceJoi,
+            body: UpdateCourseLessonDtoJoi,
           });
 
-          expect(mockUpdateVideoSource).not.toBeCalled();
+          expect(mockUpdateLesson).not.toBeCalled();
 
           expect(mockNext).toBeCalledTimes(1);
           expect((mockNext as jest.Mock).mock.calls[0][0]).toEqual(exception);
@@ -442,16 +398,15 @@ describe("CourseLessonVideoController Test Suites", () => {
       mockRequest.params = {
         courseId: "1",
         lessonId: "1",
-        videoId: "1",
       };
 
-      mockDeleteVideo.mockReturnValueOnce({});
+      mockDeleteLesson.mockReturnValueOnce({});
 
       /**
        * Act
        *
        */
-      await sut.deleteVideo(mockRequest, mockResponse, mockNext);
+      await sut.deleteLesson(mockRequest, mockResponse, mockNext);
 
       /**
        * Assert
@@ -459,8 +414,8 @@ describe("CourseLessonVideoController Test Suites", () => {
        */
       expect(validateJoi).not.toBeCalled();
 
-      expect(mockDeleteVideo).toBeCalledTimes(1);
-      expect(mockDeleteVideo).toReturnWith({});
+      expect(mockDeleteLesson).toBeCalledTimes(1);
+      expect(mockDeleteLesson).toReturnWith({});
 
       expect(mockNext).not.toBeCalledWith();
       expect(mockResponse.status).toBeCalledTimes(1);
@@ -475,7 +430,6 @@ describe("CourseLessonVideoController Test Suites", () => {
         params: {
           courseId: string;
           lessonId: string;
-          videoId: string;
         };
         exception: Error;
       };
@@ -483,29 +437,18 @@ describe("CourseLessonVideoController Test Suites", () => {
         {
           name: "",
           params: {
-            courseId: "NaN",
-            lessonId: "1",
-            videoId: "1",
-          },
-          exception: new NaNException("courseId || lessonId"),
-        },
-        {
-          name: "",
-          params: {
             courseId: "1",
             lessonId: "NaN",
-            videoId: "1",
           },
-          exception: new NaNException("courseId || lessonId"),
+          exception: new NaNException("lessonId"),
         },
         {
           name: "",
           params: {
-            courseId: "1",
+            courseId: "NaN",
             lessonId: "1",
-            videoId: "NaN",
           },
-          exception: new NaNException("videoId"),
+          exception: new NaNException("courseId"),
         },
       ] satisfies TestCase[])(
         "",
@@ -523,7 +466,7 @@ describe("CourseLessonVideoController Test Suites", () => {
            * Act
            *
            */
-          await sut.deleteVideo(mockRequest, mockResponse, mockNext);
+          await sut.deleteLesson(mockRequest, mockResponse, mockNext);
 
           /**
            * Assert
@@ -531,7 +474,7 @@ describe("CourseLessonVideoController Test Suites", () => {
            */
           expect(validateJoi).not.toBeCalled();
 
-          expect(mockDeleteVideo).not.toBeCalled();
+          expect(mockDeleteLesson).not.toBeCalled();
 
           expect(mockNext).toBeCalledTimes(1);
           expect((mockNext as jest.Mock).mock.calls[0][0]).toEqual(exception);
