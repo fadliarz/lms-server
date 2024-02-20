@@ -4,9 +4,11 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "node dist/src/main.js",
-    "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
+    "start": "nodemon src/main.ts",
+    "build": "rimraf dist && tsc && prisma generate",
+    "ts.check": "tsc --project tsconfig.json",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
+    "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
     "seed": "ts-node ./prisma/main.ts"
   },
   "keywords": [],
@@ -37,7 +39,9 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-unused-imports": "^3.0.0",
+    "pre-commit": "^1.2.2",
     "prettier": "3.2.4",
+    "rimraf": "^5.0.5",
     "tsc-watch": "^6.0.4",
     "typescript": "^5.3.3"
   },
@@ -73,5 +77,10 @@
     "ts-node": "^10.9.1",
     "uuid": "^9.0.0",
     "yamljs": "^0.3.0"
-  }
+  },
+  "pre-commit": [
+    "ts.check",
+    "build",
+    "add-build"
+  ]
 }
