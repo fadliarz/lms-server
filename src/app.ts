@@ -44,6 +44,9 @@ class App {
    *
    */
   public setupSwagger(...args: Router[]) {
+    const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
+    this.express.use(express.static(pathToSwaggerUi));
+
     const options = {
       definition: {
         openapi: "3.0.0",
