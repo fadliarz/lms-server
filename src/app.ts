@@ -43,10 +43,12 @@ class App {
    *
    */
   public setupSwagger(...args: Router[]) {
+    console.log(path.join(process.cwd(), "swagger.yaml"));
+
     this.express.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(yaml.load("swagger.yaml"), {
+      swaggerUi.setup(yaml.load(path.join(process.cwd(), "swagger.yaml")), {
         customCssUrl:
           "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
       }),
