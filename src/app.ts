@@ -28,10 +28,10 @@ class App {
     this.express = express();
     this.port = port;
     this.httpsServer = https.createServer(
-      {
-        key: process.env.SSL_KEY,
-        cert: process.env.SSL_CERT,
-      },
+      // {
+      //   key: process.env.SSL_KEY,
+      //   cert: process.env.SSL_CERT,
+      // },
       this.express,
     );
 

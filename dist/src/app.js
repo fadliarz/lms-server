@@ -34,10 +34,12 @@ class App {
         this.prisma = PrismaClientSingleton_1.default.getInstance();
         this.express = (0, express_1.default)();
         this.port = port;
-        this.httpsServer = https_1.default.createServer({
-            key: process.env.SSL_KEY,
-            cert: process.env.SSL_CERT,
-        }, this.express);
+        this.httpsServer = https_1.default.createServer(
+        // {
+        //   key: process.env.SSL_KEY,
+        //   cert: process.env.SSL_CERT,
+        // },
+        this.express);
         this.initialiseMiddlewares();
         this.initialiseApi(Apis);
         this.initialiseErrorHandling();
