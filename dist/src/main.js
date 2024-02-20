@@ -19,6 +19,7 @@ const video_router_1 = __importDefault(require("./modules/video/router/video.rou
 const video_type_1 = require("./modules/video/video.type");
 const category_router_1 = __importDefault(require("./modules/category/router/category.router"));
 const category_type_1 = require("./modules/category/category.type");
+const PrismaClientSingleton_1 = __importDefault(require("./common/class/PrismaClientSingleton"));
 /**
  * Validate environment variables
  *
@@ -66,6 +67,20 @@ const port = Number(process.env.PORT) || 5000;
  *
  */
 const app = new app_1.default(routers, port);
-app.express.listen(5555, () => {
-    console.log("Server is running on the port 5555");
+/**
+ * Make instance of prisma
+ *
+ */
+const prisma = PrismaClientSingleton_1.default.getInstance();
+prisma
+    .$connect()
+    .then(() => {
+    console.log("Successfully establishing database connection!");
+    app.express.listen(port, () => {
+        console.log(`Server is running on the port ${port}`);
+    });
+})
+    .catch((error) => {
+    console.log("Failed establishing a database connection!");
+    console.error("error: ", error);
 });

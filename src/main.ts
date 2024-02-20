@@ -15,6 +15,7 @@ import CourseLessonVideoRouter from "./modules/video/router/video.router";
 import { courseLessonVideoUrls } from "./modules/video/video.type";
 import CourseCategoryRouter from "./modules/category/router/category.router";
 import { courseCategoryUrls } from "./modules/category/category.type";
+import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
 
 /**
  * Validate environment variables
@@ -67,6 +68,23 @@ const port = Number(process.env.PORT) || 5000;
  */
 const app = new App(routers, port);
 
-app.express.listen(5555, () => {
-  console.log("Server is running on the port 5555");
-});
+/**
+ * Make instance of prisma
+ *
+ */
+const prisma = PrismaClientSingleton.getInstance();
+
+prisma
+  .$connect()
+  .then(() => {
+    console.log("Successfully establishing database connection!");
+
+    app.express.listen(port, () => {
+      console.log(`Server is running on the port ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.log("Failed establishing a database connection!");
+
+    console.error("error: ", error);
+  });
