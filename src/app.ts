@@ -144,7 +144,7 @@ class App {
 
       await this.initialiseDatabaseConnection();
 
-      this.listen();
+      // this.listen();
     } catch (error) {
       console.error("error: ", error);
 

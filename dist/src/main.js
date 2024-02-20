@@ -66,4 +66,6 @@ const port = Number(process.env.PORT) || 5000;
  *
  */
 const app = new app_1.default(routers, port);
-exports.default = app;
+app.express.listen(5555, () => {
+    console.log("Server is running on the port 5555");
+});

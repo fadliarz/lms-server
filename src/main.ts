@@ -18,13 +18,13 @@ import { courseCategoryUrls } from "./modules/category/category.type";
 
 /**
  * Validate environment variables
- * 
+ *
  */
 validateEnv();
 
 /**
  * Configuration
- * 
+ *
  */
 const userApi = {
   router: UserRouter(getAuthMiddleWare()),
@@ -63,8 +63,10 @@ const port = Number(process.env.PORT) || 5000;
 
 /**
  * Make instance of application
- * 
+ *
  */
 const app = new App(routers, port);
 
-export default app;
+app.express.listen(5555, () => {
+  console.log("Server is running on the port 5555");
+});

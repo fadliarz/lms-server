@@ -130,7 +130,7 @@ class App {
             try {
                 console.log("Initialising database connection!");
                 yield this.initialiseDatabaseConnection();
-                this.listen();
+                // this.listen();
             }
             catch (error) {
                 console.error("error: ", error);
