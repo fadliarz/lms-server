@@ -12,8 +12,7 @@ const compression_1 = __importDefault(require("compression"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const errorMiddleware_1 = __importDefault(require("./middlewares/errorMiddleware"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const yamljs_1 = __importDefault(require("yamljs"));
-const path_1 = __importDefault(require("path"));
+const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
 class App {
     /**
      *
@@ -40,10 +39,44 @@ class App {
      *
      */
     setupSwagger(...args) {
-        console.log(path_1.default.join(process.cwd(), "swagger.yaml"));
-        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(yamljs_1.default.load(path_1.default.join(process.cwd(), "swagger.yaml")), {
+        const options = {
+            definition: {
+                openapi: "3.0.0",
+                info: {
+                    title: "Library API",
+                    version: "1.0.0",
+                    description: "A simple Express Library API",
+                    termsOfService: "http://example.com/terms/",
+                    contact: {
+                        name: "API Support",
+                        url: "http://www.exmaple.com/support",
+                        email: "support@example.com",
+                    },
+                },
+                servers: [
+                    {
+                        url: "https://nodejs-swagger-api.vercel.app/",
+                        description: "My API Documentation",
+                    },
+                ],
+            },
+            // This is to call all the file
+            apis: ["src/**/*.js"],
+        };
+        const specs = (0, swagger_jsdoc_1.default)(options);
+        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(specs, {
             customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
         }));
+        // console.log(path.join(process.cwd(), "swagger.yaml"));
+        //
+        // this.express.use(
+        //   "/api-docs",
+        //   swaggerUi.serve,
+        //   swaggerUi.setup(yaml.load(path.join(process.cwd(), "swagger.yaml")), {
+        //     customCssUrl:
+        //       "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
+        //   }),
+        // );
     }
     /**
      * Middlewares

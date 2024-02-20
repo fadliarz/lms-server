@@ -11,6 +11,7 @@ import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
 import { Request, Response } from "express";
 import path from "path";
+import swaggerJSDoc from "swagger-jsdoc";
 
 class App {
   public readonly express: Application;
@@ -43,16 +44,52 @@ class App {
    *
    */
   public setupSwagger(...args: Router[]) {
-    console.log(path.join(process.cwd(), "swagger.yaml"));
+    const options = {
+      definition: {
+        openapi: "3.0.0",
+        info: {
+          title: "Library API",
+          version: "1.0.0",
+          description: "A simple Express Library API",
+          termsOfService: "http://example.com/terms/",
+          contact: {
+            name: "API Support",
+            url: "http://www.exmaple.com/support",
+            email: "support@example.com",
+          },
+        },
+        servers: [
+          {
+            url: "https://nodejs-swagger-api.vercel.app/",
+            description: "My API Documentation",
+          },
+        ],
+      },
+      // This is to call all the file
+      apis: ["src/**/*.js"],
+    };
+
+    const specs = swaggerJSDoc(options);
 
     this.express.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(yaml.load(path.join(process.cwd(), "swagger.yaml")), {
+      swaggerUi.setup(specs, {
         customCssUrl:
           "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
       }),
     );
+
+    // console.log(path.join(process.cwd(), "swagger.yaml"));
+    //
+    // this.express.use(
+    //   "/api-docs",
+    //   swaggerUi.serve,
+    //   swaggerUi.setup(yaml.load(path.join(process.cwd(), "swagger.yaml")), {
+    //     customCssUrl:
+    //       "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
+    //   }),
+    // );
   }
 
   /**
