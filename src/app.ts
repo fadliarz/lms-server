@@ -12,6 +12,7 @@ import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
 import yaml from "yamljs";
 import { Request, Response } from "express";
 import https from "https";
+import * as http from "http";
 
 class App {
   public readonly express: Application;
@@ -27,13 +28,13 @@ class App {
   constructor(Apis: Api[], port: number) {
     this.express = express();
     this.port = port;
-    this.httpsServer = https.createServer(
-      // {
-      //   key: process.env.SSL_KEY,
-      //   cert: process.env.SSL_CERT,
-      // },
-      this.express,
-    );
+    // this.httpsServer = http.createServer(
+    //   // {
+    //   //   key: process.env.SSL_KEY,
+    //   //   cert: process.env.SSL_CERT,
+    //   // },
+    //   this.express,
+    // );
 
     this.initialiseMiddlewares();
     this.initialiseApi(Apis);
@@ -63,7 +64,7 @@ class App {
       process.env.NODE_ENV == "test"
         ? Math.floor(Math.random() * 60000) + 5000
         : this.port;
-    this.httpsServer.listen(port, () => {
+    this.express.listen(port, () => {
       console.log("HTTPS server is listening on the port", port);
     });
   }

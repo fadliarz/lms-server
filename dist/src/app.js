@@ -23,7 +23,6 @@ const errorMiddleware_1 = __importDefault(require("./middlewares/errorMiddleware
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const PrismaClientSingleton_1 = __importDefault(require("./common/class/PrismaClientSingleton"));
 const yamljs_1 = __importDefault(require("yamljs"));
-const https_1 = __importDefault(require("https"));
 class App {
     /**
      *
@@ -34,12 +33,13 @@ class App {
         this.prisma = PrismaClientSingleton_1.default.getInstance();
         this.express = (0, express_1.default)();
         this.port = port;
-        this.httpsServer = https_1.default.createServer(
-        // {
-        //   key: process.env.SSL_KEY,
-        //   cert: process.env.SSL_CERT,
-        // },
-        this.express);
+        // this.httpsServer = http.createServer(
+        //   // {
+        //   //   key: process.env.SSL_KEY,
+        //   //   cert: process.env.SSL_CERT,
+        //   // },
+        //   this.express,
+        // );
         this.initialiseMiddlewares();
         this.initialiseApi(Apis);
         this.initialiseErrorHandling();
@@ -61,7 +61,7 @@ class App {
         let port = process.env.NODE_ENV == "test"
             ? Math.floor(Math.random() * 60000) + 5000
             : this.port;
-        this.httpsServer.listen(port, () => {
+        this.express.listen(port, () => {
             console.log("HTTPS server is listening on the port", port);
         });
     }
