@@ -5,8 +5,9 @@
   "main": "main.js",
   "scripts": {
     "start": "nodemon src/main.ts",
-    "build": "prisma generate && rimraf dist && tsc",
+    "build": "rimraf dist && tsc",
     "ts.check": "tsc --project tsconfig.json",
+    "postinstall": "prisma generate",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
     "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
     "seed": "ts-node ./prisma/main.ts"
