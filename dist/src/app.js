@@ -41,7 +41,9 @@ class App {
      */
     setupSwagger(...args) {
         console.log(path_1.default.join(process.cwd(), "swagger.yaml"));
-        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(yamljs_1.default.load("swagger.yaml")));
+        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(yamljs_1.default.load("swagger.yaml"), {
+            customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
+        }));
     }
     /**
      * Middlewares
