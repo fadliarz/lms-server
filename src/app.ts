@@ -43,8 +43,6 @@ class App {
    *
    */
   public setupSwagger(...args: Router[]) {
-    console.log(path.join(process.cwd(), "swagger.yaml"));
-
     this.express.use(
       "/api-docs",
       swaggerUi.serve,

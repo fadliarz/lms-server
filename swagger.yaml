@@ -131,7 +131,7 @@ components:
           const: true
         status:
           type: boolean
-          enum: [200, 201]
+          enum: [ 200, 201 ]
         message:
           oneOf:
             - type: string
@@ -183,51 +183,51 @@ paths:
                                   - updatedAt
           - $ref: "#/components/responses/CommonErrorResponses"
 
-    put:
-      tags:
-        - Course
-      summary: Update a course.
-      parameters:
-        - name: courseId
-          in: path
-          required: true
-          schema:
-            type: number
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#components/schemas/CourseModel"
-                - required:
-      responses:
-        allOf:
-          - "200":
-              description: Resource updated.
-              content:
-                application/json:
-                  schema:
-                    allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
-                      - type: object
-                        properties:
-                          data:
-                            allOf:
-                              - $ref: "#/components/schemas/CourseModel"
-                              - required:
-                                  - id
-                                  - image
-                                  - title
-                                  - totalStudents
-                                  - totalInstructors
-                                  - totalLessons
-                                  - totalVideos
-                                  - totalDurations
-                                  - totalLikes
-                                  - createdAt
-                                  - updatedAt
-          - $ref: "#/components/responses/CommonErrorResponses"
+    #    put:
+    #      tags:
+    #        - Course
+    #      summary: Update a course.
+    #      parameters:
+    #        - name: courseId
+    #          in: path
+    #          required: true
+    #          schema:
+    #            type: number
+    #      requestBody:
+    #        required: true
+    #        content:
+    #          application/json:
+    #            schema:
+    #              allOf:
+    #                - $ref: "#components/schemas/CourseModel"
+    #                - required:
+    #      responses:
+    #        allOf:
+    #          - "200":
+    #              description: Resource updated.
+    #              content:
+    #                application/json:
+    #                  schema:
+    #                    allOf:
+    #                      - $ref: "#/components/schemas/SuccessResponse"
+    #                      - type: object
+    #                        properties:
+    #                          data:
+    #                            allOf:
+    #                              - $ref: "#/components/schemas/CourseModel"
+    #                              - required:
+    #                                  - id
+    #                                  - image
+    #                                  - title
+    #                                  - totalStudents
+    #                                  - totalInstructors
+    #                                  - totalLessons
+    #                                  - totalVideos
+    #                                  - totalDurations
+    #                                  - totalLikes
+    #                                  - createdAt
+    #                                  - updatedAt
+    #          - $ref: "#/components/responses/CommonErrorResponses"
 
     delete:
       tags:
