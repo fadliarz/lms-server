@@ -49,7 +49,7 @@ class App {
      *
      */
     setupSwagger(...args) {
-        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(yamljs_1.default.load("src/swagger.yaml")));
+        this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(yamljs_1.default.load("swagger.yaml")));
     }
     /**
      * Listen to app to a port

@@ -7,6 +7,7 @@
     "start": "nodemon src/main.ts",
     "build": "rimraf dist && tsc",
     "ts.check": "tsc --project tsconfig.json",
+    "add-build": "git add dist",
     "postinstall": "prisma generate",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
     "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
@@ -81,6 +82,7 @@
   },
   "pre-commit": [
     "ts.check",
-    "build"
+    "build",
+    "add-build"
   ]
 }
