@@ -10,6 +10,7 @@ import { Api } from "./common/types";
 import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
 import { Request, Response } from "express";
+import path from "path";
 
 class App {
   public readonly express: Application;
@@ -42,6 +43,8 @@ class App {
    *
    */
   public setupSwagger(...args: Router[]) {
+    console.log(path.join(process.cwd(), "swagger.yaml"));
+
     this.express.use(
       "/api-docs",
       swaggerUi.serve,

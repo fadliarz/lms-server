@@ -67,6 +67,7 @@
     "lodash": "^4.17.21",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "path": "^0.12.7",
     "prisma": "^4.15.0",
     "redis": "^4.6.12",
     "reflect-metadata": "^0.1.13",

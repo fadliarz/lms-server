@@ -13,6 +13,7 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const errorMiddleware_1 = __importDefault(require("./middlewares/errorMiddleware"));
 const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const yamljs_1 = __importDefault(require("yamljs"));
+const path_1 = __importDefault(require("path"));
 class App {
     /**
      *
@@ -39,6 +40,7 @@ class App {
      *
      */
     setupSwagger(...args) {
+        console.log(path_1.default.join(process.cwd(), "swagger.yaml"));
         this.express.use("/api-docs", swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(yamljs_1.default.load("swagger.yaml")));
     }
     /**
