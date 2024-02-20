@@ -47,52 +47,16 @@ class App {
     const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
     this.express.use(express.static(pathToSwaggerUi));
 
-    const options = {
-      definition: {
-        openapi: "3.0.0",
-        info: {
-          title: "Library API",
-          version: "1.0.0",
-          description: "A simple Express Library API",
-          termsOfService: "http://example.com/terms/",
-          contact: {
-            name: "API Support",
-            url: "http://www.exmaple.com/support",
-            email: "support@example.com",
-          },
-        },
-        servers: [
-          {
-            url: "https://nodejs-swagger-api.vercel.app/",
-            description: "My API Documentation",
-          },
-        ],
-      },
-      // This is to call all the file
-      apis: ["src/**/*.js"],
-    };
-
-    const specs = swaggerJSDoc(options);
+    console.log(path.join(process.cwd(), "swagger.yaml"));
 
     this.express.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(specs, {
+      swaggerUi.setup(yaml.load(path.join(process.cwd(), "swagger.yaml")), {
         customCssUrl:
           "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
       }),
     );
-
-    // console.log(path.join(process.cwd(), "swagger.yaml"));
-    //
-    // this.express.use(
-    //   "/api-docs",
-    //   swaggerUi.serve,
-    //   swaggerUi.setup(yaml.load(path.join(process.cwd(), "swagger.yaml")), {
-    //     customCssUrl:
-    //       "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css",
-    //   }),
-    // );
   }
 
   /**
