@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "nodemon src/main.ts",
-    "build": "rimraf dist && tsc",
+    "build": "rimraf dist && tsc && cp swagger.yaml dist/",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
     "postinstall": "prisma generate",

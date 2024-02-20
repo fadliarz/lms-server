@@ -32,7 +32,7 @@ class App {
         this.initialiseMiddlewares();
         this.initialiseApi(Apis);
         this.initialiseErrorHandling();
-        // this.setupSwagger(...Apis.map((api) => api.router));
+        this.setupSwagger(...Apis.map((api) => api.router));
     }
     /**
      * Swagger
