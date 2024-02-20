@@ -50,7 +50,7 @@ class App {
     this.express.use(
       "/api-docs",
       swaggerUi.serve,
-      swaggerUi.setup(yaml.load("src/swagger.yaml")),
+      swaggerUi.setup(yaml.load("swagger.yaml")),
     );
   }
 
