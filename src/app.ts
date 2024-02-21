@@ -54,7 +54,7 @@ class App {
       swaggerUi.serve,
       swaggerUi.setup(yaml.load(path.join(process.cwd(), "swagger.yaml")), {
         customCssUrl:
-          "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.7/swagger-ui.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.7/swagger-ui.min.css",
       }),
     );
   }
