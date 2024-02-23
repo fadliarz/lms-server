@@ -4,13 +4,8 @@ info:
   description: REST v1 API Documentation
   version: 1.0.0
 servers:
-  - url: "{protocol}://localhost:{port}"
+  - url: "{protocol}://lms-server-delta.vercel.app/"
     variables:
-      port:
-        enum:
-          - "8000"
-          - "5000"
-        default: "5000"
       protocol:
         enum:
           - http
@@ -28,29 +23,72 @@ components:
         description: Unauthenticated.
       "500":
         description: Unexpected error.
-  allRequiredFields:
-    course:
-      - id
-      - image
-      - title
-      - totalStudents
-      - totalInstructors
-      - totalLessons
-      - totalVideos
-      - totalDurations
-      - totalLikes
-      - createdAt
-      - updatedAt
-    categories:
-      - id
-      - title
-      - createdAt
-      - updatedAt
-    like:
-      - id
-      - userId
-      - courseId
   schemas:
+    UserRoleModel:
+      type: string
+      enum: ["STUDENT", "INSTRUCTOR", "OWNER"]
+    CourseEnrollmentRoleModel:
+      type: string
+      enum: ["STUDENT", "INSTRUCTOR"]
+    CourseStatusModel:
+      type: string
+      enum: ["PUBLISHED", "DRAFT"]
+    UserModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        password:
+          type: string
+        accessToken:
+          type: string
+        refreshToken:
+          type: array
+          items:
+            type: string
+        phoneNumber:
+          type: string
+        name:
+          type: string
+        NIM:
+          type: string
+        avatar:
+          type: string
+        about:
+          type: string
+        totalCourses:
+          type: integer
+        totalLessons:
+          type: integer
+        totalUnreadMessages:
+          type: integer
+        createdAt:
+          type: string
+          format: date
+        updatedAt:
+          type: string
+          format: date
+        role:
+          $ref: "#/components/schemas/UserRoleModel"
+    CourseEnrollmentModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        courseId:
+          type: integer
+        role:
+          $ref: "#/components/schemas/CourseEnrollmentRoleModel"
+        createdAt:
+          type: string
+          format: date
+        updatedAt:
+          type: string
+          format: date
     CategoryModel:
       type: object
       properties:
@@ -69,7 +107,9 @@ components:
       properties:
         id:
           type: integer
-          readOnly: true
+          readOnly: true # todo
+        status:
+          $ref: "#/components/schemas/CourseStatusModel"
         image:
           type: string
         title:
@@ -105,12 +145,39 @@ components:
           type: string
           format: date
           readOnly: true
+        authorId:
+          type: integer
         categoryId:
           type: integer
-        category:
+    CourseLessonModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        totalVideos:
+          type: integer
+        totalDurations:
+          type: number
+          format: float
+        totalMaterials:
+          type: integer
+        createdAt:
+          type: string
+          format: date
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date
+          readOnly: true
+        courseId:
+          type: integer
+        course:
           allOf:
-            - $ref: "#/components/schemas/CategoryModel"
-            - readOnly: true
+            - $ref: "#/components/schemas/CourseModel"
     LikeModel:
       type: object
       properties:
@@ -119,36 +186,96 @@ components:
           readOnly: true
         courseId:
           type: integer
+        course:
+          allOf:
+            - $ref: "#/components/schemas/CourseModel"
         userId:
           type: integer
           readOnly: true
-
-    SuccessResponse:
+        user:
+          allOf:
+            - $ref: "#/components/schemas/UserModel"
+    CreateCourseDto:
       type: object
       properties:
-        success:
-          type: boolean
-          const: true
-        status:
-          type: boolean
-          enum: [ 200, 201 ]
-        message:
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
-
+        title:
+          type: string
+        categoryId:
+          type: integer
+        image:
+          type: string
+        description:
+          type: string
+        material:
+          type: string
+      required:
+        - title
+        - categoryId
+    UpdateBasicCourseDto:
+      type: object
+      properties:
+        title:
+          type: string
+        categoryId:
+          type: integer
+        image:
+          type: string
+        description:
+          type: string
+        material:
+          type: string
   securitySchemes:
     BasicAuth:
       type: http
       scheme: basic
 paths:
+  /courses:
+    post:
+      tags:
+        - Course
+      summary: Create a course.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseDto"
+      responses:
+        allOf:
+          - "201":
+              description: Resource created.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+    get:
+      tags:
+        - Course
+      summary: Get courses.
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CourseModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
   /courses/{courseId}:
     get:
       tags:
         - Course
-      summary: Returns a course.
+      summary: Get a course.
       parameters:
         - name: courseId
           in: path
@@ -162,72 +289,40 @@ paths:
               content:
                 application/json:
                   schema:
-                    allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
-                      - type: object
-                        properties:
-                          data:
-                            allOf:
-                              - $ref: "#/components/schemas/CourseModel"
-                              - required:
-                                  - id
-                                  - image
-                                  - title
-                                  - totalStudents
-                                  - totalInstructors
-                                  - totalLessons
-                                  - totalVideos
-                                  - totalDurations
-                                  - totalLikes
-                                  - createdAt
-                                  - updatedAt
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-    #    put:
-    #      tags:
-    #        - Course
-    #      summary: Update a course.
-    #      parameters:
-    #        - name: courseId
-    #          in: path
-    #          required: true
-    #          schema:
-    #            type: number
-    #      requestBody:
-    #        required: true
-    #        content:
-    #          application/json:
-    #            schema:
-    #              allOf:
-    #                - $ref: "#components/schemas/CourseModel"
-    #                - required:
-    #      responses:
-    #        allOf:
-    #          - "200":
-    #              description: Resource updated.
-    #              content:
-    #                application/json:
-    #                  schema:
-    #                    allOf:
-    #                      - $ref: "#/components/schemas/SuccessResponse"
-    #                      - type: object
-    #                        properties:
-    #                          data:
-    #                            allOf:
-    #                              - $ref: "#/components/schemas/CourseModel"
-    #                              - required:
-    #                                  - id
-    #                                  - image
-    #                                  - title
-    #                                  - totalStudents
-    #                                  - totalInstructors
-    #                                  - totalLessons
-    #                                  - totalVideos
-    #                                  - totalDurations
-    #                                  - totalLikes
-    #                                  - createdAt
-    #                                  - updatedAt
-    #          - $ref: "#/components/responses/CommonErrorResponses"
+    put:
+      tags:
+        - Course
+      summary: Update a course.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBasicCourseDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
 
     delete:
       tags:
@@ -247,200 +342,104 @@ paths:
                 application/json:
                   schema:
                     allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
                       - type: object
                         properties:
                           data:
-                            allOf:
-                              - $ref: "#/components/schemas/CourseModel"
-                              - required:
-                                  - id
-                                  - image
-                                  - title
-                                  - totalStudents
-                                  - totalInstructors
-                                  - totalLessons
-                                  - totalVideos
-                                  - totalDurations
-                                  - totalLikes
-                                  - createdAt
-                                  - updatedAt
+                            $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  #
 
-  /courses:
-    post:
-      tags:
-        - Course
-      summary: Create a course.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/CourseModel"
-                - required:
-                    - title
-                    - categoryId
-      responses:
-        allOf:
-          - "201":
-              description: Resource created.
-              content:
-                application/json:
-                  schema:
-                    allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
-                      - type: object
-                        properties:
-                          data:
-                            allOf:
-                              - $ref: "#/components/schemas/CourseModel"
-                              - required:
-                                  - id
-                                  - image
-                                  - title
-                                  - totalStudents
-                                  - totalInstructors
-                                  - totalLessons
-                                  - totalVideos
-                                  - totalDurations
-                                  - totalLikes
-                                  - createdAt
-                                  - updatedAt
-          - $ref: "#/components/responses/CommonErrorResponses"
 
-    get:
-      tags:
-        - Course
-      summary: Returns all courses.
-      responses:
-        allOf:
-          - "200":
-              description: OK.
-              content:
-                application/json:
-                  schema:
-                    allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
-                      - type: object
-                        properties:
-                          data:
-                            type: array
-                            items:
-                              allOf:
-                                - $ref: "#/components/schemas/CourseModel"
-                                - required:
-                                    - id
-                                    - image
-                                    - title
-                                    - totalStudents
-                                    - totalInstructors
-                                    - totalLessons
-                                    - totalVideos
-                                    - totalDurations
-                                    - totalLikes
-                                    - createdAt
-                                    - updatedAt
-          - $ref: "#/components/responses/CommonErrorResponses"
+#  /courses/categories:
+#    get:
+#      tags:
+#        - Categories
+#      summary: Returns all course categories.
+#      responses:
+#        allOf:
+#          - "200":
+#              description: OK.
+#              content:
+#                application/json:
+#                  schema:
+#                    allOf:
+#                      - type: object
+#                        properties:
+#                          data:
+#                            type: array
+#                            items:
+#                              allOf:
+#                                - $ref: "#/components/schemas/CategoryModel"
+#                                - required:
+#                                    - id
+#                                    - title
+#                                    - createdAt
+#                                    - updatedAt
+#          - $ref: "#/components/responses/CommonErrorResponses"
 
-  #
-
-  /courses/categories:
-    get:
-      tags:
-        - Categories
-      summary: Returns all course categories.
-      responses:
-        allOf:
-          - "200":
-              description: OK.
-              content:
-                application/json:
-                  schema:
-                    allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
-                      - type: object
-                        properties:
-                          data:
-                            type: array
-                            items:
-                              allOf:
-                                - $ref: "#/components/schemas/CategoryModel"
-                                - required:
-                                    - id
-                                    - title
-                                    - createdAt
-                                    - updatedAt
-          - $ref: "#/components/responses/CommonErrorResponses"
-
-  #
-
-  /courses/likes:
-    post:
-      tags:
-        - Like
-      summary: Create a like.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/LikeModel"
-                - required:
-                    - courseId
-      responses:
-        allOf:
-          - "201":
-              description: Resource created.
-              content:
-                application/json:
-                  schema:
-                    allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
-                      - type: object
-                        properties:
-                          data:
-                            allOf:
-                              - $ref: "#/components/schemas/LikeModel"
-                              - required:
-                                  - id
-                                  - userId
-                                  - courseId
-          - $ref: "#/components/responses/CommonErrorResponses"
-
-  #
-
-  /courses/likes/{likeId}:
-    delete:
-      tags:
-        - Like
-      summary: Delete a like
-      parameters:
-        - name: likeId
-          in: path
-          required: true
-          schema:
-            type: number
-      responses:
-        allOf:
-          - "200":
-              description: Resource deleted.
-              content:
-                application/json:
-                  schema:
-                    allOf:
-                      - $ref: "#/components/schemas/SuccessResponse"
-                      - type: object
-                        properties:
-                          data:
-                            allOf:
-                              - $ref: "#/components/schemas/LikeModel"
-                              - required:
-                                  - id
-                                  - userId
-                                  - courseId
-          - $ref: "#/components/responses/CommonErrorResponses"
+#  #
+#
+#  /courses/likes:
+#    post:
+#      tags:
+#        - Like
+#      summary: Create a like.
+#      requestBody:
+#        required: true
+#        content:
+#          application/json:
+#            schema:
+#              allOf:
+#                - $ref: "#/components/schemas/LikeModel"
+#                - required:
+#                    - courseId
+#      responses:
+#        allOf:
+#          - "201":
+#              description: Resource created.
+#              content:
+#                application/json:
+#                  schema:
+#                    allOf:
+#                      - type: object
+#                        properties:
+#                          data:
+#                            allOf:
+#                              - $ref: "#/components/schemas/LikeModel"
+#                              - required:
+#                                  - id
+#                                  - userId
+#                                  - courseId
+#          - $ref: "#/components/responses/CommonErrorResponses"
+#
+#  #
+#
+#  /courses/likes/{likeId}:
+#    delete:
+#      tags:
+#        - Like
+#      summary: Delete a like
+#      parameters:
+#        - name: likeId
+#          in: path
+#          required: true
+#          schema:
+#            type: number
+#      responses:
+#        allOf:
+#          - "200":
+#              description: Resource deleted.
+#              content:
+#                application/json:
+#                  schema:
+#                    allOf:
+#                      - type: object
+#                        properties:
+#                          data:
+#                            allOf:
+#                              - $ref: "#/components/schemas/LikeModel"
+#                              - required:
+#                                  - id
+#                                  - userId
+#                                  - courseId
+#          - $ref: "#/components/responses/CommonErrorResponses"

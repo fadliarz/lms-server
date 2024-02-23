@@ -5,6 +5,7 @@ import dIContainer from "../../../inversifyConfig";
 import { CourseDITypes } from "../course.type";
 import { courseUrls } from "../course.type";
 import { ICourseController } from "../controller/course.controller";
+import { NextFunction, Request, Response } from "express-serve-static-core";
 
 export default function CourseRouter(authenticationMiddleware: any) {
   const router = express.Router();

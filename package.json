@@ -5,13 +5,14 @@
   "main": "main.js",
   "scripts": {
     "start": "nodemon src/main.ts",
-    "build": "rimraf dist && tsc && cp swagger.yaml dist/src",
+    "build": "rimraf dist && tsc",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
     "postinstall": "prisma generate",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
     "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
-    "seed": "ts-node ./prisma/main.ts"
+    "seed": "ts-node ./prisma/main.ts",
+    "start-gendoc": "ts-node swagger.ts"
   },
   "keywords": [],
   "author": "",
@@ -74,12 +75,14 @@
     "reflect-metadata": "^0.1.13",
     "sequelize": "^6.32.1",
     "supertest": "^6.3.3",
+    "swagger-autogen": "^2.23.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-dist": "^5.11.7",
     "swagger-ui-express": "^5.0.0",
     "ts-jest": "^29.1.1",
     "ts-json-schema-generator": "^1.3.0",
     "ts-node": "^10.9.1",
+    "tsoa": "^6.0.1",
     "uuid": "^9.0.0",
     "yamljs": "^0.3.0"
   },

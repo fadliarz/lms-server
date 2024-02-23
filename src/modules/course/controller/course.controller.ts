@@ -4,6 +4,7 @@ import {
   CourseDITypes,
   CourseLikeResourceId,
   CourseResourceId,
+  courseUrls,
   GetCourseByIdQuery,
   GetCoursesQuery,
   GetEnrolledCoursesQuery,
@@ -23,6 +24,7 @@ import {
 } from "./course.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import processBoolean from "../../../common/functions/processBoolean";
+import { Get, Route } from "tsoa";
 
 export interface ICourseController {
   createCourse: (
@@ -67,6 +69,7 @@ export interface ICourseController {
   ) => Promise<Response | void>;
 }
 
+@Route(courseUrls.root)
 @injectable()
 export class CourseController implements ICourseController {
   @inject(CourseDITypes.SERVICE)
@@ -89,6 +92,7 @@ export class CourseController implements ICourseController {
     }
   }
 
+  @Get("{courseId}")
   public async getCourseById(
     req: Request,
     res: Response,

@@ -11,7 +11,6 @@ import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
 import { Request, Response } from "express";
 import path from "path";
-import swaggerJSDoc from "swagger-jsdoc";
 
 class App {
   public readonly express: Application;

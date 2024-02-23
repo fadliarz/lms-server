@@ -16,6 +16,8 @@ import { courseLessonVideoUrls } from "./modules/video/video.type";
 import CourseCategoryRouter from "./modules/category/router/category.router";
 import { courseCategoryUrls } from "./modules/category/category.type";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
+import { NextFunction, Request, Response } from "express-serve-static-core";
+import { Router } from "express";
 
 /**
  * Validate environment variables
