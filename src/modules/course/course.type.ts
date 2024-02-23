@@ -17,8 +17,8 @@ export enum courseUrls {
   root = "/courses",
   enrolled = "enrolled",
   course = "/:courseId",
-  likes = "/likes",
-  like = "/likes/:likeId",
+  likes = "/:courseId/likes",
+  like = "/:courseId/likes/:likeId",
   category = "/categories",
 }
 
