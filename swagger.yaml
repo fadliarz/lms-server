@@ -175,10 +175,7 @@ components:
           readOnly: true
         courseId:
           type: integer
-        course:
-          allOf:
-            - $ref: "#/components/schemas/CourseModel"
-    LikeModel:
+    CourseLikeModel:
       type: object
       properties:
         id:
@@ -186,15 +183,9 @@ components:
           readOnly: true
         courseId:
           type: integer
-        course:
-          allOf:
-            - $ref: "#/components/schemas/CourseModel"
         userId:
           type: integer
           readOnly: true
-        user:
-          allOf:
-            - $ref: "#/components/schemas/UserModel"
     CreateCourseDto:
       type: object
       properties:
@@ -224,6 +215,29 @@ components:
           type: string
         material:
           type: string
+    CreateCourseLikeDto:
+      type: object
+      properties:
+    GetEnrolledCoursesData:
+      type: array
+      items:
+        allOf:
+          - $ref: "#/components/schemas/CourseModel"
+          - type: object
+            properties:
+              category:
+                $ref: "#/components/schemas/CategoryModel"
+              author:
+                type: object
+                properties:
+                  id:
+                    $ref: "#/components/schemas/UserModel/properties/id"
+                  avatar:
+                    $ref: "#/components/schemas/UserModel/properties/avatar"
+                  name:
+                    $ref: "#/components/schemas/UserModel/properties/name"
+                  NIM:
+                    $ref: "#/components/schemas/UserModel/properties/NIM"
   securitySchemes:
     BasicAuth:
       type: http
@@ -269,6 +283,26 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/CourseModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/enrolled:
+    get:
+      tags:
+        - Course
+      summary: Get enrolled courses.
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/GetEnrolledCoursesData"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   /courses/{courseId}:
@@ -341,11 +375,65 @@ paths:
               content:
                 application/json:
                   schema:
-                    allOf:
-                      - type: object
-                        properties:
-                          data:
-                            $ref: "#/components/schemas/CourseModel"
+                    type: object
+                    properties:
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/{courseId}/likes:
+    post:
+      tags:
+        - CourseLike
+      summary: Create a course like.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseLikeDto"
+      responses:
+        allOf:
+          - "201":
+              description: Resource created.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLikeModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/{courseId}/likes/{likeId}:
+    delete:
+      tags:
+        - CourseLike
+      summary: Delete a course like.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: likeId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: Resource deleted.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
           - $ref: "#/components/responses/CommonErrorResponses"
 
 
@@ -377,69 +465,3 @@ paths:
 #                                    - updatedAt
 #          - $ref: "#/components/responses/CommonErrorResponses"
 
-#  #
-#
-#  /courses/likes:
-#    post:
-#      tags:
-#        - Like
-#      summary: Create a like.
-#      requestBody:
-#        required: true
-#        content:
-#          application/json:
-#            schema:
-#              allOf:
-#                - $ref: "#/components/schemas/LikeModel"
-#                - required:
-#                    - courseId
-#      responses:
-#        allOf:
-#          - "201":
-#              description: Resource created.
-#              content:
-#                application/json:
-#                  schema:
-#                    allOf:
-#                      - type: object
-#                        properties:
-#                          data:
-#                            allOf:
-#                              - $ref: "#/components/schemas/LikeModel"
-#                              - required:
-#                                  - id
-#                                  - userId
-#                                  - courseId
-#          - $ref: "#/components/responses/CommonErrorResponses"
-#
-#  #
-#
-#  /courses/likes/{likeId}:
-#    delete:
-#      tags:
-#        - Like
-#      summary: Delete a like
-#      parameters:
-#        - name: likeId
-#          in: path
-#          required: true
-#          schema:
-#            type: number
-#      responses:
-#        allOf:
-#          - "200":
-#              description: Resource deleted.
-#              content:
-#                application/json:
-#                  schema:
-#                    allOf:
-#                      - type: object
-#                        properties:
-#                          data:
-#                            allOf:
-#                              - $ref: "#/components/schemas/LikeModel"
-#                              - required:
-#                                  - id
-#                                  - userId
-#                                  - courseId
-#          - $ref: "#/components/responses/CommonErrorResponses"

@@ -66,6 +66,8 @@ describe("CourseController Test Suites", () => {
         inversifyConfig_1.default.bind(course_type_1.CourseDITypes.SERVICE).toConstantValue({
             createCourse: mockCreateCourse,
             getCourseById: mockGetCourseById,
+            getCourses: jest.fn(),
+            getEnrolledCourses: jest.fn(),
             updateBasicCourse: mockUpdateBasicCourse,
             deleteCourse: mockDeleteCourse,
             createLike: mockCreateLike,

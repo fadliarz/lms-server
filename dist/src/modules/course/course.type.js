@@ -11,6 +11,7 @@ exports.CourseDITypes = {
 var courseUrls;
 (function (courseUrls) {
     courseUrls["root"] = "/courses";
+    courseUrls["enrolled"] = "enrolled";
     courseUrls["course"] = "/:courseId";
     courseUrls["likes"] = "/likes";
     courseUrls["like"] = "/likes/:likeId";

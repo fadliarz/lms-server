@@ -37,19 +37,16 @@ let CourseService = class CourseService {
             return yield this.repository.getCourseByIdOrThrow(courseId, resourceId, query, new RecordNotFoundException_1.default());
         });
     }
-    // public async getCourses(
-    //   resourceId: CourseResourceId,
-    //   query: GetCoursesQuery,
-    // ): Promise<GetCourseByIdData[]> {
-    //   return await this.repository.getCourses(resourceId, query);
-    // }
-    //
-    // public async getEnrolledCourses(
-    //   resourceId: CourseResourceId,
-    //   query: GetEnrolledCoursesQuery,
-    // ): Promise<GetEnrolledCoursesData> {
-    //   return await this.repository.getEnrolledCourses(resourceId, query);
-    // }
+    getCourses(resourceId, query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.repository.getCourses(resourceId, query);
+        });
+    }
+    getEnrolledCourses(resourceId, query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.repository.getEnrolledCourses(resourceId, query);
+        });
+    }
     updateBasicCourse(courseId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.repository.updateBasicCourse(courseId, resourceId, dto);

@@ -32,14 +32,14 @@ export interface ICourseService {
     resourceId: CourseResourceId,
     query: GetCourseByIdQuery,
   ) => Promise<GetCourseByIdData>;
-  // getCourses: (
-  //   resourceId: CourseResourceId,
-  //   query: GetCoursesQuery,
-  // ) => Promise<GetCourseByIdData[]>;
-  // getEnrolledCourses: (
-  //   resourceId: CourseResourceId,
-  //   query: GetEnrolledCoursesQuery,
-  // ) => Promise<GetEnrolledCoursesData>;
+  getCourses: (
+    resourceId: CourseResourceId,
+    query: GetCoursesQuery,
+  ) => Promise<GetCourseByIdData[]>;
+  getEnrolledCourses: (
+    resourceId: CourseResourceId,
+    query: GetEnrolledCoursesQuery,
+  ) => Promise<GetEnrolledCoursesData>;
   updateBasicCourse: (
     courseId: number,
     resourceId: CourseResourceId,
@@ -82,19 +82,19 @@ export class CourseService implements ICourseService {
     );
   }
 
-  // public async getCourses(
-  //   resourceId: CourseResourceId,
-  //   query: GetCoursesQuery,
-  // ): Promise<GetCourseByIdData[]> {
-  //   return await this.repository.getCourses(resourceId, query);
-  // }
-  //
-  // public async getEnrolledCourses(
-  //   resourceId: CourseResourceId,
-  //   query: GetEnrolledCoursesQuery,
-  // ): Promise<GetEnrolledCoursesData> {
-  //   return await this.repository.getEnrolledCourses(resourceId, query);
-  // }
+  public async getCourses(
+    resourceId: CourseResourceId,
+    query: GetCoursesQuery,
+  ): Promise<GetCourseByIdData[]> {
+    return await this.repository.getCourses(resourceId, query);
+  }
+
+  public async getEnrolledCourses(
+    resourceId: CourseResourceId,
+    query: GetEnrolledCoursesQuery,
+  ): Promise<GetEnrolledCoursesData> {
+    return await this.repository.getEnrolledCourses(resourceId, query);
+  }
 
   public async updateBasicCourse(
     courseId: number,

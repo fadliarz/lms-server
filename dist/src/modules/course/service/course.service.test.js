@@ -36,6 +36,8 @@ describe("CourseService Test Suites", () => {
             .toConstantValue({
             createCourse: mockCreateCourse,
             getCourseById: mockGetCourseById,
+            getCourses: jest.fn(),
+            getEnrolledCourses: jest.fn(),
             getCourseByIdOrThrow: mockGetCourseByIdOrThrow,
             updateCourse: mockUpdateCourse,
             updateBasicCourse: mockUpdateBasicCourse,

@@ -31,7 +31,6 @@ const validateJoi_1 = __importDefault(require("../../../common/functions/validat
 const course_joi_1 = require("./course.joi");
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const processBoolean_1 = __importDefault(require("../../../common/functions/processBoolean"));
-const tsoa_1 = require("tsoa");
 let CourseController = class CourseController {
     createCourse(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -63,51 +62,44 @@ let CourseController = class CourseController {
             }
         });
     }
-    // public async getCourses(
-    //   req: Request,
-    //   res: Response,
-    //   next: NextFunction,
-    // ): Promise<Response | void> {
-    //   try {
-    //     await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
-    //
-    //     const resourceId = {} as CourseResourceId;
-    //     const query = req.query as any as GetCoursesQuery;
-    //     query.pageNumber = Number(query.pageNumber);
-    //     query.pageSize = Number(query.pageSize);
-    //     const courses = await this.service.getCourses(resourceId, query);
-    //
-    //     return res.status(StatusCode.SUCCESS).json({ data: courses });
-    //   } catch (error) {
-    //     next(error);
-    //   }
-    // }
-    //
-    // public async getEnrolledCourses(
-    //   req: Request,
-    //   res: Response,
-    //   next: NextFunction,
-    // ): Promise<Response | void> {
-    //   try {
-    //     await validateJoi({ query: GetEnrolledCoursesQueryJoi })(req, res, next);
-    //     const query = req.query as unknown as GetEnrolledCoursesQuery;
-    //     if (query.limit_student_courses) {
-    //       query.limit_student_courses = Number(query.limit_student_courses);
-    //     }
-    //     if (query.limit_instructor_courses) {
-    //       query.limit_instructor_courses = Number(query.limit_instructor_courses);
-    //     }
-    //     query.include_author = processBoolean(query.include_author as any);
-    //     query.include_category = processBoolean(query.include_category as any);
-    //
-    //     const resourceId = this.validateResourceId(req);
-    //     const courses = await this.service.getEnrolledCourses(resourceId, query);
-    //
-    //     return res.status(StatusCode.SUCCESS).json({ data: courses });
-    //   } catch (error) {
-    //     next(error);
-    //   }
-    // }
+    getCourses(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ query: course_joi_1.GetCoursesQueryJoi })(req, res, next);
+                const resourceId = {};
+                const query = req.query;
+                query.pageNumber = Number(query.pageNumber);
+                query.pageSize = Number(query.pageSize);
+                const courses = yield this.service.getCourses(resourceId, query);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: courses });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getEnrolledCourses(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ query: course_joi_1.GetEnrolledCoursesQueryJoi })(req, res, next);
+                const query = req.query;
+                if (query.limit_student_courses) {
+                    query.limit_student_courses = Number(query.limit_student_courses);
+                }
+                if (query.limit_instructor_courses) {
+                    query.limit_instructor_courses = Number(query.limit_instructor_courses);
+                }
+                query.include_author = (0, processBoolean_1.default)(query.include_author);
+                query.include_category = (0, processBoolean_1.default)(query.include_category);
+                const resourceId = this.validateResourceId(req);
+                const courses = yield this.service.getEnrolledCourses(resourceId, query);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: courses });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     updateBasicCourse(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -198,13 +190,6 @@ __decorate([
     (0, inversify_1.inject)(course_type_1.CourseDITypes.SERVICE),
     __metadata("design:type", Object)
 ], CourseController.prototype, "service", void 0);
-__decorate([
-    (0, tsoa_1.Get)("{courseId}"),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Function]),
-    __metadata("design:returntype", Promise)
-], CourseController.prototype, "getCourseById", null);
 exports.CourseController = CourseController = __decorate([
-    (0, tsoa_1.Route)(course_type_1.courseUrls.root),
     (0, inversify_1.injectable)()
 ], CourseController);

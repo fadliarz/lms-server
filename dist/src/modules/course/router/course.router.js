@@ -12,24 +12,25 @@ function CourseRouter(authenticationMiddleware) {
     const router = express_1.default.Router();
     const controller = inversifyConfig_1.default.get(course_type_1.CourseDITypes.CONTROLLER);
     /**
-     * Create (Course)
+     * CreateCourse
      *
      */
     router.post("/", authenticationMiddleware, controller.createCourse.bind(controller));
     /**
-     * GetCourseById (Course)
+     * GetCourseById
      *
      */
-    router.get(course_type_2.courseUrls.course, authenticationMiddleware, controller.getCourseById.bind(controller));
-    // router.get(
-    //   "/",
-    //   authenticationMiddleware,
-    //   validationMiddleware({
-    //     query: GetCoursesQueryJoi,
-    //   }),
-    //   authorizationMiddleware.(),
-    //   controller.getCourses.bind(controller)
-    // );
+    router.get(course_type_2.courseUrls.course, controller.getCourseById.bind(controller));
+    /**
+     * GetCourses
+     *
+     */
+    router.get("/", controller.getCourses.bind(controller));
+    /**
+     * GetEnrolledCourses
+     *
+     */
+    router.get(course_type_2.courseUrls.enrolled, authenticationMiddleware, controller.getEnrolledCourses.bind(controller));
     /**
      * Update (Course)
      *
@@ -40,25 +41,16 @@ function CourseRouter(authenticationMiddleware) {
      *
      */
     router.delete(course_type_2.courseUrls.course, authenticationMiddleware, controller.deleteCourse.bind(controller));
-    // /**
-    //  * Create (CourseLike)
-    //  *
-    //  */
-    // router.post(
-    //   courseUrls.likes,
-    //   authenticationMiddleware,
-    //   controller.createLike.bind(controller),
-    // );
-    //
-    // /**
-    //  * Delete (CourseLike)
-    //  *
-    //  */
-    // router.delete(
-    //   courseUrls.like,
-    //   authenticationMiddleware,
-    //   controller.deleteLike.bind(controller),
-    // );
+    /**
+     * Create (CourseLike)
+     *
+     */
+    router.post(course_type_2.courseUrls.likes, authenticationMiddleware, controller.createLike.bind(controller));
+    /**
+     * Delete (CourseLike)
+     *
+     */
+    router.delete(course_type_2.courseUrls.like, authenticationMiddleware, controller.deleteLike.bind(controller));
     return router;
 }
 exports.default = CourseRouter;

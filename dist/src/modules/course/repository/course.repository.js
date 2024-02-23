@@ -78,85 +78,73 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
             return course;
         });
     }
-    // public async getCourses(
-    //   resourceId: CourseResourceId,
-    //   query: GetCoursesQuery,
-    // ): Promise<GetCourseByIdData[]> {
-    //   return await this.prisma.$transaction(async (tx) => {
-    //     const { include_author, include_category, pageNumber, pageSize } = query;
-    //     return await tx.course.findMany({
-    //       skip: (pageNumber - 1) * pageSize,
-    //       take: pageSize,
-    //       include: {
-    //         author: include_author
-    //           ? {
-    //               select: {
-    //                 id: true,
-    //                 avatar: true,
-    //                 name: true,
-    //                 NIM: true,
-    //               },
-    //             }
-    //           : include_author,
-    //         category: include_category,
-    //       },
-    //     });
-    //   }, PrismaDefaultTransactionConfigForRead);
-    // }
-    //
-    // public async getEnrolledCourses(
-    //   resourceId: CourseResourceId,
-    //   query: GetEnrolledCoursesQuery,
-    // ): Promise<GetEnrolledCoursesData> {
-    //   return await this.prisma.$transaction(async (tx) => {
-    //     const { userId } = resourceId;
-    //     const {
-    //       include_author,
-    //       include_category,
-    //       limit_student_courses,
-    //       limit_instructor_courses,
-    //       role,
-    //     } = query;
-    //     const roleSet = new Set(role);
-    //     const enrollments = await tx.courseEnrollment.findMany({
-    //       where: {
-    //         userId,
-    //         role:
-    //           (roleSet.has(CourseEnrollmentRoleModel.STUDENT)
-    //             ? CourseEnrollmentRoleModel.STUDENT
-    //             : undefined) ||
-    //           (roleSet.has(CourseEnrollmentRoleModel.INSTRUCTOR)
-    //             ? CourseEnrollmentRoleModel.INSTRUCTOR
-    //             : undefined),
-    //       },
-    //       select: {
-    //         course: {
-    //           include: {
-    //             author: include_author
-    //               ? {
-    //                   select: {
-    //                     id: true,
-    //                     avatar: true,
-    //                     name: true,
-    //                     NIM: true,
-    //                   },
-    //                 }
-    //               : include_author,
-    //             category: include_category,
-    //           },
-    //         },
-    //         role: true,
-    //       },
-    //     });
-    //
-    //     const courses: GetEnrolledCoursesData = [];
-    //     enrollments.forEach((enrollment) => {
-    //       courses.push({ ...enrollment.course, role: enrollment.role });
-    //     });
-    //
-    //     return courses;
-    //   }, PrismaDefaultTransactionConfigForRead);
-    // }
+    getCourses(resourceId, query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const { include_author, include_category, pageNumber, pageSize } = query;
+                return yield tx.course.findMany({
+                    skip: (pageNumber - 1) * pageSize,
+                    take: pageSize,
+                    include: {
+                        author: include_author
+                            ? {
+                                select: {
+                                    id: true,
+                                    avatar: true,
+                                    name: true,
+                                    NIM: true,
+                                },
+                            }
+                            : include_author,
+                        category: include_category,
+                    },
+                });
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+        });
+    }
+    getEnrolledCourses(resourceId, query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const { userId } = resourceId;
+                const { include_author, include_category, limit_student_courses, limit_instructor_courses, role, } = query;
+                const roleSet = new Set(role);
+                const enrollments = yield tx.courseEnrollment.findMany({
+                    where: {
+                        userId,
+                        role: (roleSet.has(course_type_1.CourseEnrollmentRoleModel.STUDENT)
+                            ? course_type_1.CourseEnrollmentRoleModel.STUDENT
+                            : undefined) ||
+                            (roleSet.has(course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR)
+                                ? course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR
+                                : undefined),
+                    },
+                    select: {
+                        course: {
+                            include: {
+                                author: include_author
+                                    ? {
+                                        select: {
+                                            id: true,
+                                            avatar: true,
+                                            name: true,
+                                            NIM: true,
+                                        },
+                                    }
+                                    : include_author,
+                                category: include_category,
+                            },
+                        },
+                        role: true,
+                    },
+                });
+                const courses = [];
+                enrollments.forEach((enrollment) => {
+                    courses.push(Object.assign(Object.assign({}, enrollment.course), { role: enrollment.role }));
+                });
+                return courses;
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+        });
+    }
     updateCourse(courseId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {

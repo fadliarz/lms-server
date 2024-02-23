@@ -36,6 +36,8 @@ describe("CourseController Test Suites", () => {
     dIContainer.bind<ICourseService>(CourseDITypes.SERVICE).toConstantValue({
       createCourse: mockCreateCourse,
       getCourseById: mockGetCourseById,
+      getCourses: jest.fn(),
+      getEnrolledCourses: jest.fn(),
       updateBasicCourse: mockUpdateBasicCourse,
       deleteCourse: mockDeleteCourse,
       createLike: mockCreateLike,
