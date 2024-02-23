@@ -15,7 +15,7 @@ export const CourseDITypes = {
 
 export enum courseUrls {
   root = "/courses",
-  enrolled = "enrolled",
+  enrolled = "/enrolled",
   course = "/:courseId",
   likes = "/:courseId/likes",
   like = "/:courseId/likes/:likeId",
