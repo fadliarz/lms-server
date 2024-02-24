@@ -58,6 +58,7 @@ let CourseController = class CourseController {
                 res.status(statusCode_1.StatusCode.SUCCESS).json({ data: course });
             }
             catch (error) {
+                console.log(error);
                 next(error);
             }
         });

@@ -2,22 +2,18 @@
 
 ## This project is under development
 
-## Architecure | 4-layer Architecture
+
+## Architecure | 3-layer Architecture
 
 ![Alt text](uploads/4-layer-architecture.png)
 
 ## Entitiy Relationship Diagram (ERD)
-
-![Alt text](uploads/ERD.png)
+![img.png](uploads/ERD.png)
 
 ## API Documentation
 
-Link: _currently unavailable_
-![Alt text](uploads/documentation.png)
-
-## Unit Test (92.1% Line Coverage)
-
-![Alt text](uploads/coverage.png)
+Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
+![img.png](uploads/documentation.png)
 
 ## Authorization List
 

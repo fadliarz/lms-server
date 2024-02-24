@@ -111,6 +111,8 @@ export class CourseController implements ICourseController {
 
       res.status(StatusCode.SUCCESS).json({ data: course });
     } catch (error) {
+
+    console.log(error)
       next(error);
     }
   }
