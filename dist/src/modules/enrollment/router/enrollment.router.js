@@ -10,8 +10,20 @@ const enrollment_type_1 = require("../enrollment.type");
 function CourseEnrollmentRouter(authenticationMiddleware) {
     const router = express_1.default.Router();
     const controller = inversifyConfig_1.default.get(enrollment_type_1.CourseEnrollmentDITypes.CONTROLLER);
+    /**
+     * Create
+     *
+     */
     router.post("/", authenticationMiddleware, controller.createEnrollment.bind(controller));
+    /**
+     * Update
+     *
+     */
     router.patch(enrollment_type_1.courseEnrollmentUrls.role, authenticationMiddleware, controller.updateEnrollmentRole.bind(controller));
+    /**
+     * Delete
+     *
+     */
     router.delete(enrollment_type_1.courseEnrollmentUrls.enrollment, authenticationMiddleware, controller.deleteEnrollment.bind(controller));
     return router;
 }

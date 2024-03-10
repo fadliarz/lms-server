@@ -12,8 +12,8 @@ export const CourseLessonDITypes = {
 };
 
 export enum courseLessonUrls {
-  root = "/lessons",
-  lesson = "/:lessonId",
+  root = "/courses/:courseId/lessons",
+  lesson = "/courses/:courseId/lessons/:lessonId",
 }
 
 /**

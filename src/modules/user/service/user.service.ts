@@ -19,8 +19,7 @@ import AuthenticationException from "../../../common/class/exceptions/Authentica
 
 export interface IUserService {
   createUser: (dto: CreateUserDto) => Promise<UserModel>;
-  getUserById: (userId: number) => Promise<UserModel | null>;
-  getUserByEmail: (email: string) => Promise<UserModel | null>;
+  getPublicUserById: (userId: number) => Promise<UserModel | null>;
   getMe: (userId: number) => Promise<Me>;
   updateUser: (
     userId: number,
@@ -76,20 +75,8 @@ export class UserService implements IUserService {
     return newUser;
   }
 
-  public async getUserById(userId: number): Promise<UserModel | null> {
+  public async getPublicUserById(userId: number): Promise<UserModel | null> {
     const user = await this.repository.getUserById(userId);
-
-    if (!user) {
-      return user;
-    }
-
-    user.password = "";
-
-    return user;
-  }
-
-  public async getUserByEmail(email: string): Promise<UserModel | null> {
-    const user = await this.repository.getUserByEmail(email);
 
     if (!user) {
       return user;

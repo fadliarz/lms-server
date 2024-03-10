@@ -9,6 +9,6 @@ exports.CourseLessonDITypes = {
 };
 var courseLessonUrls;
 (function (courseLessonUrls) {
-    courseLessonUrls["root"] = "/lessons";
-    courseLessonUrls["lesson"] = "/:lessonId";
+    courseLessonUrls["root"] = "/courses/:courseId/lessons";
+    courseLessonUrls["lesson"] = "/courses/:courseId/lessons/:lessonId";
 })(courseLessonUrls || (exports.courseLessonUrls = courseLessonUrls = {}));

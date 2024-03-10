@@ -10,5 +10,6 @@ exports.CourseLessonVideoDITypes = {
 var courseLessonVideoUrls;
 (function (courseLessonVideoUrls) {
     courseLessonVideoUrls["root"] = "/courses/:courseId/lessons/:lessonId/videos";
-    courseLessonVideoUrls["video"] = "/courses/:courseId/lessons/:lessonId/videos/:videoId";
+    courseLessonVideoUrls["video"] = "/:videoId";
+    courseLessonVideoUrls["source"] = "/:videoId/source";
 })(courseLessonVideoUrls || (exports.courseLessonVideoUrls = courseLessonVideoUrls = {}));

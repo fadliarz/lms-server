@@ -1,6 +1,5 @@
-import { CourseEnrollment, Prisma } from "@prisma/client";
+import { CourseEnrollment } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
-import { CourseEnrollmentRoleModel } from "../course/course.type";
 
 export const CourseEnrollmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
@@ -10,7 +9,7 @@ export const CourseEnrollmentDITypes = {
 };
 
 export enum courseEnrollmentUrls {
-  root = "/enrollments",
+  root = "/courses/:courseId/enrollments",
   enrollment = "/:enrollmentId",
   role = courseEnrollmentUrls.enrollment + "/role",
 }

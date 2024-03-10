@@ -20,24 +20,17 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
   router.post(
     "/",
     authenticationMiddleware,
-    validationMiddleware({
-      body: CreateCourseLessonDtoJoi,
-    }),
     controller.createLesson.bind(controller),
   );
 
   router.get(
     courseLessonUrls.lesson,
-    authenticationMiddleware,
     controller.getLessonById.bind(controller),
   );
 
   router.put(
     courseLessonUrls.lesson,
     authenticationMiddleware,
-    validationMiddleware({
-      body: UpdateCourseLessonDtoJoi,
-    }),
     controller.updateLesson.bind(controller),
   );
 

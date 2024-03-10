@@ -16,7 +16,8 @@ export const CourseLessonVideoDITypes = {
 
 export enum courseLessonVideoUrls {
   root = "/courses/:courseId/lessons/:lessonId/videos",
-  video = courseLessonVideoUrls.root + "/:videoId",
+  video = "/:videoId",
+  source = courseLessonVideoUrls.video + "/source",
 }
 
 /**

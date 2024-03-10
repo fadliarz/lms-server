@@ -39,19 +39,27 @@ export type PublicUserModel = Omit<
 
 /**
  * User
+ *
  */
-export type CreateUserDtoRequiredField = "email" | "password" | "name" | "NIM";
-export type CreateUserDtoOptionalField = "phoneNumber" | "avatar" | "about";
-export type CreateUserDto = ModifyFieldWithNullToBeOptionalAndRemoveNull<
-  Pick<User, CreateUserDtoRequiredField | CreateUserDtoOptionalField>
+export type CreateUserDto = {
+  email: string;
+  password: string;
+  name: string;
+  NIM: string;
+  phoneNumber?: string;
+  avatar?: string;
+  about?: string;
+};
+export type UpdateBasicUserDto = Partial<
+  Omit<CreateUserDto, "email" | "password" | "phoneNumber">
 >;
-export type UpdateUserDto = Partial<CreateUserDto>;
 export type SignInDto = Pick<CreateUserDto, "email" | "password">;
 
 /**
  * Profile
+ *
  */
-export type BaseUserProfile = {
+export type BasicUserModel = {
   name: string;
   NIM: string;
 };

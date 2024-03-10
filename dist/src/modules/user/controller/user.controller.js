@@ -32,13 +32,12 @@ const validateJoi_1 = __importDefault(require("../../../common/functions/validat
 const user_joi_1 = require("./user.joi");
 const Cookie_1 = require("../../../common/constants/Cookie");
 const AuthenticationException_1 = __importDefault(require("../../../common/class/exceptions/AuthenticationException"));
-const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 let UserController = class UserController {
     createUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                // await validateJoi({ body: "" })(req, res, next);
+                yield (0, validateJoi_1.default)({ body: user_joi_1.CreateUserDtoJoi })(req, res, next);
                 const newUser = yield this.service.createUser(req.body);
                 return res
                     .cookie(Cookie_1.Cookie.ACCESS_TOKEN, newUser.accessToken, {
@@ -60,25 +59,11 @@ let UserController = class UserController {
             }
         });
     }
-    getUserById(req, res, next) {
+    getPublicUserById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const user = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
-                const userData = yield this.service.getUserById(user.id);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: userData });
-            }
-            catch (error) {
-                next(error);
-            }
-        });
-    }
-    getUserByEmail(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const userData = yield this.service.getUserByEmail(req.params.email);
-                if (!userData) {
-                    throw new RecordNotFoundException_1.default();
-                }
+                const userData = yield this.service.getPublicUserById(user.id);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: userData });
             }
             catch (error) {
@@ -98,7 +83,7 @@ let UserController = class UserController {
             }
         });
     }
-    updateUser(req, res, next) {
+    updateBasicUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = this.validateUserId(req);

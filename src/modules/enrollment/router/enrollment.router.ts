@@ -14,18 +14,30 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
     CourseEnrollmentDITypes.CONTROLLER,
   );
 
+  /**
+   * Create
+   *
+   */
   router.post(
     "/",
     authenticationMiddleware,
     controller.createEnrollment.bind(controller),
   );
 
+  /**
+   * Update
+   *
+   */
   router.patch(
     courseEnrollmentUrls.role,
     authenticationMiddleware,
     controller.updateEnrollmentRole.bind(controller),
   );
 
+  /**
+   * Delete
+   *
+   */
   router.delete(
     courseEnrollmentUrls.enrollment,
     authenticationMiddleware,

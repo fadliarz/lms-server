@@ -7,7 +7,7 @@ import getRequestUserOrThrowAuthenticationException from "../../../common/functi
 import filterPublicData from "../../../common/functions/filterPublicData";
 import getValuable from "../../../common/functions/getValuable";
 import validateJoi from "../../../common/functions/validateJoi";
-import { SignIn } from "./user.joi";
+import { CreateUserDtoJoi, SignIn } from "./user.joi";
 import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
@@ -19,12 +19,7 @@ export interface IUserController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  getUserById: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getUserByEmail: (
+  getPublicUserById: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -34,7 +29,7 @@ export interface IUserController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  updateUser: (
+  updateBasicUser: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -66,7 +61,7 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      // await validateJoi({ body: "" })(req, res, next);
+      await validateJoi({ body: CreateUserDtoJoi })(req, res, next);
 
       const newUser = await this.service.createUser(req.body);
 
@@ -89,32 +84,14 @@ export class UserController implements IUserController {
     }
   }
 
-  public async getUserById(
+  public async getPublicUserById(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
-      const userData = await this.service.getUserById(user.id);
-
-      return res.status(StatusCode.SUCCESS).json({ data: userData });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getUserByEmail(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      const userData = await this.service.getUserByEmail(req.params.email);
-
-      if (!userData) {
-        throw new RecordNotFoundException();
-      }
+      const userData = await this.service.getPublicUserById(user.id);
 
       return res.status(StatusCode.SUCCESS).json({ data: userData });
     } catch (error) {
@@ -137,7 +114,7 @@ export class UserController implements IUserController {
     }
   }
 
-  public async updateUser(
+  public async updateBasicUser(
     req: Request,
     res: Response,
     next: NextFunction,

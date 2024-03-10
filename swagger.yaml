@@ -175,6 +175,30 @@ components:
           readOnly: true
         courseId:
           type: integer
+    CourseLessonVideoModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        totalDurations:
+          type: number
+          format: float
+        youtubeLink:
+          type: string
+        createdAt:
+          type: string
+          format: date
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date
+          readOnly: true
+        lessonId:
+          type: integer
     CourseLikeModel:
       type: object
       properties:
@@ -186,6 +210,10 @@ components:
         userId:
           type: integer
           readOnly: true
+
+    #
+    # > Course Type <
+    #
     CreateCourseDto:
       type: object
       properties:
@@ -238,11 +266,91 @@ components:
                     $ref: "#/components/schemas/UserModel/properties/name"
                   NIM:
                     $ref: "#/components/schemas/UserModel/properties/NIM"
+
+    #
+    # > CourseEnrollment Type <
+    #
+    CreateCourseEnrollmentDto:
+      type: object
+      properties:
+        userId:
+          type: integer
+        role:
+          $ref: "#/components/schemas/CourseEnrollmentRoleModel"
+      required:
+        - userId
+        - role
+    UpdateCourseEnrollmentRoleDto:
+      type: object
+      properties:
+        role:
+          $ref: "#/components/schemas/CourseEnrollmentRoleModel"
+      required:
+        - role
+
+    #
+    # > CourseLesson Type <
+    #
+    CreateCourseLessonDto:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: integer
+      required:
+        - title
+    UpdateCourseLessonDto:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: integer
+
+    #
+    # > CourseLessonVideo Type <
+    #
+    CreateCourseLessonVideoDto:
+      type: object
+      properties:
+        name:
+          type: string
+        youtubeLink:
+          type: string
+        totalDurations:
+          type: number
+          format: float
+        description:
+          type: string
+      required:
+        - name
+        - youtubeLink
+        - totalDurations
+    UpdateCourseLessonVideoSourceDto:
+      type: object
+      properties:
+        name:
+          type: string
+        youtubeLink:
+          type: string
+        totalDurations:
+          type: number
+          format: float
+        description:
+          type: string
+      required:
+        - youtubeLink
+        - totalDurations
+
   securitySchemes:
     BasicAuth:
       type: http
       scheme: basic
 paths:
+  #
+  # > Course APIs <
+  #
   /courses:
     post:
       tags:
@@ -309,7 +417,7 @@ paths:
     get:
       tags:
         - Course
-      summary: Get a course.
+      summary: Get a course by courseId.
       parameters:
         - name: courseId
           in: path
@@ -436,32 +544,388 @@ paths:
                     properties:
           - $ref: "#/components/responses/CommonErrorResponses"
 
+  #
+  # > CourseEnrollment APIs <
+  #
+  /courses/{courseId}/enrollments:
+    post:
+      tags:
+        - CourseEnrollment
+      summary: Create an enrollment.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseEnrollmentDto"
+      responses:
+        allOf:
+          - "201":
+              description: Resource created.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseEnrollmentModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
 
+  /courses/{courseId}/enrollments/{enrollmentId}/role:
+    patch:
+      tags:
+        - CourseEnrollment
+      summary: Update an enrollment role.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: enrollmentId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCourseEnrollmentRoleDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseEnrollmentModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
 
-#  /courses/categories:
-#    get:
-#      tags:
-#        - Categories
-#      summary: Returns all course categories.
-#      responses:
-#        allOf:
-#          - "200":
-#              description: OK.
-#              content:
-#                application/json:
-#                  schema:
-#                    allOf:
-#                      - type: object
-#                        properties:
-#                          data:
-#                            type: array
-#                            items:
-#                              allOf:
-#                                - $ref: "#/components/schemas/CategoryModel"
-#                                - required:
-#                                    - id
-#                                    - title
-#                                    - createdAt
-#                                    - updatedAt
-#          - $ref: "#/components/responses/CommonErrorResponses"
+  /courses/{courseId}/enrollments/{enrollmentId}:
+    delete:
+      tags:
+        - CourseEnrollment
+      summary: Delete an enrollment.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: enrollmentId
+          in: path
+          required: true
+          schema:
+          type: number
+      responses:
+        allOf:
+          - "200":
+              description: Resource deleted.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  #
+  # > CourseLesson APIs <
+  #
+  /courses/{courseId}/lessons:
+    post:
+      tags:
+        - CourseLesson
+      summary: Create a lesson.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseLessonDto"
+      responses:
+        allOf:
+          - "201":
+              description: Resource created.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+    get:
+      tags:
+        - CourseLesson
+      summary: Get lessons.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CourseLessonModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/{courseId}/lessons/{lessonId}:
+    get:
+      tags:
+        - CourseLesson
+      summary: Get a lesson by lessonId.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+    put:
+      tags:
+        - CourseLesson
+      summary: Update a lesson.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCourseLessonDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+    delete:
+      tags:
+        - CourseLesson
+      summary: Delete a lesson.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: Resource deleted.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  #
+  # > CourseLessonVideo APIs <
+  #
+  /courses/{courseId}/lessons/{lessonId}/videos:
+    post:
+      tags:
+        - CourseLessonVideo
+      summary: Create a video.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseLessonVideoDto"
+      responses:
+        allOf:
+          - "201":
+              description: Resource created.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonVideoModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/{courseId}/lessons/{lessonId}/videos/{videoId}:
+    get:
+      tags:
+        - CourseLessonVideo
+      summary: Get a video by videoId.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonVideoModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+    delete:
+      tags:
+        - CourseLessonVideo
+      summary: Delete a video.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: Resource deleted.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/{courseId}/lessons/{lessonId}/videos/{videoId}/source:
+    patch:
+      tags:
+        - CourseLessonVideo
+      summary: Update a video source.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCourseLessonVideoSourceDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonVideoModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
 

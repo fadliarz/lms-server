@@ -54,19 +54,9 @@ let UserService = class UserService {
             return newUser;
         });
     }
-    getUserById(userId) {
+    getPublicUserById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this.repository.getUserById(userId);
-            if (!user) {
-                return user;
-            }
-            user.password = "";
-            return user;
-        });
-    }
-    getUserByEmail(email) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.repository.getUserByEmail(email);
             if (!user) {
                 return user;
             }
