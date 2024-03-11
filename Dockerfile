@@ -8,8 +8,6 @@ USER node
 FROM base As builder
 COPY --chown=node:node /package*.json ./
 RUN npm install
-COPY --chown=node:node . ./
-RUN npx prisma generate
 
 FROM base As production
 ENV NODE_ENV=production
@@ -25,4 +23,4 @@ WORKDIR /home/node/app
 COPY --chown=node:node --from=builder /home/node/app .
 
 EXPOSE 3333
-CMD ["npm", "run", "dev"]
+CMD ["./dev.sh"]

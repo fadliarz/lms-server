@@ -80,7 +80,9 @@ let UserRepository = class UserRepository {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.userTable.findFirst({
                 where: {
-                    refreshToken: { has: refreshToken },
+                    refreshToken: {
+                        hasSome: refreshToken,
+                    },
                 },
             });
         });

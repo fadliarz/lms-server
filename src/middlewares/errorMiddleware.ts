@@ -11,8 +11,10 @@ function errorMiddleware(
   error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
+  console.log("error: ", error);
+
   let statusCode: number;
   let errorCode: string;
   let message: string;

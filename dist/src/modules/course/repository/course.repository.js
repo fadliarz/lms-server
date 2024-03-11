@@ -37,7 +37,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     createCourse(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                this.authorizeUserRole(tx, resourceId, this.authorization.authorizeCreateCourse.bind(this.authorization));
+                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeCreateCourse.bind(this.authorization));
                 const { userId } = resourceId;
                 const newCourse = yield tx.course.create({
                     data: Object.assign(Object.assign({}, dto), { authorId: userId }),

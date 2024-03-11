@@ -212,6 +212,42 @@ components:
           readOnly: true
 
     #
+    # > UserType <
+    #
+    CreateUserDto:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        name:
+          type: string
+        NIM:
+          type: string
+        phoneNumber:
+          type: string
+        avatar:
+          type: string
+        about:
+          type: string
+      required:
+        - email
+        - password
+        - name
+        - NIM
+    SignInDto:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    #
     # > Course Type <
     #
     CreateCourseDto:
@@ -349,6 +385,79 @@ components:
       scheme: basic
 paths:
   #
+  # > User APIs <
+  #
+  /users:
+    post:
+      tags:
+        - User
+      summary: Create a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserDto"
+      responses:
+        allOf:
+          - "201":
+              description: Resource created.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+  /users/signin:
+    post:
+      tags:
+        - User
+      summary: SignIn a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInDto"
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        type: object
+          - $ref: "#/components/responses/CommonErrorResponses"
+  /users/signout:
+    post:
+      tags:
+        - User
+      summary: SignOut a user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        type: object
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  #
   # > Course APIs <
   #
   /courses:
@@ -407,7 +516,7 @@ paths:
                   schema:
                     type: object
                     properties:
-                      data:
+                      dafta:
                         type: array
                         items:
                           $ref: "#/components/schemas/GetEnrolledCoursesData"

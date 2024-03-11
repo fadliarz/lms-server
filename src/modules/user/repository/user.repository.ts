@@ -80,7 +80,9 @@ export class UserRepository implements IUserRepository {
   ): Promise<User | null> {
     return await this.userTable.findFirst({
       where: {
-        refreshToken: { has: refreshToken },
+        refreshToken: {
+          hasSome: refreshToken,
+        },
       },
     });
   }

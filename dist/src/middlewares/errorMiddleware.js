@@ -11,6 +11,7 @@ const errorCode_1 = require("../common/constants/errorCode");
 const errorMessage_1 = require("../common/constants/errorMessage");
 const prismaError_1 = __importDefault(require("../common/constants/prismaError"));
 function errorMiddleware(error, req, res, next) {
+    console.log("error: ", error);
     let statusCode;
     let errorCode;
     let message;

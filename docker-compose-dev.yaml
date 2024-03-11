@@ -3,9 +3,10 @@ services:
   nodeapp:
     container_name: lms-nodeapp
     hostname: nodeapp
-    # restart: always
+    restart: always
     build:
       context: .
+      dockerfile: Dockerfile
       target: development
     volumes:
       - ./:/home/node/app
@@ -13,7 +14,8 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://fadliarz:rootpassword@postgresql:5432/lms?connection_limit=9
+      POSTGRES_URL: postgresql://fadliarz:rootpassword@postgresql:5432/lms?connection_limit=9
+      POSTGRES_URL_NON_POOLING: postgresql://fadliarz:rootpassword@postgresql:5432/lms
       PORT: 8000
     ports:
       - 8000:8000
@@ -25,7 +27,7 @@ services:
     container_name: lms-postgresql
     hostname: postgresql
     image: postgres:16.1-alpine
-    # restart: always
+    restart: always
     environment:
       POSTGRES_DB: lms
       POSTGRES_USER: fadliarz

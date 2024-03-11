@@ -4,13 +4,11 @@ import { IUserService } from "../service/user.service";
 import { inject, injectable } from "inversify";
 import { UserDITypes } from "../user.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import filterPublicData from "../../../common/functions/filterPublicData";
 import getValuable from "../../../common/functions/getValuable";
 import validateJoi from "../../../common/functions/validateJoi";
 import { CreateUserDtoJoi, SignIn } from "./user.joi";
 import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
-import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 
 export interface IUserController {
@@ -148,7 +146,7 @@ export class UserController implements IUserController {
       const user = await this.service.signInUser(req, res, { email, password });
 
       return res.status(StatusCode.SUCCESS).json({
-        data: filterPublicData(user),
+        data: {},
       });
     } catch (error) {
       next(error);
@@ -160,7 +158,7 @@ export class UserController implements IUserController {
       const user = getRequestUserOrThrowAuthenticationException(req);
 
       return res
-        .clearCookie("access_token")
+        .clearCookie(Cookie.ACCESS_TOKEN)
         .status(StatusCode.SUCCESS)
         .json({ data: {} });
     } catch (error) {

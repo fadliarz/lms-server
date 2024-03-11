@@ -98,7 +98,7 @@ let UserService = class UserService {
             }
             const isPasswordMatch = this.verifyPassword(password, userRelatedToSignInEmail.password);
             if (!isPasswordMatch) {
-                throw new ClientException_1.default();
+                throw new ClientException_1.default("Invalid password!");
             }
             const cookies = req.cookies;
             const accessToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, email);
@@ -121,6 +121,7 @@ let UserService = class UserService {
                  *
                  */
                 const userBelongToStoredRefreshToken = yield this.repository.getUserByRefreshToken(storedRefreshToken);
+                console.log(userBelongToStoredRefreshToken);
                 if (!userBelongToStoredRefreshToken) {
                     newRefreshTokenArray = [];
                 }

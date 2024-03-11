@@ -11,9 +11,8 @@ export enum userUrls {
   root = "/users",
   me = "/me",
   user = "/:userId",
-  signUp = "/signup",
   signIn = "/signin",
-  logOut = "/logout",
+  signOut = "/signout",
 }
 
 /**

@@ -88,12 +88,14 @@ export class CourseRepository
     dto: CreateCourseDto,
   ): Promise<CourseModel> {
     return await this.prisma.$transaction(async (tx) => {
-      this.authorizeUserRole(
+      await this.authorizeUserRole(
         tx,
         resourceId,
         this.authorization.authorizeCreateCourse.bind(this.authorization),
       );
+
       const { userId } = resourceId;
+
       const newCourse = await tx.course.create({
         data: {
           ...dto,

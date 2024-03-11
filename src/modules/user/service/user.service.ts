@@ -139,7 +139,7 @@ export class UserService implements IUserService {
       userRelatedToSignInEmail.password,
     );
     if (!isPasswordMatch) {
-      throw new ClientException();
+      throw new ClientException("Invalid password!");
     }
 
     const cookies = req.cookies;
@@ -175,6 +175,9 @@ export class UserService implements IUserService {
        */
       const userBelongToStoredRefreshToken =
         await this.repository.getUserByRefreshToken(storedRefreshToken);
+
+      console.log(userBelongToStoredRefreshToken);
+
       if (!userBelongToStoredRefreshToken) {
         newRefreshTokenArray = [];
       } else {

@@ -26,7 +26,6 @@ const statusCode_1 = require("../../../common/constants/statusCode");
 const inversify_1 = require("inversify");
 const user_type_1 = require("../user.type");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
-const filterPublicData_1 = __importDefault(require("../../../common/functions/filterPublicData"));
 const getValuable_1 = __importDefault(require("../../../common/functions/getValuable"));
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const user_joi_1 = require("./user.joi");
@@ -114,7 +113,7 @@ let UserController = class UserController {
                 const { email, password } = req.body;
                 const user = yield this.service.signInUser(req, res, { email, password });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: (0, filterPublicData_1.default)(user),
+                    data: {},
                 });
             }
             catch (error) {
@@ -127,7 +126,7 @@ let UserController = class UserController {
             try {
                 const user = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
                 return res
-                    .clearCookie("access_token")
+                    .clearCookie(Cookie_1.Cookie.ACCESS_TOKEN)
                     .status(statusCode_1.StatusCode.SUCCESS)
                     .json({ data: {} });
             }
