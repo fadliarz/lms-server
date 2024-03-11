@@ -12,11 +12,6 @@ function UserRouter(authenticationMiddleware) {
     const router = express_1.default.Router();
     const controller = inversifyConfig_1.default.get(user_type_1.UserDITypes.CONTROLLER);
     /**
-     * Create
-     *
-     */
-    router.post("/", controller.createUser.bind(controller));
-    /**
      * SignIn
      *
      */
@@ -26,6 +21,16 @@ function UserRouter(authenticationMiddleware) {
      *
      */
     router.post(user_type_2.userUrls.signOut, authenticationMiddleware, controller.signOut.bind(controller));
+    /**
+     * Create
+     *
+     */
+    router.post("/", controller.createUser.bind(controller));
+    /**
+     * Get
+     *
+     */
+    router.get(user_type_2.userUrls.public, controller.getPublicUserById.bind(controller));
     return router;
 }
 exports.default = UserRouter;

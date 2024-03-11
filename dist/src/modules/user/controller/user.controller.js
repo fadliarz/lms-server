@@ -61,9 +61,12 @@ let UserController = class UserController {
     getPublicUserById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
-                const userData = yield this.service.getPublicUserById(user.id);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: userData });
+                const userId = Number(req.params.userId);
+                if (isNaN(userId)) {
+                    throw new NaNException_1.default("userId");
+                }
+                const publicUser = yield this.service.getPublicUserById(userId);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: publicUser });
             }
             catch (error) {
                 next(error);

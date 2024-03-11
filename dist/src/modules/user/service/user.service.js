@@ -58,10 +58,15 @@ let UserService = class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this.repository.getUserById(userId);
             if (!user) {
-                return user;
+                throw new RecordNotFoundException_1.default();
             }
-            user.password = "";
-            return user;
+            return {
+                name: user.name,
+                NIM: user.NIM,
+                avatar: user.avatar,
+                about: user.about,
+                role: user.role,
+            };
         });
     }
     getMe(userId) {

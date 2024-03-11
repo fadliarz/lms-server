@@ -76,9 +76,6 @@ class App {
         Apis.forEach((api) => {
             this.express.use(api.path, api.router);
         });
-        this.express.use("/test", (req, res) => {
-            return res.send("Success!");
-        });
     }
     /**
      * Error Handling

@@ -2,7 +2,13 @@ import "reflect-metadata";
 import jwt from "jsonwebtoken";
 import { isEqual } from "lodash";
 import sha256Encrypt from "../../../utils/encrypt";
-import { CreateUserDto, Me, UserDITypes, UserModel } from "../user.type";
+import {
+  CreateUserDto,
+  Me,
+  PublicUserModel,
+  UserDITypes,
+  UserModel,
+} from "../user.type";
 import { IUserRepository } from "../repository/user.repository";
 import { inject, injectable } from "inversify";
 import HttpException from "../../../common/class/exceptions/HttpException";
@@ -19,7 +25,7 @@ import AuthenticationException from "../../../common/class/exceptions/Authentica
 
 export interface IUserService {
   createUser: (dto: CreateUserDto) => Promise<UserModel>;
-  getPublicUserById: (userId: number) => Promise<UserModel | null>;
+  getPublicUserById: (userId: number) => Promise<PublicUserModel | null>;
   getMe: (userId: number) => Promise<Me>;
   updateUser: (
     userId: number,
@@ -75,16 +81,22 @@ export class UserService implements IUserService {
     return newUser;
   }
 
-  public async getPublicUserById(userId: number): Promise<UserModel | null> {
+  public async getPublicUserById(
+    userId: number,
+  ): Promise<PublicUserModel | null> {
     const user = await this.repository.getUserById(userId);
 
     if (!user) {
-      return user;
+      throw new RecordNotFoundException();
     }
 
-    user.password = "";
-
-    return user;
+    return {
+      name: user.name,
+      NIM: user.NIM,
+      avatar: user.avatar,
+      about: user.about,
+      role: user.role,
+    };
   }
 
   public async getMe(userId: number) {

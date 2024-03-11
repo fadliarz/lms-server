@@ -72,6 +72,19 @@ components:
           format: date
         role:
           $ref: "#/components/schemas/UserRoleModel"
+    PublicUserModel:
+      type: object
+      properties:
+        name:
+          type: string
+        NIM:
+          type: string
+        avatar:
+          type: string
+        about:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRoleModel"
     CourseEnrollmentModel:
       type: object
       properties:
@@ -455,6 +468,29 @@ paths:
                     properties:
                       data:
                         type: object
+          - $ref: "#/components/responses/CommonErrorResponses"
+  /users/{userId}/public:
+    get:
+      tags:
+        - User
+      summary: Get a public user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/PublicUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   #

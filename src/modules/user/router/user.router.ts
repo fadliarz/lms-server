@@ -10,12 +10,6 @@ export default function UserRouter(authenticationMiddleware: any) {
   const controller = dIContainer.get<IUserController>(UserDITypes.CONTROLLER);
 
   /**
-   * Create
-   *
-   */
-  router.post("/", controller.createUser.bind(controller));
-
-  /**
    * SignIn
    *
    */
@@ -30,6 +24,18 @@ export default function UserRouter(authenticationMiddleware: any) {
     authenticationMiddleware,
     controller.signOut.bind(controller),
   );
+
+  /**
+   * Create
+   *
+   */
+  router.post("/", controller.createUser.bind(controller));
+
+  /**
+   * Get
+   *
+   */
+  router.get(userUrls.public, controller.getPublicUserById.bind(controller));
 
   return router;
 }

@@ -88,10 +88,14 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-      const userData = await this.service.getPublicUserById(user.id);
+      const userId = Number(req.params.userId);
+      if (isNaN(userId)) {
+        throw new NaNException("userId");
+      }
 
-      return res.status(StatusCode.SUCCESS).json({ data: userData });
+      const publicUser = await this.service.getPublicUserById(userId);
+
+      return res.status(StatusCode.SUCCESS).json({ data: publicUser });
     } catch (error) {
       next(error);
     }

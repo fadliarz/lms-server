@@ -11,6 +11,7 @@ export enum userUrls {
   root = "/users",
   me = "/me",
   user = "/:userId",
+  public = userUrls.user + "/public",
   signIn = "/signin",
   signOut = "/signout",
 }
@@ -19,13 +20,11 @@ export enum userUrls {
  * Model
  */
 export type UserModel = User;
-export type ValuableUserModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<UserModel>;
 export type UserRole = Role;
 export const UserRole = Role;
-export type PublicUserModel = Omit<
+export type PublicUserModel = Pick<
   UserModel,
-  "accessToken" | "refreshToken" | "password"
+  "name" | "NIM" | "avatar" | "about" | "role"
 >;
 
 /**

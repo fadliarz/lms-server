@@ -12,6 +12,7 @@ var userUrls;
     userUrls["root"] = "/users";
     userUrls["me"] = "/me";
     userUrls["user"] = "/:userId";
+    userUrls["public"] = "/:userId/public";
     userUrls["signIn"] = "/signin";
     userUrls["signOut"] = "/signout";
 })(userUrls || (exports.userUrls = userUrls = {}));
