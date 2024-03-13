@@ -86,7 +86,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -140,7 +140,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -184,7 +184,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -228,7 +228,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const category = await repository.courseCategory.createCategory(
@@ -288,7 +288,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -332,7 +332,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -382,7 +382,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -432,7 +432,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -498,7 +498,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -560,7 +560,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -610,7 +610,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -671,7 +671,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -715,7 +715,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -762,7 +762,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -809,7 +809,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -863,7 +863,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(
@@ -917,7 +917,7 @@ describe("CourseRepository Test Suites", () => {
         "",
         [],
       );
-      await repository.user.updateUser(authorId, {
+      await repository.user.unauthorizedUpdateUser(authorId, {
         role: UserRoleModel.INSTRUCTOR,
       });
       const { id: categoryId } = await repository.courseCategory.createCategory(

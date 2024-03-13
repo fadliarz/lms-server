@@ -35,7 +35,41 @@ export default function UserRouter(authenticationMiddleware: any) {
    * Get
    *
    */
+  router.get(
+    userUrls.me,
+    authenticationMiddleware,
+    controller.getMe.bind(controller),
+  );
+
   router.get(userUrls.public, controller.getPublicUserById.bind(controller));
+
+  /**
+   * Update
+   *
+   */
+  router.get(
+    userUrls.basic,
+    authenticationMiddleware,
+    controller.updateBasicUser.bind(controller),
+  );
+
+  router.get(
+    userUrls.email,
+    authenticationMiddleware,
+    controller.updateUserEmail.bind(controller),
+  );
+
+  router.get(
+    userUrls.password,
+    authenticationMiddleware,
+    controller.updateUserPassword.bind(controller),
+  );
+
+  router.get(
+    userUrls.phoneNumber,
+    authenticationMiddleware,
+    controller.updateUserPhoneNumber.bind(controller),
+  );
 
   return router;
 }

@@ -1,23 +1,48 @@
 import { Course, Prisma, Role, User } from "@prisma/client";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 
 export const UserDITypes = {
   REPOSITORY: Symbol.for("USER_REPOSITORY"),
   SERVICE: Symbol.for("USER_SERVICE"),
   CONTROLLER: Symbol.for("USER_CONTROLLER"),
+  AUTHORIZATION: Symbol.for("USER_AUTHORIZATION"),
 };
 
 export enum userUrls {
   root = "/users",
-  me = "/me",
   user = "/:userId",
+  me = userUrls.user + "/me",
   public = userUrls.user + "/public",
+  basic = userUrls.user + "/basic",
+  email = userUrls.user + "/email",
+  password = userUrls.user + "/password",
+  phoneNumber = userUrls.user + "/phone",
   signIn = "/signin",
   signOut = "/signout",
 }
 
 /**
+ *
+ *
+ * Interface
+ *
+ *
+ */
+
+/**
+ * Interface Authorization
+ *
+ */
+export interface IUserAuthorization {
+  authorizeGetMe: (user: UserModel, targetUserId: number) => void;
+  authorizeUpdateUser: (user: UserModel, targetUserId: number) => void;
+}
+
+/**
+ *
+ *
  * Model
+ *
+ *
  */
 export type UserModel = User;
 export type UserRole = Role;
@@ -34,11 +59,6 @@ export type PublicUserModel = Pick<
  *
  *
  */
-
-/**
- * User
- *
- */
 export type CreateUserDto = {
   email: string;
   password: string;
@@ -48,31 +68,30 @@ export type CreateUserDto = {
   avatar?: string;
   about?: string;
 };
-export type UpdateBasicUserDto = Partial<
-  Omit<CreateUserDto, "email" | "password" | "phoneNumber">
->;
+
+export type UpdateBasicUserDto = {
+  name?: string;
+  NIM?: string;
+  avatar?: string;
+  about?: string;
+};
+
+export type UpdateUserEmailDto = {
+  email: string;
+};
+
+export type UpdateUserPasswordDto = {
+  password: string;
+};
+
+export type UpdateUserPhoneNumberDto = {
+  phoneNumber: string;
+};
+
 export type SignInDto = Pick<CreateUserDto, "email" | "password">;
 
 /**
  * Profile
  *
  */
-export type BasicUserModel = {
-  name: string;
-  NIM: string;
-};
-export type UserCourseType = Pick<
-  Course,
-  | "id"
-  | "title"
-  | "description"
-  | "totalStudents"
-  | "totalLikes"
-  | "totalLessons"
-  | "createdAt"
-  | "updatedAt"
->;
-export type Me = UserModel & {
-  courses: UserCourseType[];
-};
-export type UserSelect = Pick<Prisma.UserSelect, keyof User>;
+export type Me = UserModel;

@@ -91,6 +91,7 @@ const course_authorization_1 = require("./modules/course/authorization/course.au
 const CourseLessonRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseLessonRandDTO"));
 const CourseLessonVideoRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseLessonVideoRandDTO"));
 const BaseAuthorization_1 = __importStar(require("./common/class/BaseAuthorization"));
+const user_authorization_1 = __importDefault(require("./modules/user/authorization/user.authorization"));
 const dIContainer = new inversify_1.Container();
 /**
  * Repository
@@ -191,6 +192,9 @@ dIContainer
 dIContainer.bind(user_type_1.UserDITypes.REPOSITORY).to(user_repository_1.UserRepository);
 dIContainer.bind(user_type_1.UserDITypes.SERVICE).to(user_service_1.UserService);
 dIContainer.bind(user_type_1.UserDITypes.CONTROLLER).to(user_controller_1.UserController);
+dIContainer
+    .bind(user_type_1.UserDITypes.AUTHORIZATION)
+    .to(user_authorization_1.default);
 /**
  * Course Container
  *

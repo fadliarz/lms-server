@@ -69,7 +69,7 @@ describe("CourseLessonRepository Test Suite", () => {
     describe("CourseLessonRepository Test Suite", () => {
         it("createLesson", () => __awaiter(void 0, void 0, void 0, function* () {
             const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(author.id, {
+            yield repository.user.unauthorizedUpdateUser(author.id, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -98,7 +98,7 @@ describe("CourseLessonRepository Test Suite", () => {
         }));
         it("getLessonById", () => __awaiter(void 0, void 0, void 0, function* () {
             const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(author.id, {
+            yield repository.user.unauthorizedUpdateUser(author.id, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -125,7 +125,7 @@ describe("CourseLessonRepository Test Suite", () => {
             {},
         ])("getLessonByIdOrThrow", ({ exception }) => __awaiter(void 0, void 0, void 0, function* () {
             const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(author.id, {
+            yield repository.user.unauthorizedUpdateUser(author.id, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -162,7 +162,7 @@ describe("CourseLessonRepository Test Suite", () => {
         }));
         it("updateLesson", () => __awaiter(void 0, void 0, void 0, function* () {
             const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(author.id, {
+            yield repository.user.unauthorizedUpdateUser(author.id, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -190,7 +190,7 @@ describe("CourseLessonRepository Test Suite", () => {
         }));
         it("deleteLesson", () => __awaiter(void 0, void 0, void 0, function* () {
             const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(author.id, {
+            yield repository.user.unauthorizedUpdateUser(author.id, {
                 role: course_type_1.UserRoleModel.OWNER,
             });
             const user = yield repository.user.getUserByIdOrThrow(author.id);

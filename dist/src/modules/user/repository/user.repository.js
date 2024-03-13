@@ -17,40 +17,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
 require("reflect-metadata");
+const user_type_1 = require("../user.type");
 const inversify_1 = require("inversify");
 const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
-const getValuable_1 = __importDefault(require("../../../common/functions/getValuable"));
 const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
 const prisma_query_raw_type_1 = require("../../../common/class/prisma_query_raw/prisma_query_raw.type");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
+const AuthenticationException_1 = __importDefault(require("../../../common/class/exceptions/AuthenticationException"));
 let UserRepository = class UserRepository {
     constructor() {
         this.prisma = PrismaClientSingleton_1.default.getInstance();
-        this.userTable = this.prisma.user;
     }
     createUser(dto, accessToken, refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newUser = yield this.userTable.create({
-                data: Object.assign(Object.assign({}, dto), { accessToken, refreshToken }),
-            });
-            return newUser;
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const newUser = yield tx.user.create({
+                    data: Object.assign(Object.assign({}, dto), { accessToken, refreshToken }),
+                });
+                return newUser;
+            }));
         });
     }
     getUserById(userId) {
@@ -78,7 +69,7 @@ let UserRepository = class UserRepository {
     }
     getUserByRefreshToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userTable.findFirst({
+            return yield this.prisma.user.findFirst({
                 where: {
                     refreshToken: {
                         hasSome: refreshToken,
@@ -87,41 +78,35 @@ let UserRepository = class UserRepository {
             });
         });
     }
-    getMe(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const _a = yield this.userTable.findUniqueOrThrow({
-                where: {
-                    id: userId,
-                },
-                include: {
-                    courseEnrollments: {
-                        select: {
-                            course: {
-                                select: {
-                                    id: true,
-                                    totalLessons: true,
-                                    createdAt: true,
-                                    updatedAt: true,
-                                    title: true,
-                                    description: true,
-                                    totalStudents: true,
-                                    totalLikes: true,
-                                },
-                            },
-                        },
-                    },
-                },
-            }), { courseEnrollments } = _a, user = __rest(_a, ["courseEnrollments"]);
-            const me = Object.assign(Object.assign({}, (0, getValuable_1.default)(user)), { courses: courseEnrollments.map((enrollments) => {
-                    return enrollments.course;
-                }) });
-            return me;
-        });
-    }
-    updateUser(userId, dto) {
+    getMe(userId, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeGetMe(user, targetUserId);
+                const me = yield tx.user.findUniqueOrThrow({
+                    where: { id: targetUserId },
+                });
+                return me;
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+        });
+    }
+    updateUser(userId, targetUserId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeUpdateUser(user, targetUserId);
+                return yield tx.user.update({
+                    where: {
+                        id: targetUserId,
+                    },
+                    data: dto,
+                });
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+        });
+    }
+    unauthorizedUpdateUser(userId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 return yield tx.user.update({
                     where: {
                         id: userId,
@@ -131,22 +116,9 @@ let UserRepository = class UserRepository {
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
-    updateUserPassword(userId, password) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.userTable.update({
-                where: {
-                    id: userId,
-                },
-                data: {
-                    password,
-                },
-            });
-            return updatedUser;
-        });
-    }
     deleteUser(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userTable.delete({
+            return yield this.prisma.user.delete({
                 where: {
                     id: userId,
                 },
@@ -155,6 +127,10 @@ let UserRepository = class UserRepository {
     }
 };
 exports.UserRepository = UserRepository;
+__decorate([
+    (0, inversify_1.inject)(user_type_1.UserDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], UserRepository.prototype, "authorization", void 0);
 __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
     __metadata("design:type", Object)

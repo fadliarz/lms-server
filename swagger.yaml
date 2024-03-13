@@ -249,6 +249,38 @@ components:
         - password
         - name
         - NIM
+    UpdateBasicUserDto:
+      type: object
+      properties:
+        name:
+          type: string
+        NIM:
+          type: string
+        avatar:
+          type: string
+        about:
+          type: string
+    UpdateUserEmailDto:
+      type: object
+      properties:
+        email:
+          type: string
+      required:
+        - email
+    UpdateUserPasswordDto:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+        - password
+    UpdateUserPhoneNumberDto:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+      required:
+        - phoneNumber
     SignInDto:
       type: object
       properties:
@@ -492,6 +524,171 @@ paths:
                       data:
                         $ref: "#/components/schemas/PublicUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
+  /users/{userId}/me:
+    get:
+      tags:
+        - User
+      summary: Get me.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /users/{userId}/basic:
+    patch:
+      tags:
+        - User
+      summary: Update basic user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBasicUserDto"
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /users/{userId}/email:
+    patch:
+      tags:
+        - User
+      summary: Update user email.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserEmailDto"
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /users/{userId}/password:
+    patch:
+      tags:
+        - User
+      summary: Update user password.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserPasswordDto"
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /users/{userId}/phone:
+    patch:
+      tags:
+        - User
+      summary: Update user phone number.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserPhoneNumberDto"
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/UserModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /users/{userId}:
+    delete:
+      tags:
+        - User
+      summary: Delete a user.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: Resource deleted.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+          - $ref: "#/components/responses/CommonErrorResponses"
 
   #
   # > Course APIs <
@@ -582,7 +779,7 @@ paths:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-    put:
+    patch:
       tags:
         - Course
       summary: Update a course.

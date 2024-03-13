@@ -46,10 +46,10 @@ export class CourseLessonVideoRepository
   extends BaseAuthorization
   implements ICourseLessonVideoRepository
 {
+  private readonly prisma = PrismaClientSingleton.getInstance();
+
   @inject(CourseLessonVideoDITypes.AUTHORIZATION)
   private readonly authorization: ICourseLessonVideoAuthorization;
-
-  private readonly prisma = PrismaClientSingleton.getInstance();
 
   public async createVideo(
     resourceId: CourseLessonVideoResourceId,

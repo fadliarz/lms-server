@@ -61,12 +61,11 @@ let UserController = class UserController {
     getPublicUserById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = Number(req.params.userId);
-                if (isNaN(userId)) {
-                    throw new NaNException_1.default("userId");
-                }
+                const userId = this.validateUserId(req);
                 const publicUser = yield this.service.getPublicUserById(userId);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: publicUser });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, getValuable_1.default)(publicUser) });
             }
             catch (error) {
                 next(error);
@@ -76,8 +75,9 @@ let UserController = class UserController {
     getMe(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
-                const me = yield this.service.getMe(user.id);
+                const userId = this.validateResourceId(req);
+                const targetUserId = this.validateUserId(req);
+                const me = yield this.service.getMe(userId, targetUserId);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: me });
             }
             catch (error) {
@@ -88,8 +88,52 @@ let UserController = class UserController {
     updateBasicUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = this.validateUserId(req);
-                const updatedUser = yield this.service.updateUser(userId, req.body);
+                yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateBasicUserDtoJoi })(req, res, next);
+                const userId = this.validateResourceId(req);
+                const targetUserId = this.validateUserId(req);
+                const updatedUser = yield this.service.updateBasicUser(userId, targetUserId, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateUserEmail(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserEmailDtoJoi })(req, res, next);
+                const userId = this.validateResourceId(req);
+                const targetUserId = this.validateUserId(req);
+                const updatedUser = yield this.service.updateUserEmail(userId, targetUserId, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateUserPassword(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserPasswordDtoJoi })(req, res, next);
+                const userId = this.validateResourceId(req);
+                const targetUserId = this.validateUserId(req);
+                const updatedUser = yield this.service.updateUserPassword(userId, targetUserId, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateUserPhoneNumber(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserPhoneNumberDtoJoi })(req, res, next);
+                const userId = this.validateResourceId(req);
+                const targetUserId = this.validateUserId(req);
+                const updatedUser = yield this.service.updateUserPhoneNumber(userId, targetUserId, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
             }
             catch (error) {
@@ -150,6 +194,10 @@ let UserController = class UserController {
         if (isNaN(userId)) {
             throw error || new NaNException_1.default("userId");
         }
+        return userId;
+    }
+    validateResourceId(req, error) {
+        const { id: userId } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         return userId;
     }
 };

@@ -6,7 +6,14 @@ import { UserDITypes } from "../user.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import getValuable from "../../../common/functions/getValuable";
 import validateJoi from "../../../common/functions/validateJoi";
-import { CreateUserDtoJoi, SignIn } from "./user.joi";
+import {
+  CreateUserDtoJoi,
+  SignIn,
+  UpdateBasicUserDtoJoi,
+  UpdateUserEmailDtoJoi,
+  UpdateUserPasswordDtoJoi,
+  UpdateUserPhoneNumberDtoJoi,
+} from "./user.joi";
 import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
@@ -28,6 +35,21 @@ export interface IUserController {
     next: NextFunction,
   ) => Promise<Response | void>;
   updateBasicUser: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateUserEmail: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateUserPassword: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateUserPhoneNumber: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -88,14 +110,12 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const userId = Number(req.params.userId);
-      if (isNaN(userId)) {
-        throw new NaNException("userId");
-      }
-
+      const userId = this.validateUserId(req);
       const publicUser = await this.service.getPublicUserById(userId);
 
-      return res.status(StatusCode.SUCCESS).json({ data: publicUser });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: getValuable(publicUser) });
     } catch (error) {
       next(error);
     }
@@ -107,8 +127,9 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
-      const me = await this.service.getMe(user.id);
+      const userId = this.validateResourceId(req);
+      const targetUserId = this.validateUserId(req);
+      const me = await this.service.getMe(userId, targetUserId);
 
       return res.status(StatusCode.SUCCESS).json({ data: me });
     } catch (error) {
@@ -122,8 +143,81 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const userId = this.validateUserId(req);
-      const updatedUser = await this.service.updateUser(userId, req.body);
+      await validateJoi({ body: UpdateBasicUserDtoJoi })(req, res, next);
+
+      const userId = this.validateResourceId(req);
+      const targetUserId = this.validateUserId(req);
+      const updatedUser = await this.service.updateBasicUser(
+        userId,
+        targetUserId,
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateUserEmail(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateUserEmailDtoJoi })(req, res, next);
+
+      const userId = this.validateResourceId(req);
+      const targetUserId = this.validateUserId(req);
+      const updatedUser = await this.service.updateUserEmail(
+        userId,
+        targetUserId,
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateUserPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateUserPasswordDtoJoi })(req, res, next);
+
+      const userId = this.validateResourceId(req);
+      const targetUserId = this.validateUserId(req);
+      const updatedUser = await this.service.updateUserPassword(
+        userId,
+        targetUserId,
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateUserPhoneNumber(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateUserPhoneNumberDtoJoi })(req, res, next);
+
+      const userId = this.validateResourceId(req);
+      const targetUserId = this.validateUserId(req);
+      const updatedUser = await this.service.updateUserPhoneNumber(
+        userId,
+        targetUserId,
+        req.body,
+      );
 
       return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
     } catch (error) {
@@ -183,6 +277,12 @@ export class UserController implements IUserController {
     if (isNaN(userId)) {
       throw error || new NaNException("userId");
     }
+
+    return userId;
+  }
+
+  private validateResourceId(req: Request, error?: Error): number {
+    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
 
     return userId;
   }

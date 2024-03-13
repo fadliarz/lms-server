@@ -6,6 +6,10 @@ import {
   CreateUserDto,
   Me,
   PublicUserModel,
+  UpdateBasicUserDto,
+  UpdateUserEmailDto,
+  UpdateUserPasswordDto,
+  UpdateUserPhoneNumberDto,
   UserDITypes,
   UserModel,
 } from "../user.type";
@@ -25,13 +29,28 @@ import AuthenticationException from "../../../common/class/exceptions/Authentica
 
 export interface IUserService {
   createUser: (dto: CreateUserDto) => Promise<UserModel>;
-  getPublicUserById: (userId: number) => Promise<PublicUserModel | null>;
-  getMe: (userId: number) => Promise<Me>;
-  updateUser: (
+  getPublicUserById: (userId: number) => Promise<PublicUserModel>;
+  getMe: (userId: number, targetUserId: number) => Promise<Me>;
+  updateBasicUser: (
     userId: number,
-    userDetails: Partial<User>,
+    targetUserId: number,
+    dto: UpdateBasicUserDto,
   ) => Promise<UserModel>;
-  updateUserPassword: (userId: number, password: string) => Promise<UserModel>;
+  updateUserEmail: (
+    userId: number,
+    targetUserId: number,
+    dto: UpdateUserEmailDto,
+  ) => Promise<UserModel>;
+  updateUserPassword: (
+    userId: number,
+    targetUserId: number,
+    dto: UpdateUserPasswordDto,
+  ) => Promise<UserModel>;
+  updateUserPhoneNumber: (
+    userId: number,
+    targetUserId: number,
+    dto: UpdateUserPhoneNumberDto,
+  ) => Promise<UserModel>;
   deleteUser: (userId: number) => Promise<UserModel>;
   signInUser: (
     req: Request,
@@ -81,9 +100,7 @@ export class UserService implements IUserService {
     return newUser;
   }
 
-  public async getPublicUserById(
-    userId: number,
-  ): Promise<PublicUserModel | null> {
+  public async getPublicUserById(userId: number): Promise<PublicUserModel> {
     const user = await this.repository.getUserById(userId);
 
     if (!user) {
@@ -99,30 +116,65 @@ export class UserService implements IUserService {
     };
   }
 
-  public async getMe(userId: number) {
-    const me = await this.repository.getMe(userId);
+  public async getMe(userId: number, targetUserId: number) {
+    const me = await this.repository.getMe(userId, targetUserId);
 
-    me.password = "";
+    me.accessToken = null;
+    me.refreshToken = [];
 
     return me;
   }
 
-  public async updateUser(
+  public async updateBasicUser(
     userId: number,
-    userDetails: Partial<User>,
+    targetUserId: number,
+    dto: UpdateBasicUserDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUser(userId, userDetails);
+    const updatedUser = await this.repository.updateUser(
+      userId,
+      targetUserId,
+      dto,
+    );
+
+    return updatedUser;
+  }
+  public async updateUserEmail(
+    userId: number,
+    targetUserId: number,
+    dto: UpdateUserEmailDto,
+  ): Promise<UserModel> {
+    const updatedUser = await this.repository.updateUser(
+      userId,
+      targetUserId,
+      dto,
+    );
 
     return updatedUser;
   }
 
   public async updateUserPassword(
     userId: number,
-    password: string,
+    targetUserId: number,
+    dto: UpdateUserPasswordDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUserPassword(
+    const updatedUser = await this.repository.updateUser(
       userId,
-      password,
+      targetUserId,
+      dto,
+    );
+
+    return updatedUser;
+  }
+
+  public async updateUserPhoneNumber(
+    userId: number,
+    targetUserId: number,
+    dto: UpdateUserPhoneNumberDto,
+  ): Promise<UserModel> {
+    const updatedUser = await this.repository.updateUser(
+      userId,
+      targetUserId,
+      dto,
     );
 
     return updatedUser;
@@ -181,15 +233,8 @@ export class UserService implements IUserService {
        *
        */
 
-      /**
-       * Why ? ? ?
-       *
-       */
       const userBelongToStoredRefreshToken =
         await this.repository.getUserByRefreshToken(storedRefreshToken);
-
-      console.log(userBelongToStoredRefreshToken);
-
       if (!userBelongToStoredRefreshToken) {
         newRefreshTokenArray = [];
       } else {
@@ -205,7 +250,7 @@ export class UserService implements IUserService {
       });
     }
 
-    await this.repository.updateUser(userRelatedToSignInEmail.id, {
+    await this.repository.unauthorizedUpdateUser(userRelatedToSignInEmail.id, {
       accessToken,
       refreshToken: newRefreshTokenArray,
     });
@@ -244,11 +289,14 @@ export class UserService implements IUserService {
       throw new AuthenticationException();
     }
 
-    await this.repository.updateUser(userRelatedToStoredRefreshToken.id, {
-      refreshToken: userRelatedToStoredRefreshToken?.refreshToken.filter(
-        (rt) => rt !== storedRefreshToken,
-      ),
-    });
+    await this.repository.unauthorizedUpdateUser(
+      userRelatedToStoredRefreshToken.id,
+      {
+        refreshToken: userRelatedToStoredRefreshToken?.refreshToken.filter(
+          (rt) => rt !== storedRefreshToken,
+        ),
+      },
+    );
   }
 
   private generateFreshAuthenticationToken(

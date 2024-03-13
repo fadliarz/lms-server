@@ -69,22 +69,35 @@ let UserService = class UserService {
             };
         });
     }
-    getMe(userId) {
+    getMe(userId, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const me = yield this.repository.getMe(userId);
-            me.password = "";
+            const me = yield this.repository.getMe(userId, targetUserId);
+            me.accessToken = null;
+            me.refreshToken = [];
             return me;
         });
     }
-    updateUser(userId, userDetails) {
+    updateBasicUser(userId, targetUserId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUser(userId, userDetails);
+            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
             return updatedUser;
         });
     }
-    updateUserPassword(userId, password) {
+    updateUserEmail(userId, targetUserId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUserPassword(userId, password);
+            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
+            return updatedUser;
+        });
+    }
+    updateUserPassword(userId, targetUserId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
+            return updatedUser;
+        });
+    }
+    updateUserPhoneNumber(userId, targetUserId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
             return updatedUser;
         });
     }
@@ -121,12 +134,7 @@ let UserService = class UserService {
                  * If that's the case, then clear all refreshTokens when user signs in (reuse detection).
                  *
                  */
-                /**
-                 * Why ? ? ?
-                 *
-                 */
                 const userBelongToStoredRefreshToken = yield this.repository.getUserByRefreshToken(storedRefreshToken);
-                console.log(userBelongToStoredRefreshToken);
                 if (!userBelongToStoredRefreshToken) {
                     newRefreshTokenArray = [];
                 }
@@ -139,7 +147,7 @@ let UserService = class UserService {
                     secure: true,
                 });
             }
-            yield this.repository.updateUser(userRelatedToSignInEmail.id, {
+            yield this.repository.unauthorizedUpdateUser(userRelatedToSignInEmail.id, {
                 accessToken,
                 refreshToken: newRefreshTokenArray,
             });
@@ -169,7 +177,7 @@ let UserService = class UserService {
             if (!userRelatedToStoredRefreshToken) {
                 throw new AuthenticationException_1.default();
             }
-            yield this.repository.updateUser(userRelatedToStoredRefreshToken.id, {
+            yield this.repository.unauthorizedUpdateUser(userRelatedToStoredRefreshToken.id, {
                 refreshToken: userRelatedToStoredRefreshToken === null || userRelatedToStoredRefreshToken === void 0 ? void 0 : userRelatedToStoredRefreshToken.refreshToken.filter((rt) => rt !== storedRefreshToken),
             });
         });

@@ -38,7 +38,7 @@ let DatabaseLock = class DatabaseLock {
     testBang() {
         return __awaiter(this, void 0, void 0, function* () {
             const author = yield this.repository.user.createUser(this.randDTO.user.generateCreateUserDTO(), "", []);
-            yield this.repository.user.updateUser(author.id, {
+            yield this.repository.user.unauthorizedUpdateUser(author.id, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const category = yield this.repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });

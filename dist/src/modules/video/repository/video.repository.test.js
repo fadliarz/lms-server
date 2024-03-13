@@ -67,7 +67,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         describe("createVideo", () => {
             it("should create a video", () => __awaiter(void 0, void 0, void 0, function* () {
                 const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-                yield repository.user.updateUser(author.id, {
+                yield repository.user.unauthorizedUpdateUser(author.id, {
                     role: course_type_1.UserRoleModel.INSTRUCTOR,
                 });
                 const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -99,7 +99,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         describe("getVideoById", () => {
             it("video exists: should get a video", () => __awaiter(void 0, void 0, void 0, function* () {
                 const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-                yield repository.user.updateUser(author.id, {
+                yield repository.user.unauthorizedUpdateUser(author.id, {
                     role: course_type_1.UserRoleModel.INSTRUCTOR,
                 });
                 const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -133,7 +133,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         describe("getVideoByIdOrThrow", () => {
             it("video exists: should get a video", () => __awaiter(void 0, void 0, void 0, function* () {
                 const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-                yield repository.user.updateUser(author.id, {
+                yield repository.user.unauthorizedUpdateUser(author.id, {
                     role: course_type_1.UserRoleModel.INSTRUCTOR,
                 });
                 const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -165,7 +165,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
             }));
             it.each([{ exception: new ClientException_1.default() }, {}])("", ({ exception }) => __awaiter(void 0, void 0, void 0, function* () {
                 const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-                yield repository.user.updateUser(author.id, {
+                yield repository.user.unauthorizedUpdateUser(author.id, {
                     role: course_type_1.UserRoleModel.INSTRUCTOR,
                 });
                 const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -199,7 +199,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         describe("updateVideoSource", () => {
             it("video exists: should update a video source", () => __awaiter(void 0, void 0, void 0, function* () {
                 const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-                yield repository.user.updateUser(author.id, {
+                yield repository.user.unauthorizedUpdateUser(author.id, {
                     role: course_type_1.UserRoleModel.INSTRUCTOR,
                 });
                 const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });
@@ -238,7 +238,7 @@ describe("CourseLessonVideoRepository Test Suite", () => {
         describe("deleteVideo", () => {
             it("video exists: should delete a video", () => __awaiter(void 0, void 0, void 0, function* () {
                 const author = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-                yield repository.user.updateUser(author.id, {
+                yield repository.user.unauthorizedUpdateUser(author.id, {
                     role: course_type_1.UserRoleModel.INSTRUCTOR,
                 });
                 const category = yield repository.courseCategory.createCategory({ userId: author.id }, { title: "someTitle" });

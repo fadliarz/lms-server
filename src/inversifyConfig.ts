@@ -6,7 +6,7 @@ import { UserService } from "./modules/user/service/user.service";
 import { IUserController } from "./modules/user/controller/user.controller";
 import { IUserService } from "./modules/user/service/user.service";
 import { IUserRepository } from "./modules/user/repository/user.repository";
-import { UserDITypes } from "./modules/user/user.type";
+import { IUserAuthorization, UserDITypes } from "./modules/user/user.type";
 import { ICourseController } from "./modules/course/controller/course.controller";
 import { ICourseService } from "./modules/course/service/course.service";
 import { ICourseRepository } from "./modules/course/repository/course.repository";
@@ -160,6 +160,7 @@ import CourseLessonVideoRandDTO from "./common/class/rand_dto/CourseLessonVideoR
 import BaseAuthorization, {
   BaseAuthorizationDITypes,
 } from "./common/class/BaseAuthorization";
+import UserAuthorization from "./modules/user/authorization/user.authorization";
 
 const dIContainer = new Container();
 
@@ -272,6 +273,9 @@ dIContainer
 dIContainer.bind<IUserRepository>(UserDITypes.REPOSITORY).to(UserRepository);
 dIContainer.bind<IUserService>(UserDITypes.SERVICE).to(UserService);
 dIContainer.bind<IUserController>(UserDITypes.CONTROLLER).to(UserController);
+dIContainer
+  .bind<IUserAuthorization>(UserDITypes.AUTHORIZATION)
+  .to(UserAuthorization);
 
 /**
  * Course Container

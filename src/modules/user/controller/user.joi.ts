@@ -1,5 +1,11 @@
 import Joi from "joi";
-import { SignInDto, CreateUserDto } from "../user.type";
+import {
+  SignInDto,
+  CreateUserDto,
+  UpdateUserEmailDto,
+  UpdateUserPasswordDto,
+  UpdateUserPhoneNumberDto,
+} from "../user.type";
 
 export const CreateUserDtoJoi = Joi.object<CreateUserDto>({
   /**
@@ -29,6 +35,20 @@ export const UpdateBasicUserDtoJoi = Joi.object<CreateUserDto>({
   avatar: Joi.string(),
   about: Joi.string(),
 });
+
+export const UpdateUserEmailDtoJoi = Joi.object<UpdateUserEmailDto>({
+  email: Joi.string().email().required(),
+});
+
+export const UpdateUserPasswordDtoJoi = Joi.object<UpdateUserPasswordDto>({
+  password: Joi.string().required(),
+});
+
+export const UpdateUserPhoneNumberDtoJoi = Joi.object<UpdateUserPhoneNumberDto>(
+  {
+    phoneNumber: Joi.string().required(),
+  },
+);
 
 export const SignIn = Joi.object<SignInDto>({
   email: Joi.string().email().required(),

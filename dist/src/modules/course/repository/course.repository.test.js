@@ -74,7 +74,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -111,7 +111,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -138,7 +138,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -165,7 +165,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const category = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -203,7 +203,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -230,7 +230,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -262,7 +262,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -295,7 +295,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -332,7 +332,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -369,7 +369,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -400,7 +400,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -439,7 +439,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -467,7 +467,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -497,7 +497,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -525,7 +525,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -559,7 +559,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
@@ -594,7 +594,7 @@ describe("CourseRepository Test Suites", () => {
              *
              */
             const { id: authorId } = yield repository.user.createUser(randDTO.user.generateCreateUserDTO(), "", []);
-            yield repository.user.updateUser(authorId, {
+            yield repository.user.unauthorizedUpdateUser(authorId, {
                 role: course_type_1.UserRoleModel.INSTRUCTOR,
             });
             const { id: categoryId } = yield repository.courseCategory.createCategory({ userId: authorId }, { title: "someTitle" });
