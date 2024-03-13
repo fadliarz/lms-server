@@ -75,7 +75,7 @@ export default function UserRouter(authenticationMiddleware: any) {
    * Delete
    *
    */
-  router.patch(
+  router.delete(
     userUrls.user,
     authenticationMiddleware,
     controller.deleteUser.bind(controller),

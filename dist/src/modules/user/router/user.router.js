@@ -44,7 +44,7 @@ function UserRouter(authenticationMiddleware) {
      * Delete
      *
      */
-    router.patch(user_type_2.userUrls.user, authenticationMiddleware, controller.deleteUser.bind(controller));
+    router.delete(user_type_2.userUrls.user, authenticationMiddleware, controller.deleteUser.bind(controller));
     return router;
 }
 exports.default = UserRouter;
