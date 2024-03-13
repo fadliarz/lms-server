@@ -36,10 +36,10 @@ function UserRouter(authenticationMiddleware) {
      * Update
      *
      */
-    router.get(user_type_2.userUrls.basic, authenticationMiddleware, controller.updateBasicUser.bind(controller));
-    router.get(user_type_2.userUrls.email, authenticationMiddleware, controller.updateUserEmail.bind(controller));
-    router.get(user_type_2.userUrls.password, authenticationMiddleware, controller.updateUserPassword.bind(controller));
-    router.get(user_type_2.userUrls.phoneNumber, authenticationMiddleware, controller.updateUserPhoneNumber.bind(controller));
+    router.patch(user_type_2.userUrls.basic, authenticationMiddleware, controller.updateBasicUser.bind(controller));
+    router.patch(user_type_2.userUrls.email, authenticationMiddleware, controller.updateUserEmail.bind(controller));
+    router.patch(user_type_2.userUrls.password, authenticationMiddleware, controller.updateUserPassword.bind(controller));
+    router.patch(user_type_2.userUrls.phoneNumber, authenticationMiddleware, controller.updateUserPhoneNumber.bind(controller));
     return router;
 }
 exports.default = UserRouter;

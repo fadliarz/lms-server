@@ -47,25 +47,25 @@ export default function UserRouter(authenticationMiddleware: any) {
    * Update
    *
    */
-  router.get(
+  router.patch(
     userUrls.basic,
     authenticationMiddleware,
     controller.updateBasicUser.bind(controller),
   );
 
-  router.get(
+  router.patch(
     userUrls.email,
     authenticationMiddleware,
     controller.updateUserEmail.bind(controller),
   );
 
-  router.get(
+  router.patch(
     userUrls.password,
     authenticationMiddleware,
     controller.updateUserPassword.bind(controller),
   );
 
-  router.get(
+  router.patch(
     userUrls.phoneNumber,
     authenticationMiddleware,
     controller.updateUserPhoneNumber.bind(controller),
