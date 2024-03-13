@@ -51,7 +51,7 @@ export interface IUserService {
     targetUserId: number,
     dto: UpdateUserPhoneNumberDto,
   ) => Promise<UserModel>;
-  deleteUser: (userId: number) => Promise<UserModel>;
+  deleteUser: (userId: number, targetUserId: number) => Promise<UserModel>;
   signInUser: (
     req: Request,
     res: Response,
@@ -180,8 +180,11 @@ export class UserService implements IUserService {
     return updatedUser;
   }
 
-  public async deleteUser(userId: number): Promise<UserModel> {
-    const deletedUser = await this.repository.deleteUser(userId);
+  public async deleteUser(
+    userId: number,
+    targetUserId: number,
+  ): Promise<UserModel> {
+    const deletedUser = await this.repository.deleteUser(userId, targetUserId);
 
     return deletedUser;
   }

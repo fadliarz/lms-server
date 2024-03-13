@@ -227,8 +227,9 @@ export class UserController implements IUserController {
 
   public async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = this.validateUserId(req);
-      await this.service.deleteUser(userId);
+      const userId = this.validateResourceId(req);
+      const targetUserId = this.validateUserId(req);
+      await this.service.deleteUser(userId, targetUserId);
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {

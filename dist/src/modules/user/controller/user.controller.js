@@ -144,8 +144,9 @@ let UserController = class UserController {
     deleteUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = this.validateUserId(req);
-                yield this.service.deleteUser(userId);
+                const userId = this.validateResourceId(req);
+                const targetUserId = this.validateUserId(req);
+                yield this.service.deleteUser(userId, targetUserId);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
             }
             catch (error) {

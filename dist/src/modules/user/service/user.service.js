@@ -101,9 +101,9 @@ let UserService = class UserService {
             return updatedUser;
         });
     }
-    deleteUser(userId) {
+    deleteUser(userId, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const deletedUser = yield this.repository.deleteUser(userId);
+            const deletedUser = yield this.repository.deleteUser(userId, targetUserId);
             return deletedUser;
         });
     }

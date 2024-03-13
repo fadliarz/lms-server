@@ -39,7 +39,7 @@ export interface IUserRepository {
     userId: number,
     dto: Partial<UserModel>,
   ) => Promise<UserModel>;
-  deleteUser: (userId: number) => Promise<UserModel>;
+  deleteUser: (userId: number, targetUserId: number) => Promise<UserModel>;
 }
 
 @injectable()
@@ -156,11 +156,23 @@ export class UserRepository implements IUserRepository {
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
-  public async deleteUser(userId: number): Promise<UserModel> {
-    return await this.prisma.user.delete({
-      where: {
-        id: userId,
-      },
-    });
+  public async deleteUser(
+    userId: number,
+    targetUserId: number,
+  ): Promise<UserModel> {
+    return await this.prisma.$transaction(async (tx) => {
+      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+        tx,
+        userId,
+        new AuthenticationException(),
+      );
+      this.authorization.authorizeDeleteUser(user, targetUserId);
+
+      return await tx.user.delete({
+        where: {
+          id: userId,
+        },
+      });
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 }

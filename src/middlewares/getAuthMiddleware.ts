@@ -33,6 +33,13 @@ export const getAuthMiddleWare = () => {
         },
       });
 
+      /**
+       * Some possible scenarios:
+       *
+       * 1. User changed the email
+       * 2. Deleted user
+       *
+       */
       if (!user) {
         throw new RecordNotFoundException("User not found!");
       }

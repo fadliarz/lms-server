@@ -32,6 +32,9 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
     authorizeUpdateUser(user, targetUserId) {
         this.authorizeGetMe(user, targetUserId);
     }
+    authorizeDeleteUser(user, targetUserId) {
+        this.authorizeGetMe(user, targetUserId);
+    }
 };
 UserAuthorization = __decorate([
     (0, inversify_1.injectable)()

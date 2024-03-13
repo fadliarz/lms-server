@@ -35,6 +35,7 @@ export enum userUrls {
 export interface IUserAuthorization {
   authorizeGetMe: (user: UserModel, targetUserId: number) => void;
   authorizeUpdateUser: (user: UserModel, targetUserId: number) => void;
+  authorizeDeleteUser: (user: UserModel, targetUserId: number) => void;
 }
 
 /**

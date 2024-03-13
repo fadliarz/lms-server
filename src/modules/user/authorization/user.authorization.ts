@@ -31,4 +31,8 @@ export default class UserAuthorization
   public authorizeUpdateUser(user: UserModel, targetUserId: number): void {
     this.authorizeGetMe(user, targetUserId);
   }
+
+  public authorizeDeleteUser(user: UserModel, targetUserId: number): void {
+    this.authorizeGetMe(user, targetUserId);
+  }
 }

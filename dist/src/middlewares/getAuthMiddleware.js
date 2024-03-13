@@ -37,6 +37,13 @@ const getAuthMiddleWare = () => {
                     accessToken,
                 },
             });
+            /**
+             * Some possible scenarios:
+             *
+             * 1. User changed the email
+             * 2. Deleted user
+             *
+             */
             if (!user) {
                 throw new RecordNotFoundException_1.default("User not found!");
             }

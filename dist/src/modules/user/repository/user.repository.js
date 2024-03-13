@@ -116,13 +116,17 @@ let UserRepository = class UserRepository {
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
-    deleteUser(userId) {
+    deleteUser(userId, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.user.delete({
-                where: {
-                    id: userId,
-                },
-            });
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeDeleteUser(user, targetUserId);
+                return yield tx.user.delete({
+                    where: {
+                        id: userId,
+                    },
+                });
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
 };
