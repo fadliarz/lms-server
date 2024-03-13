@@ -40,6 +40,11 @@ function UserRouter(authenticationMiddleware) {
     router.patch(user_type_2.userUrls.email, authenticationMiddleware, controller.updateUserEmail.bind(controller));
     router.patch(user_type_2.userUrls.password, authenticationMiddleware, controller.updateUserPassword.bind(controller));
     router.patch(user_type_2.userUrls.phoneNumber, authenticationMiddleware, controller.updateUserPhoneNumber.bind(controller));
+    /**
+     * Delete
+     *
+     */
+    router.patch(user_type_2.userUrls.user, authenticationMiddleware, controller.deleteUser.bind(controller));
     return router;
 }
 exports.default = UserRouter;

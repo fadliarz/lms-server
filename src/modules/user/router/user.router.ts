@@ -71,5 +71,15 @@ export default function UserRouter(authenticationMiddleware: any) {
     controller.updateUserPhoneNumber.bind(controller),
   );
 
+  /**
+   * Delete
+   *
+   */
+  router.patch(
+    userUrls.user,
+    authenticationMiddleware,
+    controller.deleteUser.bind(controller),
+  );
+
   return router;
 }
