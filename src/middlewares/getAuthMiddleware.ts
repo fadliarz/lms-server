@@ -41,7 +41,7 @@ export const getAuthMiddleWare = () => {
        *
        */
       if (!user) {
-        throw new RecordNotFoundException("User not found!");
+        throw new AuthenticationException();
       }
 
       user.refreshToken = [];

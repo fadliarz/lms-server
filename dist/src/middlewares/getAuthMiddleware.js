@@ -16,7 +16,6 @@ exports.getAuthMiddleWare = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const getValuable_1 = __importDefault(require("../common/functions/getValuable"));
 const AuthenticationException_1 = __importDefault(require("../common/class/exceptions/AuthenticationException"));
-const RecordNotFoundException_1 = __importDefault(require("../common/class/exceptions/RecordNotFoundException"));
 const PrismaClientSingleton_1 = __importDefault(require("../common/class/PrismaClientSingleton"));
 const Cookie_1 = require("../common/constants/Cookie");
 const getAuthMiddleWare = () => {
@@ -45,7 +44,7 @@ const getAuthMiddleWare = () => {
              *
              */
             if (!user) {
-                throw new RecordNotFoundException_1.default("User not found!");
+                throw new AuthenticationException_1.default();
             }
             user.refreshToken = [];
             req.accessToken = accessToken;
