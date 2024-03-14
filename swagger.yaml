@@ -939,6 +939,27 @@ paths:
                         $ref: "#/components/schemas/GetCourseByIdData"
           - $ref: "#/components/responses/CommonErrorResponses"
 
+    delete:
+      tags:
+        - Course
+      summary: Delete a course.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: Resource deleted.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+          - $ref: "#/components/responses/CommonErrorResponses"
+
   /courses/{courseId}/basic:
     patch:
       tags:
@@ -1029,26 +1050,7 @@ paths:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-    delete:
-      tags:
-        - Course
-      summary: Delete a course.
-      parameters:
-        - name: courseId
-          in: path
-          required: true
-          schema:
-            type: number
-      responses:
-        allOf:
-          - "200":
-              description: Resource deleted.
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-          - $ref: "#/components/responses/CommonErrorResponses"
+
 
   /courses/{courseId}/likes:
     post:

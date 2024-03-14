@@ -257,6 +257,7 @@ export class UserService implements IUserService {
     }
 
     newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
+    console.log(newRefreshTokenArray);
     await this.repository.unauthorizedUpdateUser(userRelatedToSignInEmail.id, {
       accessToken,
       refreshToken: newRefreshTokenArray,
@@ -267,6 +268,7 @@ export class UserService implements IUserService {
       accessToken,
       newRefreshTokenArray,
     };
+    console.log(user);
 
     res
       .cookie(Cookie.ACCESS_TOKEN, accessToken, {
