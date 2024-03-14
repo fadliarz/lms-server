@@ -12,6 +12,9 @@ import {
   UpdateBasicCourseDto,
   GetCourseByIdData,
   GetEnrolledCoursesData,
+  UpdateCourseCategoryIdDto,
+  UpdateCourseStatusDto,
+  GetCoursesData,
 } from "../course.type";
 import { CreateCourseDto, UpdateCourseDto } from "../course.type";
 import { CourseDITypes } from "../course.type";
@@ -21,6 +24,10 @@ import {
   CourseLessonModel,
   CourseLessonResourceId,
 } from "../../lesson/lesson.type";
+import {
+  IRepository,
+  RepositoryDITypes,
+} from "../../../common/class/repository/repository.type";
 
 export interface ICourseService {
   createCourse: (
@@ -32,10 +39,7 @@ export interface ICourseService {
     resourceId: CourseResourceId,
     query: GetCourseByIdQuery,
   ) => Promise<GetCourseByIdData>;
-  getCourses: (
-    resourceId: CourseResourceId,
-    query: GetCoursesQuery,
-  ) => Promise<GetCourseByIdData[]>;
+  getCourses: (query: GetCoursesQuery) => Promise<GetCoursesData>;
   getEnrolledCourses: (
     resourceId: CourseResourceId,
     query: GetEnrolledCoursesQuery,
@@ -44,6 +48,16 @@ export interface ICourseService {
     courseId: number,
     resourceId: CourseResourceId,
     dto: UpdateBasicCourseDto,
+  ) => Promise<CourseModel>;
+  updateCourseStatus: (
+    courseId: number,
+    resourceID: CourseResourceId,
+    dto: UpdateCourseStatusDto,
+  ) => Promise<CourseModel>;
+  updateCourseCategoryId: (
+    courseId: number,
+    resourceId: CourseResourceId,
+    dto: UpdateCourseCategoryIdDto,
   ) => Promise<CourseModel>;
   deleteCourse: (courseId: number, resourceId: CourseResourceId) => Promise<{}>;
   createLike: (resourceId: CourseLikeResourceId) => Promise<CourseLikeModel>;
@@ -59,14 +73,14 @@ export interface ICourseService {
 
 @injectable()
 export class CourseService implements ICourseService {
-  @inject(CourseDITypes.REPOSITORY)
-  private readonly repository: ICourseRepository;
+  @inject(RepositoryDITypes.FACADE)
+  private readonly repository: IRepository;
 
   public async createCourse(
     resourceId: CourseResourceId,
     dto: CreateCourseDto,
   ): Promise<CourseModel> {
-    return await this.repository.createCourse(resourceId, dto);
+    return await this.repository.course.createCourse(resourceId, dto);
   }
 
   public async getCourseById(
@@ -74,7 +88,7 @@ export class CourseService implements ICourseService {
     resourceId: CourseResourceId,
     query: GetCourseByIdQuery,
   ): Promise<GetCourseByIdData> {
-    return await this.repository.getCourseByIdOrThrow(
+    return await this.repository.course.getCourseByIdOrThrow(
       courseId,
       resourceId,
       query,
@@ -82,18 +96,15 @@ export class CourseService implements ICourseService {
     );
   }
 
-  public async getCourses(
-    resourceId: CourseResourceId,
-    query: GetCoursesQuery,
-  ): Promise<GetCourseByIdData[]> {
-    return await this.repository.getCourses(resourceId, query);
+  public async getCourses(query: GetCoursesQuery): Promise<GetCoursesData> {
+    return await this.repository.course.getCourses(query);
   }
 
   public async getEnrolledCourses(
     resourceId: CourseResourceId,
     query: GetEnrolledCoursesQuery,
   ): Promise<GetEnrolledCoursesData> {
-    return await this.repository.getEnrolledCourses(resourceId, query);
+    return await this.repository.course.getEnrolledCourses(resourceId, query);
   }
 
   public async updateBasicCourse(
@@ -101,14 +112,30 @@ export class CourseService implements ICourseService {
     resourceId: CourseResourceId,
     dto: UpdateBasicCourseDto,
   ): Promise<CourseModel> {
-    return await this.repository.updateBasicCourse(courseId, resourceId, dto);
+    return await this.repository.course.updateCourse(courseId, resourceId, dto);
+  }
+
+  public async updateCourseStatus(
+    courseId: number,
+    resourceId: CourseResourceId,
+    dto: UpdateCourseStatusDto,
+  ): Promise<CourseModel> {
+    return await this.repository.course.updateCourse(courseId, resourceId, dto);
+  }
+
+  public async updateCourseCategoryId(
+    courseId: number,
+    resourceId: CourseResourceId,
+    dto: UpdateCourseCategoryIdDto,
+  ): Promise<CourseModel> {
+    return await this.repository.course.updateCourse(courseId, resourceId, dto);
   }
 
   public async deleteCourse(
     courseId: number,
     resourceId: CourseResourceId,
   ): Promise<{}> {
-    await this.repository.deleteCourse(courseId, resourceId);
+    await this.repository.course.deleteCourse(courseId, resourceId);
 
     return {};
   }
@@ -116,7 +143,7 @@ export class CourseService implements ICourseService {
   public async createLike(
     resourceId: CourseLikeResourceId,
   ): Promise<CourseLikeModel> {
-    return await this.repository.createLike(resourceId);
+    return await this.repository.course.createLike(resourceId);
   }
 
   public async deleteLike(
@@ -130,7 +157,7 @@ export class CourseService implements ICourseService {
       },
       new RecordNotFoundException(),
     );
-    await this.repository.deleteLike(likeId, resourceId);
+    await this.repository.course.deleteLike(likeId, resourceId);
 
     return {};
   }
@@ -145,7 +172,7 @@ export class CourseService implements ICourseService {
     const { likeId, resourceId } = id;
     const { courseId } = resourceId;
 
-    const like = await this.repository.getLikeById(likeId, resourceId);
+    const like = await this.repository.course.getLikeById(likeId, resourceId);
 
     if (!like || like.courseId !== courseId) {
       if (error) {

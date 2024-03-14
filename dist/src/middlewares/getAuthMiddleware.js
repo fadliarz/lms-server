@@ -13,41 +13,83 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAuthMiddleWare = void 0;
+require("reflect-metadata");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const getValuable_1 = __importDefault(require("../common/functions/getValuable"));
 const AuthenticationException_1 = __importDefault(require("../common/class/exceptions/AuthenticationException"));
-const PrismaClientSingleton_1 = __importDefault(require("../common/class/PrismaClientSingleton"));
 const Cookie_1 = require("../common/constants/Cookie");
+const inversifyConfig_1 = __importDefault(require("../inversifyConfig"));
+const user_type_1 = require("../modules/user/user.type");
+const ForbiddenException_1 = __importDefault(require("../common/class/exceptions/ForbiddenException"));
 const getAuthMiddleWare = () => {
-    const userTable = PrismaClientSingleton_1.default.getInstance().user;
+    const userService = inversifyConfig_1.default.get(user_type_1.UserDITypes.SERVICE);
+    const userRepository = inversifyConfig_1.default.get(user_type_1.UserDITypes.REPOSITORY);
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const accessToken = req.cookies[Cookie_1.Cookie.ACCESS_TOKEN] || req.headers.cookie;
+            const storedRefreshToken = req.cookies[Cookie_1.Cookie.ACCESS_TOKEN];
+            if (!storedRefreshToken) {
+                throw new AuthenticationException_1.default();
+            }
             let decoded;
+            const user = yield userRepository.getUserByRefreshToken(storedRefreshToken);
+            if (!user) {
+                try {
+                    decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
+                    const userRelatedToEmail = yield userRepository.getUserByEmail(decoded.email);
+                    /**
+                     * Detected refresh token reuse!
+                     *
+                     * Account is hacked, clear refreshToken!.
+                     *
+                     */
+                    if (userRelatedToEmail) {
+                        yield userRepository.unauthorizedUpdateUser(userRelatedToEmail.id, {
+                            refreshToken: [],
+                        });
+                    }
+                    throw new Error();
+                }
+                catch (error) {
+                    throw new ForbiddenException_1.default();
+                }
+            }
             try {
-                decoded = jsonwebtoken_1.default.verify(accessToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
+                decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
+                if (decoded.email !== user.email) {
+                    throw new Error();
+                }
+                /**
+                 * At this point, it's proven that the refreshToken is still valid
+                 *
+                 */
+                const accessToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, decoded.email);
+                const refreshToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, decoded.email);
+                res
+                    .cookie(Cookie_1.Cookie.ACCESS_TOKEN, accessToken, {
+                    httpOnly: false,
+                    maxAge: 1000 * 60 * 60 * Cookie_1.Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
+                    secure: process.env.NODE_ENV === "production",
+                })
+                    .cookie(Cookie_1.Cookie.REFRESH_TOKEN, refreshToken, {
+                    httpOnly: true,
+                    maxAge: 1000 * 60 * 60 * 24 * Cookie_1.Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
+                });
             }
             catch (error) {
-                throw new AuthenticationException_1.default();
+                /**
+                 * Some possible scenarios:
+                 *
+                 * 1. Expired refreshToken
+                 * 2. User email and decoded email don't match
+                 *
+                 */
+                throw new ForbiddenException_1.default();
             }
-            const user = yield userTable.findFirst({
-                where: {
-                    email: decoded.email,
-                    accessToken,
-                },
-            });
-            /**
-             * Some possible scenarios:
-             *
-             * 1. User changed the email
-             * 2. Deleted user
-             *
-             */
-            if (!user) {
-                throw new AuthenticationException_1.default();
-            }
-            user.refreshToken = [];
-            req.accessToken = accessToken;
+            user.password = null;
+            user.refreshToken = null;
+            user.accessToken = null;
             req.user = (0, getValuable_1.default)(user);
             next();
         }

@@ -168,11 +168,8 @@ let UserService = class UserService {
             return user;
         });
     }
-    signOutUser(cookies) {
+    signOutUser(storedRefreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const storedRefreshToken = cookies[Cookie_1.Cookie.REFRESH_TOKEN];
-            if (!storedRefreshToken)
-                throw new AuthenticationException_1.default();
             const userRelatedToStoredRefreshToken = yield this.repository.getUserByRefreshToken(storedRefreshToken);
             if (!userRelatedToStoredRefreshToken) {
                 throw new AuthenticationException_1.default();

@@ -5,6 +5,7 @@ var ErrorCode;
 (function (ErrorCode) {
     ErrorCode["UNAUTHENTICATED"] = "LMS3000";
     ErrorCode["UNAUTHORIZED"] = "LMS3001";
+    ErrorCode["FORBIDDEN"] = "LMS3003";
     ErrorCode["BAD_REQUEST"] = "LMS4000";
     ErrorCode["INVALID_QUERY"] = "LMS4001";
     ErrorCode["INVALID_PARAMS"] = "LMS4002";

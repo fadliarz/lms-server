@@ -2,6 +2,7 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
   CourseCategoryDITypes,
+  CourseCategoryModel,
   CourseCategoryResourceId,
   CreateCourseCategoryDto,
   ICourseCategoryAuthorization,
@@ -22,6 +23,11 @@ import { PrismaTransaction } from "../../../common/types";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import CourseCategoryAuthorization from "../authorization/category.authorization";
+import {
+  CourseResourceId,
+  GetCourseByIdData,
+  GetCourseByIdQuery,
+} from "../../course/course.type";
 
 export interface ICourseCategoryRepository {
   createCategory: (
@@ -29,6 +35,7 @@ export interface ICourseCategoryRepository {
     dto: CreateCourseCategoryDto,
   ) => Promise<CourseCategory>;
   getCategories: () => Promise<CourseCategory[]>;
+  getCategoryById: (categoryId: number) => Promise<CourseCategoryModel | null>;
   updateCategory: (
     categoryId: number,
     resourceId: CourseCategoryResourceId,
@@ -64,6 +71,16 @@ export class CourseCategoryRepository implements ICourseCategoryRepository {
   public async getCategories(): Promise<CourseCategory[]> {
     return await this.prisma.$transaction(async (tx) => {
       return await tx.courseCategory.findMany();
+    }, PrismaDefaultTransactionConfigForRead);
+  }
+
+  public async getCategoryById(
+    categoryId: number,
+  ): Promise<CourseCategoryModel | null> {
+    return await this.prisma.$transaction(async (tx) => {
+      return await tx.courseCategory.findUnique({
+        where: { id: categoryId },
+      });
     }, PrismaDefaultTransactionConfigForRead);
   }
 

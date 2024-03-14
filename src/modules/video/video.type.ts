@@ -63,6 +63,10 @@ export interface ICourseLessonVideoAuthorization {
  *
  */
 export type CourseLessonVideoModel = CourseLessonVideo;
+export type PublicCourseLessonVideoModel = Omit<
+  CourseLessonVideoModel,
+  "youtubeLink"
+>;
 export type ValuableCourseLessonVideoModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonModel>;
 

@@ -29,6 +29,7 @@ const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/P
 const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
+const isEqualOrIncludeCourseEnrollmentRole_1 = __importDefault(require("../../../common/functions/isEqualOrIncludeCourseEnrollmentRole"));
 let CourseRepository = class CourseRepository extends BaseAuthorization_1.default {
     constructor() {
         super(...arguments);
@@ -49,7 +50,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     getCourseById(courseId, resourceId, query) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                const { include_author, include_category } = query;
+                const { include_author, include_category, include_lessons, include_public_videos, } = query;
                 return yield tx.course.findUnique({
                     where: { id: courseId },
                     include: {
@@ -57,13 +58,34 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
                             ? {
                                 select: {
                                     id: true,
-                                    avatar: true,
                                     name: true,
                                     NIM: true,
+                                    avatar: true,
+                                    about: true,
+                                    role: true,
                                 },
                             }
                             : false,
                         category: include_category ? true : false,
+                        lessons: include_lessons
+                            ? {
+                                include: {
+                                    videos: include_public_videos
+                                        ? {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                description: true,
+                                                totalDurations: true,
+                                                createdAt: true,
+                                                updatedAt: true,
+                                                lessonId: true,
+                                            },
+                                        }
+                                        : false,
+                                },
+                            }
+                            : false,
                     },
                 });
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
@@ -78,7 +100,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
             return course;
         });
     }
-    getCourses(resourceId, query) {
+    getCourses(query) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const { include_author, include_category, pageNumber, pageSize } = query;
@@ -90,13 +112,15 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
                             ? {
                                 select: {
                                     id: true,
-                                    avatar: true,
                                     name: true,
                                     NIM: true,
+                                    avatar: true,
+                                    about: true,
+                                    role: true,
                                 },
                             }
-                            : include_author,
-                        category: include_category,
+                            : false,
+                        category: include_category ? true : false,
                     },
                 });
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
@@ -108,40 +132,43 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
                 const { userId } = resourceId;
                 const { include_author, include_category, limit_student_courses, limit_instructor_courses, role, } = query;
                 const roleSet = new Set(role);
-                const enrollments = yield tx.courseEnrollment.findMany({
-                    where: {
-                        userId,
-                        role: (roleSet.has(course_type_1.CourseEnrollmentRoleModel.STUDENT)
-                            ? course_type_1.CourseEnrollmentRoleModel.STUDENT
-                            : undefined) ||
-                            (roleSet.has(course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR)
-                                ? course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR
-                                : undefined),
-                    },
-                    select: {
-                        course: {
-                            include: {
-                                author: include_author
-                                    ? {
-                                        select: {
-                                            id: true,
-                                            avatar: true,
-                                            name: true,
-                                            NIM: true,
-                                        },
-                                    }
-                                    : include_author,
-                                category: include_category,
-                            },
+                const enrolledCourses = [];
+                for (let role of roleSet) {
+                    const enrollments = yield tx.courseEnrollment.findMany({
+                        where: {
+                            userId,
+                            role,
                         },
-                        role: true,
-                    },
-                });
-                const courses = [];
-                enrollments.forEach((enrollment) => {
-                    courses.push(Object.assign(Object.assign({}, enrollment.course), { role: enrollment.role }));
-                });
-                return courses;
+                        select: {
+                            course: {
+                                include: {
+                                    author: include_author
+                                        ? {
+                                            select: {
+                                                id: true,
+                                                name: true,
+                                                NIM: true,
+                                                avatar: true,
+                                                about: true,
+                                                role: true,
+                                            },
+                                        }
+                                        : include_author,
+                                    category: include_category ? true : false,
+                                },
+                            },
+                            role: true,
+                        },
+                        take: (0, isEqualOrIncludeCourseEnrollmentRole_1.default)(role, course_type_1.CourseEnrollmentRoleModel.STUDENT)
+                            ? limit_student_courses
+                            : limit_instructor_courses,
+                    });
+                    const courses = [];
+                    enrollments.forEach((enrollment) => {
+                        courses.push({ course: enrollment.course, role });
+                    });
+                }
+                return enrolledCourses;
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });
     }
@@ -154,11 +181,6 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
                     data: dto,
                 });
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-        });
-    }
-    updateBasicCourse(courseId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.updateCourse(courseId, resourceId, dto);
         });
     }
     deleteCourse(courseId, resourceId) {

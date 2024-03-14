@@ -89,4 +89,4 @@ playground:
 # GIT
 #
 count-line:
-	git ls-files src/ prisma/ Makefile docker-compose.yaml docker-compose-dev.yaml Dockerfile | xargs wc -l
+	git ls-files src/ prisma/ Makefile docker-compose.yaml docker-compose-dev.yaml swagger.yaml Dockerfile | xargs wc -l

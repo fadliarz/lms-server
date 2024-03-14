@@ -16,40 +16,26 @@ function CourseRouter(authenticationMiddleware) {
      *
      */
     router.post("/", authenticationMiddleware, controller.createCourse.bind(controller));
+    router.post(course_type_2.courseUrls.likes, authenticationMiddleware, controller.createLike.bind(controller));
     /**
-     * GetCourseById
+     * Get
      *
      */
     router.get(course_type_2.courseUrls.course, controller.getCourseById.bind(controller));
-    /**
-     * GetCourses
-     *
-     */
     router.get("/", controller.getCourses.bind(controller));
-    /**
-     * GetEnrolledCourses
-     *
-     */
     router.get(course_type_2.courseUrls.enrolled, authenticationMiddleware, controller.getEnrolledCourses.bind(controller));
     /**
-     * Update (Course)
+     * Update
      *
      */
-    router.put(course_type_2.courseUrls.course, authenticationMiddleware, controller.updateBasicCourse.bind(controller));
+    router.patch(course_type_2.courseUrls.basic, authenticationMiddleware, controller.updateBasicCourse.bind(controller));
+    router.patch(course_type_2.courseUrls.status, authenticationMiddleware, controller.updateCourseStatus.bind(controller));
+    router.patch(course_type_2.courseUrls.category, authenticationMiddleware, controller.updateCourseCategoryId.bind(controller));
     /**
-     * Delete (Course)
+     * Delete
      *
      */
     router.delete(course_type_2.courseUrls.course, authenticationMiddleware, controller.deleteCourse.bind(controller));
-    /**
-     * Create (CourseLike)
-     *
-     */
-    router.post(course_type_2.courseUrls.likes, authenticationMiddleware, controller.createLike.bind(controller));
-    /**
-     * Delete (CourseLike)
-     *
-     */
     router.delete(course_type_2.courseUrls.like, authenticationMiddleware, controller.deleteLike.bind(controller));
     return router;
 }

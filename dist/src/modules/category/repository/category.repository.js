@@ -49,6 +49,15 @@ let CourseCategoryRepository = class CourseCategoryRepository {
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });
     }
+    getCategoryById(categoryId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                return yield tx.courseCategory.findUnique({
+                    where: { id: categoryId },
+                });
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+        });
+    }
     updateCategory(categoryId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {

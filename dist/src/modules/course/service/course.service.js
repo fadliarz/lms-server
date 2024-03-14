@@ -24,43 +24,53 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CourseService = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
-const course_type_1 = require("../course.type");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
+const repository_type_1 = require("../../../common/class/repository/repository.type");
 let CourseService = class CourseService {
     createCourse(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.createCourse(resourceId, dto);
+            return yield this.repository.course.createCourse(resourceId, dto);
         });
     }
     getCourseById(courseId, resourceId, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getCourseByIdOrThrow(courseId, resourceId, query, new RecordNotFoundException_1.default());
+            return yield this.repository.course.getCourseByIdOrThrow(courseId, resourceId, query, new RecordNotFoundException_1.default());
         });
     }
-    getCourses(resourceId, query) {
+    getCourses(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getCourses(resourceId, query);
+            return yield this.repository.course.getCourses(query);
         });
     }
     getEnrolledCourses(resourceId, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getEnrolledCourses(resourceId, query);
+            return yield this.repository.course.getEnrolledCourses(resourceId, query);
         });
     }
     updateBasicCourse(courseId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.updateBasicCourse(courseId, resourceId, dto);
+            return yield this.repository.course.updateCourse(courseId, resourceId, dto);
+        });
+    }
+    updateCourseStatus(courseId, resourceId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.repository.course.updateCourse(courseId, resourceId, dto);
+        });
+    }
+    updateCourseCategoryId(courseId, resourceId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.repository.course.updateCourse(courseId, resourceId, dto);
         });
     }
     deleteCourse(courseId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.repository.deleteCourse(courseId, resourceId);
+            yield this.repository.course.deleteCourse(courseId, resourceId);
             return {};
         });
     }
     createLike(resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.createLike(resourceId);
+            return yield this.repository.course.createLike(resourceId);
         });
     }
     deleteLike(likeId, resourceId) {
@@ -69,7 +79,7 @@ let CourseService = class CourseService {
                 likeId,
                 resourceId,
             }, new RecordNotFoundException_1.default());
-            yield this.repository.deleteLike(likeId, resourceId);
+            yield this.repository.course.deleteLike(likeId, resourceId);
             return {};
         });
     }
@@ -77,7 +87,7 @@ let CourseService = class CourseService {
         return __awaiter(this, void 0, void 0, function* () {
             const { likeId, resourceId } = id;
             const { courseId } = resourceId;
-            const like = yield this.repository.getLikeById(likeId, resourceId);
+            const like = yield this.repository.course.getLikeById(likeId, resourceId);
             if (!like || like.courseId !== courseId) {
                 if (error) {
                     throw error;
@@ -90,8 +100,8 @@ let CourseService = class CourseService {
 };
 exports.CourseService = CourseService;
 __decorate([
-    (0, inversify_1.inject)(course_type_1.CourseDITypes.REPOSITORY),
-    __metadata("design:type", Object)
+    (0, inversify_1.inject)(repository_type_1.RepositoryDITypes.FACADE),
+    __metadata("design:type", repository_type_1.IRepository)
 ], CourseService.prototype, "repository", void 0);
 exports.CourseService = CourseService = __decorate([
     (0, inversify_1.injectable)()

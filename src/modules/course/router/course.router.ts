@@ -4,7 +4,6 @@ import dIContainer from "../../../inversifyConfig";
 import { CourseDITypes } from "../course.type";
 import { courseUrls } from "../course.type";
 import { ICourseController } from "../controller/course.controller";
-import { NextFunction, Request, Response } from "express-serve-static-core";
 
 export default function CourseRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -23,46 +22,50 @@ export default function CourseRouter(authenticationMiddleware: any) {
     controller.createCourse.bind(controller),
   );
 
-  /**
-   * GetCourseById
-   *
-   */
-  router.get(
-    courseUrls.course,
-    controller.getCourseById.bind(controller),
+  router.post(
+    courseUrls.likes,
+    authenticationMiddleware,
+    controller.createLike.bind(controller),
   );
 
   /**
-   * GetCourses
+   * Get
    *
    */
-  router.get(
-    "/",
-    controller.getCourses.bind(controller)
-  );
+  router.get(courseUrls.course, controller.getCourseById.bind(controller));
 
-  /**
-   * GetEnrolledCourses
-   *
-   */
+  router.get("/", controller.getCourses.bind(controller));
+
   router.get(
     courseUrls.enrolled,
     authenticationMiddleware,
-    controller.getEnrolledCourses.bind(controller)
+    controller.getEnrolledCourses.bind(controller),
   );
 
   /**
-   * Update (Course)
+   * Update
    *
    */
-  router.put(
-    courseUrls.course,
+  router.patch(
+    courseUrls.basic,
     authenticationMiddleware,
     controller.updateBasicCourse.bind(controller),
   );
 
+  router.patch(
+    courseUrls.status,
+    authenticationMiddleware,
+    controller.updateCourseStatus.bind(controller),
+  );
+
+  router.patch(
+    courseUrls.category,
+    authenticationMiddleware,
+    controller.updateCourseCategoryId.bind(controller),
+  );
+
   /**
-   * Delete (Course)
+   * Delete
    *
    */
   router.delete(
@@ -71,20 +74,6 @@ export default function CourseRouter(authenticationMiddleware: any) {
     controller.deleteCourse.bind(controller),
   );
 
-  /**
-   * Create (CourseLike)
-   *
-   */
-  router.post(
-    courseUrls.likes,
-    authenticationMiddleware,
-    controller.createLike.bind(controller),
-  );
-
-  /**
-   * Delete (CourseLike)
-   *
-   */
   router.delete(
     courseUrls.like,
     authenticationMiddleware,

@@ -18,7 +18,6 @@ import { inject, injectable } from "inversify";
 import HttpException from "../../../common/class/exceptions/HttpException";
 import { StatusCode } from "../../../common/constants/statusCode";
 import validateEnv from "../../../common/functions/validateEnv";
-import { User } from "@prisma/client";
 import { ErrorCode } from "../../../common/constants/errorCode";
 import { ErrorMessage } from "../../../common/constants/errorMessage";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
@@ -60,7 +59,11 @@ export interface IUserService {
       password: string;
     },
   ) => Promise<UserModel>;
-  signOutUser: (req: Request, res: Response) => Promise<void>;
+  signOutUser: (storedRefreshToken: string) => Promise<void>;
+  generateFreshAuthenticationToken: (
+    type: Cookie.ACCESS_TOKEN | Cookie.REFRESH_TOKEN,
+    email: string,
+  ) => string;
 }
 
 @injectable()
@@ -280,12 +283,7 @@ export class UserService implements IUserService {
     return user;
   }
 
-  public async signOutUser(cookies: any): Promise<void> {
-    const storedRefreshToken = cookies[Cookie.REFRESH_TOKEN] as
-      | undefined
-      | string;
-    if (!storedRefreshToken) throw new AuthenticationException();
-
+  public async signOutUser(storedRefreshToken: string): Promise<void> {
     const userRelatedToStoredRefreshToken =
       await this.repository.getUserByRefreshToken(storedRefreshToken);
     if (!userRelatedToStoredRefreshToken) {
@@ -302,7 +300,7 @@ export class UserService implements IUserService {
     );
   }
 
-  private generateFreshAuthenticationToken(
+  public generateFreshAuthenticationToken(
     type: Cookie.ACCESS_TOKEN | Cookie.REFRESH_TOKEN,
     email: string,
   ): string {

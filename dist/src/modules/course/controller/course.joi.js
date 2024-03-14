@@ -3,9 +3,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateCourseLikeDtoJoi = exports.UpdateCourseDtoJoi = exports.GetEnrolledCoursesQueryJoi = exports.GetCoursesQueryJoi = exports.GetCourseByIdQueryJoi = exports.CreateCourseDtoJoi = void 0;
+exports.CreateCourseLikeDtoJoi = exports.UpdateCourseCategoryIdDtoJoi = exports.UpdateCourseStatusDtoJoi = exports.UpdateBasicCourseDtoJoi = exports.GetEnrolledCoursesQueryJoi = exports.GetCoursesQueryJoi = exports.GetCourseByIdQueryJoi = exports.CreateCourseDtoJoi = void 0;
 const joi_1 = __importDefault(require("joi"));
-const client_1 = require("@prisma/client");
+const course_type_1 = require("../course.type");
 /**
  * CreateCourse
  *
@@ -27,6 +27,8 @@ exports.GetCourseByIdQueryJoi = joi_1.default.object({
      */
     include_author: joi_1.default.boolean(),
     include_category: joi_1.default.boolean(),
+    include_lessons: joi_1.default.boolean(),
+    include_public_videos: joi_1.default.boolean(),
 });
 /**
  * GetCourses
@@ -64,13 +66,17 @@ exports.GetEnrolledCoursesQueryJoi = joi_1.default.object({
 /**
  * UpdateCourse
  */
-exports.UpdateCourseDtoJoi = joi_1.default.object({
-    title: joi_1.default.string(),
-    categoryId: joi_1.default.number(),
-    image: joi_1.default.string(),
+exports.UpdateBasicCourseDtoJoi = joi_1.default.object({
     description: joi_1.default.string(),
+    image: joi_1.default.string(),
+    title: joi_1.default.string(),
     material: joi_1.default.string(),
-    status: joi_1.default.string().valid(client_1.CourseStatus.PUBLISHED, client_1.CourseStatus.DRAFT),
+});
+exports.UpdateCourseStatusDtoJoi = joi_1.default.object({
+    status: joi_1.default.required().valid(course_type_1.CourseStatusModel.DRAFT, course_type_1.CourseStatusModel.PUBLISHED),
+});
+exports.UpdateCourseCategoryIdDtoJoi = joi_1.default.object({
+    categoryId: joi_1.default.number().required(),
 });
 /**
  * CreateCourseLike

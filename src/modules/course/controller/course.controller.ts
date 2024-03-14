@@ -4,7 +4,6 @@ import {
   CourseDITypes,
   CourseLikeResourceId,
   CourseResourceId,
-  courseUrls,
   GetCourseByIdQuery,
   GetCoursesQuery,
   GetEnrolledCoursesQuery,
@@ -20,7 +19,9 @@ import {
   GetCourseByIdQueryJoi,
   GetCoursesQueryJoi,
   GetEnrolledCoursesQueryJoi,
-  UpdateCourseDtoJoi,
+  UpdateBasicCourseDtoJoi,
+  UpdateCourseCategoryIdDtoJoi,
+  UpdateCourseStatusDtoJoi,
 } from "./course.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import processBoolean from "../../../common/functions/processBoolean";
@@ -47,6 +48,16 @@ export interface ICourseController {
     next: NextFunction,
   ) => Promise<Response | void>;
   updateBasicCourse: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateCourseStatus: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateCourseCategoryId: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -103,6 +114,9 @@ export class CourseController implements ICourseController {
       const query = req.query as unknown as GetCourseByIdQuery;
       query.include_author = processBoolean(query.include_author as any);
       query.include_category = processBoolean(query.include_category as any);
+      query.include_public_videos = processBoolean(
+        query.include_public_videos as any,
+      );
       const course = await this.service.getCourseById(
         courseId,
         resourceId,
@@ -111,8 +125,7 @@ export class CourseController implements ICourseController {
 
       res.status(StatusCode.SUCCESS).json({ data: course });
     } catch (error) {
-
-    console.log(error)
+      console.log(error);
       next(error);
     }
   }
@@ -125,11 +138,12 @@ export class CourseController implements ICourseController {
     try {
       await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
 
-      const resourceId = {} as CourseResourceId;
       const query = req.query as any as GetCoursesQuery;
+      query.include_author = processBoolean(query.include_author as any);
+      query.include_category = processBoolean(query.include_category as any);
       query.pageNumber = Number(query.pageNumber);
       query.pageSize = Number(query.pageSize);
-      const courses = await this.service.getCourses(resourceId, query);
+      const courses = await this.service.getCourses(query);
 
       return res.status(StatusCode.SUCCESS).json({ data: courses });
     } catch (error) {
@@ -144,16 +158,16 @@ export class CourseController implements ICourseController {
   ): Promise<Response | void> {
     try {
       await validateJoi({ query: GetEnrolledCoursesQueryJoi })(req, res, next);
+
       const query = req.query as unknown as GetEnrolledCoursesQuery;
-      if (query.limit_student_courses) {
-        query.limit_student_courses = Number(query.limit_student_courses);
-      }
-      if (query.limit_instructor_courses) {
-        query.limit_instructor_courses = Number(query.limit_instructor_courses);
-      }
+      query.limit_student_courses = query.limit_student_courses
+        ? Number(query.limit_student_courses)
+        : 3;
+      query.limit_instructor_courses = query.limit_instructor_courses
+        ? Number(query.limit_instructor_courses)
+        : 3;
       query.include_author = processBoolean(query.include_author as any);
       query.include_category = processBoolean(query.include_category as any);
-
       const resourceId = this.validateResourceId(req);
       const courses = await this.service.getEnrolledCourses(resourceId, query);
 
@@ -169,11 +183,55 @@ export class CourseController implements ICourseController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await validateJoi({ body: UpdateCourseDtoJoi })(req, res, next);
+      await validateJoi({ body: UpdateBasicCourseDtoJoi })(req, res, next);
 
       const courseId = this.validateCourseId(req);
       const resourceId = this.validateResourceId(req);
       const updatedCourse = await this.service.updateBasicCourse(
+        courseId,
+        resourceId,
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedCourse });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateCourseStatus(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateCourseStatusDtoJoi })(req, res, next);
+
+      const courseId = this.validateCourseId(req);
+      const resourceId = this.validateResourceId(req);
+      const updatedCourse = await this.service.updateCourseStatus(
+        courseId,
+        resourceId,
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedCourse });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateCourseCategoryId(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateCourseCategoryIdDtoJoi })(req, res, next);
+
+      const courseId = this.validateCourseId(req);
+      const resourceId = this.validateResourceId(req);
+      const updatedCourse = await this.service.updateCourseCategoryId(
         courseId,
         resourceId,
         req.body,

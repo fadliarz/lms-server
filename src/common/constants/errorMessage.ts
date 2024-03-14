@@ -6,6 +6,7 @@ export const ErrorMessage: Record<Key, string | ((...arg: any) => string)> = {
   [ErrorCode.UNAUTHENTICATED]: "Unauthenticated, please login first!",
   [ErrorCode.UNAUTHORIZED]:
     "Unauthorized, you are not allowed to do this operation!",
+  [ErrorCode.FORBIDDEN]: "Forbidden, you are not allowed to do this operation!",
   [ErrorCode.BAD_REQUEST]: "BadRequest, unknown client side error!",
   [ErrorCode.INVALID_QUERY]: "Invalid input query!",
   [ErrorCode.INVALID_PARAMS]: "Invalid input parameter!",

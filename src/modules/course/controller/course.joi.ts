@@ -1,12 +1,15 @@
 import Joi from "joi";
 import {
   CourseEnrollmentRoleModel,
+  CourseStatusModel,
   CreateCourseDto,
   CreateCourseLikeDto,
   GetCourseByIdQuery,
   GetCoursesQuery,
   GetEnrolledCoursesQuery,
+  UpdateCourseCategoryIdDto,
   UpdateCourseDto,
+  UpdateCourseStatusDto,
 } from "../course.type";
 import { CourseStatus } from "@prisma/client";
 
@@ -32,6 +35,8 @@ export const GetCourseByIdQueryJoi = Joi.object<GetCourseByIdQuery>({
    */
   include_author: Joi.boolean(),
   include_category: Joi.boolean(),
+  include_lessons: Joi.boolean(),
+  include_public_videos: Joi.boolean(),
 });
 
 /**
@@ -72,14 +77,24 @@ export const GetEnrolledCoursesQueryJoi = Joi.object<GetEnrolledCoursesQuery>({
 /**
  * UpdateCourse
  */
-export const UpdateCourseDtoJoi = Joi.object<UpdateCourseDto>({
-  title: Joi.string(),
-  categoryId: Joi.number(),
-  image: Joi.string(),
+export const UpdateBasicCourseDtoJoi = Joi.object<UpdateCourseDto>({
   description: Joi.string(),
+  image: Joi.string(),
+  title: Joi.string(),
   material: Joi.string(),
-  status: Joi.string().valid(CourseStatus.PUBLISHED, CourseStatus.DRAFT),
 });
+
+export const UpdateCourseStatusDtoJoi = Joi.object<UpdateCourseStatusDto>({
+  status: Joi.required().valid(
+    CourseStatusModel.DRAFT,
+    CourseStatusModel.PUBLISHED,
+  ),
+});
+
+export const UpdateCourseCategoryIdDtoJoi =
+  Joi.object<UpdateCourseCategoryIdDto>({
+    categoryId: Joi.number().required(),
+  });
 
 /**
  * CreateCourseLike

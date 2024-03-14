@@ -52,6 +52,10 @@ export type PublicUserModel = Pick<
   UserModel,
   "name" | "NIM" | "avatar" | "about" | "role"
 >;
+export type FilteredUserModel = Exclude<
+  UserModel,
+  "accessToken" | "refreshToken" | "password"
+>;
 
 /**
  *

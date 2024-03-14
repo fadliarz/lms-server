@@ -54,6 +54,7 @@ let CourseController = class CourseController {
                 const query = req.query;
                 query.include_author = (0, processBoolean_1.default)(query.include_author);
                 query.include_category = (0, processBoolean_1.default)(query.include_category);
+                query.include_public_videos = (0, processBoolean_1.default)(query.include_public_videos);
                 const course = yield this.service.getCourseById(courseId, resourceId, query);
                 res.status(statusCode_1.StatusCode.SUCCESS).json({ data: course });
             }
@@ -67,11 +68,12 @@ let CourseController = class CourseController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ query: course_joi_1.GetCoursesQueryJoi })(req, res, next);
-                const resourceId = {};
                 const query = req.query;
+                query.include_author = (0, processBoolean_1.default)(query.include_author);
+                query.include_category = (0, processBoolean_1.default)(query.include_category);
                 query.pageNumber = Number(query.pageNumber);
                 query.pageSize = Number(query.pageSize);
-                const courses = yield this.service.getCourses(resourceId, query);
+                const courses = yield this.service.getCourses(query);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: courses });
             }
             catch (error) {
@@ -84,12 +86,12 @@ let CourseController = class CourseController {
             try {
                 yield (0, validateJoi_1.default)({ query: course_joi_1.GetEnrolledCoursesQueryJoi })(req, res, next);
                 const query = req.query;
-                if (query.limit_student_courses) {
-                    query.limit_student_courses = Number(query.limit_student_courses);
-                }
-                if (query.limit_instructor_courses) {
-                    query.limit_instructor_courses = Number(query.limit_instructor_courses);
-                }
+                query.limit_student_courses = query.limit_student_courses
+                    ? Number(query.limit_student_courses)
+                    : 3;
+                query.limit_instructor_courses = query.limit_instructor_courses
+                    ? Number(query.limit_instructor_courses)
+                    : 3;
                 query.include_author = (0, processBoolean_1.default)(query.include_author);
                 query.include_category = (0, processBoolean_1.default)(query.include_category);
                 const resourceId = this.validateResourceId(req);
@@ -104,10 +106,38 @@ let CourseController = class CourseController {
     updateBasicCourse(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield (0, validateJoi_1.default)({ body: course_joi_1.UpdateCourseDtoJoi })(req, res, next);
+                yield (0, validateJoi_1.default)({ body: course_joi_1.UpdateBasicCourseDtoJoi })(req, res, next);
                 const courseId = this.validateCourseId(req);
                 const resourceId = this.validateResourceId(req);
                 const updatedCourse = yield this.service.updateBasicCourse(courseId, resourceId, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedCourse });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateCourseStatus(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: course_joi_1.UpdateCourseStatusDtoJoi })(req, res, next);
+                const courseId = this.validateCourseId(req);
+                const resourceId = this.validateResourceId(req);
+                const updatedCourse = yield this.service.updateCourseStatus(courseId, resourceId, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedCourse });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateCourseCategoryId(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: course_joi_1.UpdateCourseCategoryIdDtoJoi })(req, res, next);
+                const courseId = this.validateCourseId(req);
+                const resourceId = this.validateResourceId(req);
+                const updatedCourse = yield this.service.updateCourseCategoryId(courseId, resourceId, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedCourse });
             }
             catch (error) {

@@ -72,6 +72,37 @@ components:
           format: date
         role:
           $ref: "#/components/schemas/UserRoleModel"
+    FilteredUserModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        name:
+          type: string
+        NIM:
+          type: string
+        avatar:
+          type: string
+        about:
+          type: string
+        totalCourses:
+          type: integer
+        totalLessons:
+          type: integer
+        totalUnreadMessages:
+          type: integer
+        createdAt:
+          type: string
+          format: date
+        updatedAt:
+          type: string
+          format: date
+        role:
+          $ref: "#/components/schemas/UserRoleModel"
     PublicUserModel:
       type: object
       properties:
@@ -212,6 +243,28 @@ components:
           readOnly: true
         lessonId:
           type: integer
+    PublicCourseLessonVideoModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        totalDurations:
+          type: number
+          format: float
+        createdAt:
+          type: string
+          format: date
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date
+          readOnly: true
+        lessonId:
+          type: integer
     CourseLikeModel:
       type: object
       properties:
@@ -316,37 +369,129 @@ components:
       properties:
         title:
           type: string
-        categoryId:
-          type: integer
         image:
           type: string
         description:
           type: string
         material:
           type: string
+    UpdateCourseStatusDto:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/CourseStatusModel"
+      required:
+        - status
+    UpdateCourseCategoryId:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+      required:
+        - categoryId
     CreateCourseLikeDto:
       type: object
       properties:
-    GetEnrolledCoursesData:
+
+    #
+    # Data > Course
+    #
+    GetCourseByIdData:
+      allOf:
+        - $ref: "#/components/schemas/CourseModel"
+        - type: object
+          properties:
+            author:
+              $ref: "#/components/schemas/PublicUserModel"
+            lessons:
+              anyOf:
+                - type: array
+                  items:
+                    allOf:
+                      - $ref: "#/components/schemas/CourseLessonModel"
+                      - type: object
+                        properties:
+                          videos:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/PublicCourseLessonVideoModel"
+                - type: array
+                  items:
+                    $ref: "#/components/schemas/CourseLessonModel"
+            category:
+              $ref: "#/components/schemas/CategoryModel"
+      required:
+        - id
+    GetCoursesData:
       type: array
       items:
         allOf:
           - $ref: "#/components/schemas/CourseModel"
           - type: object
             properties:
+              author:
+                $ref: "#/components/schemas/PublicUserModel"
               category:
                 $ref: "#/components/schemas/CategoryModel"
-              author:
-                type: object
-                properties:
-                  id:
-                    $ref: "#/components/schemas/UserModel/properties/id"
-                  avatar:
-                    $ref: "#/components/schemas/UserModel/properties/avatar"
-                  name:
-                    $ref: "#/components/schemas/UserModel/properties/name"
-                  NIM:
-                    $ref: "#/components/schemas/UserModel/properties/NIM"
+            required:
+              - id
+    GetEnrolledCoursesData:
+      type:
+        object
+      properties:
+        role:
+          $ref: "#/components/schemas/CourseEnrollmentRoleModel"
+        course:
+          allOf:
+            - $ref: "#/components/schemas/CourseModel"
+            - type: object
+              properties:
+                author:
+                  $ref: "#/components/schemas/PublicUserModel"
+                category:
+                  $ref: "#/components/schemas/CategoryModel"
+      required:
+        - id
+    # Query > Course
+    GetCourseByIdQuery:
+      type:
+        object
+      properties:
+        include_author:
+          type: boolean
+        include_category:
+          type: boolean
+        include_lessons:
+          type: boolean
+        include_public_videos:
+          type: boolean
+    GetCoursesQuery:
+      type:
+        object
+      properties:
+        include_author:
+          type: boolean
+        include_category:
+          type: boolean
+        pageSize:
+          type: number
+        pageNumber:
+          type: number
+      required:
+        - pageSize
+        - pageNumber
+    GetEnrolledCoursesQuery:
+      type:
+        object
+      properties:
+        include_author:
+          type: boolean
+        include_category:
+          type: boolean
+        limit_student_courses:
+          type: number
+        limit_instructor_courses:
+          type: number
 
     #
     # > CourseEnrollment Type <
@@ -453,7 +598,7 @@ paths:
                     type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/UserModel"
+                        $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
   /users/signin:
     post:
@@ -545,7 +690,7 @@ paths:
                     type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/UserModel"
+                        $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   /users/{userId}/basic:
@@ -575,7 +720,7 @@ paths:
                     type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/UserModel"
+                        $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   /users/{userId}/email:
@@ -605,7 +750,7 @@ paths:
                     type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/UserModel"
+                        $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   /users/{userId}/password:
@@ -635,7 +780,7 @@ paths:
                     type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/UserModel"
+                        $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   /users/{userId}/phone:
@@ -665,7 +810,7 @@ paths:
                     type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/UserModel"
+                        $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   /users/{userId}:
@@ -720,6 +865,12 @@ paths:
       tags:
         - Course
       summary: Get courses.
+      parameters:
+        - name: queryParam
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/GetCoursesQuery"
       responses:
         allOf:
           - "200":
@@ -730,9 +881,7 @@ paths:
                     type: object
                     properties:
                       data:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/CourseModel"
+                        $ref: "#/components/schemas/GetCoursesData"
           - $ref: "#/components/responses/CommonErrorResponses"
 
   /courses/enrolled:
@@ -740,6 +889,12 @@ paths:
       tags:
         - Course
       summary: Get enrolled courses.
+      parameters:
+        - name: queryParam
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/GetEnrolledCoursesQuery"
       responses:
         allOf:
           - "200":
@@ -749,7 +904,7 @@ paths:
                   schema:
                     type: object
                     properties:
-                      dafta:
+                      data:
                         type: array
                         items:
                           $ref: "#/components/schemas/GetEnrolledCoursesData"
@@ -759,13 +914,18 @@ paths:
     get:
       tags:
         - Course
-      summary: Get a course by courseId.
+      summary: Get a course.
       parameters:
         - name: courseId
           in: path
           required: true
           schema:
             type: number
+        - name: queryParam
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/GetCourseByIdQuery"
       responses:
         allOf:
           - "200":
@@ -776,13 +936,14 @@ paths:
                     type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/CourseModel"
+                        $ref: "#/components/schemas/GetCourseByIdData"
           - $ref: "#/components/responses/CommonErrorResponses"
 
+  /courses/{courseId}/basic:
     patch:
       tags:
         - Course
-      summary: Update a course.
+      summary: Update basic course.
       parameters:
         - name: courseId
           in: path
@@ -795,6 +956,66 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateBasicCourseDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/{courseId}/status:
+    patch:
+      tags:
+        - Course
+      summary: Update course status.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCourseStatusDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /courses/{courseId}/category:
+    patch:
+      tags:
+        - Course
+      summary: Update course categoryId.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCourseCategoryId"
       responses:
         allOf:
           - "200":

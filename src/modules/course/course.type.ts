@@ -1,10 +1,19 @@
-import { Course, CourseEnrollmentRole, CourseLike, Role } from "@prisma/client";
-import { UserModel } from "../user/user.type";
+import {
+  Course,
+  CourseEnrollmentRole,
+  CourseLike,
+  CourseStatus,
+  Role,
+} from "@prisma/client";
+import { PublicUserModel, UserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 import { CourseCategoryModel } from "../category/category.type";
 import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
-import { CourseLessonVideoModel } from "../video/video.type";
+import {
+  CourseLessonVideoModel,
+  PublicCourseLessonVideoModel,
+} from "../video/video.type";
 
 export const CourseDITypes = {
   REPOSITORY: Symbol.for("COURSE_REPOSITORY"),
@@ -15,11 +24,13 @@ export const CourseDITypes = {
 
 export enum courseUrls {
   root = "/courses",
-  enrolled = "/enrolled",
   course = "/:courseId",
+  basic = courseUrls.course + "/basic",
+  status = courseUrls.course + "/status",
+  category = courseUrls.course + "/category",
+  enrolled = "/enrolled",
   likes = "/:courseId/likes",
-  like = "/:courseId/likes/:likeId",
-  category = "/categories",
+  like = courseUrls.likes + "/:likeId",
 }
 
 /**
@@ -66,33 +77,32 @@ export interface ICourseAuthorization {
  *
  */
 
-/**
- * Model Course
- *
- */
-export type CourseModel = Course;
-export type ValuableCourseModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseModel>;
-
 export type UserRoleModel = Role;
 export const UserRoleModel = Role;
+
+export type CourseModel = Course;
+export type CourseLikeModel =
+  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLike>;
+export type CourseStatusModel = CourseStatus;
+export const CourseStatusModel = CourseStatus;
 export type CourseEnrollmentRoleModel = CourseEnrollmentRole;
 export const CourseEnrollmentRoleModel = CourseEnrollmentRole;
 
-/**
- * Model CourseLike
- *
- */
-export type CourseLikeModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLike>;
-
-/**
- * Model Enrolled Course
- *
- */
 export type EnrolledCourseModel = {
   role: CourseEnrollmentRole;
   course: CourseModel;
+};
+
+export type BasicCourseLessonModel = Pick<
+  CourseLessonModel,
+  "id" | "title" | "totalVideos" | "totalDurations"
+>;
+export type BasicCourseLessonVideoModel = Pick<
+  CourseLessonVideoModel,
+  "id" | "name" | "totalDurations"
+>;
+export type BasicCourseLessonExtension = BasicCourseLessonModel & {
+  videos: BasicCourseLessonVideoModel[];
 };
 
 /**
@@ -104,7 +114,7 @@ export type EnrolledCourseModel = {
  */
 
 /**
- * Dto CreateCourse
+ * Dto > Create
  *
  */
 type CreateCourseDtoRequiredField = Pick<CourseModel, "title" | "categoryId">;
@@ -114,32 +124,50 @@ type CreateCourseDtoOptionalField = Partial<
 export type CreateCourseDto = CreateCourseDtoRequiredField &
   CreateCourseDtoOptionalField;
 
-export type BasicUser = Pick<UserModel, "id" | "avatar" | "name" | "NIM">;
-export type BasicCourseLesson = Pick<
-  CourseLessonModel,
-  "id" | "title" | "totalVideos" | "totalDurations"
+export type CreateCourseLikeDto = {};
+
+/**
+ * Dto > Update
+ *
+ */
+export type UpdateCourseDto = Partial<
+  CreateCourseDto & Pick<CourseModel, "status">
 >;
-export type BasicCourseLessonVideo = Pick<
-  CourseLessonVideoModel,
-  "id" | "name" | "totalDurations"
->;
-export type BasicCourseLessonExtension = BasicCourseLesson & {
-  videos: BasicCourseLessonVideo[];
+
+export type UpdateBasicCourseDto = {
+  description?: string;
+  image?: string;
+  title?: string;
+  material?: string;
+};
+
+export type UpdateCourseStatusDto = {
+  status: CourseStatusModel;
+};
+
+export type UpdateCourseCategoryIdDto = {
+  categoryId: number;
 };
 
 /**
- * Dto GetCourseById
+ *
+ *
+ * Query
+ *
+ *
+ */
+
+/**
+ * Query > Get
  *
  */
 export type GetCourseByIdQuery = {
   include_author: boolean;
   include_category: boolean;
+  include_lessons: boolean;
+  include_public_videos: boolean;
 };
 
-/**
- * Dto GetCourses
- *
- */
 export type GetCoursesQuery = {
   /**
    * Include
@@ -155,10 +183,6 @@ export type GetCoursesQuery = {
   pageSize: number;
 };
 
-/**
- * Dto GetEnrolledCourses
- *
- */
 export type GetEnrolledCoursesQuery = {
   /**
    * Include
@@ -176,27 +200,6 @@ export type GetEnrolledCoursesQuery = {
 };
 
 /**
- * Dto UpdateCourse
- *
- */
-export type UpdateCourseDto = Partial<
-  CreateCourseDto & Pick<CourseModel, "status">
->;
-export type UpdateBasicCourseDto = Partial<
-  Pick<
-    ValuableCourseModel,
-    "description" | "image" | "title" | "categoryId" | "material"
-  >
->;
-
-/**
- * Dto CreateCourseLike
- *
- */
-type CreateCourseLikeDtoRequiredField = {};
-export type CreateCourseLikeDto = CreateCourseLikeDtoRequiredField;
-
-/**
  *
  *
  * ResourceId
@@ -204,18 +207,10 @@ export type CreateCourseLikeDto = CreateCourseLikeDtoRequiredField;
  *
  */
 
-/**
- * ResourceId Course
- *
- */
 export type CourseResourceId = {
   userId: number;
 };
 
-/**
- * ResourceId CourseLike
- *
- */
 export type CourseLikeResourceId = {
   userId: number;
   courseId: number;
@@ -230,21 +225,28 @@ export type CourseLikeResourceId = {
  */
 
 /**
- * Data GetCourseById
+ * Data > Get
  *
  */
 export type GetCourseByIdData = CourseModel & {
-  author?: BasicUser;
-  lessons?: BasicCourseLesson[] | BasicCourseLessonExtension[];
+  author?: PublicUserModel;
+  lessons?:
+    | CourseLessonModel[]
+    | (CourseLessonModel & { videos: PublicCourseLessonVideoModel[] })[];
   category?: CourseCategoryModel;
 };
 
-/**
- * Data GetEnrolledCourses
- *
- */
-export type GetEnrolledCoursesData = (CourseModel & {
+export type GetCoursesData = Array<
+  CourseModel & {
+    author?: PublicUserModel;
+    category?: CourseCategoryModel;
+  }
+>;
+
+export type GetEnrolledCoursesData = Array<{
   role: CourseEnrollmentRoleModel;
-  author?: Pick<UserModel, "id" | "avatar" | "name" | "NIM">;
-  category?: CourseCategoryModel;
-})[];
+  course: CourseModel & {
+    author?: PublicUserModel;
+    category?: CourseCategoryModel;
+  };
+}>;

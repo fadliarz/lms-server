@@ -5,6 +5,7 @@ const errorCode_1 = require("./errorCode");
 exports.ErrorMessage = {
     [errorCode_1.ErrorCode.UNAUTHENTICATED]: "Unauthenticated, please login first!",
     [errorCode_1.ErrorCode.UNAUTHORIZED]: "Unauthorized, you are not allowed to do this operation!",
+    [errorCode_1.ErrorCode.FORBIDDEN]: "Forbidden, you are not allowed to do this operation!",
     [errorCode_1.ErrorCode.BAD_REQUEST]: "BadRequest, unknown client side error!",
     [errorCode_1.ErrorCode.INVALID_QUERY]: "Invalid input query!",
     [errorCode_1.ErrorCode.INVALID_PARAMS]: "Invalid input parameter!",

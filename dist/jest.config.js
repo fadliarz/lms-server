@@ -131,6 +131,10 @@ const testIsolation = {
         collectCoverageFrom: [`<rootDir>/src/common/functions/processBoolean.ts`],
         testMatch: [`<rootDir>/src/common/functions/processBoolean.test.ts`],
     },
+    filterUserObject: {
+        collectCoverageFrom: [`<rootDir>/src/common/functions/filterUserObject.ts`],
+        testMatch: [`<rootDir>/src/common/functions/filterUserObject.test.ts`],
+    },
 };
-const config = Object.assign({ preset: "ts-jest", testEnvironment: "node", verbose: true, collectCoverage: true, coverageDirectory: "<rootDir>/coverage" }, testIsolation.videoRepository);
+const config = Object.assign({ preset: "ts-jest", testEnvironment: "node", verbose: true, collectCoverage: true, coverageDirectory: "<rootDir>/coverage" }, testIsolation.filterUserObject);
 exports.default = config;

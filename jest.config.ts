@@ -4,7 +4,8 @@ type TestIsolationKeyForClass = "BaseAuthorization";
 type TestIsolationKeyForFunction =
   | "getValuable"
   | "processQuery"
-  | "processBoolean";
+  | "processBoolean"
+  | "filterUserObject";
 type TestIsolationKey =
   | TestIsolationKeyForClass
   | TestIsolationKeyForFunction
@@ -158,6 +159,10 @@ const testIsolation: Record<
     collectCoverageFrom: [`<rootDir>/src/common/functions/processBoolean.ts`],
     testMatch: [`<rootDir>/src/common/functions/processBoolean.test.ts`],
   },
+  filterUserObject: {
+    collectCoverageFrom: [`<rootDir>/src/common/functions/filterUserObject.ts`],
+    testMatch: [`<rootDir>/src/common/functions/filterUserObject.test.ts`],
+  },
 };
 
 const config: Config.InitialOptions = {
@@ -166,7 +171,7 @@ const config: Config.InitialOptions = {
   verbose: true,
   collectCoverage: true,
   coverageDirectory: "<rootDir>/coverage",
-  ...testIsolation.videoRepository,
+  ...testIsolation.filterUserObject,
 };
 
 export default config;

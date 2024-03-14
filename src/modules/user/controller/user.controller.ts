@@ -17,6 +17,7 @@ import {
 import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
+import filterUserObject from "../../../common/functions/filterUserObject";
 
 export interface IUserController {
   createUser: (
@@ -98,7 +99,7 @@ export class UserController implements IUserController {
           sameSite: "strict",
         })
         .status(StatusCode.RESOURCE_CREATED)
-        .json({ data: getValuable({ ...newUser, password: null }) });
+        .json({ data: filterUserObject(newUser) });
     } catch (error) {
       next(error);
     }
@@ -131,7 +132,9 @@ export class UserController implements IUserController {
       const targetUserId = this.validateUserId(req);
       const me = await this.service.getMe(userId, targetUserId);
 
-      return res.status(StatusCode.SUCCESS).json({ data: me });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: filterUserObject(me) });
     } catch (error) {
       next(error);
     }
@@ -153,7 +156,9 @@ export class UserController implements IUserController {
         req.body,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: filterUserObject(updatedUser) });
     } catch (error) {
       next(error);
     }
@@ -175,7 +180,9 @@ export class UserController implements IUserController {
         req.body,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: filterUserObject(updatedUser) });
     } catch (error) {
       next(error);
     }
@@ -197,7 +204,9 @@ export class UserController implements IUserController {
         req.body,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: filterUserObject(updatedUser) });
     } catch (error) {
       next(error);
     }
@@ -219,7 +228,9 @@ export class UserController implements IUserController {
         req.body,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: updatedUser });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: filterUserObject(updatedUser) });
     } catch (error) {
       next(error);
     }
@@ -254,15 +265,28 @@ export class UserController implements IUserController {
 
   public async signOut(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = getRequestUserOrThrowAuthenticationException(req);
+      const cookies = req.cookies;
+      const storedRefreshToken = cookies[Cookie.REFRESH_TOKEN] as
+        | undefined
+        | string;
+      if (!storedRefreshToken) {
+        throw new AuthenticationException();
+      }
+
+      await this.service.signOutUser(storedRefreshToken);
 
       return res
         .clearCookie(Cookie.ACCESS_TOKEN)
+        .clearCookie(Cookie.REFRESH_TOKEN, {
+          httpOnly: true,
+          sameSite: "none",
+          secure: true,
+        })
         .status(StatusCode.SUCCESS)
         .json({ data: {} });
     } catch (error) {
       if (error instanceof AuthenticationException) {
-        res.clearCookie(Cookie.REFRESH_TOKEN, {
+        res.clearCookie(Cookie.ACCESS_TOKEN).clearCookie(Cookie.REFRESH_TOKEN, {
           httpOnly: true,
           sameSite: "none",
           secure: true,

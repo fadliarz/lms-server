@@ -32,6 +32,7 @@ const user_joi_1 = require("./user.joi");
 const Cookie_1 = require("../../../common/constants/Cookie");
 const AuthenticationException_1 = __importDefault(require("../../../common/class/exceptions/AuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
+const filterUserObject_1 = __importDefault(require("../../../common/functions/filterUserObject"));
 let UserController = class UserController {
     createUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -51,7 +52,7 @@ let UserController = class UserController {
                     sameSite: "strict",
                 })
                     .status(statusCode_1.StatusCode.RESOURCE_CREATED)
-                    .json({ data: (0, getValuable_1.default)(Object.assign(Object.assign({}, newUser), { password: null })) });
+                    .json({ data: (0, filterUserObject_1.default)(newUser) });
             }
             catch (error) {
                 next(error);
@@ -78,7 +79,9 @@ let UserController = class UserController {
                 const userId = this.validateResourceId(req);
                 const targetUserId = this.validateUserId(req);
                 const me = yield this.service.getMe(userId, targetUserId);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: me });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, filterUserObject_1.default)(me) });
             }
             catch (error) {
                 next(error);
@@ -92,7 +95,9 @@ let UserController = class UserController {
                 const userId = this.validateResourceId(req);
                 const targetUserId = this.validateUserId(req);
                 const updatedUser = yield this.service.updateBasicUser(userId, targetUserId, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
             }
             catch (error) {
                 next(error);
@@ -106,7 +111,9 @@ let UserController = class UserController {
                 const userId = this.validateResourceId(req);
                 const targetUserId = this.validateUserId(req);
                 const updatedUser = yield this.service.updateUserEmail(userId, targetUserId, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
             }
             catch (error) {
                 next(error);
@@ -120,7 +127,9 @@ let UserController = class UserController {
                 const userId = this.validateResourceId(req);
                 const targetUserId = this.validateUserId(req);
                 const updatedUser = yield this.service.updateUserPassword(userId, targetUserId, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
             }
             catch (error) {
                 next(error);
@@ -134,7 +143,9 @@ let UserController = class UserController {
                 const userId = this.validateResourceId(req);
                 const targetUserId = this.validateUserId(req);
                 const updatedUser = yield this.service.updateUserPhoneNumber(userId, targetUserId, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedUser });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
             }
             catch (error) {
                 next(error);
@@ -172,15 +183,25 @@ let UserController = class UserController {
     signOut(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
+                const cookies = req.cookies;
+                const storedRefreshToken = cookies[Cookie_1.Cookie.REFRESH_TOKEN];
+                if (!storedRefreshToken) {
+                    throw new AuthenticationException_1.default();
+                }
+                yield this.service.signOutUser(storedRefreshToken);
                 return res
                     .clearCookie(Cookie_1.Cookie.ACCESS_TOKEN)
+                    .clearCookie(Cookie_1.Cookie.REFRESH_TOKEN, {
+                    httpOnly: true,
+                    sameSite: "none",
+                    secure: true,
+                })
                     .status(statusCode_1.StatusCode.SUCCESS)
                     .json({ data: {} });
             }
             catch (error) {
                 if (error instanceof AuthenticationException_1.default) {
-                    res.clearCookie(Cookie_1.Cookie.REFRESH_TOKEN, {
+                    res.clearCookie(Cookie_1.Cookie.ACCESS_TOKEN).clearCookie(Cookie_1.Cookie.REFRESH_TOKEN, {
                         httpOnly: true,
                         sameSite: "none",
                         secure: true,
