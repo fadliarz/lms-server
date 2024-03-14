@@ -53,6 +53,7 @@ const getAuthMiddleWare = () => {
                     throw new ForbiddenException_1.default();
                 }
             }
+            let newRefreshTokenArray = user.refreshToken.filter((rt) => rt !== storedRefreshToken);
             try {
                 decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
                 if (decoded.email !== user.email) {
@@ -64,6 +65,11 @@ const getAuthMiddleWare = () => {
                  */
                 const accessToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, decoded.email);
                 const refreshToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, decoded.email);
+                newRefreshTokenArray = [...newRefreshTokenArray, refreshToken];
+                yield userRepository.unauthorizedUpdateUser(user.id, {
+                    accessToken,
+                    refreshToken: newRefreshTokenArray,
+                });
                 res
                     .cookie(Cookie_1.Cookie.ACCESS_TOKEN, accessToken, {
                     httpOnly: false,
@@ -85,6 +91,9 @@ const getAuthMiddleWare = () => {
                  * 2. User email and decoded email don't match
                  *
                  */
+                yield userRepository.unauthorizedUpdateUser(user.id, {
+                    refreshToken: newRefreshTokenArray,
+                });
                 throw new ForbiddenException_1.default();
             }
             user.password = null;

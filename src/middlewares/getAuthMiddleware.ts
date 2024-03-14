@@ -9,6 +9,7 @@ import { IUserRepository } from "../modules/user/repository/user.repository";
 import { UserDITypes } from "../modules/user/user.type";
 import ForbiddenException from "../common/class/exceptions/ForbiddenException";
 import { IUserService } from "../modules/user/service/user.service";
+import { ref } from "joi";
 
 export const getAuthMiddleWare = () => {
   const userService = dIContainer.get<IUserService>(UserDITypes.SERVICE);
@@ -58,6 +59,10 @@ export const getAuthMiddleWare = () => {
         }
       }
 
+      let newRefreshTokenArray = user.refreshToken.filter(
+        (rt) => rt !== storedRefreshToken,
+      );
+
       try {
         decoded = jwt.verify(
           storedRefreshToken,
@@ -83,6 +88,12 @@ export const getAuthMiddleWare = () => {
           decoded.email,
         );
 
+        newRefreshTokenArray = [...newRefreshTokenArray, refreshToken];
+        await userRepository.unauthorizedUpdateUser(user.id, {
+          accessToken,
+          refreshToken: newRefreshTokenArray,
+        });
+
         res
           .cookie(Cookie.ACCESS_TOKEN, accessToken, {
             httpOnly: false,
@@ -103,6 +114,10 @@ export const getAuthMiddleWare = () => {
          * 2. User email and decoded email don't match
          *
          */
+        await userRepository.unauthorizedUpdateUser(user.id, {
+          refreshToken: newRefreshTokenArray,
+        });
+
         throw new ForbiddenException();
       }
 
