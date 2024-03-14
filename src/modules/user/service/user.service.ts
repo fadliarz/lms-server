@@ -256,6 +256,7 @@ export class UserService implements IUserService {
       });
     }
 
+    newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
     await this.repository.unauthorizedUpdateUser(userRelatedToSignInEmail.id, {
       accessToken,
       refreshToken: newRefreshTokenArray,
