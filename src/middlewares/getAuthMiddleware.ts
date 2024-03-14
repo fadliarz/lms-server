@@ -19,7 +19,7 @@ export const getAuthMiddleWare = () => {
   return async (req: any, res: Response, next: NextFunction) => {
     try {
       const storedRefreshToken: string | undefined =
-        req.cookies[Cookie.ACCESS_TOKEN];
+        req.cookies[Cookie.REFRESH_TOKEN];
       if (!storedRefreshToken) {
         throw new AuthenticationException();
       }

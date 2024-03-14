@@ -147,12 +147,15 @@ let UserService = class UserService {
                     secure: true,
                 });
             }
+            newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
+            console.log(newRefreshTokenArray);
             yield this.repository.unauthorizedUpdateUser(userRelatedToSignInEmail.id, {
                 accessToken,
                 refreshToken: newRefreshTokenArray,
             });
             const user = Object.assign(Object.assign({}, userRelatedToSignInEmail), { accessToken,
                 newRefreshTokenArray });
+            console.log(user);
             res
                 .cookie(Cookie_1.Cookie.ACCESS_TOKEN, accessToken, {
                 httpOnly: false,

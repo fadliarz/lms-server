@@ -97,7 +97,7 @@ export class UserRepository implements IUserRepository {
     return await this.prisma.user.findFirst({
       where: {
         refreshToken: {
-          hasSome: refreshToken,
+          hasEvery: [refreshToken],
         },
       },
     });

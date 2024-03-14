@@ -72,7 +72,7 @@ let UserRepository = class UserRepository {
             return yield this.prisma.user.findFirst({
                 where: {
                     refreshToken: {
-                        hasSome: refreshToken,
+                        hasEvery: [refreshToken],
                     },
                 },
             });

@@ -26,7 +26,7 @@ const getAuthMiddleWare = () => {
     const userRepository = inversifyConfig_1.default.get(user_type_1.UserDITypes.REPOSITORY);
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
-            const storedRefreshToken = req.cookies[Cookie_1.Cookie.ACCESS_TOKEN];
+            const storedRefreshToken = req.cookies[Cookie_1.Cookie.REFRESH_TOKEN];
             if (!storedRefreshToken) {
                 throw new AuthenticationException_1.default();
             }
