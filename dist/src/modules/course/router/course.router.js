@@ -21,9 +21,9 @@ function CourseRouter(authenticationMiddleware) {
      * Get
      *
      */
-    router.get(course_type_2.courseUrls.course, controller.getCourseById.bind(controller));
     router.get("/", controller.getCourses.bind(controller));
     router.get(course_type_2.courseUrls.enrolled, authenticationMiddleware, controller.getEnrolledCourses.bind(controller));
+    router.get(course_type_2.courseUrls.course, controller.getCourseById.bind(controller));
     /**
      * Update
      *

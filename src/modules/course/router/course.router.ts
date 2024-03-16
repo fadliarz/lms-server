@@ -32,8 +32,6 @@ export default function CourseRouter(authenticationMiddleware: any) {
    * Get
    *
    */
-  router.get(courseUrls.course, controller.getCourseById.bind(controller));
-
   router.get("/", controller.getCourses.bind(controller));
 
   router.get(
@@ -41,6 +39,8 @@ export default function CourseRouter(authenticationMiddleware: any) {
     authenticationMiddleware,
     controller.getEnrolledCourses.bind(controller),
   );
+
+  router.get(courseUrls.course, controller.getCourseById.bind(controller));
 
   /**
    * Update

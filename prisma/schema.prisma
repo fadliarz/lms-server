@@ -38,7 +38,7 @@ model CourseEnrollment {
   courseId  Int                  @map("course_id")
   role      CourseEnrollmentRole @default(STUDENT)
   createdAt DateTime             @default(now()) @map("created_at")
-  updatedAt DateTime             @updatedAt @map("updated_at")
+  updatedAt DateTime             @default(now()) @updatedAt @map("updated_at")
   course    Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -60,7 +60,7 @@ model Course {
   totalDurations   Float              @default(0) @map("total_durations")
   totalLikes       Int                @default(0) @map("total_likes")
   createdAt        DateTime           @default(now()) @map("created_at")
-  updatedAt        DateTime           @updatedAt @map("updated_at")
+  updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at")
   authorId         Int                @map("author_id")
   categoryId       Int                @map("category_id")
   author           User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -82,7 +82,7 @@ model CourseLesson {
   totalDurations Float               @default(0) @map("total_durations")
   totalMaterials Int                 @default(0) @map("total_materials")
   createdAt      DateTime            @default(now()) @map("created_at")
-  updatedAt      DateTime            @updatedAt @map("updated_at")
+  updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at")
   courseId       Int                 @map("course_id")
   course         Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   videos         CourseLessonVideo[]
@@ -97,7 +97,7 @@ model CourseLessonVideo {
   totalDurations Float        @map("total_durations")
   youtubeLink    String       @map("youtube_link")
   createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at")
   lessonId       Int          @map("lesson_id")
   lesson         CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
