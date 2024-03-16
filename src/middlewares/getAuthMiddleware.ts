@@ -33,7 +33,7 @@ export const getAuthMiddleWare = () => {
         try {
           decoded = jwt.verify(
             storedRefreshToken,
-            process.env.ACCESS_TOKEN_PRIVATE_KEY as string,
+            process.env.REFRESH_TOKEN_PRIVATE_KEY as string,
           ) as {
             email: string;
           };

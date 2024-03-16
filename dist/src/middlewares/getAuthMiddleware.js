@@ -34,7 +34,7 @@ const getAuthMiddleWare = () => {
             const user = yield userRepository.getUserByRefreshToken(storedRefreshToken);
             if (!user) {
                 try {
-                    decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
+                    decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.REFRESH_TOKEN_PRIVATE_KEY);
                     const userRelatedToEmail = yield userRepository.getUserByEmail(decoded.email);
                     /**
                      * Detected refresh token reuse!

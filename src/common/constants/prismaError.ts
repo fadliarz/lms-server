@@ -3,6 +3,12 @@ import { ErrorMessage } from "./errorMessage";
 
 type PrismaErrorCode = "P2002" | "P2003" | "P2025";
 
+export const PrismaErrorCode = {
+  UNIQUE_CONSTRAINT: "P2002",
+  FOREIGN_KEY_CONSTRAINT: "P2003",
+  P2025: "P2025",
+};
+
 const PrismaError: Record<
   PrismaErrorCode,
   {
@@ -20,7 +26,7 @@ const PrismaError: Record<
     errorCode: ErrorCode.FOREIGN_KEY_CONSTRAINT,
     message: (
       ErrorMessage[ErrorCode.FOREIGN_KEY_CONSTRAINT] as (
-        field?: string
+        field?: string,
       ) => string
     )(),
   },

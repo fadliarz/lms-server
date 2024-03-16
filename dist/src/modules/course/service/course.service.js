@@ -26,10 +26,21 @@ require("reflect-metadata");
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const repository_type_1 = require("../../../common/class/repository/repository.type");
+const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseService = class CourseService {
     createCourse(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.createCourse(resourceId, dto);
+            try {
+                return yield this.repository.course.createCourse(resourceId, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    foreignConstraint: {
+                        categoryId: { message: "Category doesn't exist!" },
+                        authorId: { message: "User doesn't exist!" },
+                    },
+                });
+            }
         });
     }
     getCourseById(courseId, resourceId, query) {
@@ -59,7 +70,16 @@ let CourseService = class CourseService {
     }
     updateCourseCategoryId(courseId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.updateCourse(courseId, resourceId, dto);
+            try {
+                return yield this.repository.course.updateCourse(courseId, resourceId, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    foreignConstraint: {
+                        categoryId: { message: "Category doesn't exist!" },
+                    },
+                });
+            }
         });
     }
     deleteCourse(courseId, resourceId) {
@@ -70,7 +90,18 @@ let CourseService = class CourseService {
     }
     createLike(resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.createLike(resourceId);
+            try {
+                return yield this.repository.course.createLike(resourceId);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    foreignConstraint: {
+                        categoryId: { message: "Category doesn't exist!" },
+                        userId_courseId: { message: "Like already exists!" },
+                        courseId_userId: { message: "Like already exists!" },
+                    },
+                });
+            }
         });
     }
     deleteLike(likeId, resourceId) {

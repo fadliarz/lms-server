@@ -1,33 +1,35 @@
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
-  CourseModel,
-  GetCourseByIdQuery,
-  GetCoursesQuery,
-  EnrolledCourseModel,
-  CourseLikeResourceId,
   CourseLikeModel,
-  GetEnrolledCoursesQuery,
+  CourseLikeResourceId,
+  CourseModel,
   CourseResourceId,
-  UpdateBasicCourseDto,
+  CreateCourseDto,
   GetCourseByIdData,
+  GetCourseByIdQuery,
+  GetCoursesData,
+  GetCoursesQuery,
   GetEnrolledCoursesData,
+  GetEnrolledCoursesQuery,
+  UpdateBasicCourseDto,
   UpdateCourseCategoryIdDto,
   UpdateCourseStatusDto,
-  GetCoursesData,
 } from "../course.type";
-import { CreateCourseDto, UpdateCourseDto } from "../course.type";
-import { CourseDITypes } from "../course.type";
-import { ICourseRepository } from "../repository/course.repository";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import {
-  CourseLessonModel,
-  CourseLessonResourceId,
-} from "../../lesson/lesson.type";
 import {
   IRepository,
   RepositoryDITypes,
 } from "../../../common/class/repository/repository.type";
+import { Prisma } from "@prisma/client";
+import InternalServerException from "../../../common/class/exceptions/InternalServerException";
+import HttpException from "../../../common/class/exceptions/HttpException";
+import { StatusCode } from "../../../common/constants/statusCode";
+import { ErrorCode } from "../../../common/constants/errorCode";
+import PrismaError, {
+  PrismaErrorCode,
+} from "../../../common/constants/prismaError";
+import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 
 export interface ICourseService {
   createCourse: (
@@ -80,7 +82,16 @@ export class CourseService implements ICourseService {
     resourceId: CourseResourceId,
     dto: CreateCourseDto,
   ): Promise<CourseModel> {
-    return await this.repository.course.createCourse(resourceId, dto);
+    try {
+      return await this.repository.course.createCourse(resourceId, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        foreignConstraint: {
+          categoryId: { message: "Category doesn't exist!" },
+          authorId: { message: "User doesn't exist!" },
+        },
+      });
+    }
   }
 
   public async getCourseById(
@@ -128,7 +139,19 @@ export class CourseService implements ICourseService {
     resourceId: CourseResourceId,
     dto: UpdateCourseCategoryIdDto,
   ): Promise<CourseModel> {
-    return await this.repository.course.updateCourse(courseId, resourceId, dto);
+    try {
+      return await this.repository.course.updateCourse(
+        courseId,
+        resourceId,
+        dto,
+      );
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        foreignConstraint: {
+          categoryId: { message: "Category doesn't exist!" },
+        },
+      });
+    }
   }
 
   public async deleteCourse(
@@ -143,7 +166,17 @@ export class CourseService implements ICourseService {
   public async createLike(
     resourceId: CourseLikeResourceId,
   ): Promise<CourseLikeModel> {
-    return await this.repository.course.createLike(resourceId);
+    try {
+      return await this.repository.course.createLike(resourceId);
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        foreignConstraint: {
+          categoryId: { message: "Category doesn't exist!" },
+          userId_courseId: { message: "Like already exists!" },
+          courseId_userId: { message: "Like already exists!" },
+        },
+      });
+    }
   }
 
   public async deleteLike(
