@@ -492,6 +492,13 @@ components:
           type: number
         limit_instructor_courses:
           type: number
+        role:
+          type:
+            array
+          items:
+              $ref: "#/components/schemas/CourseEnrollmentRoleModel"
+      required:
+        - role
 
     #
     # > CourseEnrollment Type <
@@ -892,7 +899,7 @@ paths:
       parameters:
         - name: queryParam
           in: query
-          required: false
+          required: true
           schema:
             $ref: "#/components/schemas/GetEnrolledCoursesQuery"
       responses:

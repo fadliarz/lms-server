@@ -59,7 +59,6 @@ let CourseController = class CourseController {
                 res.status(statusCode_1.StatusCode.SUCCESS).json({ data: course });
             }
             catch (error) {
-                console.log(error);
                 next(error);
             }
         });
@@ -94,7 +93,6 @@ let CourseController = class CourseController {
                     : 3;
                 query.include_author = (0, processBoolean_1.default)(query.include_author);
                 query.include_category = (0, processBoolean_1.default)(query.include_category);
-                console.log("Nice");
                 const resourceId = this.validateResourceId(req);
                 const courses = yield this.service.getEnrolledCourses(resourceId, query);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: courses });

@@ -6,6 +6,7 @@ import {
   CourseLikeResourceId,
   CourseModel,
   CourseResourceId,
+  courseUrls,
   CreateCourseDto,
   GetCourseByIdData,
   GetCourseByIdQuery,
@@ -206,8 +207,8 @@ export class CourseRepository
         limit_instructor_courses,
         role,
       } = query;
-      const roleSet = new Set(role);
 
+      const roleSet = new Set(role);
       const enrolledCourses: GetEnrolledCoursesData = [];
       for (let role of roleSet) {
         const enrollments = await tx.courseEnrollment.findMany({
@@ -247,6 +248,8 @@ export class CourseRepository
         enrollments.forEach((enrollment) => {
           courses.push({ course: enrollment.course, role });
         });
+
+        enrolledCourses.push(...courses);
       }
 
       return enrolledCourses;

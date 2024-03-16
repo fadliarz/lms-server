@@ -167,6 +167,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
                     enrollments.forEach((enrollment) => {
                         courses.push({ course: enrollment.course, role });
                     });
+                    enrolledCourses.push(...courses);
                 }
                 return enrolledCourses;
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);

@@ -66,7 +66,12 @@ export const GetEnrolledCoursesQueryJoi = Joi.object<GetEnrolledCoursesQuery>({
    */
   include_author: Joi.boolean(),
   include_category: Joi.boolean(),
-  // role: "addSoon",
+  role: Joi.array()
+    .items(
+      CourseEnrollmentRoleModel.STUDENT,
+      CourseEnrollmentRoleModel.INSTRUCTOR,
+    )
+    .required(),
   /**
    * Limit
    */

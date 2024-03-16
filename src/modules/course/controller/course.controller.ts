@@ -125,7 +125,6 @@ export class CourseController implements ICourseController {
 
       res.status(StatusCode.SUCCESS).json({ data: course });
     } catch (error) {
-      console.log(error);
       next(error);
     }
   }
@@ -168,7 +167,6 @@ export class CourseController implements ICourseController {
         : 3;
       query.include_author = processBoolean(query.include_author as any);
       query.include_category = processBoolean(query.include_category as any);
-      console.log("Nice");
       const resourceId = this.validateResourceId(req);
       const courses = await this.service.getEnrolledCourses(resourceId, query);
 
