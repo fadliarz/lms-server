@@ -30,6 +30,7 @@ const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultCo
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
 const isEqualOrIncludeCourseEnrollmentRole_1 = __importDefault(require("../../../common/functions/isEqualOrIncludeCourseEnrollmentRole"));
+const prisma_query_raw_type_1 = require("../../../common/class/prisma_query_raw/prisma_query_raw.type");
 let CourseRepository = class CourseRepository extends BaseAuthorization_1.default {
     constructor() {
         super(...arguments);
@@ -39,7 +40,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeCreateCourse.bind(this.authorization));
-                const { userId } = resourceId;
+                const { user: { id: userId }, } = resourceId;
                 const newCourse = yield tx.course.create({
                     data: Object.assign(Object.assign({}, dto), { authorId: userId }),
                 });
@@ -129,7 +130,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     getEnrolledCourses(resourceId, query) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                const { userId } = resourceId;
+                const { user: { id: userId }, } = resourceId;
                 const { include_author, include_category, limit_student_courses, limit_instructor_courses, role, } = query;
                 const roleSet = new Set(role);
                 const enrolledCourses = [];
@@ -188,7 +189,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
         return __awaiter(this, void 0, void 0, function* () {
             yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 yield this.authorize(tx, {
-                    userId: resourceId.userId,
+                    user: resourceId.user,
                     courseId,
                 }, this.authorization.authorizeDeleteCourse.bind(this.authorization));
                 yield tx.course.delete({
@@ -204,7 +205,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 yield this.authorize(tx, resourceId, this.authorization.authorizeCreateLike.bind(this.authorization));
-                const { userId, courseId } = resourceId;
+                const { user: { id: userId }, courseId, } = resourceId;
                 return yield tx.courseLike.create({
                     data: {
                         courseId,
@@ -235,15 +236,21 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     deleteLike(likeId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeDeleteLike.bind(this.authorization));
-                yield tx.courseLike.delete({
-                    where: {
-                        id: likeId,
-                    },
-                    select: {
-                        id: true,
-                    },
-                });
+                const { user: { role }, } = yield this.authorize(tx, resourceId, this.authorization.authorizeDeleteLike.bind(this.authorization));
+                try {
+                    yield tx.courseLike.delete({
+                        where: {
+                            id: likeId,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+                }
+                catch (error) {
+                    console.log(error);
+                    throw error;
+                }
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
             return {};
         });
@@ -254,6 +261,10 @@ __decorate([
     (0, inversify_1.inject)(course_type_1.CourseDITypes.AUTHORIZATION),
     __metadata("design:type", Object)
 ], CourseRepository.prototype, "authorization", void 0);
+__decorate([
+    (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
+    __metadata("design:type", Object)
+], CourseRepository.prototype, "prismaQueryRaw", void 0);
 exports.CourseRepository = CourseRepository = __decorate([
     (0, inversify_1.injectable)()
 ], CourseRepository);

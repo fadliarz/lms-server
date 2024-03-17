@@ -26,7 +26,7 @@ export type Api = {
   middleware?: any[];
 };
 
-export type UnauthenticatedResourceId<T extends {}> = Omit<T, "userId">;
+export type UnauthenticatedResourceId<T extends {}> = Omit<T, "user">;
 
 /**
  * Modifying Prisma Model

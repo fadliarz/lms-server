@@ -1,8 +1,12 @@
 import handlePrismaRepositoryError from "./handlePrismaRepositoryError";
 
 export type DatabaseOperationConstraint = {
-  uniqueConstraint?: Record<string, { message: string }>;
-  foreignConstraint?: Record<string, { message: string }>;
+  uniqueConstraint?: Record<string, { message: string }> & {
+    default?: { message: string };
+  };
+  foreignConstraint?: Record<string, { message: string }> & {
+    default?: { message: string };
+  };
 };
 
 export default function handleRepositoryError(

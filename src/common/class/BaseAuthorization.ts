@@ -5,6 +5,7 @@ import isEqualOrIncludeCourseEnrollmentRole from "../functions/isEqualOrIncludeC
 import {
   CourseEnrollmentRoleModel,
   CourseModel,
+  UserRoleModel,
 } from "../../modules/course/course.type";
 import InternalServerException from "./exceptions/InternalServerException";
 import { PrismaTransaction } from "../types";
@@ -15,6 +16,8 @@ import {
   IPrismaQueryRaw,
   PrismaQueryRawDITypes,
 } from "./prisma_query_raw/prisma_query_raw.type";
+import AuthenticationException from "./exceptions/AuthenticationException";
+import RecordNotFoundException from "./exceptions/RecordNotFoundException";
 
 export const BaseAuthorizationDITypes = Symbol.for(
   "COMMON_CLASS_BASE_AUTHORIZATION",
@@ -28,14 +31,20 @@ export default class BaseAuthorization {
   public async authorizeUserRole(
     tx: PrismaTransaction,
     resourceId: {
-      userId: number;
+      user: {
+        id: number;
+        role: UserRoleModel;
+      };
     },
     fn: (user: UserModel) => void,
   ): Promise<UserModel> {
-    const { userId } = resourceId;
+    const {
+      user: { id: userId },
+    } = resourceId;
     const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
       tx,
       userId,
+      new AuthenticationException(),
     );
 
     const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
@@ -51,7 +60,10 @@ export default class BaseAuthorization {
   public async authorize(
     tx: PrismaTransaction,
     resourceId: {
-      userId: number;
+      user: {
+        id: number;
+        role: UserRoleModel;
+      };
       courseId: number;
     },
     fn: (
@@ -64,14 +76,19 @@ export default class BaseAuthorization {
     course: CourseModel;
     enrollment: CourseEnrollmentModel | null;
   }> {
-    const { userId, courseId } = resourceId;
+    const {
+      user: { id: userId },
+      courseId,
+    } = resourceId;
     const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
       tx,
       userId,
+      new AuthenticationException(),
     );
     const course = await this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(
       tx,
       courseId,
+      new RecordNotFoundException("Course doesn't exist!"),
     );
     const enrollment =
       await this.prismaQueryRaw.courseEnrollment.selectForUpdateByUserIdAndCourseId(

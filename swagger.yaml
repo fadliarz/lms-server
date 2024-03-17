@@ -3,15 +3,6 @@ info:
   title: Learning Management System (LMS)
   description: REST v1 API Documentation
   version: 1.0.0
-servers:
-  - url: "{protocol}://lms-server-delta.vercel.app/"
-    variables:
-      protocol:
-        enum:
-          - http
-          - https
-        default: https
-    description: API Base URL.
 components:
   responses:
     CommonErrorResponses:

@@ -27,6 +27,9 @@ const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const repository_type_1 = require("../../../common/class/repository/repository.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
+const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
+const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
+const ClientException_1 = __importDefault(require("../../../common/class/exceptions/ClientException"));
 let CourseService = class CourseService {
     createCourse(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -36,8 +39,7 @@ let CourseService = class CourseService {
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error, {
                     foreignConstraint: {
-                        categoryId: { message: "Category doesn't exist!" },
-                        authorId: { message: "User doesn't exist!" },
+                        default: { message: "Category doesn't exist!" },
                     },
                 });
             }
@@ -76,7 +78,7 @@ let CourseService = class CourseService {
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error, {
                     foreignConstraint: {
-                        categoryId: { message: "Category doesn't exist!" },
+                        default: { message: "Category doesn't exist!" },
                     },
                 });
             }
@@ -95,10 +97,8 @@ let CourseService = class CourseService {
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error, {
-                    foreignConstraint: {
-                        categoryId: { message: "Category doesn't exist!" },
-                        userId_courseId: { message: "Like already exists!" },
-                        courseId_userId: { message: "Like already exists!" },
+                    uniqueConstraint: {
+                        default: { message: "Like already exists!" },
                     },
                 });
             }
@@ -109,21 +109,27 @@ let CourseService = class CourseService {
             yield this.validateRelationBetweenResources({
                 likeId,
                 resourceId,
-            }, new RecordNotFoundException_1.default());
+            });
             yield this.repository.course.deleteLike(likeId, resourceId);
             return {};
         });
     }
-    validateRelationBetweenResources(id, error) {
+    validateRelationBetweenResources(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const { likeId, resourceId } = id;
-            const { courseId } = resourceId;
+            const { courseId, user: { id: userId, role }, } = resourceId;
+            const { isAdmin } = (0, getRoleStatus_1.default)(role);
             const like = yield this.repository.course.getLikeById(likeId, resourceId);
             if (!like || like.courseId !== courseId) {
-                if (error) {
-                    throw error;
+                if (!isAdmin) {
+                    throw new AuthorizationException_1.default();
                 }
-                return null;
+                if (!like) {
+                    throw new RecordNotFoundException_1.default("like doesn't exist!");
+                }
+                if (like.courseId !== courseId) {
+                    throw new ClientException_1.default("course_likeId doesn't match likeId!");
+                }
             }
             return like;
         });

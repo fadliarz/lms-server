@@ -45,7 +45,7 @@ let UserController = class UserController {
                     maxAge: 1000 * 60 * 60 * Cookie_1.Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
                     secure: process.env.NODE_ENV === "production",
                 })
-                    .cookie(Cookie_1.Cookie.REFRESH_TOKEN, newUser.refreshToken, {
+                    .cookie(Cookie_1.Cookie.REFRESH_TOKEN, newUser.refreshToken[0], {
                     httpOnly: true,
                     maxAge: 1000 * 60 * 60 * 24 * Cookie_1.Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
                     secure: process.env.NODE_ENV === "production",
@@ -170,7 +170,7 @@ let UserController = class UserController {
             try {
                 yield (0, validateJoi_1.default)({ body: user_joi_1.SignIn })(req, res, next);
                 const { email, password } = req.body;
-                const user = yield this.service.signInUser(req, res, { email, password });
+                yield this.service.signInUser(req, res, { email, password });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: {},
                 });

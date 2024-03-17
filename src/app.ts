@@ -46,8 +46,6 @@ class App {
     const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
     this.express.use(express.static(pathToSwaggerUi));
 
-    console.log(path.join(process.cwd(), "swagger.yaml"));
-
     this.express.use(
       "/api-docs",
       swaggerUi.serve,

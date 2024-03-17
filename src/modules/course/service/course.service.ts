@@ -30,6 +30,9 @@ import PrismaError, {
   PrismaErrorCode,
 } from "../../../common/constants/prismaError";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
+import getRoleStatus from "../../../common/functions/getRoleStatus";
+import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import ClientException from "../../../common/class/exceptions/ClientException";
 
 export interface ICourseService {
   createCourse: (
@@ -87,8 +90,7 @@ export class CourseService implements ICourseService {
     } catch (error: any) {
       throw handleRepositoryError(error, {
         foreignConstraint: {
-          categoryId: { message: "Category doesn't exist!" },
-          authorId: { message: "User doesn't exist!" },
+          default: { message: "Category doesn't exist!" },
         },
       });
     }
@@ -148,7 +150,7 @@ export class CourseService implements ICourseService {
     } catch (error: any) {
       throw handleRepositoryError(error, {
         foreignConstraint: {
-          categoryId: { message: "Category doesn't exist!" },
+          default: { message: "Category doesn't exist!" },
         },
       });
     }
@@ -170,10 +172,8 @@ export class CourseService implements ICourseService {
       return await this.repository.course.createLike(resourceId);
     } catch (error: any) {
       throw handleRepositoryError(error, {
-        foreignConstraint: {
-          categoryId: { message: "Category doesn't exist!" },
-          userId_courseId: { message: "Like already exists!" },
-          courseId_userId: { message: "Like already exists!" },
+        uniqueConstraint: {
+          default: { message: "Like already exists!" },
         },
       });
     }
@@ -183,36 +183,39 @@ export class CourseService implements ICourseService {
     likeId: number,
     resourceId: CourseLikeResourceId,
   ): Promise<{}> {
-    await this.validateRelationBetweenResources(
-      {
-        likeId,
-        resourceId,
-      },
-      new RecordNotFoundException(),
-    );
+    await this.validateRelationBetweenResources({
+      likeId,
+      resourceId,
+    });
     await this.repository.course.deleteLike(likeId, resourceId);
 
     return {};
   }
 
-  public async validateRelationBetweenResources(
-    id: {
-      likeId: number;
-      resourceId: CourseLikeResourceId;
-    },
-    error?: Error,
-  ): Promise<CourseLikeModel | null> {
+  public async validateRelationBetweenResources(id: {
+    likeId: number;
+    resourceId: CourseLikeResourceId;
+  }): Promise<CourseLikeModel | null> {
     const { likeId, resourceId } = id;
-    const { courseId } = resourceId;
+    const {
+      courseId,
+      user: { id: userId, role },
+    } = resourceId;
 
+    const { isAdmin } = getRoleStatus(role);
     const like = await this.repository.course.getLikeById(likeId, resourceId);
-
     if (!like || like.courseId !== courseId) {
-      if (error) {
-        throw error;
+      if (!isAdmin) {
+        throw new AuthorizationException();
       }
 
-      return null;
+      if (!like) {
+        throw new RecordNotFoundException("like doesn't exist!");
+      }
+
+      if (like.courseId !== courseId) {
+        throw new ClientException("course_likeId doesn't match likeId!");
+      }
     }
 
     return like;

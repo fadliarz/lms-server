@@ -10,7 +10,6 @@ function validateEnv() {
         REFRESH_TOKEN_PRIVATE_KEY: (0, envalid_1.str)(),
         PORT: (0, envalid_1.port)({ default: 5000 }),
         NUM_PHYSICAL_CPUS: (0, envalid_1.num)(),
-        DATABASE_URL: (0, envalid_1.str)(),
     });
     return env;
 }

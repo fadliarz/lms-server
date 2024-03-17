@@ -208,11 +208,17 @@ export type GetEnrolledCoursesQuery = {
  */
 
 export type CourseResourceId = {
-  userId: number;
+  user: {
+    id: number;
+    role: UserRoleModel;
+  };
 };
 
 export type CourseLikeResourceId = {
-  userId: number;
+  user: {
+    id: number;
+    role: UserRoleModel;
+  };
   courseId: number;
 };
 

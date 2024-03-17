@@ -1,7 +1,7 @@
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 import { UserModel } from "../user/user.type";
 import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
-import { CourseModel } from "../course/course.type";
+import { CourseModel, UserRoleModel } from "../course/course.type";
 import { CourseLesson } from "@prisma/client";
 
 export const CourseLessonDITypes = {
@@ -100,6 +100,9 @@ export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;
  *
  */
 export type CourseLessonResourceId = {
-  userId: number;
+  user: {
+    id: number;
+    role: UserRoleModel;
+  };
   courseId: number;
 };

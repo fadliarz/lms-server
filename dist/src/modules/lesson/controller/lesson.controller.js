@@ -91,13 +91,13 @@ let CourseLessonController = class CourseLessonController {
         });
     }
     validateResourceId(req) {
-        const { id: userId } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
+        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
             throw new NaNException_1.default("courseId");
         }
         return {
-            userId,
+            user: { id: userId, role },
             courseId,
         };
     }

@@ -6,6 +6,7 @@ import {
 } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 import { CourseLessonModel } from "../lesson/lesson.type";
+import { UserRoleModel } from "../course/course.type";
 
 export const CourseLessonVideoDITypes = {
   REPOSITORY: Symbol.for("COURSE_VIDEO_REPOSITORY"),
@@ -100,7 +101,7 @@ export type UpdateCourseLessonVideoSourceDto = {
  *
  */
 export type CourseLessonVideoResourceId = {
-  userId: number;
+  user: { id: number; role: UserRoleModel };
   courseId: number;
   lessonId: number;
 };

@@ -121,7 +121,8 @@ export class CourseLessonVideoController
   }
 
   private validateResourceId(req: Request): CourseLessonVideoResourceId {
-    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const { id: userId, role } =
+      getRequestUserOrThrowAuthenticationException(req);
     const courseId: number = Number(req.params.courseId);
     const lessonId: number = Number(req.params.lessonId);
     if (isNaNArray([courseId, lessonId])) {
@@ -129,7 +130,10 @@ export class CourseLessonVideoController
     }
 
     return {
-      userId,
+      user: {
+        id: userId,
+        role,
+      },
       courseId,
       lessonId,
     };

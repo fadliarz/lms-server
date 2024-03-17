@@ -85,14 +85,17 @@ let CourseLessonVideoController = class CourseLessonVideoController {
         });
     }
     validateResourceId(req) {
-        const { id: userId } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
+        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         const courseId = Number(req.params.courseId);
         const lessonId = Number(req.params.lessonId);
         if ((0, isNaNArray_1.default)([courseId, lessonId])) {
             throw new NaNException_1.default("courseId || lessonId");
         }
         return {
-            userId,
+            user: {
+                id: userId,
+                role,
+            },
             courseId,
             lessonId,
         };

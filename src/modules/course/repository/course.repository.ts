@@ -27,6 +27,11 @@ import {
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
+import getRoleStatus from "../../../common/functions/getRoleStatus";
+import {
+  IPrismaQueryRaw,
+  PrismaQueryRawDITypes,
+} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 
 export interface ICourseRepository {
   createCourse: (
@@ -78,6 +83,9 @@ export class CourseRepository
 
   private readonly prisma = PrismaClientSingleton.getInstance();
 
+  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
+  protected readonly prismaQueryRaw: IPrismaQueryRaw;
+
   public async createCourse(
     resourceId: CourseResourceId,
     dto: CreateCourseDto,
@@ -89,8 +97,9 @@ export class CourseRepository
         this.authorization.authorizeCreateCourse.bind(this.authorization),
       );
 
-      const { userId } = resourceId;
-
+      const {
+        user: { id: userId },
+      } = resourceId;
       const newCourse = await tx.course.create({
         data: {
           ...dto,
@@ -199,7 +208,9 @@ export class CourseRepository
     query: GetEnrolledCoursesQuery,
   ): Promise<GetEnrolledCoursesData> {
     return await this.prisma.$transaction(async (tx) => {
-      const { userId } = resourceId;
+      const {
+        user: { id: userId },
+      } = resourceId;
       const {
         include_author,
         include_category,
@@ -286,7 +297,7 @@ export class CourseRepository
       await this.authorize(
         tx,
         {
-          userId: resourceId.userId,
+          user: resourceId.user,
           courseId,
         },
         this.authorization.authorizeDeleteCourse.bind(this.authorization),
@@ -312,7 +323,10 @@ export class CourseRepository
         this.authorization.authorizeCreateLike.bind(this.authorization),
       );
 
-      const { userId, courseId } = resourceId;
+      const {
+        user: { id: userId },
+        courseId,
+      } = resourceId;
       return await tx.courseLike.create({
         data: {
           courseId,
@@ -352,20 +366,28 @@ export class CourseRepository
     resourceId: CourseLikeResourceId,
   ): Promise<{}> {
     await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
+      const {
+        user: { role },
+      } = await this.authorize(
         tx,
         resourceId,
         this.authorization.authorizeDeleteLike.bind(this.authorization),
       );
 
-      await tx.courseLike.delete({
-        where: {
-          id: likeId,
-        },
-        select: {
-          id: true,
-        },
-      });
+      try {
+        await tx.courseLike.delete({
+          where: {
+            id: likeId,
+          },
+          select: {
+            id: true,
+          },
+        });
+      } catch (error: any) {
+        console.log(error);
+
+        throw error;
+      }
     }, PrismaDefaultTransactionConfigForWrite);
 
     return {};

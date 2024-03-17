@@ -123,14 +123,15 @@ export class CourseLessonController implements ICourseLessonController {
   }
 
   private validateResourceId(req: Request): CourseLessonResourceId {
-    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const { id: userId, role } =
+      getRequestUserOrThrowAuthenticationException(req);
     const courseId = Number(req.params.courseId);
     if (isNaN(courseId)) {
       throw new NaNException("courseId");
     }
 
     return {
-      userId,
+      user: { id: userId, role },
       courseId,
     };
   }

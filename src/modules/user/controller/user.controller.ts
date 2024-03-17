@@ -92,7 +92,7 @@ export class UserController implements IUserController {
           maxAge: 1000 * 60 * 60 * Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
           secure: process.env.NODE_ENV === "production",
         })
-        .cookie(Cookie.REFRESH_TOKEN, newUser.refreshToken, {
+        .cookie(Cookie.REFRESH_TOKEN, newUser.refreshToken[0], {
           httpOnly: true,
           maxAge: 1000 * 60 * 60 * 24 * Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
           secure: process.env.NODE_ENV === "production",
@@ -253,7 +253,7 @@ export class UserController implements IUserController {
       await validateJoi({ body: SignIn })(req, res, next);
 
       const { email, password } = req.body;
-      const user = await this.service.signInUser(req, res, { email, password });
+      await this.service.signInUser(req, res, { email, password });
 
       return res.status(StatusCode.SUCCESS).json({
         data: {},

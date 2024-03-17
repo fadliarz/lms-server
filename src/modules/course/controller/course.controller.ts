@@ -292,22 +292,30 @@ export class CourseController implements ICourseController {
   }
 
   private validateResourceId(req: Request, error?: Error): CourseResourceId {
-    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const { id: userId, role } =
+      getRequestUserOrThrowAuthenticationException(req);
 
     return {
-      userId,
+      user: {
+        id: userId,
+        role,
+      },
     };
   }
 
   private validateLikeResourceId(req: Request): CourseLikeResourceId {
-    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const { id: userId, role } =
+      getRequestUserOrThrowAuthenticationException(req);
     const courseId = Number(req.params.courseId);
     if (isNaN(courseId)) {
       throw new NaNException("courseId");
     }
 
     return {
-      userId,
+      user: {
+        id: userId,
+        role,
+      },
       courseId,
     };
   }

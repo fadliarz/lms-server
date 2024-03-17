@@ -1,3 +1,42 @@
+-- CourseLike
+CREATE OR REPLACE FUNCTION update_on_CourseLike_insertion_function()
+       RETURNS TRIGGER AS $$
+        BEGIN
+            UPDATE
+                course
+            SET
+                total_likes = total_likes + 1
+            WHERE
+                id = NEW.course_id;
+            RETURN
+                NEW;
+        END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_on_CourseLike_insertion_function
+    AFTER INSERT ON course_like
+    FOR EACH ROW
+    EXECUTE FUNCTION update_on_CourseLike_insertion_function();
+
+CREATE OR REPLACE FUNCTION update_on_CourseLike_deletion_function()
+    RETURNS TRIGGER AS $$
+        BEGIN
+            UPDATE
+                course
+            SET
+                total_likes = total_likes - 1
+            WHERE
+                id = OLD.course_id;
+            RETURN OLD;
+        END;
+$$ LANGUAGE plpgsql;
+   
+CREATE TRIGGER update_on_CourseLike_deletion_function
+    AFTER DELETE ON course_like
+    FOR EACH ROW
+    EXECUTE FUNCTION update_on_CourseLike_deletion_function();
+
+
 CREATE OR REPLACE FUNCTION update_on_CourseLesson_insertion_function()
     RETURNS TRIGGER AS $$
         BEGIN
