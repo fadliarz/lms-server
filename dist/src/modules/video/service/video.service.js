@@ -25,37 +25,47 @@ exports.CourseLessonVideoService = void 0;
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const repository_type_1 = require("../../../common/class/repository/repository.type");
+const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseLessonVideoService = class CourseLessonVideoService {
-    /**
-     *
-     * All resources existence and their relation should be checked in Repository layer while authorizing because
-     * it's necessary to lock the rows while performing the features.
-     *
-     * So no need to implement those type of business logic in Service layer.
-     *
-     */
     createVideo(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ resourceId }, new RecordNotFoundException_1.default());
-            return yield this.repository.courseLessonVideo.createVideo(resourceId, dto);
+            try {
+                yield this.validateRelationBetweenResources({ resourceId });
+                return yield this.repository.courseLessonVideo.createVideo(resourceId, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    foreignConstraint: {
+                        default: { message: "Lesson doesn't exist!" },
+                    },
+                });
+            }
         });
     }
     getVideoById(videoId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const resources = yield this.validateRelationBetweenResources({
+            const { video } = yield this.validateRelationBetweenResources({
                 videoId,
                 resourceId,
             });
-            if (!resources) {
-                throw new RecordNotFoundException_1.default();
-            }
-            return resources.video;
+            return video;
+        });
+    }
+    getVideos(resourceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.repository.courseLessonVideo.getVideos(resourceId);
+        });
+    }
+    updateBasicVideo(videoId, resourceId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.validateRelationBetweenResources({ resourceId });
+            return yield this.repository.courseLessonVideo.updateVideo(videoId, resourceId, dto);
         });
     }
     updateVideoSource(videoId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ resourceId }, new RecordNotFoundException_1.default());
-            return yield this.repository.courseLessonVideo.updateVideoSource(videoId, resourceId, dto);
+            yield this.validateRelationBetweenResources({ resourceId });
+            return yield this.repository.courseLessonVideo.updateVideo(videoId, resourceId, dto);
         });
     }
     deleteVideo(videoId, resourceId) {
@@ -64,25 +74,19 @@ let CourseLessonVideoService = class CourseLessonVideoService {
             return {};
         });
     }
-    validateRelationBetweenResources(id, error) {
+    validateRelationBetweenResources(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const { resourceId } = id;
             const { courseId, lessonId } = resourceId;
             const lesson = yield this.repository.courseLesson.getLessonById(lessonId, resourceId);
             if (!lesson || lesson.courseId !== courseId) {
-                if (error) {
-                    throw error;
-                }
-                return null;
+                throw new RecordNotFoundException_1.default();
             }
             if (id.videoId) {
                 const { videoId } = id;
                 const video = yield this.repository.courseLessonVideo.getVideoById(videoId, resourceId);
                 if (!video || video.lessonId !== lessonId) {
-                    if (error) {
-                        throw error;
-                    }
-                    return null;
+                    throw new RecordNotFoundException_1.default("video doesn't exist!");
                 }
                 if (videoId) {
                     return {

@@ -76,6 +76,11 @@ export interface ICourseService {
   ) => Promise<CourseLikeModel | null>;
 }
 
+/**
+ * Todo: Implement Unit of Work pattern, so transaction can be shared across layers
+ *
+ */
+
 @injectable()
 export class CourseService implements ICourseService {
   @inject(RepositoryDITypes.FACADE)

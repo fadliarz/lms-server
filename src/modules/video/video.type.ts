@@ -4,8 +4,6 @@ import {
   CourseLessonVideo,
   User,
 } from "@prisma/client";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
-import { CourseLessonModel } from "../lesson/lesson.type";
 import { UserRoleModel } from "../course/course.type";
 
 export const CourseLessonVideoDITypes = {
@@ -17,7 +15,8 @@ export const CourseLessonVideoDITypes = {
 
 export enum courseLessonVideoUrls {
   root = "/courses/:courseId/lessons/:lessonId/videos",
-  video = "/:videoId",
+  video = courseLessonVideoUrls.root + "/:videoId",
+  basic = courseLessonVideoUrls.video + "/basic",
   source = courseLessonVideoUrls.video + "/source",
 }
 
@@ -40,6 +39,11 @@ export interface ICourseLessonVideoAuthorization {
     enrollment: CourseEnrollment | null,
   ) => void;
   authorizeGetVideo: (
+    user: User,
+    course: Course,
+    enrollment: CourseEnrollment | null,
+  ) => void;
+  authorizeGetVideos: (
     user: User,
     course: Course,
     enrollment: CourseEnrollment | null,
@@ -68,8 +72,6 @@ export type PublicCourseLessonVideoModel = Omit<
   CourseLessonVideoModel,
   "youtubeLink"
 >;
-export type ValuableCourseLessonVideoModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonModel>;
 
 /**
  *
@@ -78,22 +80,31 @@ export type ValuableCourseLessonVideoModel =
  *
  *
  */
-type CreateCourseLessonVideoRequiredField = Pick<
-  CourseLessonVideoModel,
-  "name" | "youtubeLink" | "totalDurations"
->;
-type CreateCourseLessonVideoOptionalField = Pick<
-  CourseLessonVideoModel,
-  "description"
->;
-export type CreateCourseLessonVideoDto = CreateCourseLessonVideoRequiredField &
-  CreateCourseLessonVideoOptionalField;
-export type UpdateCourseLessonVideoSourceDto = {
+
+/**
+ * Dto > Create
+ *
+ */
+export type CreateCourseLessonVideoDto = {
+  name: string;
   youtubeLink: string;
   totalDurations: number;
 } & {
+  description?: string;
+};
+
+/**
+ * Dto > Update
+ *
+ */
+export type UpdateBasicCourseLessonVideoDto = {
   name?: string;
   description?: string;
+};
+
+export type UpdateCourseLessonVideoSourceDto = {
+  youtubeLink: string;
+  totalDurations: number;
 };
 
 /**

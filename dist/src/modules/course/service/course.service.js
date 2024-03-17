@@ -30,6 +30,10 @@ const handleRepositoryError_1 = __importDefault(require("../../../common/functio
 const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
 const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
 const ClientException_1 = __importDefault(require("../../../common/class/exceptions/ClientException"));
+/**
+ * Todo: Implement Unit of Work pattern, so transaction can be shared across layers
+ *
+ */
 let CourseService = class CourseService {
     createCourse(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {

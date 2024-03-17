@@ -6,7 +6,6 @@ import {
   CourseLessonResourceId,
   CreateCourseLessonDto,
   ICourseLessonAuthorization,
-  UpdateCourseLessonDto,
 } from "../lesson.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
@@ -31,10 +30,13 @@ export interface ICourseLessonRepository {
     resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
     error?: Error,
   ) => Promise<CourseLessonModel>;
+  getLessons: (
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
+  ) => Promise<CourseLessonModel[]>;
   updateLesson: (
     lessonId: number,
     resourceId: CourseLessonResourceId,
-    dto: UpdateCourseLessonDto,
+    dto: Partial<CourseLessonModel>,
   ) => Promise<CourseLessonModel>;
   deleteLesson: (
     lessonId: number,
@@ -64,7 +66,6 @@ export class CourseLessonRepository
       );
 
       const { courseId } = resourceId;
-
       return await tx.courseLesson.create({
         data: {
           ...dto,
@@ -87,6 +88,19 @@ export class CourseLessonRepository
     }, PrismaDefaultTransactionConfigForRead);
   }
 
+  public async getLessons(
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
+  ): Promise<CourseLessonModel[]> {
+    return await this.prisma.$transaction(async (tx) => {
+      const { courseId } = resourceId;
+      return await tx.courseLesson.findMany({
+        where: {
+          courseId,
+        },
+      });
+    }, PrismaDefaultTransactionConfigForRead);
+  }
+
   public async getLessonByIdOrThrow(
     lessonId: number,
     resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
@@ -104,7 +118,7 @@ export class CourseLessonRepository
   public async updateLesson(
     lessonId: number,
     resourceId: CourseLessonResourceId,
-    dto: UpdateCourseLessonDto,
+    dto: Partial<CourseLessonModel>,
   ): Promise<CourseLessonModel> {
     return await this.prisma.$transaction(async (tx) => {
       await this.authorize(

@@ -78,6 +78,14 @@ export default class CourseLessonVideoAuthorization
     }
   }
 
+  public authorizeGetVideos(
+    user: User,
+    course: Course,
+    enrollment: CourseEnrollment | null,
+  ): void {
+    this.authorizeGetVideo(user, course, enrollment);
+  }
+
   public authorizeUpdateVideo(
     user: User,
     course: Course,

@@ -30,10 +30,13 @@ export interface ICourseLessonVideoRepository {
     resourceId: CourseLessonVideoResourceId,
     error?: Error,
   ) => Promise<CourseLessonVideoModel>;
-  updateVideoSource: (
+  getVideos: (
+    resourceId: CourseLessonVideoResourceId,
+  ) => Promise<CourseLessonVideoModel[]>;
+  updateVideo: (
     videoId: number,
     resourceId: CourseLessonVideoResourceId,
-    dto: UpdateCourseLessonVideoSourceDto,
+    dto: Partial<CourseLessonVideoModel>,
   ) => Promise<CourseLessonVideoModel>;
   deleteVideo: (
     videoId: number,
@@ -104,10 +107,29 @@ export class CourseLessonVideoRepository
     return video;
   }
 
-  public async updateVideoSource(
+  public async getVideos(
+    resourceId: CourseLessonVideoResourceId,
+  ): Promise<CourseLessonVideoModel[]> {
+    return await this.prisma.$transaction(async (tx) => {
+      await this.authorize(
+        tx,
+        resourceId,
+        this.authorization.authorizeGetVideos.bind(this.authorization),
+      );
+
+      const { lessonId } = resourceId;
+      return await tx.courseLessonVideo.findMany({
+        where: {
+          lessonId,
+        },
+      });
+    }, PrismaDefaultTransactionConfigForRead);
+  }
+
+  public async updateVideo(
     videoId: number,
     resourceId: CourseLessonVideoResourceId,
-    dto: UpdateCourseLessonVideoSourceDto,
+    dto: Partial<CourseLessonVideoModel>,
   ) {
     const { courseId, lessonId } = resourceId;
     return await this.prisma.$transaction(async (tx) => {

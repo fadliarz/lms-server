@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateCourseLessonVideoSourceJoi = exports.CreateCourseLessonVideoJoi = void 0;
+exports.UpdateCourseLessonVideoSourceJoi = exports.UpdateBasicCourseLessonVideoJoi = exports.CreateCourseLessonVideoJoi = void 0;
 const joi_1 = __importDefault(require("joi"));
 exports.CreateCourseLessonVideoJoi = joi_1.default.object({
     name: joi_1.default.string().required(),
@@ -11,17 +11,11 @@ exports.CreateCourseLessonVideoJoi = joi_1.default.object({
     totalDurations: joi_1.default.number().required(),
     youtubeLink: joi_1.default.string().required(),
 });
-exports.UpdateCourseLessonVideoSourceJoi = joi_1.default.object({
-    /**
-     * Required Field
-     *
-     */
-    youtubeLink: joi_1.default.string().required(),
-    totalDurations: joi_1.default.number().required(),
-    /**
-     * Optional
-     *
-     */
+exports.UpdateBasicCourseLessonVideoJoi = joi_1.default.object({
     name: joi_1.default.string(),
     description: joi_1.default.string(),
+});
+exports.UpdateCourseLessonVideoSourceJoi = joi_1.default.object({
+    youtubeLink: joi_1.default.string().required(),
+    totalDurations: joi_1.default.number().required(),
 });

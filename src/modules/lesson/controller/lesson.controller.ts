@@ -10,7 +10,7 @@ import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseLessonDtoJoi,
-  UpdateCourseLessonDtoJoi,
+  UpdateBasicCourseLessonDtoJoi,
 } from "./lesson.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
@@ -28,7 +28,12 @@ export interface ICourseLessonController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  updateLesson: (
+  getLessons: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateBasicLesson: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -82,17 +87,40 @@ export class CourseLessonController implements ICourseLessonController {
     }
   }
 
-  public async updateLesson(
+  public async getLessons(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await validateJoi({ body: UpdateCourseLessonDtoJoi })(req, res, next);
+      const resourceId = this.validateUnauthenticatedResourceId(req);
+      const lessons = await this.service.getLessons(resourceId);
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: lessons.map((lesson) =>
+          getValuable(lesson),
+        ) satisfies ValuableCourseLessonModel[],
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateBasicLesson(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateBasicCourseLessonDtoJoi })(
+        req,
+        res,
+        next,
+      );
 
       const lessonId = this.validateLessonId(req);
       const resourceId = this.validateResourceId(req);
-      const updatedLesson = await this.service.updateLesson(
+      const updatedLesson = await this.service.updateBasicLesson(
         lessonId,
         resourceId,
         req.body,

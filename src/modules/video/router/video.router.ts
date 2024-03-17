@@ -24,7 +24,13 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
    * Get
    *
    */
-  router.post(
+  router.get(
+    courseLessonVideoUrls.root,
+    authenticationMiddleware,
+    controller.getVideos.bind(controller),
+  );
+
+  router.get(
     courseLessonVideoUrls.video,
     authenticationMiddleware,
     controller.getVideoById.bind(controller),
@@ -34,7 +40,13 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
    * Update
    *
    */
-  router.put(
+  router.patch(
+    courseLessonVideoUrls.basic,
+    authenticationMiddleware,
+    controller.updateBasicVideo.bind(controller),
+  );
+
+  router.patch(
     courseLessonVideoUrls.source,
     authenticationMiddleware,
     controller.updateVideoSource.bind(controller),

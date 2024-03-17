@@ -66,7 +66,20 @@ let CourseLessonVideoRepository = class CourseLessonVideoRepository extends Base
             return video;
         });
     }
-    updateVideoSource(videoId, resourceId, dto) {
+    getVideos(resourceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                yield this.authorize(tx, resourceId, this.authorization.authorizeGetVideos.bind(this.authorization));
+                const { lessonId } = resourceId;
+                return yield tx.courseLessonVideo.findMany({
+                    where: {
+                        lessonId,
+                    },
+                });
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+        });
+    }
+    updateVideo(videoId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             const { courseId, lessonId } = resourceId;
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {

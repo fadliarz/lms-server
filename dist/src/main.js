@@ -12,11 +12,8 @@ const user_type_1 = require("./modules/user/user.type");
 const course_router_1 = __importDefault(require("./modules/course/router/course.router"));
 const course_type_1 = require("./modules/course/course.type");
 const enrollment_router_1 = __importDefault(require("./modules/enrollment/router/enrollment.router"));
-const enrollment_type_1 = require("./modules/enrollment/enrollment.type");
 const lesson_router_1 = __importDefault(require("./modules/lesson/router/lesson.router"));
-const lesson_type_1 = require("./modules/lesson/lesson.type");
 const video_router_1 = __importDefault(require("./modules/video/router/video.router"));
-const video_type_1 = require("./modules/video/video.type");
 const category_router_1 = __importDefault(require("./modules/category/router/category.router"));
 const category_type_1 = require("./modules/category/category.type");
 const PrismaClientSingleton_1 = __importDefault(require("./common/class/PrismaClientSingleton"));
@@ -31,27 +28,27 @@ const PrismaClientSingleton_1 = __importDefault(require("./common/class/PrismaCl
  */
 const userApi = {
     router: (0, user_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: user_type_1.userUrls.root,
+    path: "/api/v1" + user_type_1.userUrls.root,
 };
 const courseApi = {
     router: (0, course_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: course_type_1.courseUrls.root,
+    path: "/api/v1" + course_type_1.courseUrls.root,
 };
 const courseCategoryApi = {
     router: (0, category_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
     path: category_type_1.courseCategoryUrls.root,
 };
-const courseEnrollmentApi = {
-    router: (0, enrollment_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: enrollment_type_1.courseEnrollmentUrls.root,
-};
 const courseLessonApi = {
     router: (0, lesson_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: lesson_type_1.courseLessonUrls.root,
+    path: "/api/v1",
+};
+const courseEnrollmentApi = {
+    router: (0, enrollment_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
 };
 const courseLessonVideoApi = {
     router: (0, video_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: video_type_1.courseLessonVideoUrls.root,
+    path: "/api/v1",
 };
 const routers = [
     userApi,

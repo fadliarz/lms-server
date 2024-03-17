@@ -56,6 +56,18 @@ let CourseLessonRepository = class CourseLessonRepository extends BaseAuthorizat
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });
     }
+    getLessons(resourceId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const { courseId } = resourceId;
+                return yield tx.courseLesson.findMany({
+                    where: {
+                        courseId,
+                    },
+                });
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+        });
+    }
     getLessonByIdOrThrow(lessonId, resourceId, error) {
         return __awaiter(this, void 0, void 0, function* () {
             const lesson = yield this.getLessonById(lessonId, resourceId);

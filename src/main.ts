@@ -31,27 +31,28 @@ validateEnv();
  */
 const userApi = {
   router: UserRouter(getAuthMiddleWare()),
-  path: userUrls.root,
+  path: "/api/v1" + userUrls.root,
 };
 const courseApi = {
   router: CourseRouter(getAuthMiddleWare()),
-  path: courseUrls.root,
+  path: "/api/v1" + courseUrls.root,
 };
 const courseCategoryApi = {
   router: CourseCategoryRouter(getAuthMiddleWare()),
   path: courseCategoryUrls.root,
 };
-const courseEnrollmentApi = {
-  router: CourseEnrollmentRouter(getAuthMiddleWare()),
-  path: courseEnrollmentUrls.root,
-};
 const courseLessonApi = {
   router: CourseLessonRouter(getAuthMiddleWare()),
-  path: courseLessonUrls.root,
+  path: "/api/v1",
 };
+const courseEnrollmentApi = {
+  router: CourseEnrollmentRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+
 const courseLessonVideoApi = {
   router: CourseLessonVideoRouter(getAuthMiddleWare()),
-  path: courseLessonVideoUrls.root,
+  path: "/api/v1",
 };
 
 const routers: Api[] = [

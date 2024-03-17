@@ -11,9 +11,11 @@ import NaNException from "../../../common/class/exceptions/NaNException";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseLessonVideoJoi,
+  UpdateBasicCourseLessonVideoJoi,
   UpdateCourseLessonVideoSourceJoi,
 } from "./video.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import getValuable from "../../../common/functions/removeNullFields";
 
 export interface ICourseLessonVideoController {
   createVideo: (
@@ -22,6 +24,16 @@ export interface ICourseLessonVideoController {
     next: NextFunction,
   ) => Promise<Response | void>;
   getVideoById: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  getVideos: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateBasicVideo: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -56,7 +68,9 @@ export class CourseLessonVideoController
       const resourceId = this.validateResourceId(req);
       const newVideo = await this.service.createVideo(resourceId, req.body);
 
-      return res.status(StatusCode.RESOURCE_CREATED).json({ data: newVideo });
+      return res
+        .status(StatusCode.RESOURCE_CREATED)
+        .json({ data: getValuable(newVideo) });
     } catch (error) {
       next(error);
     }
@@ -72,7 +86,50 @@ export class CourseLessonVideoController
       const resourceId = this.validateResourceId(req);
       const video = await this.service.getVideoById(videoId, resourceId);
 
-      return res.status(StatusCode.SUCCESS).json({ data: video });
+      return res.status(StatusCode.SUCCESS).json({ data: getValuable(video) });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getVideos(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const resourceId = this.validateResourceId(req);
+      const videos = await this.service.getVideos(resourceId);
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: videos.map((video) => getValuable(video)) });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateBasicVideo(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateBasicCourseLessonVideoJoi })(
+        req,
+        res,
+        next,
+      );
+
+      const videoId = this.validateVideoId(req);
+      const resourceId = this.validateResourceId(req);
+      const updatedVideo = await this.service.updateBasicVideo(
+        videoId,
+        resourceId,
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedVideo });
     } catch (error) {
       next(error);
     }

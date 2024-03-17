@@ -12,8 +12,9 @@ export const CourseLessonDITypes = {
 };
 
 export enum courseLessonUrls {
-  root = "/courses/:courseId/lessons",
-  lesson = "/courses/:courseId/lessons/:lessonId",
+  lessons = "/courses/:courseId/lessons",
+  lesson = courseLessonUrls.lessons + "/:lessonId",
+  basic = courseLessonUrls.lesson + "/basic",
 }
 
 /**
@@ -71,21 +72,19 @@ export type ValuableCourseLessonModel =
  */
 
 /**
- * Dto CreateCourseLesson
+ * Dto > Create
  *
  */
-type CreateCourseLessonDtoRequiredField = Pick<CourseLessonModel, "title">;
-type CreateCourseLessonDtoOptionalField = Partial<
-  Pick<CourseLessonModel, "description">
->;
-export type CreateCourseLessonDto = CreateCourseLessonDtoRequiredField &
-  CreateCourseLessonDtoOptionalField;
+export type CreateCourseLessonDto = {
+  title: string;
+  description?: string;
+};
 
 /**
- * Dto UpdateCourseLesson
+ * Dto > Update
  *
  */
-export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;
+export type UpdateBasicCourseLessonDto = Partial<CreateCourseLessonDto>;
 
 /**
  *
@@ -95,10 +94,6 @@ export type UpdateCourseLessonDto = Partial<CreateCourseLessonDto>;
  *
  */
 
-/**
- * ResourceId CourseLesson
- *
- */
 export type CourseLessonResourceId = {
   user: {
     id: number;

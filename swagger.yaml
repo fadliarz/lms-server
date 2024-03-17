@@ -521,10 +521,10 @@ components:
         title:
           type: string
         description:
-          type: integer
+          type: string
       required:
         - title
-    UpdateCourseLessonDto:
+    UpdateBasicCourseLessonDto:
       type: object
       properties:
         title:
@@ -551,18 +551,21 @@ components:
         - name
         - youtubeLink
         - totalDurations
-    UpdateCourseLessonVideoSourceDto:
+    UpdateBasicCourseLessonVideoDto:
       type: object
       properties:
         name:
           type: string
+        description:
+          type: string
+    UpdateCourseLessonVideoSourceDto:
+      type: object
+      properties:
         youtubeLink:
           type: string
         totalDurations:
           type: number
           format: float
-        description:
-          type: string
       required:
         - youtubeLink
         - totalDurations
@@ -575,7 +578,7 @@ paths:
   #
   # > User APIs <
   #
-  /users:
+  /api/v1/users:
     post:
       tags:
         - User
@@ -598,7 +601,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-  /users/signin:
+  /api/v1/users/signin:
     post:
       tags:
         - User
@@ -621,7 +624,7 @@ paths:
                       data:
                         type: object
           - $ref: "#/components/responses/CommonErrorResponses"
-  /users/signout:
+  /api/v1/users/signout:
     post:
       tags:
         - User
@@ -644,7 +647,7 @@ paths:
                       data:
                         type: object
           - $ref: "#/components/responses/CommonErrorResponses"
-  /users/{userId}/public:
+  /api/v1/users/{userId}/public:
     get:
       tags:
         - User
@@ -667,7 +670,7 @@ paths:
                       data:
                         $ref: "#/components/schemas/PublicUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-  /users/{userId}/me:
+  /api/v1/users/{userId}/me:
     get:
       tags:
         - User
@@ -691,7 +694,7 @@ paths:
                         $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /users/{userId}/basic:
+  /api/v1/users/{userId}/basic:
     patch:
       tags:
         - User
@@ -721,7 +724,7 @@ paths:
                         $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /users/{userId}/email:
+  /api/v1/users/{userId}/email:
     patch:
       tags:
         - User
@@ -751,7 +754,7 @@ paths:
                         $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /users/{userId}/password:
+  /api/v1/users/{userId}/password:
     patch:
       tags:
         - User
@@ -781,7 +784,7 @@ paths:
                         $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /users/{userId}/phone:
+  /api/v1/users/{userId}/phone:
     patch:
       tags:
         - User
@@ -811,7 +814,7 @@ paths:
                         $ref: "#/components/schemas/FilteredUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /users/{userId}:
+  /api/v1/users/{userId}:
     delete:
       tags:
         - User
@@ -836,7 +839,7 @@ paths:
   #
   # > Course APIs <
   #
-  /courses:
+  /api/v1/courses:
     post:
       tags:
         - Course
@@ -882,7 +885,7 @@ paths:
                         $ref: "#/components/schemas/GetCoursesData"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/enrolled:
+  /api/v1/courses/enrolled:
     get:
       tags:
         - Course
@@ -908,7 +911,7 @@ paths:
                           $ref: "#/components/schemas/GetEnrolledCoursesData"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}:
+  /api/v1/courses/{courseId}:
     get:
       tags:
         - Course
@@ -958,7 +961,7 @@ paths:
                     properties:
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/basic:
+  /api/v1/courses/{courseId}/basic:
     patch:
       tags:
         - Course
@@ -988,7 +991,7 @@ paths:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/status:
+  /api/v1/courses/{courseId}/status:
     patch:
       tags:
         - Course
@@ -1018,7 +1021,7 @@ paths:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/category:
+  /api/v1/courses/{courseId}/category:
     patch:
       tags:
         - Course
@@ -1048,9 +1051,7 @@ paths:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-
-
-  /courses/{courseId}/likes:
+  /api/v1/courses/{courseId}/likes:
     post:
       tags:
         - CourseLike
@@ -1080,7 +1081,7 @@ paths:
                         $ref: "#/components/schemas/CourseLikeModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/likes/{likeId}:
+  /api/v1/courses/{courseId}/likes/{likeId}:
     delete:
       tags:
         - CourseLike
@@ -1110,7 +1111,7 @@ paths:
   #
   # > CourseEnrollment APIs <
   #
-  /courses/{courseId}/enrollments:
+  /api/v1/courses/{courseId}/enrollments:
     post:
       tags:
         - CourseEnrollment
@@ -1140,7 +1141,7 @@ paths:
                         $ref: "#/components/schemas/CourseEnrollmentModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/enrollments/{enrollmentId}/role:
+  /api/v1/courses/{courseId}/enrollments/{enrollmentId}/role:
     patch:
       tags:
         - CourseEnrollment
@@ -1175,7 +1176,7 @@ paths:
                         $ref: "#/components/schemas/CourseEnrollmentModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/enrollments/{enrollmentId}:
+  /api/v1/courses/{courseId}/enrollments/{enrollmentId}:
     delete:
       tags:
         - CourseEnrollment
@@ -1205,7 +1206,7 @@ paths:
   #
   # > CourseLesson APIs <
   #
-  /courses/{courseId}/lessons:
+  /api/v1/courses/{courseId}/lessons:
     post:
       tags:
         - CourseLesson
@@ -1259,11 +1260,11 @@ paths:
                           $ref: "#/components/schemas/CourseLessonModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/lessons/{lessonId}:
+  /api/v1/courses/{courseId}/lessons/{lessonId}:
     get:
       tags:
         - CourseLesson
-      summary: Get a lesson by lessonId.
+      summary: Get a lesson.
       parameters:
         - name: courseId
           in: path
@@ -1279,40 +1280,6 @@ paths:
         allOf:
           - "200":
               description: OK.
-              content:
-                application/json:
-                  schema:
-                    type: object
-                    properties:
-                      data:
-                        $ref: "#/components/schemas/CourseLessonModel"
-          - $ref: "#/components/responses/CommonErrorResponses"
-
-    put:
-      tags:
-        - CourseLesson
-      summary: Update a lesson.
-      parameters:
-        - name: courseId
-          in: path
-          required: true
-          schema:
-            type: number
-        - name: lessonId
-          in: path
-          required: true
-          schema:
-            type: number
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateCourseLessonDto"
-      responses:
-        allOf:
-          - "200":
-              description: Resource updated.
               content:
                 application/json:
                   schema:
@@ -1348,10 +1315,45 @@ paths:
                     properties:
           - $ref: "#/components/responses/CommonErrorResponses"
 
+  /api/v1/courses/{courseId}/lessons/{lessonId}/basic:
+    patch:
+      tags:
+        - CourseLesson
+      summary: Update a lesson.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBasicCourseLessonDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
   #
   # > CourseLessonVideo APIs <
   #
-  /courses/{courseId}/lessons/{lessonId}/videos:
+  /api/v1/courses/{courseId}/lessons/{lessonId}/videos:
     post:
       tags:
         - CourseLessonVideo
@@ -1386,11 +1388,41 @@ paths:
                         $ref: "#/components/schemas/CourseLessonVideoModel"
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/lessons/{lessonId}/videos/{videoId}:
     get:
       tags:
         - CourseLessonVideo
-      summary: Get a video by videoId.
+      summary: Get videos.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CourseLessonVideoModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /api/v1/courses/{courseId}/lessons/{lessonId}/videos/{videoId}:
+    get:
+      tags:
+        - CourseLessonVideo
+      summary: Get a video.
       parameters:
         - name: courseId
           in: path
@@ -1451,11 +1483,52 @@ paths:
                     properties:
           - $ref: "#/components/responses/CommonErrorResponses"
 
-  /courses/{courseId}/lessons/{lessonId}/videos/{videoId}/source:
+  /api/v1/courses/{courseId}/lessons/{lessonId}/videos/{videoId}/basic:
     patch:
       tags:
         - CourseLessonVideo
-      summary: Update a video source.
+      summary: Update basic source.
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: number
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBasicCourseLessonVideoDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CourseLessonVideoModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+
+  /api/v1/courses/{courseId}/lessons/{lessonId}/videos/{videoId}/source:
+    patch:
+      tags:
+        - CourseLessonVideo
+      summary: Update video source.
       parameters:
         - name: courseId
           in: path

@@ -65,6 +65,9 @@ prisma-db-pull:
 prisma-db-push:
 	prisma db push
 
+prisma-migrate-resolve-trigger:
+	npx prisma migrate resolve --applied 20240209022525_implement_trigger
+
 #
 # DOCKER
 #

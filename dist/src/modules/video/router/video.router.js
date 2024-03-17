@@ -19,12 +19,14 @@ function CourseLessonVideoRouter(authenticationMiddleware) {
      * Get
      *
      */
-    router.post(video_type_1.courseLessonVideoUrls.video, authenticationMiddleware, controller.getVideoById.bind(controller));
+    router.get(video_type_1.courseLessonVideoUrls.root, authenticationMiddleware, controller.getVideos.bind(controller));
+    router.get(video_type_1.courseLessonVideoUrls.video, authenticationMiddleware, controller.getVideoById.bind(controller));
     /**
      * Update
      *
      */
-    router.put(video_type_1.courseLessonVideoUrls.source, authenticationMiddleware, controller.updateVideoSource.bind(controller));
+    router.patch(video_type_1.courseLessonVideoUrls.basic, authenticationMiddleware, controller.updateBasicVideo.bind(controller));
+    router.patch(video_type_1.courseLessonVideoUrls.source, authenticationMiddleware, controller.updateVideoSource.bind(controller));
     /**
      * Delete
      *

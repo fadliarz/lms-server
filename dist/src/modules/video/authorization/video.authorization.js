@@ -59,6 +59,9 @@ let CourseLessonVideoAuthorization = class CourseLessonVideoAuthorization extend
             throw new AuthorizationException_1.default();
         }
     }
+    authorizeGetVideos(user, course, enrollment) {
+        this.authorizeGetVideo(user, course, enrollment);
+    }
     authorizeUpdateVideo(user, course, enrollment) {
         this.authorizeCreateVideo(user, course, enrollment);
     }

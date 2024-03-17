@@ -1,27 +1,20 @@
 import { injectable, inject } from "inversify";
-import { ICourseLessonVideoRepository } from "../repository/video.repository";
 import {
-  CourseLessonVideoDITypes,
   CourseLessonVideoModel,
   CourseLessonVideoResourceId,
   CreateCourseLessonVideoDto,
+  UpdateBasicCourseLessonVideoDto,
   UpdateCourseLessonVideoSourceDto,
 } from "../video.type";
-import getValuable from "../../../common/functions/getValuable";
-import { ICourseLessonRepository } from "../../lesson/repository/lesson.repository";
-import {
-  CourseLessonDITypes,
-  CourseLessonModel,
-} from "../../lesson/lesson.type";
-import { PrismaTransaction } from "../../../common/types";
-import { CourseLesson, CourseLessonVideo } from "@prisma/client";
+import { CourseLessonModel } from "../../lesson/lesson.type";
+import { CourseLesson } from "@prisma/client";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { CourseModel } from "../../course/course.type";
 import {
   IRepository,
   RepositoryDITypes,
 } from "../../../common/class/repository/repository.type";
-import Repository from "../../../common/class/repository/Repository";
+import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 
 export interface ICourseLessonVideoService {
   createVideo: (
@@ -31,6 +24,14 @@ export interface ICourseLessonVideoService {
   getVideoById: (
     videoId: number,
     resourceId: CourseLessonVideoResourceId,
+  ) => Promise<CourseLessonVideoModel>;
+  getVideos: (
+    resourceId: CourseLessonVideoResourceId,
+  ) => Promise<CourseLessonVideoModel[]>;
+  updateBasicVideo: (
+    videoId: number,
+    resourceId: CourseLessonVideoResourceId,
+    videoDetails: UpdateBasicCourseLessonVideoDto,
   ) => Promise<CourseLessonVideoModel>;
   updateVideoSource: (
     videoId: number,
@@ -48,41 +49,56 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
   @inject(RepositoryDITypes.FACADE)
   repository: IRepository;
 
-  /**
-   *
-   * All resources existence and their relation should be checked in Repository layer while authorizing because
-   * it's necessary to lock the rows while performing the features.
-   *
-   * So no need to implement those type of business logic in Service layer.
-   *
-   */
-
   public async createVideo(
     resourceId: CourseLessonVideoResourceId,
     dto: CreateCourseLessonVideoDto,
   ): Promise<CourseLessonVideoModel> {
-    await this.validateRelationBetweenResources(
-      { resourceId },
-      new RecordNotFoundException(),
-    );
+    try {
+      await this.validateRelationBetweenResources({ resourceId });
 
-    return await this.repository.courseLessonVideo.createVideo(resourceId, dto);
+      return await this.repository.courseLessonVideo.createVideo(
+        resourceId,
+        dto,
+      );
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        foreignConstraint: {
+          default: { message: "Lesson doesn't exist!" },
+        },
+      });
+    }
   }
 
   public async getVideoById(
     videoId: number,
     resourceId: CourseLessonVideoResourceId,
   ): Promise<CourseLessonVideoModel> {
-    const resources = await this.validateRelationBetweenResources({
+    const { video } = await this.validateRelationBetweenResources({
       videoId,
       resourceId,
     });
 
-    if (!resources) {
-      throw new RecordNotFoundException();
-    }
+    return video;
+  }
 
-    return resources.video;
+  public async getVideos(
+    resourceId: CourseLessonVideoResourceId,
+  ): Promise<CourseLessonVideoModel[]> {
+    return await this.repository.courseLessonVideo.getVideos(resourceId);
+  }
+
+  public async updateBasicVideo(
+    videoId: number,
+    resourceId: CourseLessonVideoResourceId,
+    dto: UpdateBasicCourseLessonVideoDto,
+  ): Promise<CourseLessonVideoModel> {
+    await this.validateRelationBetweenResources({ resourceId });
+
+    return await this.repository.courseLessonVideo.updateVideo(
+      videoId,
+      resourceId,
+      dto,
+    );
   }
 
   public async updateVideoSource(
@@ -90,12 +106,9 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     resourceId: CourseLessonVideoResourceId,
     dto: UpdateCourseLessonVideoSourceDto,
   ): Promise<CourseLessonVideoModel> {
-    await this.validateRelationBetweenResources(
-      { resourceId },
-      new RecordNotFoundException(),
-    );
+    await this.validateRelationBetweenResources({ resourceId });
 
-    return await this.repository.courseLessonVideo.updateVideoSource(
+    return await this.repository.courseLessonVideo.updateVideo(
       videoId,
       resourceId,
       dto,
@@ -111,26 +124,20 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     return {};
   }
 
-  private async validateRelationBetweenResources(
-    id: {
-      resourceId: CourseLessonVideoResourceId;
-    },
-    error?: Error,
-  ): Promise<{
+  private async validateRelationBetweenResources(id: {
+    resourceId: CourseLessonVideoResourceId;
+  }): Promise<{
     course: CourseModel;
     lesson: CourseLessonModel;
-  } | null>;
-  private async validateRelationBetweenResources(
-    id: {
-      videoId: number;
-      resourceId: CourseLessonVideoResourceId;
-    },
-    error?: Error,
-  ): Promise<{
+  }>;
+  private async validateRelationBetweenResources(id: {
+    videoId: number;
+    resourceId: CourseLessonVideoResourceId;
+  }): Promise<{
     course: CourseModel;
     lesson: CourseLessonModel;
     video: CourseLessonVideoModel;
-  } | null>;
+  }>;
   private async validateRelationBetweenResources<
     T1 extends {
       resourceId: CourseLessonVideoResourceId;
@@ -141,7 +148,6 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     },
   >(
     id: T1 | T2,
-    error?: Error,
   ): Promise<
     | {
         lesson: CourseLesson;
@@ -150,7 +156,6 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
         lesson: CourseLessonModel;
         video: CourseLessonVideoModel;
       }
-    | null
   > {
     const { resourceId } = id;
     const { courseId, lessonId } = resourceId;
@@ -161,11 +166,7 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     );
 
     if (!lesson || lesson.courseId !== courseId) {
-      if (error) {
-        throw error;
-      }
-
-      return null;
+      throw new RecordNotFoundException();
     }
 
     if ((id as T2).videoId) {
@@ -176,11 +177,7 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
       );
 
       if (!video || video.lessonId !== lessonId) {
-        if (error) {
-          throw error;
-        }
-
-        return null;
+        throw new RecordNotFoundException("video doesn't exist!");
       }
 
       if (videoId) {

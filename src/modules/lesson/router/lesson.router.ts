@@ -1,14 +1,8 @@
 import "reflect-metadata";
-
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { CourseLessonDITypes, courseLessonUrls } from "../lesson.type";
 import { ICourseLessonController } from "../controller/lesson.controller";
-import { validationMiddleware } from "../../../middlewares/validationMiddleware";
-import {
-  CreateCourseLessonDtoJoi,
-  UpdateCourseLessonDtoJoi,
-} from "../controller/lesson.joi";
 
 export default function CourseLessonRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -17,23 +11,41 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
     CourseLessonDITypes.CONTROLLER,
   );
 
+  /**
+   * Create
+   *
+   */
   router.post(
-    "/",
+    courseLessonUrls.lessons,
     authenticationMiddleware,
     controller.createLesson.bind(controller),
   );
 
+  /**
+   * Get
+   *
+   */
   router.get(
     courseLessonUrls.lesson,
     controller.getLessonById.bind(controller),
   );
 
-  router.put(
-    courseLessonUrls.lesson,
+  router.get(courseLessonUrls.lessons, controller.getLessons.bind(controller));
+
+  /**
+   * Update
+   *
+   */
+  router.patch(
+    courseLessonUrls.basic,
     authenticationMiddleware,
-    controller.updateLesson.bind(controller),
+    controller.updateBasicLesson.bind(controller),
   );
 
+  /**
+   * Delete
+   *
+   */
   router.delete(
     courseLessonUrls.lesson,
     authenticationMiddleware,

@@ -3,10 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateCourseLessonDtoJoi = exports.CreateCourseLessonDtoJoi = void 0;
+exports.UpdateBasicCourseLessonDtoJoi = exports.CreateCourseLessonDtoJoi = void 0;
 const joi_1 = __importDefault(require("joi"));
 /**
- * CreateCourseLesson
+ * Create
  *
  */
 exports.CreateCourseLessonDtoJoi = joi_1.default.object({
@@ -14,10 +14,10 @@ exports.CreateCourseLessonDtoJoi = joi_1.default.object({
     description: joi_1.default.string(),
 });
 /**
- * UpdateCourseLesson
+ * Update
  *
  */
-exports.UpdateCourseLessonDtoJoi = joi_1.default.object({
+exports.UpdateBasicCourseLessonDtoJoi = joi_1.default.object({
     title: joi_1.default.string(),
     description: joi_1.default.string(),
 });

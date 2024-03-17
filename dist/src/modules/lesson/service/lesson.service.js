@@ -25,10 +25,20 @@ exports.CourseLessonService = void 0;
 const inversify_1 = require("inversify");
 const lesson_type_1 = require("../lesson.type");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
+const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseLessonService = class CourseLessonService {
     createLesson(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.createLesson(resourceId, dto);
+            try {
+                return yield this.repository.createLesson(resourceId, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    foreignConstraint: {
+                        default: { message: "Course doesn't exist!" },
+                    },
+                });
+            }
         });
     }
     getLessonById(lessonId, resourceId) {
@@ -37,33 +47,34 @@ let CourseLessonService = class CourseLessonService {
                 lessonId,
                 resourceId,
             });
-            if (!lesson) {
-                throw new RecordNotFoundException_1.default();
-            }
             return lesson;
         });
     }
-    updateLesson(lessonId, resourceId, dto) {
+    getLessons(resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ lessonId, resourceId }, new RecordNotFoundException_1.default());
+            return yield this.repository.getLessons(resourceId);
+        });
+    }
+    updateBasicLesson(lessonId, resourceId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.validateRelationBetweenResources({ lessonId, resourceId });
             return yield this.repository.updateLesson(lessonId, resourceId, dto);
         });
     }
     deleteLesson(lessonId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ lessonId, resourceId }, new RecordNotFoundException_1.default());
+            yield this.validateRelationBetweenResources({ lessonId, resourceId });
             yield this.repository.deleteLesson(lessonId, resourceId);
             return {};
         });
     }
-    validateRelationBetweenResources(id, error) {
+    validateRelationBetweenResources(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const { lessonId, resourceId } = id;
+            const { courseId } = resourceId;
             const lesson = yield this.repository.getLessonById(lessonId, resourceId);
-            if (!lesson) {
-                if (error) {
-                    throw error;
-                }
+            if (!lesson || lesson.courseId !== courseId) {
+                throw new RecordNotFoundException_1.default();
             }
             return lesson;
         });

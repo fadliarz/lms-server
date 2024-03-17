@@ -30,6 +30,7 @@ const NaNException_1 = __importDefault(require("../../../common/class/exceptions
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const video_joi_1 = require("./video.joi");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
+const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
 let CourseLessonVideoController = class CourseLessonVideoController {
     createVideo(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -37,7 +38,9 @@ let CourseLessonVideoController = class CourseLessonVideoController {
                 yield (0, validateJoi_1.default)({ body: video_joi_1.CreateCourseLessonVideoJoi })(req, res, next);
                 const resourceId = this.validateResourceId(req);
                 const newVideo = yield this.service.createVideo(resourceId, req.body);
-                return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({ data: newVideo });
+                return res
+                    .status(statusCode_1.StatusCode.RESOURCE_CREATED)
+                    .json({ data: (0, removeNullFields_1.default)(newVideo) });
             }
             catch (error) {
                 next(error);
@@ -50,7 +53,35 @@ let CourseLessonVideoController = class CourseLessonVideoController {
                 const videoId = this.validateVideoId(req);
                 const resourceId = this.validateResourceId(req);
                 const video = yield this.service.getVideoById(videoId, resourceId);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: video });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: (0, removeNullFields_1.default)(video) });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getVideos(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const resourceId = this.validateResourceId(req);
+                const videos = yield this.service.getVideos(resourceId);
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: videos.map((video) => (0, removeNullFields_1.default)(video)) });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateBasicVideo(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: video_joi_1.UpdateBasicCourseLessonVideoJoi })(req, res, next);
+                const videoId = this.validateVideoId(req);
+                const resourceId = this.validateResourceId(req);
+                const updatedVideo = yield this.service.updateBasicVideo(videoId, resourceId, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedVideo });
             }
             catch (error) {
                 next(error);

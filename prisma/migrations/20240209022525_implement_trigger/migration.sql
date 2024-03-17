@@ -28,15 +28,15 @@ CREATE OR REPLACE FUNCTION update_on_CourseLike_deletion_function()
             WHERE
                 id = OLD.course_id;
             RETURN OLD;
-        END;
+        END
 $$ LANGUAGE plpgsql;
-   
+
 CREATE TRIGGER update_on_CourseLike_deletion_function
     AFTER DELETE ON course_like
     FOR EACH ROW
     EXECUTE FUNCTION update_on_CourseLike_deletion_function();
 
-
+--> CourseLesson
 CREATE OR REPLACE FUNCTION update_on_CourseLesson_insertion_function()
     RETURNS TRIGGER AS $$
         BEGIN
@@ -56,15 +56,10 @@ CREATE TRIGGER update_on_CourseLesson_insertion
     FOR EACH ROW
     EXECUTE FUNCTION update_on_CourseLesson_insertion_function();
 
-
-
+--> Todo: Prevent updating courseId
 CREATE OR REPLACE FUNCTION update_on_CourseLesson_updation_function()
     RETURNS TRIGGER AS $$
         BEGIN
---             CASE
---                 WHEN OLD.course_id <> NEW.course_id THEN
---                     RAISE EXCEPTION 'Changing course_id is not allowed';
---             END CASE;
             UPDATE
                 course
             SET
@@ -72,7 +67,6 @@ CREATE OR REPLACE FUNCTION update_on_CourseLesson_updation_function()
                 total_durations = total_durations + NEW.total_durations - OLD.total_durations
             WHERE
                 id = OLD.course_id;
-
             RETURN NEW;
         END;
 $$ LANGUAGE plpgsql;
@@ -81,8 +75,6 @@ CREATE TRIGGER update_on_CourseLesson_updation
     AFTER UPDATE ON course_lesson
     FOR EACH ROW
     EXECUTE FUNCTION update_on_CourseLesson_updation_function();
-
-
 
 CREATE OR REPLACE FUNCTION update_on_CourseLesson_deletion_function()
     RETURNS TRIGGER AS $$
@@ -95,7 +87,6 @@ CREATE OR REPLACE FUNCTION update_on_CourseLesson_deletion_function()
                 total_durations = total_durations - OLD.total_durations
             WHERE
                 id = OLD.course_id;
-
             RETURN OLD;
         END;
 $$ LANGUAGE plpgsql;
@@ -105,10 +96,7 @@ CREATE TRIGGER update_on_CourseLesson_deletion
     FOR EACH ROW
     EXECUTE FUNCTION update_on_CourseLesson_deletion_function();
 
-
-
-
-
+--> CourseLessonVideo
 CREATE OR REPLACE FUNCTION update_on_CourseLessonVideo_insertion_function()
     RETURNS TRIGGER AS $$
         BEGIN
@@ -130,16 +118,10 @@ CREATE TRIGGER update_on_CourseLessonVideo_insertion
     FOR EACH ROW
     EXECUTE FUNCTION update_on_CourseLessonVideo_insertion_function();
 
-
-
+--> Todo: Prevent updating lessonId
 CREATE OR REPLACE FUNCTION update_on_CourseLessonVideo_updation_function()
     RETURNS TRIGGER AS $$
         BEGIN
---             CASE
---                 WHEN OLD.lesson_id <> NEW.lesson_id THEN
---                     RAISE EXCEPTION 'Changing lesson_id is not allowed';
---             END CASE;
-
             UPDATE
                 course_lesson
             SET
@@ -147,7 +129,6 @@ CREATE OR REPLACE FUNCTION update_on_CourseLessonVideo_updation_function()
                 updated_at = NEW.created_at
             WHERE
                 id = NEW.lesson_id;
-
             RETURN NEW;
         END;
 $$ LANGUAGE plpgsql;
@@ -156,8 +137,6 @@ CREATE TRIGGER update_on_CourseLessonVideo_updation
     AFTER UPDATE ON course_video
     FOR EACH ROW
     EXECUTE FUNCTION update_on_CourseLessonVideo_updation_function();
-
-
 
 CREATE OR REPLACE FUNCTION update_on_CourseLessonVideo_deletion_function()
     RETURNS TRIGGER AS $$

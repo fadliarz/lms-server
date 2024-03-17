@@ -1,8 +1,11 @@
 import Joi from "joi";
-import { CreateCourseLessonDto, UpdateCourseLessonDto } from "../lesson.type";
+import {
+  CreateCourseLessonDto,
+  UpdateBasicCourseLessonDto,
+} from "../lesson.type";
 
 /**
- * CreateCourseLesson
+ * Create
  *
  */
 export const CreateCourseLessonDtoJoi = Joi.object<CreateCourseLessonDto>({
@@ -11,10 +14,11 @@ export const CreateCourseLessonDtoJoi = Joi.object<CreateCourseLessonDto>({
 });
 
 /**
- * UpdateCourseLesson
+ * Update
  *
  */
-export const UpdateCourseLessonDtoJoi = Joi.object<UpdateCourseLessonDto>({
-  title: Joi.string(),
-  description: Joi.string(),
-});
+export const UpdateBasicCourseLessonDtoJoi =
+  Joi.object<UpdateBasicCourseLessonDto>({
+    title: Joi.string(),
+    description: Joi.string(),
+  });

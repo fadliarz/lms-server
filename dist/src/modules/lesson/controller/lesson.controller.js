@@ -61,13 +61,27 @@ let CourseLessonController = class CourseLessonController {
             }
         });
     }
-    updateLesson(req, res, next) {
+    getLessons(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield (0, validateJoi_1.default)({ body: lesson_joi_1.UpdateCourseLessonDtoJoi })(req, res, next);
+                const resourceId = this.validateUnauthenticatedResourceId(req);
+                const lessons = yield this.service.getLessons(resourceId);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: lessons.map((lesson) => (0, removeNullFields_1.default)(lesson)),
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateBasicLesson(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: lesson_joi_1.UpdateBasicCourseLessonDtoJoi })(req, res, next);
                 const lessonId = this.validateLessonId(req);
                 const resourceId = this.validateResourceId(req);
-                const updatedLesson = yield this.service.updateLesson(lessonId, resourceId, req.body);
+                const updatedLesson = yield this.service.updateBasicLesson(lessonId, resourceId, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: (0, removeNullFields_1.default)(updatedLesson),
                 });
