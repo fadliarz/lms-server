@@ -337,6 +337,23 @@ components:
         - password
 
     #
+    # > CourseCategory Type <
+    #
+    CreateCourseCategoryDto:
+      type: object
+      properties:
+        title:
+          type: string
+      required:
+        - title
+    UpdateBasicCourseCategoryDto:
+      type: object
+      properties:
+        title:
+          type: string
+
+
+    #
     # > Course Type <
     #
     CreateCourseDto:
@@ -837,6 +854,105 @@ paths:
           - $ref: "#/components/responses/CommonErrorResponses"
 
   #
+  # > CourseCategory APIs
+  #
+  /api/v1/categories:
+    post:
+      tags:
+        - CourseCategory
+      summary: Create a category.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseCategoryDto"
+      responses:
+        allOf:
+          - "201":
+              description: Resource created.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CategoryModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+    get:
+      tags:
+        - CourseCategory
+      summary: Get categories.
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/CategoryModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /api/v1/categories/{categoryId}:
+    get:
+      tags:
+        - CourseCategory
+      summary: Get a category.
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        allOf:
+          - "200":
+              description: OK.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CategoryModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  /api/v1/categories/{categoryId}/basic:
+    patch:
+      tags:
+        - CourseCategory
+      summary: Update basic category.
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBasicCourseCategoryDto"
+      responses:
+        allOf:
+          - "200":
+              description: Resource updated.
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/CategoryModel"
+          - $ref: "#/components/responses/CommonErrorResponses"
+
+  #
   # > Course APIs <
   #
   /api/v1/courses:
@@ -884,7 +1000,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/GetCoursesData"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/enrolled:
     get:
       tags:
@@ -910,7 +1025,6 @@ paths:
                         items:
                           $ref: "#/components/schemas/GetEnrolledCoursesData"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}:
     get:
       tags:
@@ -939,7 +1053,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/GetCourseByIdData"
           - $ref: "#/components/responses/CommonErrorResponses"
-
     delete:
       tags:
         - Course
@@ -960,7 +1073,6 @@ paths:
                     type: object
                     properties:
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/basic:
     patch:
       tags:
@@ -990,7 +1102,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/status:
     patch:
       tags:
@@ -1020,7 +1131,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/category:
     patch:
       tags:
@@ -1050,7 +1160,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/CourseModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/likes:
     post:
       tags:
@@ -1080,7 +1189,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/CourseLikeModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/likes/{likeId}:
     delete:
       tags:
@@ -1140,7 +1248,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/CourseEnrollmentModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/enrollments/{enrollmentId}/role:
     patch:
       tags:
@@ -1175,7 +1282,6 @@ paths:
                       data:
                         $ref: "#/components/schemas/CourseEnrollmentModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/enrollments/{enrollmentId}:
     delete:
       tags:
@@ -1259,7 +1365,6 @@ paths:
                         items:
                           $ref: "#/components/schemas/CourseLessonModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/lessons/{lessonId}:
     get:
       tags:
@@ -1314,7 +1419,6 @@ paths:
                     type: object
                     properties:
           - $ref: "#/components/responses/CommonErrorResponses"
-
   /api/v1/courses/{courseId}/lessons/{lessonId}/basic:
     patch:
       tags:
@@ -1487,7 +1591,7 @@ paths:
     patch:
       tags:
         - CourseLessonVideo
-      summary: Update basic source.
+      summary: Update basic video.
       parameters:
         - name: courseId
           in: path

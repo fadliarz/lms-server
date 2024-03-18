@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import { ICourseCategoryService } from "../service/category.service";
 import {
@@ -10,10 +10,11 @@ import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseCategoryDtoJoi,
-  UpdateCourseCategoryDtoJoi,
+  UpdateBasicCourseCategoryDtoJoi,
 } from "./category.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
+import getValuable from "../../../common/functions/removeNullFields";
 
 export interface ICourseCategoryController {
   createCategory: (
@@ -21,7 +22,17 @@ export interface ICourseCategoryController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
+  getCategoryById: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
   getCategories: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateBasicCategory: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -48,8 +59,25 @@ export class CourseCategoryController implements ICourseCategoryController {
       );
 
       return res.status(StatusCode.RESOURCE_CREATED).json({
-        data: newCategory,
+        data: getValuable(newCategory),
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getCategoryById(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const categoryId = this.validateCategoryId(req);
+      const category = await this.service.getCategoryById(categoryId);
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: getValuable(category) });
     } catch (error) {
       next(error);
     }
@@ -63,29 +91,37 @@ export class CourseCategoryController implements ICourseCategoryController {
     try {
       const categories = await this.service.getCategories();
 
-      return res.status(StatusCode.SUCCESS).json({ data: categories });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: categories.map((category) => getValuable(category)) });
     } catch (error) {
       next(error);
     }
   }
 
-  public async updateCategory(
+  public async updateBasicCategory(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await validateJoi({ body: UpdateCourseCategoryDtoJoi })(req, res, next);
+      await validateJoi({ body: UpdateBasicCourseCategoryDtoJoi })(
+        req,
+        res,
+        next,
+      );
 
       const categoryId = this.validateCategoryId(req);
       const resourceId = this.validateResourceId(req);
-      const updatedCategory = await this.service.updateCategory(
+      const updatedCategory = await this.service.updateBasicCategory(
         categoryId,
         resourceId,
         req.body,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: updatedCategory });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: getValuable(updatedCategory) });
     } catch (error) {
       next(error);
     }
@@ -95,15 +131,19 @@ export class CourseCategoryController implements ICourseCategoryController {
     req: Request,
     error?: Error,
   ): CourseCategoryResourceId {
-    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const { id: userId, role } =
+      getRequestUserOrThrowAuthenticationException(req);
 
     return {
-      userId,
+      user: {
+        id: userId,
+        role,
+      },
     };
   }
 
   private validateCategoryId(req: Request, error?: Error): number {
-    const categoryId: number = Number(req.params.lessonId);
+    const categoryId: number = Number(req.params.categoryId);
     if (isNaN(categoryId)) {
       throw error || new NaNException("categoryId");
     }

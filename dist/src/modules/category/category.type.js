@@ -11,4 +11,5 @@ var courseCategoryUrls;
 (function (courseCategoryUrls) {
     courseCategoryUrls["root"] = "/categories";
     courseCategoryUrls["category"] = "/:categoryId";
+    courseCategoryUrls["basic"] = "/:categoryId/basic";
 })(courseCategoryUrls || (exports.courseCategoryUrls = courseCategoryUrls = {}));

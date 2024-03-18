@@ -17,35 +17,30 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CourseCategoryService = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const category_type_1 = require("../category.type");
-const getValuable_1 = __importDefault(require("../../../common/functions/getValuable"));
 let CourseCategoryService = class CourseCategoryService {
     createCategory(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newCategory = yield this.repository.createCategory(resourceId, dto);
-            return (0, getValuable_1.default)(newCategory);
+            return yield this.repository.createCategory(resourceId, dto);
+        });
+    }
+    getCategoryById(categoryId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.repository.getCategoryByIdOrThrow(categoryId);
         });
     }
     getCategories() {
         return __awaiter(this, void 0, void 0, function* () {
-            const categories = yield this.repository.getCategories();
-            const valuableCategories = categories.map((category) => {
-                return (0, getValuable_1.default)(category);
-            });
-            return valuableCategories;
+            return yield this.repository.getCategories();
         });
     }
-    updateCategory(categoryId, resourceId, dto) {
+    updateBasicCategory(categoryId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedCategory = yield this.repository.updateCategory(categoryId, resourceId, dto);
-            return (0, getValuable_1.default)(updatedCategory);
+            return yield this.repository.updateCategory(categoryId, resourceId, dto);
         });
     }
 };

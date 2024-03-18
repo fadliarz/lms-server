@@ -39,7 +39,7 @@ const courseApi = {
 };
 const courseCategoryApi = {
   router: CourseCategoryRouter(getAuthMiddleWare()),
-  path: courseCategoryUrls.root,
+  path: "/api/v1" + courseCategoryUrls.root,
 };
 const courseLessonApi = {
   router: CourseLessonRouter(getAuthMiddleWare()),
@@ -49,7 +49,6 @@ const courseEnrollmentApi = {
   router: CourseEnrollmentRouter(getAuthMiddleWare()),
   path: "/api/v1",
 };
-
 const courseLessonVideoApi = {
   router: CourseLessonVideoRouter(getAuthMiddleWare()),
   path: "/api/v1",

@@ -48,12 +48,12 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 
 | Role                    | Enrolling for Themselves   | Enrolling for Others       |
 |-------------------------|----------------------------|----------------------------| 
-| **Student**             | `[STUDENT]`T               | `Unauthorized`T            
-| **Student & Author**    | `InternalServerException`T | `InternalServerException`T 
-| **Instructor**          | `[STUDENT]`T               | `Unauthorized`T            
-| **Instructor & Author** | `Unauthorized`T            | `Unauthorized`T            
-| **Admin**               | `Permitted`T               | `Permitted`T               
-| **Admin & Author**      | `Unauthorized`T            | `Permitted`T               
+| **Student**             | `[STUDENT]`               | `Unauthorized`              
+| **Student & Author**    | `InternalServerException` | `InternalServerException` 
+| **Instructor**          | `[STUDENT]`               | `Unauthorized`            
+| **Instructor & Author** | `Unauthorized`            | `Unauthorized`            
+| **Admin**               | `Permitted`               | `Permitted`               
+| **Admin & Author**      | `Unauthorized`            | `Permitted`               
 
 - ### Updating Enrollment
 
@@ -79,11 +79,11 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 
 - ### Updating Role Rule
 
-| User Role      | STUDENT &rarr; INSTRUCTOR | INSTRUCTOR &rarr; STUDENT |
-|----------------|---------------------------|---------------------------|
-| **Student**    | `Unauthorized`            | `-`                       |
-| **Instructor** | `Permitted`               | `Permitted`               |
-| **Admin**      | `Permitted`               | `Permitted`               |
+| Target User Role | STUDENT &rarr; INSTRUCTOR | INSTRUCTOR &rarr; STUDENT |
+|------------------|---------------------------|---------------------------|
+| **Student**      | `Forbidden`               | `InternalServerException` |
+| **Instructor**   | `Permitted`               | `Permitted`               |
+| **Admin**        | `Permitted`               | `Permitted`               |
 
 ---
 
@@ -97,45 +97,35 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 | Instructor | `Permitted`    |
 | Admin      | `Permitted`    |
 
-- ### Fetching Course and Include Videos
+- ### Fetching Course/Courses
 
-| Role & Authorship        | Enrolled    | Unenrolled     |
-|--------------------------|-------------|----------------|
-| **Student**              | `Permitted` | `Unauthorized` |
-| **Instructor & !Author** | `Permitted` | `Unauthorized` |
-| **Instructor & Author**  | `-`         | `Permitted`    |
-| **Admin & !Author**      | `Permitted` | `Permitted`    |
-| **Admin & Author**       | `-`         | `Permitted`    |
-
-- ### Fetching Course and Exclude Videos
-
-| Role & Authorship        | Enrolled    | Unenrolled  |
-|--------------------------|-------------|-------------|
-| **Student**              | `Permitted` | `Permitted` |
-| **Instructor & !Author** | `Permitted` | `Permitted` |
-| **Instructor & Author**  | `-`         | `Permitted` |
-| **Admin & !Author**      | `Permitted` | `Permitted` |
-| **Admin & Author**       | `-`         | `Permitted` |
+| Role & Authorship        | Enrolled                  | Unenrolled    |
+|--------------------------|---------------------------|---------------|
+| **Student**              | `Permitted`               | `Permitted`   |
+| **Instructor & !Author** | `Permitted`               | `Permitted`   |
+| **Instructor & Author**  | `InternalServerException` | `Permitted`   |
+| **Admin & !Author**      | `Permitted`               | `Permitted`   |
+| **Admin & Author**       | `InternalServerException` | `Permitted`   |
 
 - ### Updating Course
 
-| Role & Authorship        | Enrolled       | Unenrolled     |
-|--------------------------|----------------|----------------|
-| **Student**              | `Unauthorized` | `Unauthorized` |
-| **Instructor & !Author** | `[INSTRUCTOR]` | `Unauthorized` |
-| **Instructor & Author**  | `-`            | `Permitted`    |
-| **Admin & !Author**      | `Permitted`    | `Permitted`    |
-| **Admin & Author**       | `-`            | `Permitted`    |
+| Role & Authorship        | Enrolled                  | Unenrolled     |
+|--------------------------|---------------------------|----------------|
+| **Student**              | `Unauthorized`            | `Unauthorized` |
+| **Instructor & !Author** | `[INSTRUCTOR]`            | `Unauthorized` |
+| **Instructor & Author**  | `InternalServerException` | `Permitted`    |
+| **Admin & !Author**      | `Permitted`               | `Permitted`    |
+| **Admin & Author**       | `InternalServerException` | `Permitted`    |
 
 - ### Deleting Course
 
-| Role & Authorship        | Enrolled       | Unenrolled     |
-|--------------------------|----------------|----------------|
-| **Student**              | `Unauthorized` | `Unauthorized` |
-| **Instructor & !Author** | `Unauthorized` | `Unauthorized` |
-| **Instructor & Author**  | `-`            | `Permitted`    |
-| **Admin & !Author**      | `Permitted`    | `Permitted`    |
-| **Admin & Author**       | `-`            | `Permitted`    |
+| Role & Authorship        | Enrolled                  | Unenrolled     |
+|--------------------------|---------------------------|----------------|
+| **Student**              | `Unauthorized`            | `Unauthorized` |
+| **Instructor & !Author** | `Unauthorized`            | `Unauthorized` |
+| **Instructor & Author**  | `InternalServerException` | `Permitted`    |
+| **Admin & !Author**      | `Permitted`               | `Permitted`    |
+| **Admin & Author**       | `InternalServerException` | `Permitted`    |
 
 ---
 
@@ -143,13 +133,13 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 
 ### Creating Lesson / Video
 
-| Role & Authorship        | Enrolled       | Unenrolled     |
-|--------------------------|----------------|----------------|
-| **Student**              | `Unauthorized` | `Unauthorized` |
-| **Instructor & !Author** | `[INSTRUCTOR]` | `Unauthorized` |
-| **Instructor & Author**  | `-`            | `Permitted`    |
-| **Admin & !Author**      | `Permitted`    | `Permitted`    |
-| **Admin & Author**       | `-`            | `Permitted`    |
+| Role & Authorship        | Enrolled                  | Unenrolled     |
+|--------------------------|---------------------------|----------------|
+| **Student**              | `Unauthorized`            | `Unauthorized` |
+| **Instructor & !Author** | `[INSTRUCTOR]`            | `Unauthorized` |
+| **Instructor & Author**  | `InternalServerException` | `Permitted`    |
+| **Admin & !Author**      | `Permitted`               | `Permitted`    |
+| **Admin & Author**       | `InternalServerException` | `Permitted`    |
 
 ### Fetching Lesson
 
@@ -157,9 +147,9 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 |--------------------------|-------------|-------------|
 | **Student**              | `Permitted` | `Permitted` |
 | **Instructor & !Author** | `Permitted` | `Permitted` |
-| **Instructor & Author**  | `-`         | `-`         |
+| **Instructor & Author**  | `InternalServerException`         | `Permitted` |
 | **Admin & !Author**      | `Permitted` | `Permitted` |
-| **Admin & Author**       | `-`         | `-`         |
+| **Admin & Author**       | `InternalServerException`         | `Permitted` |
 
 ### Fetching Video
 

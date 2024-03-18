@@ -30,6 +30,7 @@ const validateJoi_1 = __importDefault(require("../../../common/functions/validat
 const category_joi_1 = require("./category.joi");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
+const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
 let CourseCategoryController = class CourseCategoryController {
     createCategory(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -38,8 +39,22 @@ let CourseCategoryController = class CourseCategoryController {
                 const resourceId = this.validateResourceId(req);
                 const newCategory = yield this.service.createCategory(resourceId, req.body);
                 return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({
-                    data: newCategory,
+                    data: (0, removeNullFields_1.default)(newCategory),
                 });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getCategoryById(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const categoryId = this.validateCategoryId(req);
+                const category = yield this.service.getCategoryById(categoryId);
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, removeNullFields_1.default)(category) });
             }
             catch (error) {
                 next(error);
@@ -50,21 +65,25 @@ let CourseCategoryController = class CourseCategoryController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const categories = yield this.service.getCategories();
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: categories });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: categories.map((category) => (0, removeNullFields_1.default)(category)) });
             }
             catch (error) {
                 next(error);
             }
         });
     }
-    updateCategory(req, res, next) {
+    updateBasicCategory(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield (0, validateJoi_1.default)({ body: category_joi_1.UpdateCourseCategoryDtoJoi })(req, res, next);
+                yield (0, validateJoi_1.default)({ body: category_joi_1.UpdateBasicCourseCategoryDtoJoi })(req, res, next);
                 const categoryId = this.validateCategoryId(req);
                 const resourceId = this.validateResourceId(req);
-                const updatedCategory = yield this.service.updateCategory(categoryId, resourceId, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedCategory });
+                const updatedCategory = yield this.service.updateBasicCategory(categoryId, resourceId, req.body);
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, removeNullFields_1.default)(updatedCategory) });
             }
             catch (error) {
                 next(error);
@@ -72,13 +91,16 @@ let CourseCategoryController = class CourseCategoryController {
         });
     }
     validateResourceId(req, error) {
-        const { id: userId } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
+        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         return {
-            userId,
+            user: {
+                id: userId,
+                role,
+            },
         };
     }
     validateCategoryId(req, error) {
-        const categoryId = Number(req.params.lessonId);
+        const categoryId = Number(req.params.categoryId);
         if (isNaN(categoryId)) {
             throw error || new NaNException_1.default("categoryId");
         }

@@ -36,7 +36,7 @@ const courseApi = {
 };
 const courseCategoryApi = {
     router: (0, category_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: category_type_1.courseCategoryUrls.root,
+    path: "/api/v1" + category_type_1.courseCategoryUrls.root,
 };
 const courseLessonApi = {
     router: (0, lesson_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),

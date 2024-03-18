@@ -1,7 +1,7 @@
 import Joi from "joi";
 import {
   CreateCourseCategoryDto,
-  UpdateCourseCategoryDto,
+  UpdateBasicCourseCategoryDto,
 } from "../category.type";
 
 /**
@@ -16,6 +16,7 @@ export const CreateCourseCategoryDtoJoi = Joi.object<CreateCourseCategoryDto>({
  * UpdateCourseCategory
  *
  */
-export const UpdateCourseCategoryDtoJoi = Joi.object<UpdateCourseCategoryDto>({
-  title: Joi.string(),
-});
+export const UpdateBasicCourseCategoryDtoJoi =
+  Joi.object<UpdateBasicCourseCategoryDto>({
+    title: Joi.string(),
+  });

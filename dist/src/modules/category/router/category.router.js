@@ -10,15 +10,21 @@ function CourseCategoryRouter(authenticationMiddleware) {
     const router = express_1.default.Router();
     const controller = inversifyConfig_1.default.get(category_type_1.CourseCategoryDITypes.CONTROLLER);
     /**
-     * Create (CourseCategory)
+     * Create
      *
      */
     router.post("/", authenticationMiddleware, controller.createCategory.bind(controller));
     /**
-     * Get (CourseCategory)
+     * Get
      *
      */
-    router.get(category_type_1.courseCategoryUrls.category, controller.getCategories.bind(controller));
+    router.get("/", controller.getCategories.bind(controller));
+    router.get(category_type_1.courseCategoryUrls.category, controller.getCategoryById.bind(controller));
+    /**
+     * Update
+     *
+     */
+    router.patch(category_type_1.courseCategoryUrls.basic, authenticationMiddleware, controller.updateBasicCategory.bind(controller));
     return router;
 }
 exports.default = CourseCategoryRouter;

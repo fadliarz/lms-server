@@ -1,5 +1,5 @@
-import { Course, CourseCategory, CourseEnrollment, User } from "@prisma/client";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import { CourseCategory, User } from "@prisma/client";
+import { UserRoleModel } from "../course/course.type";
 
 export const CourseCategoryDITypes = {
   REPOSITORY: Symbol.for("COURSE_CATEGORY_REPOSITORY"),
@@ -11,6 +11,7 @@ export const CourseCategoryDITypes = {
 export enum courseCategoryUrls {
   root = "/categories",
   category = "/:categoryId",
+  basic = courseCategoryUrls.category + "/basic",
 }
 
 /**
@@ -43,8 +44,6 @@ export interface ICourseCategoryAuthorization {
  *
  */
 export type CourseCategoryModel = CourseCategory;
-export type ValuableCourseCategoryModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseCategoryModel>;
 
 /**
  *
@@ -55,7 +54,7 @@ export type ValuableCourseCategoryModel =
  */
 
 /**
- * Dto CreateCourseCategory
+ * Dto > Create
  *
  */
 export type CreateCourseCategoryDto = {
@@ -63,15 +62,20 @@ export type CreateCourseCategoryDto = {
 };
 
 /**
- * Dto UpdateCourseCategoryDto
+ * Dto > Update
  *
  */
-export type UpdateCourseCategoryDto = Partial<CreateCourseCategoryDto>;
+export type UpdateBasicCourseCategoryDto = {
+  title?: string;
+};
 
 /**
  * ResourceId CourseLessonVideo
  *
  */
 export type CourseCategoryResourceId = {
-  userId: number;
+  user: {
+    id: number;
+    role: UserRoleModel;
+  };
 };

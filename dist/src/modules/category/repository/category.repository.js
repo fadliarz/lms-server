@@ -30,6 +30,7 @@ const prisma_query_raw_type_1 = require("../../../common/class/prisma_query_raw/
 const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
 const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
 const InternalServerException_1 = __importDefault(require("../../../common/class/exceptions/InternalServerException"));
+const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 let CourseCategoryRepository = class CourseCategoryRepository {
     constructor() {
         this.prisma = PrismaClientSingleton_1.default.getInstance();
@@ -42,13 +43,6 @@ let CourseCategoryRepository = class CourseCategoryRepository {
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
-    getCategories() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                return yield tx.courseCategory.findMany();
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
-        });
-    }
     getCategoryById(categoryId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
@@ -58,10 +52,26 @@ let CourseCategoryRepository = class CourseCategoryRepository {
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });
     }
+    getCategoryByIdOrThrow(categoryId, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const category = yield this.getCategoryById(categoryId);
+            if (!category) {
+                throw new RecordNotFoundException_1.default();
+            }
+            return category;
+        });
+    }
+    getCategories() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                return yield tx.courseCategory.findMany();
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+        });
+    }
     updateCategory(categoryId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeUpdateCategory);
+                yield this.authorize(tx, resourceId, this.authorization.authorizeUpdateCategory.bind(this.authorization));
                 yield this.prismaQueryRaw.courseCategory.selectForUpdateByIdOrThrow(tx, categoryId);
                 return yield tx.courseCategory.update({
                     where: {
@@ -74,7 +84,7 @@ let CourseCategoryRepository = class CourseCategoryRepository {
     }
     authorize(tx, resourceId, fn) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { userId } = resourceId;
+            const { user: { id: userId }, } = resourceId;
             const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
             const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             if (!(isStudent || isInstructor || isAdmin)) {

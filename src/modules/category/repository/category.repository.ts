@@ -6,7 +6,7 @@ import {
   CourseCategoryResourceId,
   CreateCourseCategoryDto,
   ICourseCategoryAuthorization,
-  UpdateCourseCategoryDto,
+  UpdateBasicCourseCategoryDto,
 } from "../category.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import { CourseCategory, User } from "@prisma/client";
@@ -23,11 +23,7 @@ import { PrismaTransaction } from "../../../common/types";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import CourseCategoryAuthorization from "../authorization/category.authorization";
-import {
-  CourseResourceId,
-  GetCourseByIdData,
-  GetCourseByIdQuery,
-} from "../../course/course.type";
+import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 
 export interface ICourseCategoryRepository {
   createCategory: (
@@ -36,10 +32,14 @@ export interface ICourseCategoryRepository {
   ) => Promise<CourseCategory>;
   getCategories: () => Promise<CourseCategory[]>;
   getCategoryById: (categoryId: number) => Promise<CourseCategoryModel | null>;
+  getCategoryByIdOrThrow: (
+    categoryId: number,
+    error?: Error,
+  ) => Promise<CourseCategoryModel>;
   updateCategory: (
     categoryId: number,
     resourceId: CourseCategoryResourceId,
-    dto: UpdateCourseCategoryDto,
+    dto: UpdateBasicCourseCategoryDto,
   ) => Promise<CourseCategory>;
 }
 
@@ -68,12 +68,6 @@ export class CourseCategoryRepository implements ICourseCategoryRepository {
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
-  public async getCategories(): Promise<CourseCategory[]> {
-    return await this.prisma.$transaction(async (tx) => {
-      return await tx.courseCategory.findMany();
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
   public async getCategoryById(
     categoryId: number,
   ): Promise<CourseCategoryModel | null> {
@@ -84,16 +78,35 @@ export class CourseCategoryRepository implements ICourseCategoryRepository {
     }, PrismaDefaultTransactionConfigForRead);
   }
 
+  public async getCategoryByIdOrThrow(
+    categoryId: number,
+    error?: Error,
+  ): Promise<CourseCategoryModel> {
+    const category = await this.getCategoryById(categoryId);
+
+    if (!category) {
+      throw new RecordNotFoundException();
+    }
+
+    return category;
+  }
+
+  public async getCategories(): Promise<CourseCategory[]> {
+    return await this.prisma.$transaction(async (tx) => {
+      return await tx.courseCategory.findMany();
+    }, PrismaDefaultTransactionConfigForRead);
+  }
+
   public async updateCategory(
     categoryId: number,
     resourceId: CourseCategoryResourceId,
-    dto: UpdateCourseCategoryDto,
+    dto: UpdateBasicCourseCategoryDto,
   ): Promise<CourseCategory> {
     return await this.prisma.$transaction(async (tx) => {
       await this.authorize(
         tx,
         resourceId,
-        this.authorization.authorizeUpdateCategory,
+        this.authorization.authorizeUpdateCategory.bind(this.authorization),
       );
 
       await this.prismaQueryRaw.courseCategory.selectForUpdateByIdOrThrow(
@@ -117,7 +130,9 @@ export class CourseCategoryRepository implements ICourseCategoryRepository {
   ): Promise<{
     user: User;
   }> {
-    const { userId } = resourceId;
+    const {
+      user: { id: userId },
+    } = resourceId;
     const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
       tx,
       userId,

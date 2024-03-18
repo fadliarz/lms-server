@@ -11,7 +11,7 @@ export default function CourseCategoryRouter(authenticationMiddleware: any) {
   );
 
   /**
-   * Create (CourseCategory)
+   * Create
    *
    */
   router.post(
@@ -21,12 +21,24 @@ export default function CourseCategoryRouter(authenticationMiddleware: any) {
   );
 
   /**
-   * Get (CourseCategory)
+   * Get
    *
    */
+  router.get("/", controller.getCategories.bind(controller));
+
   router.get(
     courseCategoryUrls.category,
-    controller.getCategories.bind(controller),
+    controller.getCategoryById.bind(controller),
+  );
+
+  /**
+   * Update
+   *
+   */
+  router.patch(
+    courseCategoryUrls.basic,
+    authenticationMiddleware,
+    controller.updateBasicCategory.bind(controller),
   );
 
   return router;
