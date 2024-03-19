@@ -1,14 +1,13 @@
 # Learning Management System | Server Side
 
-![Alt text](uploads/4-layer-architecture.png)
-
 ## Entitiy Relationship Diagram (ERD)
 ![img.png](uploads/ERD.png)
 
 ## API Documentation
 
-Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
-![img.png](uploads/documentation.png)
+`Link: `https://lms-server-delta.vercel.app/api-docs/ 
+
+![img.png](img.png)
 
 ## Authorization List
 
