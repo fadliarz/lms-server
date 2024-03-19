@@ -5,7 +5,7 @@
 
 ## API Documentation
 
-`Link: `https://lms-server-delta.vercel.app/api-docs/ 
+`Link:` https://lms-server-delta.vercel.app/api-docs/ 
 
 ![img.png](img.png)
 
