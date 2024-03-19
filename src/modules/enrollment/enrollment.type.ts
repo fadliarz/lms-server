@@ -1,5 +1,5 @@
 import { CourseEnrollment } from "@prisma/client";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
+import { CourseEnrollmentRoleModel } from "../course/course.type";
 
 export const CourseEnrollmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
@@ -10,7 +10,7 @@ export const CourseEnrollmentDITypes = {
 
 export enum courseEnrollmentUrls {
   root = "/courses/:courseId/enrollments",
-  enrollment = "/:enrollmentId",
+  enrollment = courseEnrollmentUrls.root + "/:enrollmentId",
   role = courseEnrollmentUrls.enrollment + "/role",
 }
 
@@ -22,12 +22,6 @@ export enum courseEnrollmentUrls {
  *
  */
 export type CourseEnrollmentModel = CourseEnrollment;
-export type ValuableCourseEnrollmentModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseEnrollmentModel>;
-export type BasicCourseEnrollmentModel = Pick<
-  CourseEnrollmentModel,
-  "userId" | "courseId" | "role"
->;
 
 /**
  *
@@ -41,14 +35,14 @@ export type BasicCourseEnrollmentModel = Pick<
  * Dto CreateEnrollment
  *
  */
-export type CreateCourseEnrollmentDto = Pick<
-  CourseEnrollmentModel,
-  "userId" | "role"
->;
-export type UpdateCourseEnrollmentRoleDto = Pick<
-  CreateCourseEnrollmentDto,
-  "role"
->;
+export type CreateCourseEnrollmentDto = {
+  userId: number;
+  role: CourseEnrollmentRoleModel;
+};
+
+export type UpdateCourseEnrollmentRoleDto = {
+  role: CourseEnrollmentRoleModel;
+};
 
 /**
  * ResourceId CourseEnrollment

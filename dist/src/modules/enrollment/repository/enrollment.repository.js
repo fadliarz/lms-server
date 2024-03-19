@@ -71,7 +71,7 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
                     courseId,
                 });
                 if (existingTargetEnrollments) {
-                    throw new ClientException_1.default("Enrollment already exists!");
+                    throw new ClientException_1.default("User is already enrolled!");
                 }
                 /**
                  * STUDENT shouldn't be enrolled as Instructor
@@ -79,22 +79,19 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
                  */
                 if ((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(dto.role, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR) &&
                     (0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.STUDENT)) {
-                    throw new ClientException_1.default();
+                    throw new ClientException_1.default("Student shouldn't be enrolled as INSTRUCTOR!");
                 }
                 /**
                  * Author shouldn't be enrolled
                  *
                  */
                 if (course.authorId === dto.userId) {
-                    throw new ClientException_1.default();
+                    throw new ClientException_1.default("Author shouldn't be enrolled!");
                 }
                 const [newEnrollment] = yield Promise.all([
                     tx.courseEnrollment.create({
                         data: Object.assign(Object.assign({}, dto), { courseId }),
                     }),
-                    (0, isEqualOrIncludeCourseEnrollmentRole_1.default)(dto.role, course_type_1.CourseEnrollmentRoleModel.STUDENT)
-                        ? this.prismaPromise.course.incrementTotalStudents(tx, courseId, 1)
-                        : this.prismaPromise.course.incrementTotalInstructors(tx, courseId, 1),
                 ]);
                 return newEnrollment;
             }), {

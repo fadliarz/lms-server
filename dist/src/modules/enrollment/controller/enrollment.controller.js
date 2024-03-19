@@ -29,6 +29,7 @@ const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const enrollment_joi_1 = require("./enrollment.joi");
+const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
 let CourseEnrollmentController = class CourseEnrollmentController {
     createEnrollment(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -40,7 +41,7 @@ let CourseEnrollmentController = class CourseEnrollmentController {
                 const newEnrollment = yield this.service.createEnrollment(resourceId, req.body);
                 return res
                     .status(statusCode_1.StatusCode.RESOURCE_CREATED)
-                    .json({ data: newEnrollment });
+                    .json({ data: (0, removeNullFields_1.default)(newEnrollment) });
             }
             catch (error) {
                 next(error);
@@ -54,7 +55,9 @@ let CourseEnrollmentController = class CourseEnrollmentController {
                 const enrollmentId = this.validateEnrollmentId(req);
                 const resourceId = this.validateResourceId(req);
                 const updatedEnrollment = yield this.service.updateEnrollmentRole(enrollmentId, resourceId, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedEnrollment });
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, removeNullFields_1.default)(updatedEnrollment) });
             }
             catch (error) {
                 next(error);
@@ -67,7 +70,7 @@ let CourseEnrollmentController = class CourseEnrollmentController {
                 const enrollmentId = this.validateEnrollmentId(req);
                 const resourceId = this.validateResourceId(req);
                 const deletedEnrollment = yield this.service.deleteEnrollment(enrollmentId, resourceId);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: deletedEnrollment });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({});
             }
             catch (error) {
                 next(error);

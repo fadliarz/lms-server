@@ -8,9 +8,9 @@ import {
   UpdateCourseEnrollmentRoleDto,
 } from "../enrollment.type";
 import { ICourseEnrollmentRepository } from "../repository/enrollment.repository";
-import getValuable from "../../../common/functions/getValuable";
 import { CourseDITypes } from "../../course/course.type";
 import { ICourseRepository } from "../../course/repository/course.repository";
+import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 
 export interface ICourseEnrollmentService {
   createEnrollment: (
@@ -25,7 +25,7 @@ export interface ICourseEnrollmentService {
   deleteEnrollment: (
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
-  ) => Promise<CourseEnrollmentModel>;
+  ) => Promise<{}>;
 }
 
 @injectable()
@@ -49,12 +49,22 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
     resourceId: CourseEnrollmentResourceId,
     dto: CreateCourseEnrollmentDto,
   ): Promise<CourseEnrollmentModel> {
-    const newEnrollment = await this.repository.createEnrollment(
-      resourceId,
-      dto,
-    );
-
-    return getValuable(newEnrollment);
+    try {
+      return await this.repository.createEnrollment(resourceId, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        uniqueConstraint: {
+          default: {
+            message: "User is already enrolled!",
+          },
+        },
+        foreignConstraint: {
+          default: {
+            message: "User or course doesn't exist!",
+          },
+        },
+      });
+    }
   }
 
   public async updateEnrollmentRole(
@@ -62,24 +72,17 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
     resourceId: CourseEnrollmentResourceId,
     dto: UpdateCourseEnrollmentRoleDto,
   ): Promise<CourseEnrollmentModel> {
-    const updatedEnrollment = await this.repository.updateEnrollmentRole(
+    return await this.repository.updateEnrollmentRole(
       enrollmentId,
       resourceId,
       dto,
     );
-
-    return getValuable(updatedEnrollment);
   }
 
   public async deleteEnrollment(
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
-  ): Promise<CourseEnrollmentModel> {
-    const deletedEnrollment = await this.repository.deleteEnrollment(
-      enrollmentId,
-      resourceId,
-    );
-
-    return getValuable(deletedEnrollment);
+  ): Promise<{}> {
+    return await this.repository.deleteEnrollment(enrollmentId, resourceId);
   }
 }

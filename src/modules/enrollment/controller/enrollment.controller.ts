@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
 import {
   CourseEnrollmentDITypes,
@@ -13,6 +13,7 @@ import {
   CreateCourseEnrollmentDtoJoi,
   UpdateCourseEnrollmentRoleDtoJoi,
 } from "./enrollment.joi";
+import getValuable from "../../../common/functions/removeNullFields";
 
 export interface ICourseEnrollmentController {
   createEnrollment: (
@@ -55,7 +56,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
 
       return res
         .status(StatusCode.RESOURCE_CREATED)
-        .json({ data: newEnrollment });
+        .json({ data: getValuable(newEnrollment) });
     } catch (error) {
       next(error);
     }
@@ -81,7 +82,9 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
         req.body,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: updatedEnrollment });
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: getValuable(updatedEnrollment) });
     } catch (error) {
       next(error);
     }
@@ -100,7 +103,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
         resourceId,
       );
 
-      return res.status(StatusCode.SUCCESS).json({ data: deletedEnrollment });
+      return res.status(StatusCode.SUCCESS).json({});
     } catch (error) {
       next(error);
     }

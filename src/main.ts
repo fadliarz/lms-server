@@ -8,16 +8,12 @@ import { userUrls } from "./modules/user/user.type";
 import CourseRouter from "./modules/course/router/course.router";
 import { courseUrls } from "./modules/course/course.type";
 import CourseEnrollmentRouter from "./modules/enrollment/router/enrollment.router";
-import { courseEnrollmentUrls } from "./modules/enrollment/enrollment.type";
 import CourseLessonRouter from "./modules/lesson/router/lesson.router";
-import { courseLessonUrls } from "./modules/lesson/lesson.type";
 import CourseLessonVideoRouter from "./modules/video/router/video.router";
-import { courseLessonVideoUrls } from "./modules/video/video.type";
 import CourseCategoryRouter from "./modules/category/router/category.router";
 import { courseCategoryUrls } from "./modules/category/category.type";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
-import { NextFunction, Request, Response } from "express-serve-static-core";
-import { Router } from "express";
+import seed from "../prisma/seed";
 
 /**
  * Validate environment variables
@@ -78,8 +74,12 @@ const prisma = PrismaClientSingleton.getInstance();
 
 prisma
   .$connect()
-  .then(() => {
+  .then(async () => {
     console.log("Successfully establishing database connection!");
+
+    if (process.env.NODE_ENV === "development") {
+      await seed();
+    }
 
     app.express.listen(port, () => {
       console.log(`Server is running on the port ${port}`);

@@ -10,6 +10,6 @@ exports.CourseEnrollmentDITypes = {
 var courseEnrollmentUrls;
 (function (courseEnrollmentUrls) {
     courseEnrollmentUrls["root"] = "/courses/:courseId/enrollments";
-    courseEnrollmentUrls["enrollment"] = "/:enrollmentId";
-    courseEnrollmentUrls["role"] = "/:enrollmentId/role";
+    courseEnrollmentUrls["enrollment"] = "/courses/:courseId/enrollments/:enrollmentId";
+    courseEnrollmentUrls["role"] = "/courses/:courseId/enrollments/:enrollmentId/role";
 })(courseEnrollmentUrls || (exports.courseEnrollmentUrls = courseEnrollmentUrls = {}));

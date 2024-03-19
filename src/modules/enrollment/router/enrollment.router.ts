@@ -19,7 +19,7 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
    *
    */
   router.post(
-    "/",
+    courseEnrollmentUrls.root,
     authenticationMiddleware,
     controller.createEnrollment.bind(controller),
   );

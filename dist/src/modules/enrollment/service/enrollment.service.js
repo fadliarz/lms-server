@@ -25,8 +25,8 @@ exports.CourseEnrollmentService = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const enrollment_type_1 = require("../enrollment.type");
-const getValuable_1 = __importDefault(require("../../../common/functions/getValuable"));
 const course_type_1 = require("../../course/course.type");
+const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseEnrollmentService = class CourseEnrollmentService {
     /**
      *
@@ -38,20 +38,33 @@ let CourseEnrollmentService = class CourseEnrollmentService {
      */
     createEnrollment(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const newEnrollment = yield this.repository.createEnrollment(resourceId, dto);
-            return (0, getValuable_1.default)(newEnrollment);
+            try {
+                return yield this.repository.createEnrollment(resourceId, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    uniqueConstraint: {
+                        default: {
+                            message: "User is already enrolled!",
+                        },
+                    },
+                    foreignConstraint: {
+                        default: {
+                            message: "User or course doesn't exist!",
+                        },
+                    },
+                });
+            }
         });
     }
     updateEnrollmentRole(enrollmentId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedEnrollment = yield this.repository.updateEnrollmentRole(enrollmentId, resourceId, dto);
-            return (0, getValuable_1.default)(updatedEnrollment);
+            return yield this.repository.updateEnrollmentRole(enrollmentId, resourceId, dto);
         });
     }
     deleteEnrollment(enrollmentId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const deletedEnrollment = yield this.repository.deleteEnrollment(enrollmentId, resourceId);
-            return (0, getValuable_1.default)(deletedEnrollment);
+            return yield this.repository.deleteEnrollment(enrollmentId, resourceId);
         });
     }
 };

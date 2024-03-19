@@ -1,10 +1,5 @@
 # Learning Management System | Server Side
 
-## This project is under development
-
-
-## Architecure | 3-layer Architecture
-
 ![Alt text](uploads/4-layer-architecture.png)
 
 ## Entitiy Relationship Diagram (ERD)
@@ -18,44 +13,41 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 ## Authorization List
 
 - ### [Enrollment](#Enrollment)
-
-1. #### [Creating Enrollment](#CreatingEnrollment)
-2. #### [Updating Enrollment](#UpdatingEnrollment)
-3. #### [Deleting Enrollment](#DeletingEnrollment)
-4. #### [Updating Role Rule](#UpdatingRoleRule)
+1. [X] [Creating Enrollment](#CreatingEnrollment)
+2. [X] [Updating Enrollment](#UpdatingEnrollment)
+3. [X] [Deleting Enrollment](#DeletingEnrollment)
+4. [X] [Updating Role Rule](#UpdatingRoleRule)
 
 - ### [Course](#Course)
-
-1. #### [Creating Course](#CreatingCourse)
-2. #### [Fetching Course Including Videos](#FecthingCourseIncludingVideos)
-3. #### [Fetching Course Excluding Videos](#FetchingCourseExcludingVideos)
-4. #### [Updating Course](#UpdatingCourse)
-5. #### [Deleting Course](#Deleting course)
+1. [X] [Creating Course](#CreatingCourse)
+2. [X] [Fetching Course Including Videos](#FecthingCourseIncludingVideos)
+3. [X] [Fetching Course Excluding Videos](#FetchingCourseExcludingVideos)
+4. [X] [Updating Course](#UpdatingCourse)
+5. [X] [Deleting Course](#Deleting course)
 
 - ### [Lesson/Video](#LessonOrVideo)
-
-1. #### [Creating Lesson/Video](#CreatingLessonOrVideo)
-2. #### [Fetching Lesson](#FetchingLesson)
-3. #### [Fecthing Video](#FecthingVideo)
-4. #### [Updating Lesson/Video](#UpdatingLessonOrVideo)
-5. #### [Deleting Lesson/Video](#DeletingLessonOrVideo)
+1. [X] [Creating Lesson/Video](#CreatingLessonOrVideo)
+2. [X] [Fetching Lesson](#FetchingLesson)
+3. [X] [Fecthing Video](#FecthingVideo)
+4. [X] [Updating Lesson/Video](#UpdatingLessonOrVideo)
+5. [X] [Deleting Lesson/Video](#DeletingLessonOrVideo)
 
 ---
 
 ## Enrollment
 
-- ### Creating Enrollment
+1. [X] **Creating Enrollment**
 
-| Role                    | Enrolling for Themselves   | Enrolling for Others       |
-|-------------------------|----------------------------|----------------------------| 
-| **Student**             | `[STUDENT]`               | `Unauthorized`              
+| Role                    | Enrolling for Themself    | Enrolling for Other       |
+|-------------------------|---------------------------|---------------------------| 
+| **Student**             | `[STUDENT]`               | `Unauthorized`            
 | **Student & Author**    | `InternalServerException` | `InternalServerException` 
 | **Instructor**          | `[STUDENT]`               | `Unauthorized`            
 | **Instructor & Author** | `Unauthorized`            | `Unauthorized`            
 | **Admin**               | `Permitted`               | `Permitted`               
 | **Admin & Author**      | `Unauthorized`            | `Permitted`               
 
-- ### Updating Enrollment
+2. [X] **Updating Enrollment**
 
 | Role & Authorship       | Updating for Themselves   | Updating for Others       |
 |-------------------------|---------------------------|---------------------------|
@@ -66,7 +58,7 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 | **Admin**               | `Permitted`               | `Permitted`               |
 | **Admin & Author**      | `InternalServerException` | `Permitted`               |
 
-- ### Deleting Enrollment
+3. [X] **Deleting Enrollment**
 
 | Role & Authorship       | Deleting for Themselves   | Deleting for Others       |
 |-------------------------|---------------------------|---------------------------|
@@ -77,7 +69,7 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 | **Admin**               | `Permitted`               | `Permitted`               |
 | **Admin & Author**      | `InternalServerException` | `Permitted`               |
 
-- ### Updating Role Rule
+4. [X] **Updating Role Rule**
 
 | Target User Role | STUDENT &rarr; INSTRUCTOR | INSTRUCTOR &rarr; STUDENT |
 |------------------|---------------------------|---------------------------|
@@ -87,9 +79,9 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 
 ---
 
-## Role
+## Course
 
-- ### Creating Course
+1. [X] **Creating Course**
 
 | Role       | Permission     |
 |------------|----------------|
@@ -97,7 +89,7 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 | Instructor | `Permitted`    |
 | Admin      | `Permitted`    |
 
-- ### Fetching Course/Courses
+2. [X] **Fetching Course/Courses**
 
 | Role & Authorship        | Enrolled                  | Unenrolled    |
 |--------------------------|---------------------------|---------------|
@@ -107,7 +99,7 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 | **Admin & !Author**      | `Permitted`               | `Permitted`   |
 | **Admin & Author**       | `InternalServerException` | `Permitted`   |
 
-- ### Updating Course
+3. [X] **Updating Course**
 
 | Role & Authorship        | Enrolled                  | Unenrolled     |
 |--------------------------|---------------------------|----------------|
@@ -117,7 +109,7 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 | **Admin & !Author**      | `Permitted`               | `Permitted`    |
 | **Admin & Author**       | `InternalServerException` | `Permitted`    |
 
-- ### Deleting Course
+4. [X] **Deleting Course**
 
 | Role & Authorship        | Enrolled                  | Unenrolled     |
 |--------------------------|---------------------------|----------------|
@@ -131,7 +123,7 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 
 ## Lesson / Video
 
-### Creating Lesson / Video
+1. [X] **Creating Lesson / Video**
 
 | Role & Authorship        | Enrolled                  | Unenrolled     |
 |--------------------------|---------------------------|----------------|
@@ -141,42 +133,42 @@ Link: https://lms-server-delta.vercel.app/api-docs/ (In progress)
 | **Admin & !Author**      | `Permitted`               | `Permitted`    |
 | **Admin & Author**       | `InternalServerException` | `Permitted`    |
 
-### Fetching Lesson
+2. [X] **Fetching Lesson**
 
-| Role & Authorship        | Enrolled    | Unenrolled  |
-|--------------------------|-------------|-------------|
-| **Student**              | `Permitted` | `Permitted` |
-| **Instructor & !Author** | `Permitted` | `Permitted` |
-| **Instructor & Author**  | `InternalServerException`         | `Permitted` |
-| **Admin & !Author**      | `Permitted` | `Permitted` |
-| **Admin & Author**       | `InternalServerException`         | `Permitted` |
+| Role & Authorship        | Enrolled                  | Unenrolled    |
+|--------------------------|---------------------------|---------------|
+| **Student**              | `Permitted`               | `Permitted`   |
+| **Instructor & !Author** | `Permitted`               | `Permitted`   |
+| **Instructor & Author**  | `InternalServerException` | `Permitted`   |
+| **Admin & !Author**      | `Permitted`               | `Permitted`   |
+| **Admin & Author**       | `InternalServerException` | `Permitted`   |
 
-### Fetching Video
+3. [X] **Fetching Video**
 
-| Role & Authorship        | Enrolled    | Unenrolled     |
-|--------------------------|-------------|----------------|
-| **Student**              | `Permitted` | `Unauthorized` |
-| **Instructor & !Author** | `Permitted` | `Unauthorized` |
-| **Instructor & Author**  | `-`         | `Permitted`    |
-| **Admin & !Author**      | `Permitted` | `Permitted`    |
-| **Admin & Author**       | `-`         | `Permitted`    |
+| Role & Authorship        | Enrolled                        | Unenrolled     |
+|--------------------------|---------------------------------|----------------|
+| **Student**              | `Permitted`                     | `Unauthorized` |
+| **Instructor & !Author** | `Permitted`                     | `Unauthorized` |
+| **Instructor & Author**  | `InternalServerException`       | `Permitted`    |
+| **Admin & !Author**      | `Permitted`                     | `Permitted`    |
+| **Admin & Author**       | `InternalServerException`       | `Permitted`    |
 
-### Updating Lesson / Video
+4. [X] **Updating Lesson / Video**
 
-| Role & Authorship        | Enrolled       | Unenrolled     |
-|--------------------------|----------------|----------------|
-| **Student**              | `Unauthorized` | `Unauthorized` |
-| **Instructor & !Author** | `[INSTRUCTOR]` | `Unauthorized` |
-| **Instructor & Author**  | `-`            | `Permitted`    |
-| **Admin & !Author**      | `Permitted`    | `Permitted`    |
-| **Admin & Author**       | `-`            | `Permitted`    |
+| Role & Authorship        | Enrolled                  | Unenrolled     |
+|--------------------------|---------------------------|----------------|
+| **Student**              | `Unauthorized`            | `Unauthorized` |
+| **Instructor & !Author** | `[INSTRUCTOR]`            | `Unauthorized` |
+| **Instructor & Author**  | `InternalServerException` | `Permitted`    |
+| **Admin & !Author**      | `Permitted`               | `Permitted`    |
+| **Admin & Author**       | `InternalServerException` | `Permitted`    |
 
-### Deleting Lesson / Video
+5. [X] **Deleting Lesson / Video**
 
-| Role & Authorship        | Enrolled       | Unenrolled     |
-|--------------------------|----------------|----------------|
-| **Student**              | `Unauthorized` | `Unauthorized` |
-| **Instructor & !Author** | `[INSTRUCTOR]` | `Unauthorized` |
-| **Instructor & Author**  | `-`            | `Permitted`    |
-| **Admin & !Author**      | `Permitted`    | `Permitted`    |
-| **Admin & Author**       | `-`            | `Permitted`    |
+| Role & Authorship        | Enrolled                   | Unenrolled     |
+|--------------------------|----------------------------|----------------|
+| **Student**              | `Unauthorized`             | `Unauthorized` |
+| **Instructor & !Author** | `[INSTRUCTOR]`             | `Unauthorized` |
+| **Instructor & Author**  | `InternalServerException`  | `Permitted`    |
+| **Admin & !Author**      | `Permitted`                | `Permitted`    |
+| **Admin & Author**       | `InternalServerException ` | `Permitted`    |

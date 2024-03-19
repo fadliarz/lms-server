@@ -14,7 +14,7 @@ function CourseEnrollmentRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post("/", authenticationMiddleware, controller.createEnrollment.bind(controller));
+    router.post(enrollment_type_1.courseEnrollmentUrls.root, authenticationMiddleware, controller.createEnrollment.bind(controller));
     /**
      * Update
      *
