@@ -4,12 +4,12 @@ import { ErrorMessage } from "../../constants/errorMessage";
 import HttpException from "./HttpException";
 
 export default class InternalServerException extends HttpException {
-  constructor() {
+  constructor(message?: string) {
     super(
       StatusCode.SERVER_ERROR,
       ErrorCode.INTERNAL_SERVER_ERROR,
-      ErrorMessage[ErrorCode.INTERNAL_SERVER_ERROR] as string,
-      true
+      message || (ErrorMessage[ErrorCode.INTERNAL_SERVER_ERROR] as string),
+      true,
     );
   }
 }

@@ -9,6 +9,7 @@ type TestIsolationKeyForFunction =
 type TestIsolationKey =
   | TestIsolationKeyForClass
   | TestIsolationKeyForFunction
+  | "userService"
   | "course"
   | "courseController"
   | "courseService"
@@ -32,6 +33,10 @@ const testIsolation: Record<
   BaseAuthorization: {
     collectCoverageFrom: [`<rootDir>/src/common/class/BaseAuthorization.ts`],
     testMatch: [`<rootDir>/src/common/class/BaseAuthorization.test.ts`],
+  },
+  userService: {
+    collectCoverageFrom: [`<rootDir>/src/modules/user/service/user.service.ts`],
+    testMatch: [`<rootDir>/src/modules/user/service/user.service.test.ts`],
   },
   course: {
     collectCoverageFrom: [`<rootDir>/src/modules/course/**/*.ts`],
@@ -171,7 +176,7 @@ const config: Config.InitialOptions = {
   verbose: true,
   collectCoverage: true,
   coverageDirectory: "<rootDir>/coverage",
-  ...testIsolation.filterUserObject,
+  ...testIsolation.userService,
 };
 
 export default config;

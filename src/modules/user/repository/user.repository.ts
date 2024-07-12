@@ -28,6 +28,7 @@ export interface IUserRepository {
   getUserById: (userId: number) => Promise<UserModel | null>;
   getUserByIdOrThrow: (userId: number, error?: Error) => Promise<UserModel>;
   getUserByEmail: (email: string) => Promise<UserModel | null>;
+  getUserByAccessToken: (accessToken: string) => Promise<UserModel | null>;
   getUserByRefreshToken: (refreshToken: string) => Promise<UserModel | null>;
   getMe: (userId: number, targetUserId: number) => Promise<Me>;
   updateUser: (
@@ -89,6 +90,16 @@ export class UserRepository implements IUserRepository {
     return await this.prisma.$transaction(async (tx) => {
       return tx.user.findUnique({ where: { email } });
     }, PrismaDefaultTransactionConfigForRead);
+  }
+
+  public async getUserByAccessToken(
+    accessToken: string,
+  ): Promise<UserModel | null> {
+    return await this.prisma.user.findFirst({
+      where: {
+        accessToken,
+      },
+    });
   }
 
   public async getUserByRefreshToken(

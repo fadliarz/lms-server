@@ -9,7 +9,6 @@ import errorMiddleware from "./middlewares/errorMiddleware";
 import { Api } from "./common/types";
 import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
-import { Request, Response } from "express";
 import path from "path";
 
 class App {

@@ -67,6 +67,15 @@ let UserRepository = class UserRepository {
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });
     }
+    getUserByAccessToken(accessToken) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.prisma.user.findFirst({
+                where: {
+                    accessToken,
+                },
+            });
+        });
+    }
     getUserByRefreshToken(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.user.findFirst({

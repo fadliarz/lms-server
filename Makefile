@@ -26,6 +26,9 @@ run-dev:
 # FOR TEST
 #
 
+test-user:
+	jest -- --watchAll --verbose --runInBand --coverage --testMatch ["src/modules/user/**/user.*.test.ts"]
+
 test-course:
 	jest -- --watchAll --verbose --runInBand --coverage src/modules/course/course.test.ts
 

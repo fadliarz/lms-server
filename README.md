@@ -1,5 +1,19 @@
 # Learning Management System | Server Side
 
+# About
+A centralized system for managing online courses. 
+
+# Technology
+1. Nodejs (runtime environtment)
+2. Typescript & SQL (Language)
+3. PostgreSQL
+4. Express.js
+5. PrismaORM
+6. Docker
+
+# Design Pattern
+
+
 ## Entitiy Relationship Diagram (ERD)
 ![img.png](uploads/ERD.png)
 

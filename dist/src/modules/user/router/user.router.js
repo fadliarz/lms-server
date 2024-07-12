@@ -7,7 +7,6 @@ require("reflect-metadata");
 const express_1 = __importDefault(require("express"));
 const inversifyConfig_1 = __importDefault(require("../../../inversifyConfig"));
 const user_type_1 = require("../user.type");
-const user_type_2 = require("../user.type");
 function UserRouter(authenticationMiddleware) {
     const router = express_1.default.Router();
     const controller = inversifyConfig_1.default.get(user_type_1.UserDITypes.CONTROLLER);
@@ -15,12 +14,13 @@ function UserRouter(authenticationMiddleware) {
      * SignIn
      *
      */
-    router.post(user_type_2.userUrls.signIn, controller.signIn.bind(controller));
+    router.post(user_type_1.userUrls.signIn, controller.signIn.bind(controller));
     /**
+     *
      * SignOut
      *
      */
-    router.post(user_type_2.userUrls.signOut, authenticationMiddleware, controller.signOut.bind(controller));
+    router.post(user_type_1.userUrls.signOut, authenticationMiddleware, controller.signOut.bind(controller));
     /**
      * Create
      *
@@ -30,21 +30,21 @@ function UserRouter(authenticationMiddleware) {
      * Get
      *
      */
-    router.get(user_type_2.userUrls.me, authenticationMiddleware, controller.getMe.bind(controller));
-    router.get(user_type_2.userUrls.public, controller.getPublicUserById.bind(controller));
+    router.get(user_type_1.userUrls.me, authenticationMiddleware, controller.getMe.bind(controller));
+    router.get(user_type_1.userUrls.public, controller.getPublicUserById.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(user_type_2.userUrls.basic, authenticationMiddleware, controller.updateBasicUser.bind(controller));
-    router.patch(user_type_2.userUrls.email, authenticationMiddleware, controller.updateUserEmail.bind(controller));
-    router.patch(user_type_2.userUrls.password, authenticationMiddleware, controller.updateUserPassword.bind(controller));
-    router.patch(user_type_2.userUrls.phoneNumber, authenticationMiddleware, controller.updateUserPhoneNumber.bind(controller));
+    router.patch(user_type_1.userUrls.basic, authenticationMiddleware, controller.updateBasicUser.bind(controller));
+    router.patch(user_type_1.userUrls.email, authenticationMiddleware, controller.updateUserEmail.bind(controller));
+    router.patch(user_type_1.userUrls.password, authenticationMiddleware, controller.updateUserPassword.bind(controller));
+    router.patch(user_type_1.userUrls.phoneNumber, authenticationMiddleware, controller.updateUserPhoneNumber.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(user_type_2.userUrls.user, authenticationMiddleware, controller.deleteUser.bind(controller));
+    router.delete(user_type_1.userUrls.user, authenticationMiddleware, controller.deleteUser.bind(controller));
     return router;
 }
 exports.default = UserRouter;

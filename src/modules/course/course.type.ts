@@ -33,6 +33,10 @@ export enum courseUrls {
   like = courseUrls.likes + "/:likeId",
 }
 
+export enum CourseErrorMessage {
+  COURSE_DOES_NOT_EXIST = "course doesn't exist!",
+}
+
 /**
  *
  *

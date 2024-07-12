@@ -170,6 +170,13 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
+      const storedRefreshToken = req.cookies[Cookie.REFRESH_TOKEN] as
+        | string
+        | undefined;
+      if (!storedRefreshToken) {
+        throw new AuthenticationException();
+      }
+
       await validateJoi({ body: UpdateUserEmailDtoJoi })(req, res, next);
 
       const userId = this.validateResourceId(req);
@@ -177,6 +184,7 @@ export class UserController implements IUserController {
       const updatedUser = await this.service.updateUserEmail(
         userId,
         targetUserId,
+        storedRefreshToken,
         req.body,
       );
 
@@ -194,6 +202,13 @@ export class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
+      const storedRefreshToken = req.cookies[Cookie.REFRESH_TOKEN] as
+        | string
+        | undefined;
+      if (!storedRefreshToken) {
+        throw new AuthenticationException();
+      }
+
       await validateJoi({ body: UpdateUserPasswordDtoJoi })(req, res, next);
 
       const userId = this.validateResourceId(req);
@@ -201,6 +216,7 @@ export class UserController implements IUserController {
       const updatedUser = await this.service.updateUserPassword(
         userId,
         targetUserId,
+        storedRefreshToken,
         req.body,
       );
 

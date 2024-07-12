@@ -84,7 +84,12 @@ prisma
     .then(() => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Successfully establishing database connection!");
     if (process.env.NODE_ENV === "development") {
-        yield (0, seed_1.default)();
+        try {
+            yield (0, seed_1.default)();
+        }
+        catch (error) {
+            console.log("error when seeding: ", error);
+        }
     }
     app.express.listen(port, () => {
         console.log(`Server is running on the port ${port}`);

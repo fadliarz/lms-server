@@ -36,7 +36,7 @@ let CourseLessonVideoService = class CourseLessonVideoService {
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error, {
                     foreignConstraint: {
-                        default: { message: "Lesson doesn't exist!" },
+                        default: { message: "lesson doesn't exist!" },
                     },
                 });
             }
@@ -53,6 +53,7 @@ let CourseLessonVideoService = class CourseLessonVideoService {
     }
     getVideos(resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
+            yield this.validateRelationBetweenResources({ resourceId });
             return yield this.repository.courseLessonVideo.getVideos(resourceId);
         });
     }
@@ -80,7 +81,7 @@ let CourseLessonVideoService = class CourseLessonVideoService {
             const { courseId, lessonId } = resourceId;
             const lesson = yield this.repository.courseLesson.getLessonById(lessonId, resourceId);
             if (!lesson || lesson.courseId !== courseId) {
-                throw new RecordNotFoundException_1.default();
+                throw new RecordNotFoundException_1.default("lesson doesn't exist!");
             }
             if (id.videoId) {
                 const { videoId } = id;

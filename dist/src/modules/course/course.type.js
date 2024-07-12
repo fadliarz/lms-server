@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseEnrollmentRoleModel = exports.CourseStatusModel = exports.UserRoleModel = exports.courseUrls = exports.CourseDITypes = void 0;
+exports.CourseEnrollmentRoleModel = exports.CourseStatusModel = exports.UserRoleModel = exports.CourseErrorMessage = exports.courseUrls = exports.CourseDITypes = void 0;
 const client_1 = require("@prisma/client");
 exports.CourseDITypes = {
     REPOSITORY: Symbol.for("COURSE_REPOSITORY"),
@@ -19,6 +19,10 @@ var courseUrls;
     courseUrls["likes"] = "/:courseId/likes";
     courseUrls["like"] = "/:courseId/likes/:likeId";
 })(courseUrls || (exports.courseUrls = courseUrls = {}));
+var CourseErrorMessage;
+(function (CourseErrorMessage) {
+    CourseErrorMessage["COURSE_DOES_NOT_EXIST"] = "course doesn't exist!";
+})(CourseErrorMessage || (exports.CourseErrorMessage = CourseErrorMessage = {}));
 exports.UserRoleModel = client_1.Role;
 exports.CourseStatusModel = client_1.CourseStatus;
 exports.CourseEnrollmentRoleModel = client_1.CourseEnrollmentRole;

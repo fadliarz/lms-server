@@ -2,13 +2,14 @@ import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
   CourseEnrollmentDITypes,
+  CourseEnrollmentErrorMessage,
   CourseEnrollmentModel,
   CourseEnrollmentResourceId,
   CreateCourseEnrollmentDto,
   UpdateCourseEnrollmentRoleDto,
 } from "../enrollment.type";
 import { ICourseEnrollmentRepository } from "../repository/enrollment.repository";
-import { CourseDITypes } from "../../course/course.type";
+import { CourseDITypes, CourseErrorMessage } from "../../course/course.type";
 import { ICourseRepository } from "../../course/repository/course.repository";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 
@@ -55,12 +56,17 @@ export class CourseEnrollmentService implements ICourseEnrollmentService {
       throw handleRepositoryError(error, {
         uniqueConstraint: {
           default: {
-            message: "User is already enrolled!",
+            message:
+              CourseEnrollmentErrorMessage.TARGET_USER_IS_ALREADY_ENROLLED,
           },
         },
         foreignConstraint: {
           default: {
-            message: "User or course doesn't exist!",
+            message:
+              CourseEnrollmentErrorMessage.TARGET_USER_DOES_NOT_EXIST.concat(
+                " or ",
+                CourseErrorMessage.COURSE_DOES_NOT_EXIST,
+              ),
           },
         },
       });

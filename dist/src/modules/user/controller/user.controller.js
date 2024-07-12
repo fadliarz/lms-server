@@ -107,10 +107,14 @@ let UserController = class UserController {
     updateUserEmail(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const storedRefreshToken = req.cookies[Cookie_1.Cookie.REFRESH_TOKEN];
+                if (!storedRefreshToken) {
+                    throw new AuthenticationException_1.default();
+                }
                 yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserEmailDtoJoi })(req, res, next);
                 const userId = this.validateResourceId(req);
                 const targetUserId = this.validateUserId(req);
-                const updatedUser = yield this.service.updateUserEmail(userId, targetUserId, req.body);
+                const updatedUser = yield this.service.updateUserEmail(userId, targetUserId, storedRefreshToken, req.body);
                 return res
                     .status(statusCode_1.StatusCode.SUCCESS)
                     .json({ data: (0, filterUserObject_1.default)(updatedUser) });
@@ -123,10 +127,14 @@ let UserController = class UserController {
     updateUserPassword(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const storedRefreshToken = req.cookies[Cookie_1.Cookie.REFRESH_TOKEN];
+                if (!storedRefreshToken) {
+                    throw new AuthenticationException_1.default();
+                }
                 yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserPasswordDtoJoi })(req, res, next);
                 const userId = this.validateResourceId(req);
                 const targetUserId = this.validateUserId(req);
-                const updatedUser = yield this.service.updateUserPassword(userId, targetUserId, req.body);
+                const updatedUser = yield this.service.updateUserPassword(userId, targetUserId, storedRefreshToken, req.body);
                 return res
                     .status(statusCode_1.StatusCode.SUCCESS)
                     .json({ data: (0, filterUserObject_1.default)(updatedUser) });

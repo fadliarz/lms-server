@@ -1,4 +1,4 @@
-import { Course, Prisma, Role, User } from "@prisma/client";
+import { Role, User } from "@prisma/client";
 
 export const UserDITypes = {
   REPOSITORY: Symbol.for("USER_REPOSITORY"),
@@ -50,7 +50,7 @@ export type UserRole = Role;
 export const UserRole = Role;
 export type PublicUserModel = Pick<
   UserModel,
-  "name" | "NIM" | "avatar" | "about" | "role"
+  "id" | "name" | "NIM" | "avatar" | "about" | "role"
 >;
 export type FilteredUserModel = Exclude<
   UserModel,

@@ -33,10 +33,9 @@ const ClientException_1 = __importDefault(require("../../../common/class/excepti
 const isEqualOrIncludeCourseEnrollmentRole_1 = __importDefault(require("../../../common/functions/isEqualOrIncludeCourseEnrollmentRole"));
 const course_type_1 = require("../../course/course.type");
 const InternalServerException_1 = __importDefault(require("../../../common/class/exceptions/InternalServerException"));
-const PrismaPromise_1 = __importDefault(require("../../../common/class/prisma_promise/PrismaPromise"));
-const prisma_promise_type_1 = require("../../../common/class/prisma_promise/prisma_promise.type");
 const prisma_query_raw_type_1 = require("../../../common/class/prisma_query_raw/prisma_query_raw.type");
-// TODO : Implement MAX_RETRIES if transaction failed or timed out!
+const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
+const AuthenticationException_1 = __importDefault(require("../../../common/class/exceptions/AuthenticationException"));
 let CourseEnrollmentRepository = class CourseEnrollmentRepository {
     constructor() {
         this.prisma = PrismaClientSingleton_1.default.getInstance();
@@ -46,11 +45,11 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const { userId, courseId } = resourceId;
                 const { userId: targetUserId, role: enrollmentRole } = dto;
-                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
-                const course = yield this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId);
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                const course = yield this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId, new RecordNotFoundException_1.default(course_type_1.CourseErrorMessage.COURSE_DOES_NOT_EXIST));
                 const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
                 if (!(isStudent || isInstructor || isAdmin)) {
-                    throw new InternalServerException_1.default();
+                    throw new InternalServerException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.UNEXPECTED_SCENARIO);
                 }
                 this.authorization.authorizeCreateEnrollment(user, course, dto);
                 /**
@@ -64,14 +63,14 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
                 const isUserIdEqual = userId === targetUserId;
                 if (!isUserIdEqual) {
                     targetUser =
-                        yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, targetUserId);
+                        yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, targetUserId, new RecordNotFoundException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_DOES_NOT_EXIST));
                 }
                 const existingTargetEnrollments = yield this.prismaQueryRaw.courseEnrollment.selectForUpdateByUserIdAndCourseId(tx, {
                     userId: targetUserId,
                     courseId,
                 });
                 if (existingTargetEnrollments) {
-                    throw new ClientException_1.default("User is already enrolled!");
+                    throw new ClientException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_IS_ALREADY_ENROLLED);
                 }
                 /**
                  * STUDENT shouldn't be enrolled as Instructor
@@ -79,21 +78,18 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
                  */
                 if ((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(dto.role, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR) &&
                     (0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.STUDENT)) {
-                    throw new ClientException_1.default("Student shouldn't be enrolled as INSTRUCTOR!");
+                    throw new ClientException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.STUDENT_SHOULD_NOT_ENROLLED_AS_INSTRUCTOR);
                 }
                 /**
                  * Author shouldn't be enrolled
                  *
                  */
                 if (course.authorId === dto.userId) {
-                    throw new ClientException_1.default("Author shouldn't be enrolled!");
+                    throw new ClientException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.AUTHOR_SHOULD_NOT_BE_ENROLLED);
                 }
-                const [newEnrollment] = yield Promise.all([
-                    tx.courseEnrollment.create({
-                        data: Object.assign(Object.assign({}, dto), { courseId }),
-                    }),
-                ]);
-                return newEnrollment;
+                return yield tx.courseEnrollment.create({
+                    data: Object.assign(Object.assign({}, dto), { courseId }),
+                });
             }), {
                 maxWait: 5000,
                 timeout: 8000,
@@ -105,12 +101,19 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const { userId, courseId } = resourceId;
-                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
-                const course = yield this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId);
-                const enrollment = yield this.prismaQueryRaw.courseEnrollment.selectForUpdateByIdOrThrow(tx, enrollmentId);
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                const course = yield this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId, new RecordNotFoundException_1.default(course_type_1.CourseErrorMessage.COURSE_DOES_NOT_EXIST));
+                const enrollment = yield this.prismaQueryRaw.courseEnrollment.selectForUpdateByIdOrThrow(tx, enrollmentId, new RecordNotFoundException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.ENROLLMENT_DOES_NOT_EXIST));
+                /**
+                 * validate relation between resources
+                 *
+                 */
+                if (course.id !== enrollment.courseId) {
+                    throw new RecordNotFoundException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.ENROLLMENT_DOES_NOT_EXIST);
+                }
                 const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
                 if (!(isStudent || isInstructor || isAdmin)) {
-                    throw new InternalServerException_1.default();
+                    throw new InternalServerException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.UNEXPECTED_SCENARIO);
                 }
                 this.authorization.authorizeUpdateEnrollmentRole(user, course, enrollment);
                 /**
@@ -119,46 +122,40 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
                  *
                  * validate the update enrollment logic.
                  *
+                 * 1. target user is STUDENT but new enrollment role is INSTRUCTOR
+                 *
                  */
                 let targetUser = user;
                 const isUserIdEqual = userId === enrollment.userId;
                 if (!isUserIdEqual) {
                     targetUser =
-                        yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, enrollment.userId);
+                        yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, enrollment.userId, new RecordNotFoundException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_DOES_NOT_EXIST));
+                }
+                if ((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(dto.role, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR) &&
+                    (0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.STUDENT)) {
+                    throw new ClientException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.STUDENT_SHOULD_NOT_ENROLLED_AS_INSTRUCTOR);
                 }
                 /**
-                 * Check for unexpected scenario
+                 *
+                 * check for unexpected scenario.
+                 *
+                 * 1. target user is STUDENT but enrolled as INSTRUCTOR
+                 * 2. target user is author
                  *
                  */
                 if ((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(enrollment.role, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR) &&
                     (0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.STUDENT)) {
-                    throw new InternalServerException_1.default();
+                    throw new InternalServerException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.UNEXPECTED_SCENARIO);
                 }
-                if (enrollment.role === dto.role) {
-                    return enrollment;
+                if (targetUser.id === course.authorId) {
+                    throw new InternalServerException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.UNEXPECTED_SCENARIO);
                 }
-                if ((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(dto.role, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR) &&
-                    (0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.STUDENT)) {
-                    throw new ClientException_1.default();
-                }
-                const [updatedEnrollment] = yield Promise.all([
-                    tx.courseEnrollment.update({
-                        where: {
-                            id: enrollmentId,
-                        },
-                        data: dto,
-                    }),
-                    ...((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(dto.role, course_type_1.CourseEnrollmentRoleModel.STUDENT)
-                        ? [
-                            this.prismaPromise.course.incrementTotalStudents(tx, courseId, 1),
-                            this.prismaPromise.course.incrementTotalInstructors(tx, courseId, -1),
-                        ]
-                        : [
-                            this.prismaPromise.course.incrementTotalStudents(tx, courseId, -1),
-                            this.prismaPromise.course.incrementTotalInstructors(tx, courseId, 1),
-                        ]),
-                ]);
-                return updatedEnrollment;
+                return yield tx.courseEnrollment.update({
+                    where: {
+                        id: enrollmentId,
+                    },
+                    data: dto,
+                });
             }), {
                 maxWait: 5000,
                 timeout: 8000,
@@ -170,46 +167,51 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const { userId, courseId } = resourceId;
-                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
-                const course = yield this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId);
-                const enrollment = yield this.prismaQueryRaw.courseEnrollment.selectForUpdateByIdOrThrow(tx, enrollmentId);
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                const course = yield this.prismaQueryRaw.course.selectForUpdateByIdOrThrow(tx, courseId, new RecordNotFoundException_1.default(course_type_1.CourseErrorMessage.COURSE_DOES_NOT_EXIST));
+                const enrollment = yield this.prismaQueryRaw.courseEnrollment.selectForUpdateByIdOrThrow(tx, enrollmentId, new RecordNotFoundException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.ENROLLMENT_DOES_NOT_EXIST));
+                /**
+                 * validate relation between resources
+                 *
+                 */
+                if (course.id !== enrollment.courseId) {
+                    throw new RecordNotFoundException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.ENROLLMENT_DOES_NOT_EXIST);
+                }
                 const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
                 if (!(isStudent || isInstructor || isAdmin)) {
-                    throw new InternalServerException_1.default();
+                    throw new InternalServerException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.UNEXPECTED_SCENARIO);
                 }
                 this.authorization.authorizeDeleteEnrollment(user, course, enrollment);
                 /**
-                 *
                  * At this point, user is authorized to update enrollment.
-                 *
-                 * validate the update enrollment logic.
                  *
                  */
                 let targetUser = user;
                 const isUserIdEqual = userId === enrollment.userId;
                 if (!isUserIdEqual) {
                     targetUser =
-                        yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, enrollment.userId);
+                        yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, enrollment.userId, new RecordNotFoundException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_DOES_NOT_EXIST));
                 }
                 /**
-                 * Check for unexpected scenario
+                 *
+                 * check for unexpected scenario
+                 *
+                 * 1. target user is STUDENT but enrolled as INSTRUCTOR
+                 * 2. target user is author
                  *
                  */
                 if ((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(enrollment.role, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR) &&
                     (0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.STUDENT)) {
-                    throw new InternalServerException_1.default();
+                    throw new InternalServerException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.UNEXPECTED_SCENARIO);
                 }
-                const [deletedEnrollment] = yield Promise.all([
-                    tx.courseEnrollment.delete({
-                        where: {
-                            id: enrollmentId,
-                        },
-                    }),
-                    (0, isEqualOrIncludeCourseEnrollmentRole_1.default)(enrollment.role, course_type_1.CourseEnrollmentRoleModel.STUDENT)
-                        ? this.prismaPromise.course.incrementTotalStudents(tx, courseId, -1)
-                        : this.prismaPromise.course.incrementTotalInstructors(tx, courseId, -1),
-                ]);
-                return deletedEnrollment;
+                if (targetUser.id === course.authorId) {
+                    throw new InternalServerException_1.default(enrollment_type_1.CourseEnrollmentErrorMessage.UNEXPECTED_SCENARIO);
+                }
+                return yield tx.courseEnrollment.delete({
+                    where: {
+                        id: enrollmentId,
+                    },
+                });
             }), {
                 maxWait: 5000,
                 timeout: 8000,
@@ -223,10 +225,6 @@ __decorate([
     (0, inversify_1.inject)(enrollment_type_1.CourseEnrollmentDITypes.AUTHORIZATION),
     __metadata("design:type", enrollment_authorization_1.default)
 ], CourseEnrollmentRepository.prototype, "authorization", void 0);
-__decorate([
-    (0, inversify_1.inject)(prisma_promise_type_1.PrismaPromiseDITypes.PRISMA_PROMISE),
-    __metadata("design:type", PrismaPromise_1.default)
-], CourseEnrollmentRepository.prototype, "prismaPromise", void 0);
 __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
     __metadata("design:type", Object)

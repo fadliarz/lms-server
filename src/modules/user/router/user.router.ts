@@ -2,8 +2,7 @@ import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IUserController } from "../controller/user.controller";
-import { UserDITypes } from "../user.type";
-import { userUrls } from "../user.type";
+import { UserDITypes, userUrls } from "../user.type";
 
 export default function UserRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -16,6 +15,7 @@ export default function UserRouter(authenticationMiddleware: any) {
   router.post(userUrls.signIn, controller.signIn.bind(controller));
 
   /**
+   *
    * SignOut
    *
    */

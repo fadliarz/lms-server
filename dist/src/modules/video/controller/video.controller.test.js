@@ -1,5 +1,6 @@
 "use strict";
 // import * as ValidateJoiModule from "../../../common/functions/validateJoi";
+// import validateJoi from "../../../common/functions/validateJoi";
 // import { NextFunction, Request, Response } from "express";
 // import dIContainer from "../../../inversifyConfig";
 // import { CourseLessonVideoDITypes } from "../video.type";
@@ -8,7 +9,6 @@
 //   ICourseLessonVideoService,
 // } from "../service/video.service";
 // import { ICourseLessonVideoController } from "./video.controller";
-// import validateJoi from "../../../common/functions/validateJoi";
 // import { StatusCode } from "../../../common/constants/statusCode";
 // import {
 //   CreateCourseLessonVideoJoi,

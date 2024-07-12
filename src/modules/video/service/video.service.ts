@@ -1,4 +1,4 @@
-import { injectable, inject } from "inversify";
+import { inject, injectable } from "inversify";
 import {
   CourseLessonVideoModel,
   CourseLessonVideoResourceId,
@@ -63,7 +63,7 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     } catch (error: any) {
       throw handleRepositoryError(error, {
         foreignConstraint: {
-          default: { message: "Lesson doesn't exist!" },
+          default: { message: "lesson doesn't exist!" },
         },
       });
     }
@@ -84,6 +84,8 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
   public async getVideos(
     resourceId: CourseLessonVideoResourceId,
   ): Promise<CourseLessonVideoModel[]> {
+    await this.validateRelationBetweenResources({ resourceId });
+
     return await this.repository.courseLessonVideo.getVideos(resourceId);
   }
 
@@ -166,7 +168,7 @@ export class CourseLessonVideoService implements ICourseLessonVideoService {
     );
 
     if (!lesson || lesson.courseId !== courseId) {
-      throw new RecordNotFoundException();
+      throw new RecordNotFoundException("lesson doesn't exist!");
     }
 
     if ((id as T2).videoId) {

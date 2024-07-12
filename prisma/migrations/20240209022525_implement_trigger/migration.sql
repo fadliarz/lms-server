@@ -36,6 +36,74 @@ CREATE TRIGGER update_on_CourseLike_deletion
     FOR EACH ROW
     EXECUTE FUNCTION update_on_CourseLike_deletion_function();
 
+--> CourseEnrollment
+CREATE OR REPLACE FUNCTION update_on_CourseEnrollment_function()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        UPDATE "user"
+            SET total_courses = total_courses + 1
+            WHERE id = NEW.user_id;
+
+        IF (NEW.role = 'STUDENT') THEN
+            UPDATE course
+                SET total_students = total_students + 1
+                WHERE id = NEW.course_id;
+        ELSIF (NEW.role = 'INSTRUCTOR') THEN
+            UPDATE course
+                SET total_instructors = total_instructors + 1
+                WHERE id = NEW.course_id;
+        END IF;
+    ELSIF (TG_OP = 'UPDATE') THEN
+        IF (NEW.role == OLD.role) THEN
+        ELSIF (NEW.role = 'STUDENT') THEN
+            UPDATE course
+                SET total_students = total_students + 1,
+                    total_instructors = total_instructors - 1
+                WHERE id = NEW.course_id;
+        ELSIF (NEW.role = 'INSTRUCTOR') THEN
+            UPDATE course
+                SET total_instructors = total_instructors + 1,
+                    total_students = total_students - 1
+                WHERE id = NEW.course_id;
+        END IF;
+    ELSIF (TG_OP = 'DELETE') THEN
+        UPDATE "user"
+            SET total_courses = total_courses - 1,
+                total_lessons = total_lesson - (SELECT total_lessons
+                                               FROM course
+                                               WHERE id = OLD.course_id)
+            WHERE id = OLD.user_id;
+
+        IF (OLD.role = 'STUDENT') THEN
+            UPDATE course
+                SET total_students = total_students - 1
+                WHERE id = OLD.course_id;
+        ELSIF (OLD.role = 'INSTRUCTOR') THEN
+            UPDATE course
+                SET total_instructors = total_instructors - 1
+                WHERE id = OLD.course_id;
+        END IF;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_on_CourseEnrollment_insertion
+    AFTER INSERT ON course_enrollment
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_on_CourseEnrollment_function();
+
+CREATE TRIGGER update_on_CourseEnrollment_updation
+    AFTER UPDATE ON course_enrollment
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_on_CourseEnrollment_function();
+
+CREATE TRIGGER update_on_CourseEnrollment_deletion
+    AFTER DELETE ON course_enrollment
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_on_CourseEnrollment_function();
+
 --> Course
 CREATE OR REPLACE FUNCTION update_on_Course_updation_function()
     RETURNS TRIGGER AS $$
@@ -58,24 +126,28 @@ CREATE TRIGGER update_on_Course_updation
     FOR EACH ROW
     EXECUTE FUNCTION update_on_Course_updation_function();
 
---> CourseEnrollment
-CREATE OR REPLACE FUNCTION update_on_CourseEnrollment_insertion_function()
+CREATE OR REPLACE FUNCTION update_on_Course_deletion_function()
     RETURNS TRIGGER AS $$
         BEGIN
             UPDATE
                 "user"
             SET
-                total_courses = total_courses + 1
-            WHERE
-                id = NEW.user_id;
-        RETURN NEW;
-    END;
+                total_courses = total_courses - 1,
+                total_lessons = total_lessons + OLD.total_lessons
+            WHERE id IN (
+                SELECT user_id
+                FROM course_enrollment
+                WHERE course_id = NEW.id
+            );
+            RETURN NEW;
+        END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_on_CourseEnrollment_insertion
-    AFTER INSERT ON course_enrollment
+CREATE TRIGGER update_on_Course_deletion
+    AFTER DELETE ON course
     FOR EACH ROW
-    EXECUTE FUNCTION update_on_CourseEnrollment_insertion_function();
+    EXECUTE FUNCTION update_on_Course_deletion_function();
+
 
 --> CourseLesson
 CREATE OR REPLACE FUNCTION update_on_CourseLesson_insertion_function()
@@ -84,8 +156,7 @@ CREATE OR REPLACE FUNCTION update_on_CourseLesson_insertion_function()
             UPDATE
                 course
             SET
-                total_lessons = total_lessons + 1,
-                updated_at = NEW.created_at
+                total_lessons = total_lessons + 1
             WHERE
                  id = NEW.course_id;
             RETURN NEW;

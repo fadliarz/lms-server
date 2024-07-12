@@ -78,7 +78,11 @@ prisma
     console.log("Successfully establishing database connection!");
 
     if (process.env.NODE_ENV === "development") {
-      await seed();
+      try {
+        await seed();
+      } catch (error: any) {
+        console.log("error when seeding: ", error);
+      }
     }
 
     app.express.listen(port, () => {

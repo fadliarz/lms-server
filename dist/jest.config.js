@@ -5,6 +5,10 @@ const testIsolation = {
         collectCoverageFrom: [`<rootDir>/src/common/class/BaseAuthorization.ts`],
         testMatch: [`<rootDir>/src/common/class/BaseAuthorization.test.ts`],
     },
+    userService: {
+        collectCoverageFrom: [`<rootDir>/src/modules/user/service/user.service.ts`],
+        testMatch: [`<rootDir>/src/modules/user/service/user.service.test.ts`],
+    },
     course: {
         collectCoverageFrom: [`<rootDir>/src/modules/course/**/*.ts`],
         testMatch: [`<rootDir>/src/modules/course/**/*.test.ts`],
@@ -136,5 +140,5 @@ const testIsolation = {
         testMatch: [`<rootDir>/src/common/functions/filterUserObject.test.ts`],
     },
 };
-const config = Object.assign({ preset: "ts-jest", testEnvironment: "node", verbose: true, collectCoverage: true, coverageDirectory: "<rootDir>/coverage" }, testIsolation.filterUserObject);
+const config = Object.assign({ preset: "ts-jest", testEnvironment: "node", verbose: true, collectCoverage: true, coverageDirectory: "<rootDir>/coverage" }, testIsolation.userService);
 exports.default = config;

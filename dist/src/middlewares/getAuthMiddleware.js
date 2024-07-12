@@ -15,95 +15,40 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAuthMiddleWare = void 0;
 require("reflect-metadata");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const getValuable_1 = __importDefault(require("../common/functions/getValuable"));
 const AuthenticationException_1 = __importDefault(require("../common/class/exceptions/AuthenticationException"));
 const Cookie_1 = require("../common/constants/Cookie");
 const inversifyConfig_1 = __importDefault(require("../inversifyConfig"));
 const user_type_1 = require("../modules/user/user.type");
-const ForbiddenException_1 = __importDefault(require("../common/class/exceptions/ForbiddenException"));
+const getValuable_1 = __importDefault(require("../common/functions/getValuable"));
+const refreshToken_1 = __importDefault(require("./refreshToken"));
 const getAuthMiddleWare = () => {
-    const userService = inversifyConfig_1.default.get(user_type_1.UserDITypes.SERVICE);
     const userRepository = inversifyConfig_1.default.get(user_type_1.UserDITypes.REPOSITORY);
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        try {
-            const storedRefreshToken = req.cookies[Cookie_1.Cookie.REFRESH_TOKEN];
-            if (!storedRefreshToken) {
-                throw new AuthenticationException_1.default();
-            }
-            let decoded;
-            const user = yield userRepository.getUserByRefreshToken(storedRefreshToken);
-            if (!user) {
-                try {
-                    decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.REFRESH_TOKEN_PRIVATE_KEY);
-                    const userRelatedToEmail = yield userRepository.getUserByEmail(decoded.email);
-                    /**
-                     * Detected refresh token reuse!
-                     *
-                     * Account is hacked, clear refreshToken!.
-                     *
-                     */
-                    if (userRelatedToEmail) {
-                        yield userRepository.unauthorizedUpdateUser(userRelatedToEmail.id, {
-                            refreshToken: [],
-                        });
-                    }
-                    throw new Error();
-                }
-                catch (error) {
-                    throw new ForbiddenException_1.default();
-                }
-            }
-            let newRefreshTokenArray = user.refreshToken.filter((rt) => rt !== storedRefreshToken);
-            try {
-                decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
-                if (decoded.email !== user.email) {
-                    throw new Error();
-                }
-                /**
-                 * At this point, it's proven that the refreshToken is still valid
-                 *
-                 */
-                const accessToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, decoded.email);
-                const refreshToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, decoded.email);
-                newRefreshTokenArray = [...newRefreshTokenArray, refreshToken];
-                yield userRepository.unauthorizedUpdateUser(user.id, {
-                    accessToken,
-                    refreshToken: newRefreshTokenArray,
-                });
-                res
-                    .cookie(Cookie_1.Cookie.ACCESS_TOKEN, accessToken, {
-                    httpOnly: false,
-                    maxAge: 1000 * 60 * 60 * Cookie_1.Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
-                    secure: process.env.NODE_ENV === "production",
-                })
-                    .cookie(Cookie_1.Cookie.REFRESH_TOKEN, refreshToken, {
-                    httpOnly: true,
-                    maxAge: 1000 * 60 * 60 * 24 * Cookie_1.Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
-                    secure: process.env.NODE_ENV === "production",
-                    sameSite: "strict",
-                });
-            }
-            catch (error) {
-                /**
-                 * Some possible scenarios:
-                 *
-                 * 1. Expired refreshToken
-                 * 2. User email and decoded email don't match
-                 *
-                 */
-                yield userRepository.unauthorizedUpdateUser(user.id, {
-                    refreshToken: newRefreshTokenArray,
-                });
-                throw new ForbiddenException_1.default();
-            }
-            user.password = null;
-            user.refreshToken = null;
-            user.accessToken = null;
-            req.user = (0, getValuable_1.default)(user);
-            next();
+        const accessToken = req.cookies[Cookie_1.Cookie.ACCESS_TOKEN];
+        if (!accessToken) {
+            throw new AuthenticationException_1.default();
         }
-        catch (error) {
-            next(error);
+        let decoded;
+        try {
+            decoded = jsonwebtoken_1.default.verify(accessToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
+            const user = yield userRepository.getUserByAccessToken(accessToken);
+            if (!user) {
+                throw new Error();
+            }
+            if (user.email == decoded.email) {
+                user.password = null;
+                user.refreshToken = null;
+                user.accessToken = null;
+                req.user = (0, getValuable_1.default)(user);
+                next();
+            }
+        }
+        catch (_a) {
+            /**
+             * Expired access token!
+             *
+             */
+            (0, refreshToken_1.default)(req, res, next);
         }
     });
 };

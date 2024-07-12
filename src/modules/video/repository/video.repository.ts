@@ -6,7 +6,6 @@ import {
   CourseLessonVideoResourceId,
   CreateCourseLessonVideoDto,
   ICourseLessonVideoAuthorization,
-  UpdateCourseLessonVideoSourceDto,
 } from "../video.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";

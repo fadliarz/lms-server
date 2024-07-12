@@ -38,11 +38,13 @@ export interface IUserService {
   updateUserEmail: (
     userId: number,
     targetUserId: number,
+    storedRefreshToken: string,
     dto: UpdateUserEmailDto,
   ) => Promise<UserModel>;
   updateUserPassword: (
     userId: number,
     targetUserId: number,
+    storedRefreshToken: string,
     dto: UpdateUserPasswordDto,
   ) => Promise<UserModel>;
   updateUserPhoneNumber: (
@@ -111,6 +113,7 @@ export class UserService implements IUserService {
     }
 
     return {
+      id: user.id,
       name: user.name,
       NIM: user.NIM,
       avatar: user.avatar,
@@ -144,13 +147,13 @@ export class UserService implements IUserService {
   public async updateUserEmail(
     userId: number,
     targetUserId: number,
+    storedRefreshToken: string,
     dto: UpdateUserEmailDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUser(
-      userId,
-      targetUserId,
-      dto,
-    );
+    const updatedUser = await this.repository.updateUser(userId, targetUserId, {
+      ...dto,
+      refreshToken: [storedRefreshToken],
+    });
 
     return updatedUser;
   }
@@ -158,13 +161,13 @@ export class UserService implements IUserService {
   public async updateUserPassword(
     userId: number,
     targetUserId: number,
+    storedRefreshToken: string,
     dto: UpdateUserPasswordDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUser(
-      userId,
-      targetUserId,
-      dto,
-    );
+    const updatedUser = await this.repository.updateUser(userId, targetUserId, {
+      ...dto,
+      refreshToken: [storedRefreshToken],
+    });
 
     return updatedUser;
   }
@@ -232,7 +235,7 @@ export class UserService implements IUserService {
        *
        * Some possible scenarios:
        *
-       * 1. User logged in before but never uses refreshToken and doesn't signOut
+       * 1. User logged in before but never uses refreshToken and doesn't sign out
        * 2. refreshToken is stolen
        *
        * If that's the case, then clear all refreshTokens when user signs in (reuse detection).

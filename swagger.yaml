@@ -63,6 +63,19 @@ components:
           format: date
         role:
           $ref: "#/components/schemas/UserRoleModel"
+      required:
+        - id
+        - email
+        - password
+        - name
+        - NIM
+        - avatar
+        - totalCourses
+        - totalLessons
+        - totalUnreadMessages
+        - createdAt
+        - updatedAt
+        - role
     FilteredUserModel:
       type: object
       properties:
@@ -94,9 +107,23 @@ components:
           format: date
         role:
           $ref: "#/components/schemas/UserRoleModel"
+      required:
+        - id
+        - email
+        - name
+        - NIM
+        - avatar
+        - totalCourses
+        - totalLessons
+        - totalUnreadMessages
+        - createdAt
+        - updatedAt
+        - role
     PublicUserModel:
       type: object
       properties:
+        id:
+          type: number
         name:
           type: string
         NIM:
@@ -107,6 +134,12 @@ components:
           type: string
         role:
           $ref: "#/components/schemas/UserRoleModel"
+      required:
+        - id
+        - name
+        - NIM
+        - avatar
+        - role
     CourseEnrollmentModel:
       type: object
       properties:
@@ -124,6 +157,13 @@ components:
         updatedAt:
           type: string
           format: date
+      required:
+        - id
+        - userId
+        - courseId
+        - role
+        - createdAt
+        - updatedAt
     CategoryModel:
       type: object
       properties:
@@ -137,6 +177,11 @@ components:
         updatedAt:
           type: string
           format: date
+      required:
+        - id
+        - title
+        - createdAt
+        - updatedAt
     CourseModel:
       type: object
       properties:
@@ -184,6 +229,21 @@ components:
           type: integer
         categoryId:
           type: integer
+      required:
+        - id
+        - status
+        - image
+        - title
+        - totalStudents
+        - totalInstructors
+        - totalLessons
+        - totalVideos
+        - totalDurations
+        - totalLikes
+        - createdAt
+        - updatedAt
+        - authorId
+        - categoryId
     CourseLessonModel:
       type: object
       properties:
@@ -210,6 +270,15 @@ components:
           readOnly: true
         courseId:
           type: integer
+      required:
+        - id
+        - title
+        - totalVideos
+        - totalDurations
+        - totalMaterials
+        - createdAt
+        - updatedAt
+        - courseId
     CourseLessonVideoModel:
       type: object
       properties:
@@ -234,6 +303,14 @@ components:
           readOnly: true
         lessonId:
           type: integer
+      required:
+        - id
+        - name
+        - totalDurations
+        - youtubeLink
+        - createdAt
+        - updatedAt
+        - lessonId
     PublicCourseLessonVideoModel:
       type: object
       properties:
@@ -256,6 +333,13 @@ components:
           readOnly: true
         lessonId:
           type: integer
+      required:
+        - id
+        - name
+        - totalDurations
+        - createdAt
+        - updatedAt
+        - lessonId
     CourseLikeModel:
       type: object
       properties:
@@ -267,6 +351,10 @@ components:
         userId:
           type: integer
           readOnly: true
+      required:
+        - id
+        - courseId
+        - userId
 
     #
     # > UserType <

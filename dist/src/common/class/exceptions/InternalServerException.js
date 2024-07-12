@@ -8,8 +8,8 @@ const errorCode_1 = require("../../constants/errorCode");
 const errorMessage_1 = require("../../constants/errorMessage");
 const HttpException_1 = __importDefault(require("./HttpException"));
 class InternalServerException extends HttpException_1.default {
-    constructor() {
-        super(statusCode_1.StatusCode.SERVER_ERROR, errorCode_1.ErrorCode.INTERNAL_SERVER_ERROR, errorMessage_1.ErrorMessage[errorCode_1.ErrorCode.INTERNAL_SERVER_ERROR], true);
+    constructor(message) {
+        super(statusCode_1.StatusCode.SERVER_ERROR, errorCode_1.ErrorCode.INTERNAL_SERVER_ERROR, message || errorMessage_1.ErrorMessage[errorCode_1.ErrorCode.INTERNAL_SERVER_ERROR], true);
     }
 }
 exports.default = InternalServerException;

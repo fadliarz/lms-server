@@ -61,6 +61,7 @@ let UserService = class UserService {
                 throw new RecordNotFoundException_1.default();
             }
             return {
+                id: user.id,
                 name: user.name,
                 NIM: user.NIM,
                 avatar: user.avatar,
@@ -83,15 +84,15 @@ let UserService = class UserService {
             return updatedUser;
         });
     }
-    updateUserEmail(userId, targetUserId, dto) {
+    updateUserEmail(userId, targetUserId, storedRefreshToken, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
+            const updatedUser = yield this.repository.updateUser(userId, targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
             return updatedUser;
         });
     }
-    updateUserPassword(userId, targetUserId, dto) {
+    updateUserPassword(userId, targetUserId, storedRefreshToken, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
+            const updatedUser = yield this.repository.updateUser(userId, targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
             return updatedUser;
         });
     }
@@ -128,7 +129,7 @@ let UserService = class UserService {
                  *
                  * Some possible scenarios:
                  *
-                 * 1. User logged in before but never uses refreshToken and doesn't signOut
+                 * 1. User logged in before but never uses refreshToken and doesn't sign out
                  * 2. refreshToken is stolen
                  *
                  * If that's the case, then clear all refreshTokens when user signs in (reuse detection).

@@ -45,12 +45,12 @@ let CourseEnrollmentService = class CourseEnrollmentService {
                 throw (0, handleRepositoryError_1.default)(error, {
                     uniqueConstraint: {
                         default: {
-                            message: "User is already enrolled!",
+                            message: enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_IS_ALREADY_ENROLLED,
                         },
                     },
                     foreignConstraint: {
                         default: {
-                            message: "User or course doesn't exist!",
+                            message: enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_DOES_NOT_EXIST.concat(" or ", course_type_1.CourseErrorMessage.COURSE_DOES_NOT_EXIST),
                         },
                     },
                 });
