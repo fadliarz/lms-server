@@ -1,22 +1,31 @@
 import "reflect-metadata";
 import { Container } from "inversify";
-import { UserController } from "./modules/user/controller/user.controller";
-import { UserRepository } from "./modules/user/repository/user.repository";
-import { UserService } from "./modules/user/service/user.service";
-import { IUserController } from "./modules/user/controller/user.controller";
-import { IUserService } from "./modules/user/service/user.service";
-import { IUserRepository } from "./modules/user/repository/user.repository";
+import {
+  IUserController,
+  UserController,
+} from "./modules/user/controller/user.controller";
+import {
+  IUserRepository,
+  UserRepository,
+} from "./modules/user/repository/user.repository";
+import { IUserService, UserService } from "./modules/user/service/user.service";
 import { IUserAuthorization, UserDITypes } from "./modules/user/user.type";
-import { ICourseController } from "./modules/course/controller/course.controller";
-import { ICourseService } from "./modules/course/service/course.service";
-import { ICourseRepository } from "./modules/course/repository/course.repository";
+import {
+  CourseController,
+  ICourseController,
+} from "./modules/course/controller/course.controller";
+import {
+  CourseService,
+  ICourseService,
+} from "./modules/course/service/course.service";
+import {
+  CourseRepository,
+  ICourseRepository,
+} from "./modules/course/repository/course.repository";
 import {
   CourseDITypes,
   ICourseAuthorization,
 } from "./modules/course/course.type";
-import { CourseRepository } from "./modules/course/repository/course.repository";
-import { CourseService } from "./modules/course/service/course.service";
-import { CourseController } from "./modules/course/controller/course.controller";
 import {
   CourseEnrollmentController,
   ICourseEnrollmentController,
@@ -161,6 +170,28 @@ import BaseAuthorization, {
   BaseAuthorizationDITypes,
 } from "./common/class/BaseAuthorization";
 import UserAuthorization from "./modules/user/authorization/user.authorization";
+import {
+  CourseClassDITypes,
+  ICourseClassAuthorization,
+  ICourseClassController,
+  ICourseClassRepository,
+  ICourseClassService,
+} from "./modules/class/class.type";
+import CourseClassRepository from "./modules/class/repository/class.repository";
+import CourseClassService from "./modules/class/service/class.service";
+import CourseClassController from "./modules/class/controller/class.controller";
+import CourseClassAuthorization from "./modules/class/authorization/class.authorization";
+import {
+  CourseClassAssignmentDITypes,
+  ICourseClassAssignmentAuthorization,
+  ICourseClassAssignmentController,
+  ICourseClassAssignmentRepository,
+  ICourseClassAssignmentService,
+} from "./modules/assignment/assignment.type";
+import CourseClassAssignmentRepository from "./modules/assignment/repository/assignment.repository";
+import CourseClassAssignmentService from "./modules/assignment/service/assignment.service";
+import CourseClassAssignmentController from "./modules/assignment/controller/assignment.controller";
+import CourseClassAssignmentAuthorization from "./modules/assignment/authorization/assignment.authorization";
 
 const dIContainer = new Container();
 
@@ -359,6 +390,46 @@ dIContainer
 dIContainer
   .bind<ICourseLessonVideoAuthorization>(CourseLessonVideoDITypes.AUTHORIZATION)
   .to(CourseLessonVideoAuthorization);
+
+/**
+ * Course Class
+ *
+ */
+dIContainer
+  .bind<ICourseClassRepository>(CourseClassDITypes.REPOSITORY)
+  .to(CourseClassRepository);
+dIContainer
+  .bind<ICourseClassService>(CourseClassDITypes.SERVICE)
+  .to(CourseClassService);
+dIContainer
+  .bind<ICourseClassController>(CourseClassDITypes.CONTROLLER)
+  .to(CourseClassController);
+dIContainer
+  .bind<ICourseClassAuthorization>(CourseClassDITypes.AUTHORIZATION)
+  .to(CourseClassAuthorization);
+
+/**
+ * Course Class Assignment
+ *
+ */
+dIContainer
+  .bind<ICourseClassAssignmentRepository>(
+    CourseClassAssignmentDITypes.REPOSITORY,
+  )
+  .to(CourseClassAssignmentRepository);
+dIContainer
+  .bind<ICourseClassAssignmentService>(CourseClassAssignmentDITypes.SERVICE)
+  .to(CourseClassAssignmentService);
+dIContainer
+  .bind<ICourseClassAssignmentController>(
+    CourseClassAssignmentDITypes.CONTROLLER,
+  )
+  .to(CourseClassAssignmentController);
+dIContainer
+  .bind<ICourseClassAssignmentAuthorization>(
+    CourseClassAssignmentDITypes.AUTHORIZATION,
+  )
+  .to(CourseClassAssignmentAuthorization);
 
 /**
  * Common

@@ -15,13 +15,14 @@ export const getAuthMiddleWare = () => {
   );
 
   return async (req: any, res: Response, next: NextFunction) => {
-    const accessToken: string | undefined = req.cookies[Cookie.ACCESS_TOKEN];
-    if (!accessToken) {
-      throw new AuthenticationException();
-    }
-
-    let decoded: { email: string };
     try {
+      const accessToken: string | undefined = req.cookies[Cookie.ACCESS_TOKEN];
+      if (!accessToken) {
+        throw new AuthenticationException();
+      }
+
+      let decoded: { email: string };
+
       decoded = jwt.verify(
         accessToken,
         process.env.ACCESS_TOKEN_PRIVATE_KEY as string,
@@ -42,12 +43,16 @@ export const getAuthMiddleWare = () => {
 
         next();
       }
-    } catch {
-      /**
-       * Expired access token!
-       *
-       */
-      refreshToken(req, res, next);
+    } catch (error) {
+      if (error instanceof AuthenticationException) {
+        next(error);
+      } else {
+        /**
+         * Expired access token!
+         *
+         */
+        refreshToken(req, res, next);
+      }
     }
   };
 };

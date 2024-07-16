@@ -13,7 +13,6 @@ import CourseLessonVideoRouter from "./modules/video/router/video.router";
 import CourseCategoryRouter from "./modules/category/router/category.router";
 import { courseCategoryUrls } from "./modules/category/category.type";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
-import seed from "../prisma/seed";
 
 /**
  * Validate environment variables
@@ -76,14 +75,6 @@ prisma
   .$connect()
   .then(async () => {
     console.log("Successfully establishing database connection!");
-
-    if (process.env.NODE_ENV === "development") {
-      try {
-        await seed();
-      } catch (error: any) {
-        console.log("error when seeding: ", error);
-      }
-    }
 
     app.express.listen(port, () => {
       console.log(`Server is running on the port ${port}`);

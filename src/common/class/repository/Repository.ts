@@ -13,6 +13,14 @@ import { CourseEnrollmentDITypes } from "../../../modules/enrollment/enrollment.
 import { CourseCategoryDITypes } from "../../../modules/category/category.type";
 import { CourseLessonDITypes } from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoDITypes } from "../../../modules/video/video.type";
+import {
+  CourseClassDITypes,
+  ICourseClassRepository,
+} from "../../../modules/class/class.type";
+import {
+  CourseClassAssignmentDITypes,
+  ICourseClassAssignmentRepository,
+} from "../../../modules/assignment/assignment.type";
 
 @injectable()
 export default class Repository implements IRepository {
@@ -33,4 +41,10 @@ export default class Repository implements IRepository {
 
   @inject(CourseLessonVideoDITypes.REPOSITORY)
   public readonly courseLessonVideo: ICourseLessonVideoRepository;
+
+  @inject(CourseClassDITypes.REPOSITORY)
+  public readonly courseClass: ICourseClassRepository;
+
+  @inject(CourseClassAssignmentDITypes.REPOSITORY)
+  public readonly courseClassAssignment: ICourseClassAssignmentRepository;
 }

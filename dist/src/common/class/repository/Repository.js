@@ -17,6 +17,8 @@ const enrollment_type_1 = require("../../../modules/enrollment/enrollment.type")
 const category_type_1 = require("../../../modules/category/category.type");
 const lesson_type_1 = require("../../../modules/lesson/lesson.type");
 const video_type_1 = require("../../../modules/video/video.type");
+const class_type_1 = require("../../../modules/class/class.type");
+const assignment_type_1 = require("../../../modules/assignment/assignment.type");
 let Repository = class Repository {
 };
 __decorate([
@@ -43,6 +45,14 @@ __decorate([
     (0, inversify_1.inject)(video_type_1.CourseLessonVideoDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], Repository.prototype, "courseLessonVideo", void 0);
+__decorate([
+    (0, inversify_1.inject)(class_type_1.CourseClassDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "courseClass", void 0);
+__decorate([
+    (0, inversify_1.inject)(assignment_type_1.CourseClassAssignmentDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "courseClassAssignment", void 0);
 Repository = __decorate([
     (0, inversify_1.injectable)()
 ], Repository);

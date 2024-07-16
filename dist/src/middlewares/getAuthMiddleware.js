@@ -24,12 +24,12 @@ const refreshToken_1 = __importDefault(require("./refreshToken"));
 const getAuthMiddleWare = () => {
     const userRepository = inversifyConfig_1.default.get(user_type_1.UserDITypes.REPOSITORY);
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-        const accessToken = req.cookies[Cookie_1.Cookie.ACCESS_TOKEN];
-        if (!accessToken) {
-            throw new AuthenticationException_1.default();
-        }
-        let decoded;
         try {
+            const accessToken = req.cookies[Cookie_1.Cookie.ACCESS_TOKEN];
+            if (!accessToken) {
+                throw new AuthenticationException_1.default();
+            }
+            let decoded;
             decoded = jsonwebtoken_1.default.verify(accessToken, process.env.ACCESS_TOKEN_PRIVATE_KEY);
             const user = yield userRepository.getUserByAccessToken(accessToken);
             if (!user) {
@@ -43,12 +43,17 @@ const getAuthMiddleWare = () => {
                 next();
             }
         }
-        catch (_a) {
-            /**
-             * Expired access token!
-             *
-             */
-            (0, refreshToken_1.default)(req, res, next);
+        catch (error) {
+            if (error instanceof AuthenticationException_1.default) {
+                next(error);
+            }
+            else {
+                /**
+                 * Expired access token!
+                 *
+                 */
+                (0, refreshToken_1.default)(req, res, next);
+            }
         }
     });
 };

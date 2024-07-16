@@ -1,12 +1,12 @@
 import "reflect-metadata";
-import { CourseLessonModel } from "../lesson.type";
-import { inject, injectable } from "inversify";
 import {
   CourseLessonDITypes,
+  CourseLessonModel,
   CourseLessonResourceId,
   CreateCourseLessonDto,
   ICourseLessonAuthorization,
 } from "../lesson.type";
+import { inject, injectable } from "inversify";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import {
@@ -88,19 +88,6 @@ export class CourseLessonRepository
     }, PrismaDefaultTransactionConfigForRead);
   }
 
-  public async getLessons(
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ): Promise<CourseLessonModel[]> {
-    return await this.prisma.$transaction(async (tx) => {
-      const { courseId } = resourceId;
-      return await tx.courseLesson.findMany({
-        where: {
-          courseId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
   public async getLessonByIdOrThrow(
     lessonId: number,
     resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
@@ -113,6 +100,19 @@ export class CourseLessonRepository
     }
 
     return lesson;
+  }
+
+  public async getLessons(
+    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
+  ): Promise<CourseLessonModel[]> {
+    return await this.prisma.$transaction(async (tx) => {
+      const { courseId } = resourceId;
+      return await tx.courseLesson.findMany({
+        where: {
+          courseId,
+        },
+      });
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async updateLesson(

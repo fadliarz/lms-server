@@ -67,6 +67,7 @@ model Course {
   category         CourseCategory     @relation(fields: [categoryId], references: [id], onUpdate: SetNull, onDelete: SetNull)
   enrollments      CourseEnrollment[]
   lessons          CourseLesson[]
+  classes          CourseClass[]
   likes            CourseLike[]
 
   @@index([authorId])
@@ -124,6 +125,29 @@ model CourseCategory {
   courses   Course[]
 
   @@map("course_category")
+}
+
+model CourseClass {
+  id          Int                     @id @default(autoincrement())
+  title       String
+  courseId    Int                     @map("course_id")
+  createdAt   DateTime                @default(now()) @map("created_at")
+  updatedAt   DateTime                @default(now()) @updatedAt @map("updated_at")
+  course      Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  assignments CourseClassAssignment[]
+
+  @@unique([title])
+}
+
+model CourseClassAssignment {
+  id         Int         @id @default(autoincrement())
+  title      String
+  submission String
+  deadline   DateTime
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @default(now()) @updatedAt @map("updated_at")
+  classId    Int         @map("class_id")
+  class      CourseClass @relation(fields: [classId], references: [id], onDelete: Cascade)
 }
 
 enum Role {

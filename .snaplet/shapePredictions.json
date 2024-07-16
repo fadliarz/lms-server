@@ -1,0 +1,242 @@
+[
+  {
+    "schemaName": "public",
+    "tableName": "CourseClass",
+    "predictions": [
+      {
+        "input": "public course_class title",
+        "column": "title",
+        "shape": "POST_TITLE",
+        "confidence": 0.8195642232894897,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "CourseClassAssignment",
+    "predictions": [
+      {
+        "input": "public course_class_assignment submission",
+        "column": "submission",
+        "shape": "COMMERCE_PRODUCT_NAME",
+        "confidence": 0.2810695767402649,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public course_class_assignment title",
+        "column": "title",
+        "shape": "POST_TITLE",
+        "confidence": 0.4828721284866333,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "_prisma_migrations",
+    "predictions": [
+      {
+        "input": "public prisma_migrations checksum",
+        "column": "checksum",
+        "shape": "CHECKSUM",
+        "confidence": 0.9797677397727966,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public prisma_migrations id",
+        "column": "id",
+        "shape": "UUID",
+        "confidence": 0.9955798983573914,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public prisma_migrations logs",
+        "column": "logs",
+        "shape": "LOGS",
+        "confidence": 0.9948318004608154,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public prisma_migrations migration_name",
+        "column": "migration_name",
+        "shape": "SYSTEM_FILE_NAME",
+        "confidence": 0.9866090416908264,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "course",
+    "predictions": [
+      {
+        "input": "public course description",
+        "column": "description",
+        "shape": "COMMERCE_PRODUCT_DESCRIPTION",
+        "confidence": 0.9528364539146423,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public course material",
+        "column": "material",
+        "shape": "COMMERCE_PRODUCT_MATERIAL",
+        "confidence": 0.9408670663833618,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public course title",
+        "column": "title",
+        "shape": "COMMERCE_PRODUCT_NAME",
+        "confidence": 0.5728651881217957,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "course_category",
+    "predictions": [
+      {
+        "input": "public course_category title",
+        "column": "title",
+        "shape": "POST_TITLE",
+        "confidence": 0.6919757127761841,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "course_lesson",
+    "predictions": [
+      {
+        "input": "public course_lesson description",
+        "column": "description",
+        "shape": "COMMERCE_PRODUCT_DESCRIPTION",
+        "confidence": 0.9071727395057678,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public course_lesson title",
+        "column": "title",
+        "shape": "POST_TITLE",
+        "confidence": 0.7899676561355591,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "course_video",
+    "predictions": [
+      {
+        "input": "public course_video description",
+        "column": "description",
+        "shape": "COMPANY_CATCH_PHRASE",
+        "confidence": 0.8575521111488342,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public course_video name",
+        "column": "name",
+        "shape": "COMMERCE_PRODUCT_NAME",
+        "confidence": 0.1782782375812531,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public course_video youtube_link",
+        "column": "youtube_link",
+        "shape": "URL",
+        "confidence": 0.6072495579719543,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "user",
+    "predictions": [
+      {
+        "input": "public user about",
+        "column": "about",
+        "shape": "PERSON_BIO",
+        "confidence": 0.9760600924491882,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user access_token",
+        "column": "access_token",
+        "shape": "TOKEN",
+        "confidence": 0.995846688747406,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user email",
+        "column": "email",
+        "shape": "EMAIL",
+        "confidence": 0.99404376745224,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user name",
+        "column": "name",
+        "shape": "USERNAME",
+        "confidence": 0.9706624150276184,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user nim",
+        "column": "nim",
+        "shape": "NATIONAL_IDENTIFICATION_NUMBER",
+        "confidence": 0.997399091720581,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user password",
+        "column": "password",
+        "shape": "PASSWORD",
+        "confidence": 0.9340711236000061,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user phone_number",
+        "column": "phone_number",
+        "shape": "PHONE_NUMBER",
+        "confidence": 0.9720039367675781,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user refresh_token",
+        "column": "refresh_token",
+        "shape": "TOKEN",
+        "confidence": 0.9432976245880127,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  }
+]

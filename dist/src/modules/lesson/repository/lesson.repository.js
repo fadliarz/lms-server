@@ -23,8 +23,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CourseLessonRepository = void 0;
 require("reflect-metadata");
-const inversify_1 = require("inversify");
 const lesson_type_1 = require("../lesson.type");
+const inversify_1 = require("inversify");
 const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
@@ -56,6 +56,15 @@ let CourseLessonRepository = class CourseLessonRepository extends BaseAuthorizat
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });
     }
+    getLessonByIdOrThrow(lessonId, resourceId, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const lesson = yield this.getLessonById(lessonId, resourceId);
+            if (!lesson) {
+                throw error || new RecordNotFoundException_1.default();
+            }
+            return lesson;
+        });
+    }
     getLessons(resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
@@ -66,15 +75,6 @@ let CourseLessonRepository = class CourseLessonRepository extends BaseAuthorizat
                     },
                 });
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
-        });
-    }
-    getLessonByIdOrThrow(lessonId, resourceId, error) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const lesson = yield this.getLessonById(lessonId, resourceId);
-            if (!lesson) {
-                throw error || new RecordNotFoundException_1.default();
-            }
-            return lesson;
         });
     }
     updateLesson(lessonId, resourceId, dto) {

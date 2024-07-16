@@ -26,7 +26,6 @@ const video_router_1 = __importDefault(require("./modules/video/router/video.rou
 const category_router_1 = __importDefault(require("./modules/category/router/category.router"));
 const category_type_1 = require("./modules/category/category.type");
 const PrismaClientSingleton_1 = __importDefault(require("./common/class/PrismaClientSingleton"));
-const seed_1 = __importDefault(require("../prisma/seed"));
 /**
  * Validate environment variables
  *
@@ -83,14 +82,6 @@ prisma
     .$connect()
     .then(() => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Successfully establishing database connection!");
-    if (process.env.NODE_ENV === "development") {
-        try {
-            yield (0, seed_1.default)();
-        }
-        catch (error) {
-            console.log("error when seeding: ", error);
-        }
-    }
     app.express.listen(port, () => {
         console.log(`Server is running on the port ${port}`);
     });

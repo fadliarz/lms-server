@@ -41,7 +41,7 @@ class App {
    * Swagger
    *
    */
-  public setupSwagger(...args: Router[]) {
+  public setupSwagger(...args: Router[]): void {
     const pathToSwaggerUi = require("swagger-ui-dist").absolutePath();
     this.express.use(express.static(pathToSwaggerUi));
 

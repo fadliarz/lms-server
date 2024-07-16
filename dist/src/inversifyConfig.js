@@ -32,10 +32,10 @@ const user_controller_1 = require("./modules/user/controller/user.controller");
 const user_repository_1 = require("./modules/user/repository/user.repository");
 const user_service_1 = require("./modules/user/service/user.service");
 const user_type_1 = require("./modules/user/user.type");
-const course_type_1 = require("./modules/course/course.type");
-const course_repository_1 = require("./modules/course/repository/course.repository");
-const course_service_1 = require("./modules/course/service/course.service");
 const course_controller_1 = require("./modules/course/controller/course.controller");
+const course_service_1 = require("./modules/course/service/course.service");
+const course_repository_1 = require("./modules/course/repository/course.repository");
+const course_type_1 = require("./modules/course/course.type");
 const enrollment_controller_1 = require("./modules/enrollment/controller/enrollment.controller");
 const enrollment_type_1 = require("./modules/enrollment/enrollment.type");
 const enrollment_service_1 = require("./modules/enrollment/service/enrollment.service");
@@ -92,6 +92,16 @@ const CourseLessonRandDTO_1 = __importDefault(require("./common/class/rand_dto/C
 const CourseLessonVideoRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseLessonVideoRandDTO"));
 const BaseAuthorization_1 = __importStar(require("./common/class/BaseAuthorization"));
 const user_authorization_1 = __importDefault(require("./modules/user/authorization/user.authorization"));
+const class_type_1 = require("./modules/class/class.type");
+const class_repository_1 = __importDefault(require("./modules/class/repository/class.repository"));
+const class_service_1 = __importDefault(require("./modules/class/service/class.service"));
+const class_controller_1 = __importDefault(require("./modules/class/controller/class.controller"));
+const class_authorization_1 = __importDefault(require("./modules/class/authorization/class.authorization"));
+const assignment_type_1 = require("./modules/assignment/assignment.type");
+const assignment_repository_1 = __importDefault(require("./modules/assignment/repository/assignment.repository"));
+const assignment_service_1 = __importDefault(require("./modules/assignment/service/assignment.service"));
+const assignment_controller_1 = __importDefault(require("./modules/assignment/controller/assignment.controller"));
+const assignment_authorization_1 = __importDefault(require("./modules/assignment/authorization/assignment.authorization"));
 const dIContainer = new inversify_1.Container();
 /**
  * Repository
@@ -273,6 +283,38 @@ dIContainer
 dIContainer
     .bind(video_type_1.CourseLessonVideoDITypes.AUTHORIZATION)
     .to(video_authorization_1.default);
+/**
+ * Course Class
+ *
+ */
+dIContainer
+    .bind(class_type_1.CourseClassDITypes.REPOSITORY)
+    .to(class_repository_1.default);
+dIContainer
+    .bind(class_type_1.CourseClassDITypes.SERVICE)
+    .to(class_service_1.default);
+dIContainer
+    .bind(class_type_1.CourseClassDITypes.CONTROLLER)
+    .to(class_controller_1.default);
+dIContainer
+    .bind(class_type_1.CourseClassDITypes.AUTHORIZATION)
+    .to(class_authorization_1.default);
+/**
+ * Course Class Assignment
+ *
+ */
+dIContainer
+    .bind(assignment_type_1.CourseClassAssignmentDITypes.REPOSITORY)
+    .to(assignment_repository_1.default);
+dIContainer
+    .bind(assignment_type_1.CourseClassAssignmentDITypes.SERVICE)
+    .to(assignment_service_1.default);
+dIContainer
+    .bind(assignment_type_1.CourseClassAssignmentDITypes.CONTROLLER)
+    .to(assignment_controller_1.default);
+dIContainer
+    .bind(assignment_type_1.CourseClassAssignmentDITypes.AUTHORIZATION)
+    .to(assignment_authorization_1.default);
 /**
  * Common
  *

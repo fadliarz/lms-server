@@ -11,18 +11,22 @@
     "postinstall": "prisma generate",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
     "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
-    "seed": "ts-node ./prisma/main.ts",
+    "seed": "ts-node ./prisma/seed.ts",
     "start-gendoc": "ts-node swagger.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@snaplet/copycat": "^5.0.0",
+    "@snaplet/seed": "^0.97.20",
     "@types/compression": "^1.7.2",
+    "@types/connect-pg-simple": "^7.0.3",
     "@types/cookie-parser": "^1.4.4",
     "@types/cors": "^2.8.13",
     "@types/crypto-js": "^4.1.1",
-    "@types/express": "^4.17.17",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.18.0",
     "@types/jest": "^29.5.3",
     "@types/jsonwebtoken": "^9.0.2",
     "@types/lodash": "^4.14.195",
@@ -42,6 +46,7 @@
     "eslint-plugin-n": "^16.6.2",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-unused-imports": "^3.0.0",
+    "postgres": "^3.4.4",
     "pre-commit": "^1.2.2",
     "prettier": "3.2.4",
     "rimraf": "^5.0.5",
@@ -50,9 +55,10 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.0.2",
-    "@prisma/client": "^4.15.0",
+    "@prisma/client": "^5.16.2",
     "@types/swagger-ui-dist": "^3.30.4",
     "compression": "^1.7.4",
+    "connect-pg-simple": "^9.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
@@ -86,6 +92,5 @@
     "uuid": "^9.0.0",
     "yamljs": "^0.3.0"
   },
-  "pre-commit": [
-  ]
+  "pre-commit": []
 }
