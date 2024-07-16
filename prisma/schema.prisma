@@ -137,6 +137,7 @@ model CourseClass {
   assignments CourseClassAssignment[]
 
   @@unique([title])
+  @@map("course_class")
 }
 
 model CourseClassAssignment {
@@ -148,6 +149,8 @@ model CourseClassAssignment {
   updatedAt  DateTime    @default(now()) @updatedAt @map("updated_at")
   classId    Int         @map("class_id")
   class      CourseClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@map("course_class_assignment")
 }
 
 enum Role {
