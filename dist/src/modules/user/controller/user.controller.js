@@ -77,8 +77,7 @@ let UserController = class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = this.validateResourceId(req);
-                const targetUserId = this.validateUserId(req);
-                const me = yield this.service.getMe(userId, targetUserId);
+                const me = yield this.service.getMe(userId);
                 return res
                     .status(statusCode_1.StatusCode.SUCCESS)
                     .json({ data: (0, filterUserObject_1.default)(me) });

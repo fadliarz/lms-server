@@ -17,13 +17,13 @@ components:
   schemas:
     UserRoleModel:
       type: string
-      enum: ["STUDENT", "INSTRUCTOR", "OWNER"]
+      enum: [ "STUDENT", "INSTRUCTOR", "OWNER" ]
     CourseEnrollmentRoleModel:
       type: string
-      enum: ["STUDENT", "INSTRUCTOR"]
+      enum: [ "STUDENT", "INSTRUCTOR" ]
     CourseStatusModel:
       type: string
-      enum: ["PUBLISHED", "DRAFT"]
+      enum: [ "PUBLISHED", "DRAFT" ]
     UserModel:
       type: object
       properties:
@@ -592,7 +592,7 @@ components:
           type:
             array
           items:
-              $ref: "#/components/schemas/CourseEnrollmentRoleModel"
+            $ref: "#/components/schemas/CourseEnrollmentRoleModel"
       required:
         - role
 
@@ -775,17 +775,11 @@ paths:
                       data:
                         $ref: "#/components/schemas/PublicUserModel"
           - $ref: "#/components/responses/CommonErrorResponses"
-  /api/v1/users/{userId}/me:
+  /api/v1/users/me:
     get:
       tags:
         - User
       summary: Get me.
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: number
       responses:
         allOf:
           - "200":

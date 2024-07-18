@@ -2,7 +2,6 @@ import "reflect-metadata";
 import {
   CreateUserDto,
   IUserAuthorization,
-  Me,
   UserDITypes,
   UserModel,
 } from "../user.type";
@@ -30,7 +29,7 @@ export interface IUserRepository {
   getUserByEmail: (email: string) => Promise<UserModel | null>;
   getUserByAccessToken: (accessToken: string) => Promise<UserModel | null>;
   getUserByRefreshToken: (refreshToken: string) => Promise<UserModel | null>;
-  getMe: (userId: number, targetUserId: number) => Promise<Me>;
+  getMe: (userId: number) => Promise<UserModel>;
   updateUser: (
     userId: number,
     targetUserId: number,
@@ -114,21 +113,14 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  public async getMe(userId: number, targetUserId: number) {
+  public async getMe(userId: number): Promise<UserModel> {
     return await this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeGetMe(user, targetUserId);
-
       const me = await tx.user.findUniqueOrThrow({
-        where: { id: targetUserId },
+        where: { id: userId },
       });
 
       return me;
-    }, PrismaDefaultTransactionConfigForWrite);
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async updateUser(

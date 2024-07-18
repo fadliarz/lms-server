@@ -8,7 +8,8 @@ import postgres from "postgres";
 
 export default defineConfig({
   adapter: () => {
-    const POSTGRES_URL: string | undefined = process.env.POSTGRES_URL;
+    const POSTGRES_URL: string | undefined =
+      "postgres://default:30fRXznDjkbI@ep-solitary-firefly-a4f278w7.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require";
     if (!POSTGRES_URL) {
       throw new Error("process.env.POSTGRES_URL is not defined");
     }

@@ -129,8 +129,7 @@ export class UserController implements IUserController {
   ): Promise<Response | void> {
     try {
       const userId = this.validateResourceId(req);
-      const targetUserId = this.validateUserId(req);
-      const me = await this.service.getMe(userId, targetUserId);
+      const me = await this.service.getMe(userId);
 
       return res
         .status(StatusCode.SUCCESS)

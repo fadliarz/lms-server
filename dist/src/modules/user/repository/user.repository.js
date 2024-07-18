@@ -87,16 +87,14 @@ let UserRepository = class UserRepository {
             });
         });
     }
-    getMe(userId, targetUserId) {
+    getMe(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
-                this.authorization.authorizeGetMe(user, targetUserId);
                 const me = yield tx.user.findUniqueOrThrow({
-                    where: { id: targetUserId },
+                    where: { id: userId },
                 });
                 return me;
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });
     }
     updateUser(userId, targetUserId, dto) {

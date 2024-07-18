@@ -52,9 +52,10 @@ class App {
      */
     initialiseMiddlewares() {
         this.express.use((0, cors_1.default)({
-            origin: "http://localhost:4444",
-            credentials: true, //access-control-allow-credentials:true
+            origin: true,
             optionsSuccessStatus: 200,
+            credentials: true, //access-control-allow-credentials:true
+            exposedHeaders: ["set-cookie"],
         }));
         if (process.env.NODE_ENV === "development") {
             this.express.use((0, morgan_1.default)("'dev"));

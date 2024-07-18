@@ -29,7 +29,7 @@ import AuthenticationException from "../../../common/class/exceptions/Authentica
 export interface IUserService {
   createUser: (dto: CreateUserDto) => Promise<UserModel>;
   getPublicUserById: (userId: number) => Promise<PublicUserModel>;
-  getMe: (userId: number, targetUserId: number) => Promise<Me>;
+  getMe: (userId: number) => Promise<Me>;
   updateBasicUser: (
     userId: number,
     targetUserId: number,
@@ -122,8 +122,8 @@ export class UserService implements IUserService {
     };
   }
 
-  public async getMe(userId: number, targetUserId: number) {
-    const me = await this.repository.getMe(userId, targetUserId);
+  public async getMe(userId: number) {
+    const me = await this.repository.getMe(userId);
 
     me.accessToken = null;
     me.refreshToken = [];
@@ -144,6 +144,7 @@ export class UserService implements IUserService {
 
     return updatedUser;
   }
+
   public async updateUserEmail(
     userId: number,
     targetUserId: number,

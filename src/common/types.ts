@@ -1,6 +1,7 @@
 import { Request, Router } from "express";
 import { UserModel } from "../modules/user/user.type";
 import { PrismaClient } from "@prisma/client";
+import * as runtime from "@prisma/client/runtime/library";
 
 export interface GenericObject<K> {
   [key: string]: K;
@@ -46,7 +47,9 @@ export type ModifyFieldWithNullToBeOptionalAndRemoveNull<T> = {
   [K in keyof PickNotNullable<T>]: T[K];
 };
 
-export type PrismaTransaction = Omit<
-  PrismaClient,
-  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
->;
+// export type PrismaTransaction = Omit<
+//   PrismaClient,
+//   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use"
+// >;
+
+export type PrismaTransaction = Omit<PrismaClient, runtime.ITXClientDenyList>;

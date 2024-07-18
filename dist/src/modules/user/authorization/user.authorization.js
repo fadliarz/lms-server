@@ -15,7 +15,7 @@ const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseA
 const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
 const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
 let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.default {
-    authorizeGetMe(user, targetUserId) {
+    authorizeUpdateUser(user, targetUserId) {
         const { id: userId, role: userRole } = user;
         const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
         let isAuthorized = false;
@@ -29,11 +29,8 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
             throw new AuthorizationException_1.default();
         }
     }
-    authorizeUpdateUser(user, targetUserId) {
-        this.authorizeGetMe(user, targetUserId);
-    }
     authorizeDeleteUser(user, targetUserId) {
-        this.authorizeGetMe(user, targetUserId);
+        this.authorizeUpdateUser(user, targetUserId);
     }
 };
 UserAuthorization = __decorate([

@@ -12,7 +12,7 @@ var userUrls;
 (function (userUrls) {
     userUrls["root"] = "/users";
     userUrls["user"] = "/:userId";
-    userUrls["me"] = "/:userId/me";
+    userUrls["me"] = "/me";
     userUrls["public"] = "/:userId/public";
     userUrls["basic"] = "/:userId/basic";
     userUrls["email"] = "/:userId/email";

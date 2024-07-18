@@ -11,7 +11,7 @@
     "postinstall": "prisma generate; prisma db push",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
     "test": "set PORT=8000&&jest --watchAll --verbose --runInBand --coverage",
-    "seed": "ts-node ./prisma/seed.ts",
+    "seed": "npx tsx seed.ts",
     "start-gendoc": "ts-node swagger.ts"
   },
   "keywords": [],

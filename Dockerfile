@@ -7,7 +7,7 @@ USER node
 
 FROM base As builder
 COPY --chown=node:node /package*.json ./
-RUN npm install --force
+RUN npm install
 
 FROM base As production
 ENV NODE_ENV=production

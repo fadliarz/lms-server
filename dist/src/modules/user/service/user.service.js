@@ -70,9 +70,9 @@ let UserService = class UserService {
             };
         });
     }
-    getMe(userId, targetUserId) {
+    getMe(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const me = yield this.repository.getMe(userId, targetUserId);
+            const me = yield this.repository.getMe(userId);
             me.accessToken = null;
             me.refreshToken = [];
             return me;

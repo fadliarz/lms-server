@@ -62,9 +62,10 @@ class App {
   private initialiseMiddlewares(): void {
     this.express.use(
       cors({
-        origin: "http://localhost:4444",
-        credentials: true, //access-control-allow-credentials:true
+        origin: true,
         optionsSuccessStatus: 200,
+        credentials: true, //access-control-allow-credentials:true
+        exposedHeaders: ["set-cookie"],
       }),
     );
 

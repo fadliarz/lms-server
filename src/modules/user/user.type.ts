@@ -10,7 +10,7 @@ export const UserDITypes = {
 export enum userUrls {
   root = "/users",
   user = "/:userId",
-  me = userUrls.user + "/me",
+  me = "/me",
   public = userUrls.user + "/public",
   basic = userUrls.user + "/basic",
   email = userUrls.user + "/email",
@@ -33,7 +33,6 @@ export enum userUrls {
  *
  */
 export interface IUserAuthorization {
-  authorizeGetMe: (user: UserModel, targetUserId: number) => void;
   authorizeUpdateUser: (user: UserModel, targetUserId: number) => void;
   authorizeDeleteUser: (user: UserModel, targetUserId: number) => void;
 }
