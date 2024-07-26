@@ -14,7 +14,10 @@ export const EventDITypes = {
   AUTHORIZATION: Symbol.for("EVENT_AUTHORIZATION"),
 };
 
-export enum eventUrls {}
+export enum eventUrls {
+  root = "/events",
+  event = "/:eventId",
+}
 
 export enum EventErrorMessage {
   EVENT_DOES_NOT_EXIST = "event doesn't exist!",
@@ -30,6 +33,8 @@ export enum EventErrorMessage {
 
 export interface IEventAuthorization {
   authorizeCreateEvent: (user: UserModel) => void;
+  authorizeReadEvent: (user: UserModel) => void;
+  authorizeReadEvents: (user: UserModel) => void;
   authorizeUpdateEvent: (user: UserModel) => void;
   authorizeDeleteEvent: (user: UserModel) => void;
 }

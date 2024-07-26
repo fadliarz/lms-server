@@ -4,27 +4,41 @@ import { isEqual } from "lodash";
 import sha256Encrypt from "../../../utils/encrypt";
 import {
   CreateUserDto,
+  IUserAuthorization,
   Me,
   PublicUserModel,
   UpdateBasicUserDto,
   UpdateUserEmailDto,
   UpdateUserPasswordDto,
   UpdateUserPhoneNumberDto,
+  UpdateUserRoleDto,
   UserDITypes,
   UserModel,
 } from "../user.type";
 import { IUserRepository } from "../repository/user.repository";
 import { inject, injectable } from "inversify";
-import HttpException from "../../../common/class/exceptions/HttpException";
-import { StatusCode } from "../../../common/constants/statusCode";
 import validateEnv from "../../../common/functions/validateEnv";
-import { ErrorCode } from "../../../common/constants/errorCode";
-import { ErrorMessage } from "../../../common/constants/errorMessage";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import ClientException from "../../../common/class/exceptions/ClientException";
 import { Request, Response } from "express";
 import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
+import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
+import {
+  IPrismaQueryRaw,
+  PrismaQueryRawDITypes,
+} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
+import asyncLocalStorage from "../../../common/asyncLocalStorage";
+import { PrismaTransaction } from "../../../common/types";
+import { LocalStorageKey } from "../../../common/constants/LocalStorageKey";
+import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
+import getRoleStatus from "../../../common/functions/getRoleStatus";
+import {
+  CourseEnrollmentRoleModel,
+  UserRoleModel,
+} from "../../course/course.type";
+import handleRepositoryError from "../../../common/functions/handleRepositoryError";
+import { PrismaDefaultTransactionConfigForWrite } from "../../../common/constants/prismaDefaultConfig";
 
 export interface IUserService {
   createUser: (dto: CreateUserDto) => Promise<UserModel>;
@@ -47,12 +61,17 @@ export interface IUserService {
     storedRefreshToken: string,
     dto: UpdateUserPasswordDto,
   ) => Promise<UserModel>;
+  updateUserRole: (
+    userId: number,
+    targetUserId: number,
+    dto: UpdateUserRoleDto,
+  ) => Promise<UserModel>;
   updateUserPhoneNumber: (
     userId: number,
     targetUserId: number,
     dto: UpdateUserPhoneNumberDto,
   ) => Promise<UserModel>;
-  deleteUser: (userId: number, targetUserId: number) => Promise<UserModel>;
+  deleteUser: (userId: number, targetUserId: number) => Promise<{}>;
   signInUser: (
     req: Request,
     res: Response,
@@ -73,36 +92,47 @@ export class UserService implements IUserService {
   @inject(UserDITypes.REPOSITORY)
   private repository: IUserRepository;
 
+  @inject(UserDITypes.AUTHORIZATION)
+  private readonly authorization: IUserAuthorization;
+
+  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
+  private readonly prismaQueryRaw: IPrismaQueryRaw;
+
+  private readonly prisma = PrismaClientSingleton.getInstance();
+
   public async createUser(dto: CreateUserDto): Promise<UserModel> {
-    const { email, password } = dto;
-    const existingUser = await this.repository.getUserByEmail(email);
-    if (existingUser) {
-      throw new HttpException(
-        StatusCode.BAD_REQUEST,
-        ErrorCode.BAD_REQUEST,
-        (
-          ErrorMessage[ErrorCode.UNIQUE_CONSTRAINT] as (
-            field?: string,
-          ) => string
-        )("email"),
-        true,
+    try {
+      dto.email = dto.email.toLowerCase();
+      const { email, password } = dto;
+      const accessToken = this.generateFreshAuthenticationToken(
+        Cookie.ACCESS_TOKEN,
+        email,
       );
+      const refreshToken = this.generateFreshAuthenticationToken(
+        Cookie.REFRESH_TOKEN,
+        email,
+      );
+      dto.password = sha256Encrypt(password);
+      const newUser = await this.repository.createUser(dto, accessToken, [
+        refreshToken,
+      ]);
+
+      return newUser;
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        uniqueConstraint: {
+          email: {
+            message: "email is already taken!",
+          },
+          nim: {
+            message: "NIM is already taken!",
+          },
+          default: {
+            message: "unique constraint failed!",
+          },
+        },
+      });
     }
-
-    const accessToken = this.generateFreshAuthenticationToken(
-      Cookie.ACCESS_TOKEN,
-      email,
-    );
-    const refreshToken = this.generateFreshAuthenticationToken(
-      Cookie.REFRESH_TOKEN,
-      email,
-    );
-    dto.password = sha256Encrypt(password);
-    const newUser = await this.repository.createUser(dto, accessToken, [
-      refreshToken,
-    ]);
-
-    return newUser;
   }
 
   public async getPublicUserById(userId: number): Promise<PublicUserModel> {
@@ -123,7 +153,7 @@ export class UserService implements IUserService {
   }
 
   public async getMe(userId: number) {
-    const me = await this.repository.getMe(userId);
+    const me = await this.repository.getUserByIdOrThrow(userId);
 
     me.accessToken = null;
     me.refreshToken = [];
@@ -136,13 +166,21 @@ export class UserService implements IUserService {
     targetUserId: number,
     dto: UpdateBasicUserDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUser(
-      userId,
-      targetUserId,
-      dto,
-    );
+    return this.prisma.$transaction(async (tx) => {
+      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+        tx,
+        userId,
+        new AuthenticationException(),
+      );
+      this.authorization.authorizeUpdateUser(user, targetUserId);
 
-    return updatedUser;
+      const store = new Map<string, PrismaTransaction>();
+      store.set(LocalStorageKey.TRANSACTION, tx);
+
+      return await asyncLocalStorage.run(store, async () => {
+        return await this.repository.updateUser(targetUserId, dto);
+      });
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
   public async updateUserEmail(
@@ -151,12 +189,35 @@ export class UserService implements IUserService {
     storedRefreshToken: string,
     dto: UpdateUserEmailDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUser(userId, targetUserId, {
-      ...dto,
-      refreshToken: [storedRefreshToken],
-    });
+    try {
+      return this.prisma.$transaction(async (tx) => {
+        dto.email = dto.email.toLowerCase();
+        const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+          tx,
+          userId,
+          new AuthenticationException(),
+        );
+        this.authorization.authorizeUpdateUser(user, targetUserId);
 
-    return updatedUser;
+        const store = new Map<string, PrismaTransaction>();
+        store.set(LocalStorageKey.TRANSACTION, tx);
+
+        return await asyncLocalStorage.run(store, async () => {
+          return await this.repository.updateUser(targetUserId, {
+            ...dto,
+            refreshToken: [storedRefreshToken],
+          });
+        });
+      }, PrismaDefaultTransactionConfigForWrite);
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        uniqueConstraint: {
+          default: {
+            message: "email is already taken!",
+          },
+        },
+      });
+    }
   }
 
   public async updateUserPassword(
@@ -165,12 +226,24 @@ export class UserService implements IUserService {
     storedRefreshToken: string,
     dto: UpdateUserPasswordDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUser(userId, targetUserId, {
-      ...dto,
-      refreshToken: [storedRefreshToken],
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+        tx,
+        userId,
+        new AuthenticationException(),
+      );
+      this.authorization.authorizeUpdateUser(user, targetUserId);
 
-    return updatedUser;
+      const store = new Map<string, PrismaTransaction>();
+      store.set(LocalStorageKey.TRANSACTION, tx);
+
+      return await asyncLocalStorage.run(store, async () => {
+        return await this.repository.updateUser(targetUserId, {
+          ...dto,
+          refreshToken: [storedRefreshToken],
+        });
+      });
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
   public async updateUserPhoneNumber(
@@ -178,22 +251,98 @@ export class UserService implements IUserService {
     targetUserId: number,
     dto: UpdateUserPhoneNumberDto,
   ): Promise<UserModel> {
-    const updatedUser = await this.repository.updateUser(
-      userId,
-      targetUserId,
-      dto,
-    );
+    return this.prisma.$transaction(async (tx) => {
+      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+        tx,
+        userId,
+        new AuthenticationException(),
+      );
+      this.authorization.authorizeUpdateUser(user, targetUserId);
 
-    return updatedUser;
+      const store = new Map<string, PrismaTransaction>();
+      store.set(LocalStorageKey.TRANSACTION, tx);
+
+      return await asyncLocalStorage.run(store, async () => {
+        return await this.repository.updateUser(targetUserId, dto);
+      });
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
-  public async deleteUser(
+  public async updateUserRole(
     userId: number,
     targetUserId: number,
+    dto: UpdateUserRoleDto,
   ): Promise<UserModel> {
-    const deletedUser = await this.repository.deleteUser(userId, targetUserId);
+    return this.prisma.$transaction(async (tx) => {
+      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+        tx,
+        userId,
+        new AuthenticationException(),
+      );
+      this.authorization.authorizeUpdateUser(user, targetUserId);
 
-    return deletedUser;
+      const targetUser =
+        await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+          tx,
+          targetUserId,
+          new RecordNotFoundException(),
+        );
+
+      const currentRole = targetUser.role;
+      const { role: newRole } = dto;
+      if (isEqualOrIncludeRole(currentRole, newRole)) {
+        return targetUser;
+      }
+
+      const { isStudent, isInstructor, isAdmin } = getRoleStatus(currentRole);
+
+      if (
+        (isStudent || isInstructor) &&
+        isEqualOrIncludeRole(newRole, UserRoleModel.STUDENT)
+      ) {
+        await tx.courseEnrollment.updateMany({
+          where: {
+            userId: targetUserId,
+          },
+          data: {
+            role: CourseEnrollmentRoleModel.INSTRUCTOR,
+          },
+        });
+
+        await tx.course.deleteMany({
+          where: {
+            authorId: targetUserId,
+          },
+        });
+      }
+
+      const store = new Map<string, PrismaTransaction>();
+      store.set(LocalStorageKey.TRANSACTION, tx);
+
+      return await asyncLocalStorage.run(store, async () => {
+        return await this.repository.updateUser(targetUserId, dto);
+      });
+    }, PrismaDefaultTransactionConfigForWrite);
+  }
+
+  public async deleteUser(userId: number, targetUserId: number): Promise<{}> {
+    return this.prisma.$transaction(async (tx) => {
+      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+        tx,
+        userId,
+        new AuthenticationException(),
+      );
+      this.authorization.authorizeDeleteUser(user, targetUserId);
+
+      const store = new Map<string, PrismaTransaction>();
+      store.set(LocalStorageKey.TRANSACTION, tx);
+
+      await asyncLocalStorage.run(store, async () => {
+        return await this.repository.deleteUser(targetUserId);
+      });
+
+      return {};
+    }, PrismaDefaultTransactionConfigForWrite);
   }
 
   async signInUser(
@@ -201,6 +350,7 @@ export class UserService implements IUserService {
     res: Response,
     dto: { email: string; password: string },
   ): Promise<UserModel> {
+    dto.email = dto.email.toLowerCase();
     const { email, password } = dto;
     const userRelatedToSignInEmail =
       await this.repository.getUserByEmail(email);
@@ -261,7 +411,7 @@ export class UserService implements IUserService {
     }
 
     newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
-    await this.repository.unauthorizedUpdateUser(userRelatedToSignInEmail.id, {
+    await this.repository.updateUser(userRelatedToSignInEmail.id, {
       accessToken,
       refreshToken: newRefreshTokenArray,
     });
@@ -295,14 +445,11 @@ export class UserService implements IUserService {
       throw new AuthenticationException();
     }
 
-    await this.repository.unauthorizedUpdateUser(
-      userRelatedToStoredRefreshToken.id,
-      {
-        refreshToken: userRelatedToStoredRefreshToken?.refreshToken.filter(
-          (rt) => rt !== storedRefreshToken,
-        ),
-      },
-    );
+    await this.repository.updateUser(userRelatedToStoredRefreshToken.id, {
+      refreshToken: userRelatedToStoredRefreshToken?.refreshToken.filter(
+        (rt) => rt !== storedRefreshToken,
+      ),
+    });
   }
 
   public generateFreshAuthenticationToken(

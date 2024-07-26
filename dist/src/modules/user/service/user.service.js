@@ -28,30 +28,52 @@ const lodash_1 = require("lodash");
 const encrypt_1 = __importDefault(require("../../../utils/encrypt"));
 const user_type_1 = require("../user.type");
 const inversify_1 = require("inversify");
-const HttpException_1 = __importDefault(require("../../../common/class/exceptions/HttpException"));
-const statusCode_1 = require("../../../common/constants/statusCode");
 const validateEnv_1 = __importDefault(require("../../../common/functions/validateEnv"));
-const errorCode_1 = require("../../../common/constants/errorCode");
-const errorMessage_1 = require("../../../common/constants/errorMessage");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const ClientException_1 = __importDefault(require("../../../common/class/exceptions/ClientException"));
 const Cookie_1 = require("../../../common/constants/Cookie");
 const AuthenticationException_1 = __importDefault(require("../../../common/class/exceptions/AuthenticationException"));
+const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
+const prisma_query_raw_type_1 = require("../../../common/class/prisma_query_raw/prisma_query_raw.type");
+const asyncLocalStorage_1 = __importDefault(require("../../../common/asyncLocalStorage"));
+const LocalStorageKey_1 = require("../../../common/constants/LocalStorageKey");
+const isEqualOrIncludeRole_1 = __importDefault(require("../../../common/functions/isEqualOrIncludeRole"));
+const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
+const course_type_1 = require("../../course/course.type");
+const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
+const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
 let UserService = class UserService {
+    constructor() {
+        this.prisma = PrismaClientSingleton_1.default.getInstance();
+    }
     createUser(dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { email, password } = dto;
-            const existingUser = yield this.repository.getUserByEmail(email);
-            if (existingUser) {
-                throw new HttpException_1.default(statusCode_1.StatusCode.BAD_REQUEST, errorCode_1.ErrorCode.BAD_REQUEST, errorMessage_1.ErrorMessage[errorCode_1.ErrorCode.UNIQUE_CONSTRAINT]("email"), true);
+            try {
+                dto.email = dto.email.toLowerCase();
+                const { email, password } = dto;
+                const accessToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, email);
+                const refreshToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, email);
+                dto.password = (0, encrypt_1.default)(password);
+                const newUser = yield this.repository.createUser(dto, accessToken, [
+                    refreshToken,
+                ]);
+                return newUser;
             }
-            const accessToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, email);
-            const refreshToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, email);
-            dto.password = (0, encrypt_1.default)(password);
-            const newUser = yield this.repository.createUser(dto, accessToken, [
-                refreshToken,
-            ]);
-            return newUser;
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    uniqueConstraint: {
+                        email: {
+                            message: "email is already taken!",
+                        },
+                        nim: {
+                            message: "NIM is already taken!",
+                        },
+                        default: {
+                            message: "unique constraint failed!",
+                        },
+                    },
+                });
+            }
         });
     }
     getPublicUserById(userId) {
@@ -72,7 +94,7 @@ let UserService = class UserService {
     }
     getMe(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const me = yield this.repository.getMe(userId);
+            const me = yield this.repository.getUserByIdOrThrow(userId);
             me.accessToken = null;
             me.refreshToken = [];
             return me;
@@ -80,36 +102,121 @@ let UserService = class UserService {
     }
     updateBasicUser(userId, targetUserId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
-            return updatedUser;
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeUpdateUser(user, targetUserId);
+                const store = new Map();
+                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
+                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.updateUser(targetUserId, dto);
+                }));
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
     updateUserEmail(userId, targetUserId, storedRefreshToken, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUser(userId, targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
-            return updatedUser;
+            try {
+                return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    dto.email = dto.email.toLowerCase();
+                    const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                    this.authorization.authorizeUpdateUser(user, targetUserId);
+                    const store = new Map();
+                    store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
+                    return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                        return yield this.repository.updateUser(targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
+                    }));
+                }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    uniqueConstraint: {
+                        default: {
+                            message: "email is already taken!",
+                        },
+                    },
+                });
+            }
         });
     }
     updateUserPassword(userId, targetUserId, storedRefreshToken, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUser(userId, targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
-            return updatedUser;
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeUpdateUser(user, targetUserId);
+                const store = new Map();
+                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
+                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.updateUser(targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
+                }));
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
     updateUserPhoneNumber(userId, targetUserId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedUser = yield this.repository.updateUser(userId, targetUserId, dto);
-            return updatedUser;
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeUpdateUser(user, targetUserId);
+                const store = new Map();
+                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
+                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.updateUser(targetUserId, dto);
+                }));
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+        });
+    }
+    updateUserRole(userId, targetUserId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeUpdateUser(user, targetUserId);
+                const targetUser = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, targetUserId, new RecordNotFoundException_1.default());
+                const currentRole = targetUser.role;
+                const { role: newRole } = dto;
+                if ((0, isEqualOrIncludeRole_1.default)(currentRole, newRole)) {
+                    return targetUser;
+                }
+                const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(currentRole);
+                if ((isStudent || isInstructor) &&
+                    (0, isEqualOrIncludeRole_1.default)(newRole, course_type_1.UserRoleModel.STUDENT)) {
+                    yield tx.courseEnrollment.updateMany({
+                        where: {
+                            userId: targetUserId,
+                        },
+                        data: {
+                            role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
+                        },
+                    });
+                    yield tx.course.deleteMany({
+                        where: {
+                            authorId: targetUserId,
+                        },
+                    });
+                }
+                const store = new Map();
+                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
+                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.updateUser(targetUserId, dto);
+                }));
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
     deleteUser(userId, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const deletedUser = yield this.repository.deleteUser(userId, targetUserId);
-            return deletedUser;
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeDeleteUser(user, targetUserId);
+                const store = new Map();
+                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
+                yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.deleteUser(targetUserId);
+                }));
+                return {};
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
     }
     signInUser(req, res, dto) {
         return __awaiter(this, void 0, void 0, function* () {
+            dto.email = dto.email.toLowerCase();
             const { email, password } = dto;
             const userRelatedToSignInEmail = yield this.repository.getUserByEmail(email);
             if (!userRelatedToSignInEmail) {
@@ -149,7 +256,7 @@ let UserService = class UserService {
                 });
             }
             newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
-            yield this.repository.unauthorizedUpdateUser(userRelatedToSignInEmail.id, {
+            yield this.repository.updateUser(userRelatedToSignInEmail.id, {
                 accessToken,
                 refreshToken: newRefreshTokenArray,
             });
@@ -176,7 +283,7 @@ let UserService = class UserService {
             if (!userRelatedToStoredRefreshToken) {
                 throw new AuthenticationException_1.default();
             }
-            yield this.repository.unauthorizedUpdateUser(userRelatedToStoredRefreshToken.id, {
+            yield this.repository.updateUser(userRelatedToStoredRefreshToken.id, {
                 refreshToken: userRelatedToStoredRefreshToken === null || userRelatedToStoredRefreshToken === void 0 ? void 0 : userRelatedToStoredRefreshToken.refreshToken.filter((rt) => rt !== storedRefreshToken),
             });
         });
@@ -205,6 +312,14 @@ __decorate([
     (0, inversify_1.inject)(user_type_1.UserDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], UserService.prototype, "repository", void 0);
+__decorate([
+    (0, inversify_1.inject)(user_type_1.UserDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], UserService.prototype, "authorization", void 0);
+__decorate([
+    (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
+    __metadata("design:type", Object)
+], UserService.prototype, "prismaQueryRaw", void 0);
 exports.UserService = UserService = __decorate([
     (0, inversify_1.injectable)()
 ], UserService);

@@ -36,11 +36,13 @@ model CourseEnrollment {
   id        Int                  @id @default(autoincrement())
   userId    Int                  @map("user_id")
   courseId  Int                  @map("course_id")
+  classId   Int?                 @map("class_id")
   role      CourseEnrollmentRole @default(STUDENT)
   createdAt DateTime             @default(now()) @map("created_at")
   updatedAt DateTime             @default(now()) @updatedAt @map("updated_at")
-  course    Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User                 @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  course    Course               @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  class     CourseClass?         @relation(fields: [classId], references: [id], onUpdate: Cascade, onDelete: SetNull)
 
   @@unique([courseId, userId], name: "userId_courseId")
   @@map("course_enrollment")
@@ -62,9 +64,9 @@ model Course {
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at")
   authorId         Int                @map("author_id")
-  categoryId       Int                @map("category_id")
-  author           User               @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  category         CourseCategory     @relation(fields: [categoryId], references: [id], onUpdate: SetNull, onDelete: SetNull)
+  categoryId       Int?               @map("category_id")
+  author           User               @relation(fields: [authorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  category         CourseCategory?    @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: SetNull)
   enrollments      CourseEnrollment[]
   lessons          CourseLesson[]
   classes          CourseClass[]
@@ -85,7 +87,7 @@ model CourseLesson {
   createdAt      DateTime            @default(now()) @map("created_at")
   updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at")
   courseId       Int                 @map("course_id")
-  course         Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course         Course              @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   videos         CourseLessonVideo[]
 
   @@map("course_lesson")
@@ -100,7 +102,7 @@ model CourseLessonVideo {
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at")
   lessonId       Int          @map("lesson_id")
-  lesson         CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson         CourseLesson @relation(fields: [lessonId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@index([lessonId])
   @@map("course_video")
@@ -110,8 +112,8 @@ model CourseLike {
   id       Int    @id @default(autoincrement())
   courseId Int    @map("course_id")
   userId   Int    @map("user_id")
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@map("course_like")
@@ -128,27 +130,28 @@ model CourseCategory {
 }
 
 model CourseClass {
-  id          Int                     @id @default(autoincrement())
-  title       String
-  courseId    Int                     @map("course_id")
-  createdAt   DateTime                @default(now()) @map("created_at")
-  updatedAt   DateTime                @default(now()) @updatedAt @map("updated_at")
-  course      Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  assignments CourseClassAssignment[]
+  id               Int                     @id @default(autoincrement())
+  title            String
+  courseId         Int                     @map("course_id")
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @default(now()) @updatedAt @map("updated_at")
+  course           Course                  @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  assignments      CourseClassAssignment[]
+  CourseEnrollment CourseEnrollment[]
 
   @@unique([title])
   @@map("course_class")
 }
 
 model CourseClassAssignment {
-  id         Int         @id @default(autoincrement())
-  title      String
-  submission String
-  deadline   DateTime
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @default(now()) @updatedAt @map("updated_at")
-  classId    Int         @map("class_id")
-  class      CourseClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  id          Int         @id @default(autoincrement())
+  title       String
+  submission  String
+  deadline    DateTime
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at")
+  classId     Int         @map("class_id")
+  courseClass CourseClass @relation(fields: [classId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   @@map("course_class_assignment")
 }

@@ -43,7 +43,7 @@ export default async (req: any, res: Response, next: NextFunction) => {
           decoded.email,
         );
         if (userRelatedToEmail) {
-          await userRepository.unauthorizedUpdateUser(userRelatedToEmail.id, {
+          await userRepository.updateUser(userRelatedToEmail.id, {
             refreshToken: [],
           });
         }
@@ -74,17 +74,17 @@ export default async (req: any, res: Response, next: NextFunction) => {
        * At this point, it's proven that the refreshToken is still valid
        *
        */
-      const accessToken = await userService.generateFreshAuthenticationToken(
+      const accessToken = userService.generateFreshAuthenticationToken(
         Cookie.ACCESS_TOKEN,
         decoded.email,
       );
-      const refreshToken = await userService.generateFreshAuthenticationToken(
+      const refreshToken = userService.generateFreshAuthenticationToken(
         Cookie.REFRESH_TOKEN,
         decoded.email,
       );
 
       newRefreshTokenArray = [...newRefreshTokenArray, refreshToken];
-      await userRepository.unauthorizedUpdateUser(user.id, {
+      await userRepository.updateUser(user.id, {
         accessToken,
         refreshToken: newRefreshTokenArray,
       });
@@ -109,7 +109,7 @@ export default async (req: any, res: Response, next: NextFunction) => {
        * 2. User email and decoded email don't match
        *
        */
-      await userRepository.unauthorizedUpdateUser(user.id, {
+      await userRepository.updateUser(user.id, {
         refreshToken: newRefreshTokenArray,
       });
 

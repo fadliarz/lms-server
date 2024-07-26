@@ -13,8 +13,8 @@ export const CourseClassAssignmentDITypes = {
 };
 
 export enum courseClassAssignmentUrls {
-  root = "/courses/:courseId/classes",
-  class = "/:classId",
+  root = "/courses/:courseId/classes/:classId/assignments",
+  assignment = courseClassAssignmentUrls.root + "/:assignmentId",
 }
 
 export enum CourseClassAssignmentErrorMessage {

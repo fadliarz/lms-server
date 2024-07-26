@@ -45,6 +45,7 @@ let EventRepository = class EventRepository extends BaseAuthorization_1.default 
     getById(id, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeReadEvent.bind(this.authorization));
                 return yield tx.event.findUnique({
                     where: {
                         id,
@@ -65,6 +66,7 @@ let EventRepository = class EventRepository extends BaseAuthorization_1.default 
     getMany(resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeReadEvents.bind(this.authorization));
                 return yield tx.event.findMany();
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
         });

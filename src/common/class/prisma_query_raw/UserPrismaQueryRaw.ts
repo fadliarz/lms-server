@@ -2,7 +2,7 @@ import "reflect-metadata";
 import { IUserPrismaQueryRaw } from "./prisma_query_raw.type";
 import { injectable } from "inversify";
 import { PrismaTransaction } from "../../types";
-import { Course, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import { TableName } from "../../constants/tableName";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
 import { mapPrismaQueryRawObject } from "./prisma_query_raw.utils";

@@ -11,9 +11,10 @@ const adapter_postgres_1 = require("@snaplet/seed/adapter-postgres");
 const postgres_1 = __importDefault(require("postgres"));
 exports.default = (0, config_1.defineConfig)({
     adapter: () => {
-        const POSTGRES_URL = "postgres://default:30fRXznDjkbI@ep-solitary-firefly-a4f278w7.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require";
+        const POSTGRES_URL = process.env.POSTGRES_URL;
+        // "postgres://default:30fRXznDjkbI@ep-solitary-firefly-a4f278w7.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require";
         if (!POSTGRES_URL) {
-            throw new Error("process.env.POSTGRES_URL is not defined");
+            throw new Error("POSTGRES_URL is not defined");
         }
         const client = (0, postgres_1.default)(POSTGRES_URL);
         return new adapter_postgres_1.SeedPostgres(client);

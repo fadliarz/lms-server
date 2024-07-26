@@ -6,7 +6,6 @@ import {
   CourseLikeResourceId,
   CourseModel,
   CourseResourceId,
-  courseUrls,
   CreateCourseDto,
   GetCourseByIdData,
   GetCourseByIdQuery,
@@ -15,7 +14,6 @@ import {
   GetEnrolledCoursesData,
   GetEnrolledCoursesQuery,
   ICourseAuthorization,
-  UpdateBasicCourseDto,
   UpdateCourseDto,
 } from "../course.type";
 import { inject, injectable } from "inversify";
@@ -27,7 +25,6 @@ import {
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
-import getRoleStatus from "../../../common/functions/getRoleStatus";
 import {
   IPrismaQueryRaw,
   PrismaQueryRawDITypes,

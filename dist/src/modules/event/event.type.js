@@ -9,6 +9,8 @@ exports.EventDITypes = {
 };
 var eventUrls;
 (function (eventUrls) {
+    eventUrls["root"] = "/events";
+    eventUrls["event"] = "/:eventId";
 })(eventUrls || (exports.eventUrls = eventUrls = {}));
 var EventErrorMessage;
 (function (EventErrorMessage) {

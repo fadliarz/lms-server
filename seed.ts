@@ -19,11 +19,13 @@ const main = async () => {
   const instructors = getIds(1, 5);
 
   await seed.user((x) =>
-    x(5, {
+    x(5, ({ seed }) => ({
       role: UserRoleModel.INSTRUCTOR,
+      nim: `${seed}-${seed}-${seed}-${seed}`,
+      email: `${seed}@${seed}.com`.toLowerCase(),
       avatar: "https://picsum.photos/250/250?random=1",
       password: sha256Encrypt("password"),
-    }),
+    })),
   );
 
   await seed.course(
@@ -58,11 +60,13 @@ const main = async () => {
   );
 
   await seed.user((x) =>
-    x(100, {
+    x(100, ({ seed }) => ({
       role: UserRoleModel.STUDENT,
+      nim: `${seed}-${seed}-${seed}-${seed}`,
+      email: `${seed}@${seed}.com`.toLowerCase(),
       avatar: "https://picsum.photos/250/250?random=1",
       password: sha256Encrypt("password"),
-    }),
+    })),
   );
 
   const students = getIds(6, 105);
@@ -83,11 +87,13 @@ const main = async () => {
   const secondInstructors = getIds(106, 155);
 
   await seed.user((x) =>
-    x(50, {
+    x(50, ({ seed }) => ({
       role: UserRoleModel.INSTRUCTOR,
+      nim: `${seed}-${seed}-${seed}-${seed}`,
+      email: `${seed}@${seed}.com`.toLowerCase(),
       avatar: "https://picsum.photos/250/250?random=1",
       password: sha256Encrypt("password"),
-    }),
+    })),
   );
 
   await seed.courseEnrollment(
@@ -102,6 +108,23 @@ const main = async () => {
       },
     },
   );
+
+  let num = 5;
+  const classes = getIds(1, courses.length * num);
+
+  await seed.courseClass((x) => x(classes.length), {
+    connect: {
+      course: courses,
+    },
+  });
+
+  num = 10;
+  const assignments = getIds(1, classes.length * num);
+  await seed.courseClassAssignment((x) => x(assignments.length), {
+    connect: {
+      courseClass: classes,
+    },
+  });
 
   console.log("Database seeded successfully!");
 

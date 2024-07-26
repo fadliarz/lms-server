@@ -31,3 +31,7 @@ export const ErrorMessage: Record<Key, string | ((...arg: any) => string)> = {
     return `Invalid URL params on ${params} (one or more parameter is not a number)!`;
   },
 };
+
+export function getErrorMessage(errorCode: ErrorCode): string {
+  return "";
+}

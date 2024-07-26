@@ -102,6 +102,11 @@ const assignment_repository_1 = __importDefault(require("./modules/assignment/re
 const assignment_service_1 = __importDefault(require("./modules/assignment/service/assignment.service"));
 const assignment_controller_1 = __importDefault(require("./modules/assignment/controller/assignment.controller"));
 const assignment_authorization_1 = __importDefault(require("./modules/assignment/authorization/assignment.authorization"));
+const event_type_1 = require("./modules/event/event.type");
+const event_repository_1 = __importDefault(require("./modules/event/repository/event.repository"));
+const event_service_1 = __importDefault(require("./modules/event/service/event.service"));
+const event_controller_1 = __importDefault(require("./modules/event/controller/event.controller"));
+const event_authorization_1 = __importDefault(require("./modules/event/authorization/event.authorization"));
 const dIContainer = new inversify_1.Container();
 /**
  * Repository
@@ -315,6 +320,16 @@ dIContainer
 dIContainer
     .bind(assignment_type_1.CourseClassAssignmentDITypes.AUTHORIZATION)
     .to(assignment_authorization_1.default);
+/**
+ * Event
+ *
+ */
+dIContainer.bind(event_type_1.EventDITypes.REPOSITORY).to(event_repository_1.default);
+dIContainer.bind(event_type_1.EventDITypes.SERVICE).to(event_service_1.default);
+dIContainer.bind(event_type_1.EventDITypes.CONTROLLER).to(event_controller_1.default);
+dIContainer
+    .bind(event_type_1.EventDITypes.AUTHORIZATION)
+    .to(event_authorization_1.default);
 /**
  * Common
  *

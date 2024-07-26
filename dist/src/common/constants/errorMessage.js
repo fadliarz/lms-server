@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ErrorMessage = void 0;
+exports.getErrorMessage = exports.ErrorMessage = void 0;
 const errorCode_1 = require("./errorCode");
 exports.ErrorMessage = {
     [errorCode_1.ErrorCode.UNAUTHENTICATED]: "Unauthenticated, please login first!",
@@ -27,3 +27,7 @@ exports.ErrorMessage = {
         return `Invalid URL params on ${params} (one or more parameter is not a number)!`;
     },
 };
+function getErrorMessage(errorCode) {
+    return "";
+}
+exports.getErrorMessage = getErrorMessage;

@@ -1,4 +1,5 @@
 import { Role, User } from "@prisma/client";
+import { UserRoleModel } from "../course/course.type";
 
 export const UserDITypes = {
   REPOSITORY: Symbol.for("USER_REPOSITORY"),
@@ -90,6 +91,10 @@ export type UpdateUserPasswordDto = {
 
 export type UpdateUserPhoneNumberDto = {
   phoneNumber: string;
+};
+
+export type UpdateUserRoleDto = {
+  role: UserRoleModel;
 };
 
 export type SignInDto = Pick<CreateUserDto, "email" | "password">;

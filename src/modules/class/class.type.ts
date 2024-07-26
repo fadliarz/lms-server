@@ -17,7 +17,7 @@ export const CourseClassDITypes = {
 
 export enum courseClassUrls {
   root = "/courses/:courseId/classes",
-  class = "/:classId",
+  class = courseClassUrls.root + "/:classId",
 }
 
 export enum CourseClassErrorMessage {

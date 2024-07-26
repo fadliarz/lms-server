@@ -9,8 +9,8 @@ exports.CourseClassAssignmentDITypes = {
 };
 var courseClassAssignmentUrls;
 (function (courseClassAssignmentUrls) {
-    courseClassAssignmentUrls["root"] = "/courses/:courseId/classes";
-    courseClassAssignmentUrls["class"] = "/:classId";
+    courseClassAssignmentUrls["root"] = "/courses/:courseId/classes/:classId/assignments";
+    courseClassAssignmentUrls["assignment"] = "/courses/:courseId/classes/:classId/assignments/:assignmentId";
 })(courseClassAssignmentUrls || (exports.courseClassAssignmentUrls = courseClassAssignmentUrls = {}));
 var CourseClassAssignmentErrorMessage;
 (function (CourseClassAssignmentErrorMessage) {

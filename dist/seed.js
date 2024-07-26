@@ -27,11 +27,13 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const seed = yield (0, seed_1.createSeedClient)();
     yield seed.$resetDatabase();
     const instructors = getIds(1, 5);
-    yield seed.user((x) => x(5, {
+    yield seed.user((x) => x(5, ({ seed }) => ({
         role: course_type_1.UserRoleModel.INSTRUCTOR,
+        nim: `${seed}-${seed}-${seed}-${seed}`,
+        email: `${seed}@${seed}.com`.toLowerCase(),
         avatar: "https://picsum.photos/250/250?random=1",
         password: (0, encrypt_1.default)("password"),
-    }));
+    })));
     yield seed.course((x) => x(instructors.length, {
         image: "https://picsum.photos/500/250?random=1",
     }), {
@@ -49,11 +51,13 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     }), {
         connect: { courseLesson: courseLessons },
     });
-    yield seed.user((x) => x(100, {
+    yield seed.user((x) => x(100, ({ seed }) => ({
         role: course_type_1.UserRoleModel.STUDENT,
+        nim: `${seed}-${seed}-${seed}-${seed}`,
+        email: `${seed}@${seed}.com`.toLowerCase(),
         avatar: "https://picsum.photos/250/250?random=1",
         password: (0, encrypt_1.default)("password"),
-    }));
+    })));
     const students = getIds(6, 105);
     yield seed.courseEnrollment((x) => x(300, {
         role: course_type_1.CourseEnrollmentRoleModel.STUDENT,
@@ -64,17 +68,33 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         },
     });
     const secondInstructors = getIds(106, 155);
-    yield seed.user((x) => x(50, {
+    yield seed.user((x) => x(50, ({ seed }) => ({
         role: course_type_1.UserRoleModel.INSTRUCTOR,
+        nim: `${seed}-${seed}-${seed}-${seed}`,
+        email: `${seed}@${seed}.com`.toLowerCase(),
         avatar: "https://picsum.photos/250/250?random=1",
         password: (0, encrypt_1.default)("password"),
-    }));
+    })));
     yield seed.courseEnrollment((x) => x(50, {
         role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
     }), {
         connect: {
             user: secondInstructors,
             course: courses,
+        },
+    });
+    let num = 5;
+    const classes = getIds(1, courses.length * num);
+    yield seed.courseClass((x) => x(classes.length), {
+        connect: {
+            course: courses,
+        },
+    });
+    num = 10;
+    const assignments = getIds(1, classes.length * num);
+    yield seed.courseClassAssignment((x) => x(assignments.length), {
+        connect: {
+            courseClass: classes,
         },
     });
     console.log("Database seeded successfully!");

@@ -10,7 +10,7 @@ exports.CourseClassDITypes = {
 var courseClassUrls;
 (function (courseClassUrls) {
     courseClassUrls["root"] = "/courses/:courseId/classes";
-    courseClassUrls["class"] = "/:classId";
+    courseClassUrls["class"] = "/courses/:courseId/classes/:classId";
 })(courseClassUrls || (exports.courseClassUrls = courseClassUrls = {}));
 var CourseClassErrorMessage;
 (function (CourseClassErrorMessage) {

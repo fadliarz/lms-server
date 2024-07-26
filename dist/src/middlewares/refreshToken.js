@@ -38,7 +38,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.REFRESH_TOKEN_PRIVATE_KEY);
                 const userRelatedToEmail = yield userRepository.getUserByEmail(decoded.email);
                 if (userRelatedToEmail) {
-                    yield userRepository.unauthorizedUpdateUser(userRelatedToEmail.id, {
+                    yield userRepository.updateUser(userRelatedToEmail.id, {
                         refreshToken: [],
                     });
                 }
@@ -58,10 +58,10 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
              * At this point, it's proven that the refreshToken is still valid
              *
              */
-            const accessToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, decoded.email);
-            const refreshToken = yield userService.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, decoded.email);
+            const accessToken = userService.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, decoded.email);
+            const refreshToken = userService.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, decoded.email);
             newRefreshTokenArray = [...newRefreshTokenArray, refreshToken];
-            yield userRepository.unauthorizedUpdateUser(user.id, {
+            yield userRepository.updateUser(user.id, {
                 accessToken,
                 refreshToken: newRefreshTokenArray,
             });
@@ -86,7 +86,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
              * 2. User email and decoded email don't match
              *
              */
-            yield userRepository.unauthorizedUpdateUser(user.id, {
+            yield userRepository.updateUser(user.id, {
                 refreshToken: newRefreshTokenArray,
             });
             throw new ForbiddenException_1.default();

@@ -49,6 +49,12 @@ export default class EventRepository
     resourceId: EventResourceId,
   ): Promise<EventModel | null> {
     return await this.prisma.$transaction(async (tx) => {
+      await this.authorizeUserRole(
+        tx,
+        resourceId,
+        this.authorization.authorizeReadEvent.bind(this.authorization),
+      );
+
       return await tx.event.findUnique({
         where: {
           id,
@@ -73,6 +79,12 @@ export default class EventRepository
 
   public async getMany(resourceId: EventResourceId): Promise<EventModel[]> {
     return await this.prisma.$transaction(async (tx) => {
+      await this.authorizeUserRole(
+        tx,
+        resourceId,
+        this.authorization.authorizeReadEvents.bind(this.authorization),
+      );
+
       return await tx.event.findMany();
     }, PrismaDefaultTransactionConfigForRead);
   }

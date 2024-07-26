@@ -6,17 +6,15 @@ import {
   UserModel,
 } from "../user.type";
 import { inject, injectable } from "inversify";
-import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import {
-  PrismaDefaultTransactionConfigForRead,
-  PrismaDefaultTransactionConfigForWrite,
-} from "../../../common/constants/prismaDefaultConfig";
 import {
   IPrismaQueryRaw,
   PrismaQueryRawDITypes,
 } from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
+import { PrismaClient } from "@prisma/client";
+import { PrismaTransaction } from "../../../common/types";
+import getPrismaDb from "../../../common/functions/getPrismaDb";
+import asyncLocalStorage from "../../../common/asyncLocalStorage";
 
 export interface IUserRepository {
   createUser: (
@@ -29,22 +27,13 @@ export interface IUserRepository {
   getUserByEmail: (email: string) => Promise<UserModel | null>;
   getUserByAccessToken: (accessToken: string) => Promise<UserModel | null>;
   getUserByRefreshToken: (refreshToken: string) => Promise<UserModel | null>;
-  getMe: (userId: number) => Promise<UserModel>;
-  updateUser: (
-    userId: number,
-    targetUserId: number,
-    dto: Partial<UserModel>,
-  ) => Promise<UserModel>;
-  unauthorizedUpdateUser: (
-    userId: number,
-    dto: Partial<UserModel>,
-  ) => Promise<UserModel>;
-  deleteUser: (userId: number, targetUserId: number) => Promise<UserModel>;
+  updateUser: (userId: number, dto: Partial<UserModel>) => Promise<UserModel>;
+  deleteUser: (userId: number) => Promise<UserModel>;
 }
 
 @injectable()
 export class UserRepository implements IUserRepository {
-  private readonly prisma = PrismaClientSingleton.getInstance();
+  private db: PrismaTransaction | PrismaClient;
 
   @inject(UserDITypes.AUTHORIZATION)
   private readonly authorization: IUserAuthorization;
@@ -52,24 +41,22 @@ export class UserRepository implements IUserRepository {
   @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
   private readonly prismaQueryRaw: IPrismaQueryRaw;
 
+  constructor() {
+    this.wrapMethods();
+  }
+
   public async createUser(
     dto: CreateUserDto,
     accessToken: string,
     refreshToken: string[],
   ): Promise<UserModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      const newUser = await tx.user.create({
-        data: { ...dto, accessToken, refreshToken },
-      });
-
-      return newUser;
+    return this.db.user.create({
+      data: { ...dto, accessToken, refreshToken },
     });
   }
 
   public async getUserById(userId: number): Promise<UserModel | null> {
-    return await this.prisma.$transaction(async (tx) => {
-      return tx.user.findUnique({ where: { id: userId } });
-    }, PrismaDefaultTransactionConfigForRead);
+    return this.db.user.findUnique({ where: { id: userId } });
   }
 
   public async getUserByIdOrThrow(
@@ -86,15 +73,13 @@ export class UserRepository implements IUserRepository {
   }
 
   public async getUserByEmail(email: string): Promise<UserModel | null> {
-    return await this.prisma.$transaction(async (tx) => {
-      return tx.user.findUnique({ where: { email } });
-    }, PrismaDefaultTransactionConfigForRead);
+    return this.db.user.findUnique({ where: { email } });
   }
 
   public async getUserByAccessToken(
     accessToken: string,
   ): Promise<UserModel | null> {
-    return await this.prisma.user.findFirst({
+    return this.db.user.findFirst({
       where: {
         accessToken,
       },
@@ -104,7 +89,7 @@ export class UserRepository implements IUserRepository {
   public async getUserByRefreshToken(
     refreshToken: string,
   ): Promise<UserModel | null> {
-    return await this.prisma.user.findFirst({
+    return this.db.user.findFirst({
       where: {
         refreshToken: {
           has: refreshToken,
@@ -113,69 +98,36 @@ export class UserRepository implements IUserRepository {
     });
   }
 
-  public async getMe(userId: number): Promise<UserModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      const me = await tx.user.findUniqueOrThrow({
-        where: { id: userId },
-      });
-
-      return me;
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
   public async updateUser(
     userId: number,
-    targetUserId: number,
     dto: Partial<UserModel>,
   ): Promise<UserModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeUpdateUser(user, targetUserId);
-
-      return await tx.user.update({
-        where: {
-          id: targetUserId,
-        },
-        data: dto,
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+    return this.db.user.update({
+      where: { id: userId },
+      data: dto,
+    });
   }
 
-  public async unauthorizedUpdateUser(
-    userId: number,
-    dto: Partial<UserModel>,
-  ): Promise<UserModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      return await tx.user.update({
-        where: {
-          id: userId,
-        },
-        data: dto,
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+  public async deleteUser(userId: number): Promise<UserModel> {
+    return this.db.user.delete({
+      where: { id: userId },
+    });
   }
 
-  public async deleteUser(
-    userId: number,
-    targetUserId: number,
-  ): Promise<UserModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeDeleteUser(user, targetUserId);
+  private wrapMethods() {
+    const methodNames = Object.getOwnPropertyNames(
+      Object.getPrototypeOf(this),
+    ).filter(
+      (name) =>
+        name !== "constructor" && typeof (this as any)[name] === "function",
+    );
 
-      return await tx.user.delete({
-        where: {
-          id: userId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+    methodNames.forEach((methodName) => {
+      const originalMethod = (this as any)[methodName];
+      (this as any)[methodName] = (...args: any[]) => {
+        this.db = getPrismaDb(asyncLocalStorage);
+        return originalMethod.apply(this, args);
+      };
+    });
   }
 }

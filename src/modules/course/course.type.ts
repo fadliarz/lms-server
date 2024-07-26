@@ -243,13 +243,13 @@ export type GetCourseByIdData = CourseModel & {
   lessons?:
     | CourseLessonModel[]
     | (CourseLessonModel & { videos: PublicCourseLessonVideoModel[] })[];
-  category?: CourseCategoryModel;
+  category?: CourseCategoryModel | null;
 };
 
 export type GetCoursesData = Array<
   CourseModel & {
     author?: PublicUserModel;
-    category?: CourseCategoryModel;
+    category?: CourseCategoryModel | null;
   }
 >;
 
@@ -257,6 +257,6 @@ export type GetEnrolledCoursesData = Array<{
   role: CourseEnrollmentRoleModel;
   course: CourseModel & {
     author?: PublicUserModel;
-    category?: CourseCategoryModel;
+    category?: CourseCategoryModel | null;
   };
 }>;

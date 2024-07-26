@@ -192,6 +192,17 @@ import CourseClassAssignmentRepository from "./modules/assignment/repository/ass
 import CourseClassAssignmentService from "./modules/assignment/service/assignment.service";
 import CourseClassAssignmentController from "./modules/assignment/controller/assignment.controller";
 import CourseClassAssignmentAuthorization from "./modules/assignment/authorization/assignment.authorization";
+import {
+  EventDITypes,
+  IEventAuthorization,
+  IEventController,
+  IEventRepository,
+  IEventService,
+} from "./modules/event/event.type";
+import EventRepository from "./modules/event/repository/event.repository";
+import EventService from "./modules/event/service/event.service";
+import EventController from "./modules/event/controller/event.controller";
+import EventAuthorization from "./modules/event/authorization/event.authorization";
 
 const dIContainer = new Container();
 
@@ -430,6 +441,17 @@ dIContainer
     CourseClassAssignmentDITypes.AUTHORIZATION,
   )
   .to(CourseClassAssignmentAuthorization);
+
+/**
+ * Event
+ *
+ */
+dIContainer.bind<IEventRepository>(EventDITypes.REPOSITORY).to(EventRepository);
+dIContainer.bind<IEventService>(EventDITypes.SERVICE).to(EventService);
+dIContainer.bind<IEventController>(EventDITypes.CONTROLLER).to(EventController);
+dIContainer
+  .bind<IEventAuthorization>(EventDITypes.AUTHORIZATION)
+  .to(EventAuthorization);
 
 /**
  * Common
