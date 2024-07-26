@@ -21,8 +21,8 @@ const main = async () => {
   await seed.user((x) =>
     x(5, ({ seed }) => ({
       role: UserRoleModel.INSTRUCTOR,
-      nim: `${seed}-${seed}-${seed}-${seed}`,
-      email: `${seed}@${seed}.com`.toLowerCase(),
+      email:
+        `${seed.replace(/[^\w\s]/gi, "")}@mahasiswa.itb.ac.id`.toLowerCase(),
       avatar: "https://picsum.photos/250/250?random=1",
       password: sha256Encrypt("password"),
     })),
@@ -62,8 +62,8 @@ const main = async () => {
   await seed.user((x) =>
     x(100, ({ seed }) => ({
       role: UserRoleModel.STUDENT,
-      nim: `${seed}-${seed}-${seed}-${seed}`,
-      email: `${seed}@${seed}.com`.toLowerCase(),
+      email:
+        `${seed.replace(/[^\w\s]/gi, "")}@mahasiswa.itb.ac.id`.toLowerCase(),
       avatar: "https://picsum.photos/250/250?random=1",
       password: sha256Encrypt("password"),
     })),
@@ -89,8 +89,8 @@ const main = async () => {
   await seed.user((x) =>
     x(50, ({ seed }) => ({
       role: UserRoleModel.INSTRUCTOR,
-      nim: `${seed}-${seed}-${seed}-${seed}`,
-      email: `${seed}@${seed}.com`.toLowerCase(),
+      email:
+        `${seed.replace(/[^\w\s]/gi, "")}@mahasiswa.itb.ac.id`.toLowerCase(),
       avatar: "https://picsum.photos/250/250?random=1",
       password: sha256Encrypt("password"),
     })),
