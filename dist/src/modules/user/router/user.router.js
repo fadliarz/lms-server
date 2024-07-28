@@ -32,6 +32,7 @@ function UserRouter(authenticationMiddleware) {
      */
     router.get(user_type_1.userUrls.me, authenticationMiddleware, controller.getMe.bind(controller));
     router.get(user_type_1.userUrls.public, controller.getPublicUserById.bind(controller));
+    router.get(user_type_1.userUrls.assignments, authenticationMiddleware, controller.getUserAssignments.bind(controller));
     /**
      * Update
      *

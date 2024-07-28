@@ -100,15 +100,24 @@ let UserService = class UserService {
             return me;
         });
     }
+    getUserAssignments(userId, targetUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
+                this.authorization.authorizeGetUserAssignments(user, targetUserId);
+                return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                    return this.repository.getUserAssignments(userId);
+                }));
+            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+        });
+    }
     updateBasicUser(userId, targetUserId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
                 this.authorization.authorizeUpdateUser(user, targetUserId);
-                const store = new Map();
-                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
-                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
-                    return yield this.repository.updateUser(targetUserId, dto);
+                return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                    return this.repository.updateUser(targetUserId, dto);
                 }));
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
         });
@@ -120,9 +129,7 @@ let UserService = class UserService {
                     dto.email = dto.email.toLowerCase();
                     const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
                     this.authorization.authorizeUpdateUser(user, targetUserId);
-                    const store = new Map();
-                    store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
-                    return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
                         return yield this.repository.updateUser(targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
                     }));
                 }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
@@ -143,9 +150,7 @@ let UserService = class UserService {
             return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
                 this.authorization.authorizeUpdateUser(user, targetUserId);
-                const store = new Map();
-                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
-                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
                     return yield this.repository.updateUser(targetUserId, Object.assign(Object.assign({}, dto), { refreshToken: [storedRefreshToken] }));
                 }));
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
@@ -156,9 +161,7 @@ let UserService = class UserService {
             return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
                 this.authorization.authorizeUpdateUser(user, targetUserId);
-                const store = new Map();
-                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
-                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
                     return yield this.repository.updateUser(targetUserId, dto);
                 }));
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
@@ -192,9 +195,7 @@ let UserService = class UserService {
                         },
                     });
                 }
-                const store = new Map();
-                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
-                return yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
                     return yield this.repository.updateUser(targetUserId, dto);
                 }));
             }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
@@ -205,9 +206,7 @@ let UserService = class UserService {
             return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId, new AuthenticationException_1.default());
                 this.authorization.authorizeDeleteUser(user, targetUserId);
-                const store = new Map();
-                store.set(LocalStorageKey_1.LocalStorageKey.TRANSACTION, tx);
-                yield asyncLocalStorage_1.default.run(store, () => __awaiter(this, void 0, void 0, function* () {
+                yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
                     return yield this.repository.deleteUser(targetUserId);
                 }));
                 return {};
@@ -216,76 +215,90 @@ let UserService = class UserService {
     }
     signInUser(req, res, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            dto.email = dto.email.toLowerCase();
-            const { email, password } = dto;
-            const userRelatedToSignInEmail = yield this.repository.getUserByEmail(email);
-            if (!userRelatedToSignInEmail) {
-                throw new RecordNotFoundException_1.default();
-            }
-            const isPasswordMatch = this.verifyPassword(password, userRelatedToSignInEmail.password);
-            if (!isPasswordMatch) {
-                throw new ClientException_1.default("Invalid password!");
-            }
-            const cookies = req.cookies;
-            const accessToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, email);
-            const newRefreshToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, email);
-            const storedRefreshToken = cookies[Cookie_1.Cookie.REFRESH_TOKEN];
-            let newRefreshTokenArray = userRelatedToSignInEmail.refreshToken;
-            if (storedRefreshToken) {
-                /**
-                 *
-                 * Some possible scenarios:
-                 *
-                 * 1. User logged in before but never uses refreshToken and doesn't sign out
-                 * 2. refreshToken is stolen
-                 *
-                 * If that's the case, then clear all refreshTokens when user signs in (reuse detection).
-                 *
-                 */
-                const userBelongToStoredRefreshToken = yield this.repository.getUserByRefreshToken(storedRefreshToken);
-                if (!userBelongToStoredRefreshToken) {
-                    newRefreshTokenArray = [];
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                dto.email = dto.email.toLowerCase();
+                const { email, password } = dto;
+                const userRelatedToSignInEmail = yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.getUserByEmail(email);
+                }));
+                if (!userRelatedToSignInEmail) {
+                    throw new RecordNotFoundException_1.default();
                 }
-                else {
-                    newRefreshTokenArray = newRefreshTokenArray.filter((rt) => rt !== storedRefreshToken);
+                const isPasswordMatch = this.verifyPassword(password, userRelatedToSignInEmail.password);
+                if (!isPasswordMatch) {
+                    throw new ClientException_1.default("Invalid password!");
                 }
-                res.clearCookie(Cookie_1.Cookie.REFRESH_TOKEN, {
+                const cookies = req.cookies;
+                const accessToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, email);
+                const newRefreshToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, email);
+                const storedRefreshToken = cookies[Cookie_1.Cookie.REFRESH_TOKEN];
+                let newRefreshTokenArray = userRelatedToSignInEmail.refreshToken;
+                if (storedRefreshToken) {
+                    /**
+                     *
+                     * Some possible scenarios:
+                     *
+                     * 1. User logged in before but never uses refreshToken and doesn't sign out
+                     * 2. refreshToken is stolen
+                     *
+                     * If that's the case, then clear all refreshTokens when user signs in (reuse detection).
+                     *
+                     */
+                    const userBelongToStoredRefreshToken = yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                        return yield this.repository.getUserByRefreshToken(storedRefreshToken);
+                    }));
+                    if (!userBelongToStoredRefreshToken) {
+                        newRefreshTokenArray = [];
+                    }
+                    else {
+                        newRefreshTokenArray = newRefreshTokenArray.filter((rt) => rt !== storedRefreshToken);
+                    }
+                    res.clearCookie(Cookie_1.Cookie.REFRESH_TOKEN, {
+                        httpOnly: true,
+                        sameSite: "none",
+                        secure: true,
+                    });
+                }
+                newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
+                yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.updateUser(userRelatedToSignInEmail.id, {
+                        accessToken,
+                        refreshToken: newRefreshTokenArray,
+                    });
+                }));
+                const user = Object.assign(Object.assign({}, userRelatedToSignInEmail), { accessToken,
+                    newRefreshTokenArray });
+                res
+                    .cookie(Cookie_1.Cookie.ACCESS_TOKEN, accessToken, {
+                    httpOnly: false,
+                    maxAge: 1000 * 60 * 60 * Cookie_1.Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
+                    secure: process.env.NODE_ENV === "production",
+                })
+                    .cookie(Cookie_1.Cookie.REFRESH_TOKEN, newRefreshToken, {
                     httpOnly: true,
-                    sameSite: "none",
-                    secure: true,
+                    maxAge: 1000 * 60 * 60 * 24 * Cookie_1.Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "strict",
                 });
-            }
-            newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
-            yield this.repository.updateUser(userRelatedToSignInEmail.id, {
-                accessToken,
-                refreshToken: newRefreshTokenArray,
-            });
-            const user = Object.assign(Object.assign({}, userRelatedToSignInEmail), { accessToken,
-                newRefreshTokenArray });
-            res
-                .cookie(Cookie_1.Cookie.ACCESS_TOKEN, accessToken, {
-                httpOnly: false,
-                maxAge: 1000 * 60 * 60 * Cookie_1.Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
-                secure: process.env.NODE_ENV === "production",
-            })
-                .cookie(Cookie_1.Cookie.REFRESH_TOKEN, newRefreshToken, {
-                httpOnly: true,
-                maxAge: 1000 * 60 * 60 * 24 * Cookie_1.Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "strict",
-            });
-            return user;
+                return user;
+            }));
         });
     }
     signOutUser(storedRefreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
-            const userRelatedToStoredRefreshToken = yield this.repository.getUserByRefreshToken(storedRefreshToken);
-            if (!userRelatedToStoredRefreshToken) {
-                throw new AuthenticationException_1.default();
-            }
-            yield this.repository.updateUser(userRelatedToStoredRefreshToken.id, {
-                refreshToken: userRelatedToStoredRefreshToken === null || userRelatedToStoredRefreshToken === void 0 ? void 0 : userRelatedToStoredRefreshToken.refreshToken.filter((rt) => rt !== storedRefreshToken),
-            });
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                const userRelatedToStoredRefreshToken = yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.getUserByRefreshToken(storedRefreshToken);
+                }));
+                if (!userRelatedToStoredRefreshToken) {
+                    throw new AuthenticationException_1.default();
+                }
+                yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                    return yield this.repository.updateUser(userRelatedToStoredRefreshToken.id, {
+                        refreshToken: userRelatedToStoredRefreshToken === null || userRelatedToStoredRefreshToken === void 0 ? void 0 : userRelatedToStoredRefreshToken.refreshToken.filter((rt) => rt !== storedRefreshToken),
+                    });
+                }));
+            }));
         });
     }
     generateFreshAuthenticationToken(type, email) {

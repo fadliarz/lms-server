@@ -10,7 +10,10 @@ export default class UserAuthorization
   extends BaseAuthorization
   implements IUserAuthorization
 {
-  public authorizeUpdateUser(user: UserModel, targetUserId: number): void {
+  public authorizeGetUserAssignments(
+    user: UserModel,
+    targetUserId: number,
+  ): void {
     const { id: userId, role: userRole } = user;
     const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
     let isAuthorized = false;
@@ -28,7 +31,11 @@ export default class UserAuthorization
     }
   }
 
+  public authorizeUpdateUser(user: UserModel, targetUserId: number): void {
+    this.authorizeGetUserAssignments(user, targetUserId);
+  }
+
   public authorizeDeleteUser(user: UserModel, targetUserId: number): void {
-    this.authorizeUpdateUser(user, targetUserId);
+    this.authorizeGetUserAssignments(user, targetUserId);
   }
 }

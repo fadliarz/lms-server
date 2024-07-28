@@ -9,7 +9,7 @@ function getPrismaDb(asyncLocalStorage) {
     let db = PrismaClientSingleton_1.default.getInstance();
     const store = asyncLocalStorage.getStore();
     if (store) {
-        db = store.get(LocalStorageKey_1.LocalStorageKey.TRANSACTION);
+        db = store[LocalStorageKey_1.LocalStorageKey.TRANSACTION];
     }
     return db;
 }

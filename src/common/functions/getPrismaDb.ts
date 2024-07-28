@@ -10,8 +10,9 @@ export default function getPrismaDb(
   let db: PrismaTransaction | PrismaClient =
     PrismaClientSingleton.getInstance();
   const store = asyncLocalStorage.getStore();
+
   if (store) {
-    db = (store as any).get(LocalStorageKey.TRANSACTION) as PrismaTransaction;
+    db = (store as any)[LocalStorageKey.TRANSACTION] as PrismaTransaction;
   }
 
   return db;

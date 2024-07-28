@@ -43,6 +43,12 @@ export default function UserRouter(authenticationMiddleware: any) {
 
   router.get(userUrls.public, controller.getPublicUserById.bind(controller));
 
+  router.get(
+    userUrls.assignments,
+    authenticationMiddleware,
+    controller.getUserAssignments.bind(controller),
+  );
+
   /**
    * Update
    *

@@ -87,6 +87,33 @@ let UserRepository = class UserRepository {
             });
         });
     }
+    getUserAssignments(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const enrollments = yield this.db.courseEnrollment.findMany({
+                where: {
+                    id: userId,
+                },
+                select: {
+                    course: {
+                        select: {
+                            classes: {
+                                select: {
+                                    assignments: true,
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            const assignments = [];
+            for (const enrollment of enrollments) {
+                for (const theClass of enrollment.course.classes) {
+                    assignments.push(...theClass.assignments);
+                }
+            }
+            return assignments;
+        });
+    }
     deleteUser(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.user.delete({

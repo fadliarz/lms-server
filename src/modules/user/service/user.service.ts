@@ -29,7 +29,6 @@ import {
   PrismaQueryRawDITypes,
 } from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 import asyncLocalStorage from "../../../common/asyncLocalStorage";
-import { PrismaTransaction } from "../../../common/types";
 import { LocalStorageKey } from "../../../common/constants/LocalStorageKey";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
@@ -38,12 +37,20 @@ import {
   UserRoleModel,
 } from "../../course/course.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-import { PrismaDefaultTransactionConfigForWrite } from "../../../common/constants/prismaDefaultConfig";
+import {
+  PrismaDefaultTransactionConfigForRead,
+  PrismaDefaultTransactionConfigForWrite,
+} from "../../../common/constants/prismaDefaultConfig";
+import { CourseClassAssignmentModel } from "../../assignment/assignment.type";
 
 export interface IUserService {
   createUser: (dto: CreateUserDto) => Promise<UserModel>;
   getPublicUserById: (userId: number) => Promise<PublicUserModel>;
   getMe: (userId: number) => Promise<Me>;
+  getUserAssignments: (
+    userId: number,
+    targetUserId: number,
+  ) => Promise<CourseClassAssignmentModel[]>;
   updateBasicUser: (
     userId: number,
     targetUserId: number,
@@ -152,13 +159,34 @@ export class UserService implements IUserService {
     };
   }
 
-  public async getMe(userId: number) {
+  public async getMe(userId: number): Promise<UserModel> {
     const me = await this.repository.getUserByIdOrThrow(userId);
 
     me.accessToken = null;
     me.refreshToken = [];
 
     return me;
+  }
+
+  public async getUserAssignments(
+    userId: number,
+    targetUserId: number,
+  ): Promise<CourseClassAssignmentModel[]> {
+    return this.prisma.$transaction(async (tx) => {
+      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
+        tx,
+        userId,
+        new AuthenticationException(),
+      );
+      this.authorization.authorizeGetUserAssignments(user, targetUserId);
+
+      return await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return this.repository.getUserAssignments(userId);
+        },
+      );
+    }, PrismaDefaultTransactionConfigForRead);
   }
 
   public async updateBasicUser(
@@ -174,12 +202,12 @@ export class UserService implements IUserService {
       );
       this.authorization.authorizeUpdateUser(user, targetUserId);
 
-      const store = new Map<string, PrismaTransaction>();
-      store.set(LocalStorageKey.TRANSACTION, tx);
-
-      return await asyncLocalStorage.run(store, async () => {
-        return await this.repository.updateUser(targetUserId, dto);
-      });
+      return await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return this.repository.updateUser(targetUserId, dto);
+        },
+      );
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
@@ -199,15 +227,15 @@ export class UserService implements IUserService {
         );
         this.authorization.authorizeUpdateUser(user, targetUserId);
 
-        const store = new Map<string, PrismaTransaction>();
-        store.set(LocalStorageKey.TRANSACTION, tx);
-
-        return await asyncLocalStorage.run(store, async () => {
-          return await this.repository.updateUser(targetUserId, {
-            ...dto,
-            refreshToken: [storedRefreshToken],
-          });
-        });
+        return await asyncLocalStorage.run(
+          { [LocalStorageKey.TRANSACTION]: tx },
+          async () => {
+            return await this.repository.updateUser(targetUserId, {
+              ...dto,
+              refreshToken: [storedRefreshToken],
+            });
+          },
+        );
       }, PrismaDefaultTransactionConfigForWrite);
     } catch (error: any) {
       throw handleRepositoryError(error, {
@@ -234,15 +262,15 @@ export class UserService implements IUserService {
       );
       this.authorization.authorizeUpdateUser(user, targetUserId);
 
-      const store = new Map<string, PrismaTransaction>();
-      store.set(LocalStorageKey.TRANSACTION, tx);
-
-      return await asyncLocalStorage.run(store, async () => {
-        return await this.repository.updateUser(targetUserId, {
-          ...dto,
-          refreshToken: [storedRefreshToken],
-        });
-      });
+      return await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.updateUser(targetUserId, {
+            ...dto,
+            refreshToken: [storedRefreshToken],
+          });
+        },
+      );
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
@@ -259,12 +287,12 @@ export class UserService implements IUserService {
       );
       this.authorization.authorizeUpdateUser(user, targetUserId);
 
-      const store = new Map<string, PrismaTransaction>();
-      store.set(LocalStorageKey.TRANSACTION, tx);
-
-      return await asyncLocalStorage.run(store, async () => {
-        return await this.repository.updateUser(targetUserId, dto);
-      });
+      return await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.updateUser(targetUserId, dto);
+        },
+      );
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
@@ -316,12 +344,12 @@ export class UserService implements IUserService {
         });
       }
 
-      const store = new Map<string, PrismaTransaction>();
-      store.set(LocalStorageKey.TRANSACTION, tx);
-
-      return await asyncLocalStorage.run(store, async () => {
-        return await this.repository.updateUser(targetUserId, dto);
-      });
+      return await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.updateUser(targetUserId, dto);
+        },
+      );
     }, PrismaDefaultTransactionConfigForWrite);
   }
 
@@ -334,12 +362,12 @@ export class UserService implements IUserService {
       );
       this.authorization.authorizeDeleteUser(user, targetUserId);
 
-      const store = new Map<string, PrismaTransaction>();
-      store.set(LocalStorageKey.TRANSACTION, tx);
-
-      await asyncLocalStorage.run(store, async () => {
-        return await this.repository.deleteUser(targetUserId);
-      });
+      await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.deleteUser(targetUserId);
+        },
+      );
 
       return {};
     }, PrismaDefaultTransactionConfigForWrite);
@@ -350,105 +378,141 @@ export class UserService implements IUserService {
     res: Response,
     dto: { email: string; password: string },
   ): Promise<UserModel> {
-    dto.email = dto.email.toLowerCase();
-    const { email, password } = dto;
-    const userRelatedToSignInEmail =
-      await this.repository.getUserByEmail(email);
-    if (!userRelatedToSignInEmail) {
-      throw new RecordNotFoundException();
-    }
-
-    const isPasswordMatch = this.verifyPassword(
-      password,
-      userRelatedToSignInEmail.password,
-    );
-    if (!isPasswordMatch) {
-      throw new ClientException("Invalid password!");
-    }
-
-    const cookies = req.cookies;
-    const accessToken = this.generateFreshAuthenticationToken(
-      Cookie.ACCESS_TOKEN,
-      email,
-    );
-    const newRefreshToken = this.generateFreshAuthenticationToken(
-      Cookie.REFRESH_TOKEN,
-      email,
-    );
-
-    const storedRefreshToken = cookies[Cookie.REFRESH_TOKEN] as
-      | string
-      | undefined;
-
-    let newRefreshTokenArray = userRelatedToSignInEmail.refreshToken;
-    if (storedRefreshToken) {
-      /**
-       *
-       * Some possible scenarios:
-       *
-       * 1. User logged in before but never uses refreshToken and doesn't sign out
-       * 2. refreshToken is stolen
-       *
-       * If that's the case, then clear all refreshTokens when user signs in (reuse detection).
-       *
-       */
-
-      const userBelongToStoredRefreshToken =
-        await this.repository.getUserByRefreshToken(storedRefreshToken);
-      if (!userBelongToStoredRefreshToken) {
-        newRefreshTokenArray = [];
-      } else {
-        newRefreshTokenArray = newRefreshTokenArray.filter(
-          (rt) => rt !== storedRefreshToken,
-        );
+    return this.prisma.$transaction(async (tx) => {
+      dto.email = dto.email.toLowerCase();
+      const { email, password } = dto;
+      const userRelatedToSignInEmail = await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.getUserByEmail(email);
+        },
+      );
+      if (!userRelatedToSignInEmail) {
+        throw new RecordNotFoundException();
       }
 
-      res.clearCookie(Cookie.REFRESH_TOKEN, {
-        httpOnly: true,
-        sameSite: "none",
-        secure: true,
-      });
-    }
+      const isPasswordMatch = this.verifyPassword(
+        password,
+        userRelatedToSignInEmail.password,
+      );
+      if (!isPasswordMatch) {
+        throw new ClientException("Invalid password!");
+      }
 
-    newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
-    await this.repository.updateUser(userRelatedToSignInEmail.id, {
-      accessToken,
-      refreshToken: newRefreshTokenArray,
+      const cookies = req.cookies;
+      const accessToken = this.generateFreshAuthenticationToken(
+        Cookie.ACCESS_TOKEN,
+        email,
+      );
+      const newRefreshToken = this.generateFreshAuthenticationToken(
+        Cookie.REFRESH_TOKEN,
+        email,
+      );
+
+      const storedRefreshToken = cookies[Cookie.REFRESH_TOKEN] as
+        | string
+        | undefined;
+
+      let newRefreshTokenArray = userRelatedToSignInEmail.refreshToken;
+      if (storedRefreshToken) {
+        /**
+         *
+         * Some possible scenarios:
+         *
+         * 1. User logged in before but never uses refreshToken and doesn't sign out
+         * 2. refreshToken is stolen
+         *
+         * If that's the case, then clear all refreshTokens when user signs in (reuse detection).
+         *
+         */
+
+        const userBelongToStoredRefreshToken = await asyncLocalStorage.run(
+          { [LocalStorageKey.TRANSACTION]: tx },
+          async () => {
+            return await this.repository.getUserByRefreshToken(
+              storedRefreshToken,
+            );
+          },
+        );
+        if (!userBelongToStoredRefreshToken) {
+          newRefreshTokenArray = [];
+        } else {
+          newRefreshTokenArray = newRefreshTokenArray.filter(
+            (rt) => rt !== storedRefreshToken,
+          );
+        }
+
+        res.clearCookie(Cookie.REFRESH_TOKEN, {
+          httpOnly: true,
+          sameSite: "none",
+          secure: true,
+        });
+      }
+
+      newRefreshTokenArray = [...newRefreshTokenArray, newRefreshToken];
+
+      await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.updateUser(userRelatedToSignInEmail.id, {
+            accessToken,
+            refreshToken: newRefreshTokenArray,
+          });
+        },
+      );
+
+      const user = {
+        ...userRelatedToSignInEmail,
+        accessToken,
+        newRefreshTokenArray,
+      };
+
+      res
+        .cookie(Cookie.ACCESS_TOKEN, accessToken, {
+          httpOnly: false,
+          maxAge: 1000 * 60 * 60 * Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
+          secure: process.env.NODE_ENV === "production",
+        })
+        .cookie(Cookie.REFRESH_TOKEN, newRefreshToken, {
+          httpOnly: true,
+          maxAge: 1000 * 60 * 60 * 24 * Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        });
+
+      return user;
     });
-
-    const user = {
-      ...userRelatedToSignInEmail,
-      accessToken,
-      newRefreshTokenArray,
-    };
-
-    res
-      .cookie(Cookie.ACCESS_TOKEN, accessToken, {
-        httpOnly: false,
-        maxAge: 1000 * 60 * 60 * Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
-        secure: process.env.NODE_ENV === "production",
-      })
-      .cookie(Cookie.REFRESH_TOKEN, newRefreshToken, {
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 24 * Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-      });
-
-    return user;
   }
 
   public async signOutUser(storedRefreshToken: string): Promise<void> {
-    const userRelatedToStoredRefreshToken =
-      await this.repository.getUserByRefreshToken(storedRefreshToken);
-    if (!userRelatedToStoredRefreshToken) {
-      throw new AuthenticationException();
-    }
+    return this.prisma.$transaction(async (tx) => {
+      const userRelatedToStoredRefreshToken = await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.getUserByRefreshToken(
+            storedRefreshToken,
+          );
+        },
+      );
 
-    await this.repository.updateUser(userRelatedToStoredRefreshToken.id, {
-      refreshToken: userRelatedToStoredRefreshToken?.refreshToken.filter(
-        (rt) => rt !== storedRefreshToken,
-      ),
+      if (!userRelatedToStoredRefreshToken) {
+        throw new AuthenticationException();
+      }
+
+      await asyncLocalStorage.run(
+        { [LocalStorageKey.TRANSACTION]: tx },
+        async () => {
+          return await this.repository.updateUser(
+            userRelatedToStoredRefreshToken.id,
+            {
+              refreshToken:
+                userRelatedToStoredRefreshToken?.refreshToken.filter(
+                  (rt) => rt !== storedRefreshToken,
+                ),
+            },
+          );
+        },
+      );
     });
   }
 

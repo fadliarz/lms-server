@@ -17,6 +17,7 @@ var userUrls;
     userUrls["email"] = "/:userId/email";
     userUrls["password"] = "/:userId/password";
     userUrls["phoneNumber"] = "/:userId/phone";
+    userUrls["assignments"] = "/:userId/assignments";
     userUrls["signIn"] = "/signin";
     userUrls["signOut"] = "/signout";
 })(userUrls || (exports.userUrls = userUrls = {}));

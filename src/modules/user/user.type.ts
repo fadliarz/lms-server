@@ -16,6 +16,7 @@ export enum userUrls {
   email = userUrls.user + "/email",
   password = userUrls.user + "/password",
   phoneNumber = userUrls.user + "/phone",
+  assignments = userUrls.user + "/assignments",
   signIn = "/signin",
   signOut = "/signout",
 }
@@ -33,6 +34,7 @@ export enum userUrls {
  *
  */
 export interface IUserAuthorization {
+  authorizeGetUserAssignments: (user: UserModel, targetUserId: number) => void;
   authorizeUpdateUser: (user: UserModel, targetUserId: number) => void;
   authorizeDeleteUser: (user: UserModel, targetUserId: number) => void;
 }

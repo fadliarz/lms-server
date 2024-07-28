@@ -35,6 +35,11 @@ export interface IUserController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
+  getUserAssignments: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
   updateBasicUser: (
     req: Request,
     res: Response,
@@ -134,6 +139,27 @@ export class UserController implements IUserController {
       return res
         .status(StatusCode.SUCCESS)
         .json({ data: filterUserObject(me) });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getUserAssignments(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const userId = this.validateResourceId(req);
+      const targetUserId = this.validateUserId(req);
+      const assignments = await this.service.getUserAssignments(
+        userId,
+        targetUserId,
+      );
+
+      return res
+        .status(StatusCode.SUCCESS)
+        .json({ data: getValuable(assignments) });
     } catch (error) {
       next(error);
     }

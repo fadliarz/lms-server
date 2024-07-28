@@ -15,6 +15,7 @@ import { PrismaClient } from "@prisma/client";
 import { PrismaTransaction } from "../../../common/types";
 import getPrismaDb from "../../../common/functions/getPrismaDb";
 import asyncLocalStorage from "../../../common/asyncLocalStorage";
+import { CourseClassAssignmentModel } from "../../assignment/assignment.type";
 
 export interface IUserRepository {
   createUser: (
@@ -27,6 +28,7 @@ export interface IUserRepository {
   getUserByEmail: (email: string) => Promise<UserModel | null>;
   getUserByAccessToken: (accessToken: string) => Promise<UserModel | null>;
   getUserByRefreshToken: (refreshToken: string) => Promise<UserModel | null>;
+  getUserAssignments: (userId: number) => Promise<CourseClassAssignmentModel[]>;
   updateUser: (userId: number, dto: Partial<UserModel>) => Promise<UserModel>;
   deleteUser: (userId: number) => Promise<UserModel>;
 }
@@ -106,6 +108,36 @@ export class UserRepository implements IUserRepository {
       where: { id: userId },
       data: dto,
     });
+  }
+
+  public async getUserAssignments(
+    userId: number,
+  ): Promise<CourseClassAssignmentModel[]> {
+    const enrollments = await this.db.courseEnrollment.findMany({
+      where: {
+        id: userId,
+      },
+      select: {
+        course: {
+          select: {
+            classes: {
+              select: {
+                assignments: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const assignments: CourseClassAssignmentModel[] = [];
+    for (const enrollment of enrollments) {
+      for (const theClass of enrollment.course.classes) {
+        assignments.push(...theClass.assignments);
+      }
+    }
+
+    return assignments;
   }
 
   public async deleteUser(userId: number): Promise<UserModel> {

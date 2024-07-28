@@ -1,8 +1,54 @@
 [
   {
     "schemaName": "public",
+    "tableName": "_prisma_migrations",
+    "predictions": [
+      {
+        "input": "public prisma_migrations checksum",
+        "column": "checksum",
+        "shape": "CHECKSUM",
+        "confidence": 0.9797677397727966,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public prisma_migrations id",
+        "column": "id",
+        "shape": "UUID",
+        "confidence": 0.9955798983573914,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public prisma_migrations logs",
+        "column": "logs",
+        "shape": "LOGS",
+        "confidence": 0.9948318004608154,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public prisma_migrations migration_name",
+        "column": "migration_name",
+        "shape": "SYSTEM_FILE_NAME",
+        "confidence": 0.9866090416908264,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
     "tableName": "course",
     "predictions": [
+      {
+        "input": "public course code",
+        "column": "code",
+        "shape": "ZIP_CODE",
+        "confidence": 0.2688742280006409,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
       {
         "input": "public course description",
         "column": "description",
@@ -106,6 +152,14 @@
     "tableName": "course_video",
     "predictions": [
       {
+        "input": "public course_video attachment",
+        "column": "attachment",
+        "shape": "SYSTEM_FILE_NAME",
+        "confidence": 0.9686024785041809,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
         "input": "public course_video description",
         "column": "description",
         "shape": "COMPANY_CATCH_PHRASE",
@@ -133,6 +187,28 @@
   },
   {
     "schemaName": "public",
+    "tableName": "event",
+    "predictions": [
+      {
+        "input": "public event description",
+        "column": "description",
+        "shape": "COMMERCE_PRODUCT_DESCRIPTION",
+        "confidence": 0.8818793296813965,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public event title",
+        "column": "title",
+        "shape": "POST_TITLE",
+        "confidence": 0.4093151688575745,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
     "tableName": "user",
     "predictions": [
       {
@@ -152,10 +228,66 @@
         "confidenceContext": 0
       },
       {
+        "input": "public user address",
+        "column": "address",
+        "shape": "FULL_ADDRESS",
+        "confidence": 0.968370795249939,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user blood_type",
+        "column": "blood_type",
+        "shape": "BLOOD_TYPE",
+        "confidence": 0.9910832643508911,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
         "input": "public user email",
         "column": "email",
         "shape": "EMAIL",
         "confidence": 0.99404376745224,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user emergency_number",
+        "column": "emergency_number",
+        "shape": "PHONE_NUMBER",
+        "confidence": 0.6560778021812439,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user hmm",
+        "column": "hmm",
+        "shape": "DATABASE_COLUMN",
+        "confidence": 0.4783658385276794,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user hobbies",
+        "column": "hobbies",
+        "shape": "INTERNET_DOMAIN_NAME",
+        "confidence": 0.1696754097938538,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user line_id",
+        "column": "line_id",
+        "shape": "UUID",
+        "confidence": 0.9984318614006042,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user medical_histories",
+        "column": "medical_histories",
+        "shape": "SYSTEM_FILE_TYPE",
+        "confidence": 0.4239544570446014,
         "context": "GENERAL",
         "confidenceContext": 0
       },
@@ -196,6 +328,14 @@
         "column": "refresh_token",
         "shape": "TOKEN",
         "confidence": 0.9432976245880127,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public user ukm",
+        "column": "ukm",
+        "shape": "COMPANY_NAME",
+        "confidence": 0.2547962665557861,
         "context": "GENERAL",
         "confidenceContext": 0
       }

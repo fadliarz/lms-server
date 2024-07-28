@@ -87,6 +87,21 @@ let UserController = class UserController {
             }
         });
     }
+    getUserAssignments(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = this.validateResourceId(req);
+                const targetUserId = this.validateUserId(req);
+                const assignments = yield this.service.getUserAssignments(userId, targetUserId);
+                return res
+                    .status(statusCode_1.StatusCode.SUCCESS)
+                    .json({ data: (0, getValuable_1.default)(assignments) });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     updateBasicUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
