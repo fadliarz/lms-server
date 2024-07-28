@@ -16,6 +16,7 @@ import { PrismaTransaction } from "../../../common/types";
 import getPrismaDb from "../../../common/functions/getPrismaDb";
 import asyncLocalStorage from "../../../common/asyncLocalStorage";
 import { CourseClassAssignmentModel } from "../../assignment/assignment.type";
+import { CourseClassModel } from "../../class/class.type";
 
 export interface IUserRepository {
   createUser: (
@@ -28,7 +29,9 @@ export interface IUserRepository {
   getUserByEmail: (email: string) => Promise<UserModel | null>;
   getUserByAccessToken: (accessToken: string) => Promise<UserModel | null>;
   getUserByRefreshToken: (refreshToken: string) => Promise<UserModel | null>;
-  getUserAssignments: (userId: number) => Promise<CourseClassAssignmentModel[]>;
+  getUserAssignments: (
+    userId: number,
+  ) => Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]>;
   updateUser: (userId: number, dto: Partial<UserModel>) => Promise<UserModel>;
   deleteUser: (userId: number) => Promise<UserModel>;
 }
@@ -112,7 +115,7 @@ export class UserRepository implements IUserRepository {
 
   public async getUserAssignments(
     userId: number,
-  ): Promise<CourseClassAssignmentModel[]> {
+  ): Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]> {
     const enrollments = await this.db.courseEnrollment.findMany({
       where: {
         id: userId,
@@ -122,7 +125,11 @@ export class UserRepository implements IUserRepository {
           select: {
             classes: {
               select: {
-                assignments: true,
+                assignments: {
+                  include: {
+                    courseClass: true,
+                  },
+                },
               },
             },
           },
@@ -130,12 +137,19 @@ export class UserRepository implements IUserRepository {
       },
     });
 
-    const assignments: CourseClassAssignmentModel[] = [];
+    const assignments: (CourseClassAssignmentModel & {
+      class: CourseClassModel;
+    })[] = [];
     for (const enrollment of enrollments) {
       for (const theClass of enrollment.course.classes) {
-        assignments.push(...theClass.assignments);
+        for (const assignment of theClass.assignments) {
+          const { courseClass: tempTheClass, ...theAssignment } = assignment;
+          assignments.push({ ...theAssignment, class: tempTheClass });
+        }
       }
     }
+
+    assignments.sort((a, b) => b.id - a.id);
 
     return assignments;
   }

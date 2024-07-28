@@ -42,6 +42,7 @@ import {
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
 import { CourseClassAssignmentModel } from "../../assignment/assignment.type";
+import { CourseClassModel } from "../../class/class.type";
 
 export interface IUserService {
   createUser: (dto: CreateUserDto) => Promise<UserModel>;
@@ -50,7 +51,7 @@ export interface IUserService {
   getUserAssignments: (
     userId: number,
     targetUserId: number,
-  ) => Promise<CourseClassAssignmentModel[]>;
+  ) => Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]>;
   updateBasicUser: (
     userId: number,
     targetUserId: number,
@@ -171,7 +172,7 @@ export class UserService implements IUserService {
   public async getUserAssignments(
     userId: number,
     targetUserId: number,
-  ): Promise<CourseClassAssignmentModel[]> {
+  ): Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]> {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
         tx,
