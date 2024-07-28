@@ -1,4 +1,3 @@
-import { Role, User } from "@prisma/client";
 import { UserRoleModel } from "../course/course.type";
 
 export const UserDITypes = {
@@ -45,9 +44,34 @@ export interface IUserAuthorization {
  *
  *
  */
-export type UserModel = User;
-export type UserRole = Role;
-export const UserRole = Role;
+export type UserModel = {
+  id: number;
+  email: string;
+  password: string;
+  accessToken: string | null;
+  refreshToken: string[];
+  phoneNumber: string | null;
+  name: string;
+  NIM: string;
+  avatar: string;
+  about: string | null;
+  totalCourses: number;
+  totalLessons: number;
+  totalUnreadMessages: number;
+  createdAt: Date;
+  updatedAt: Date;
+  role: UserRoleModel;
+  dateOfBirth: Date;
+  address: string;
+  bloodType: string;
+  medicalHistories: string[];
+  HMM: string[];
+  UKM: string[];
+  hobbies: string[];
+  lineId: string;
+  emergencyNumber: string;
+};
+
 export type PublicUserModel = Pick<
   UserModel,
   "id" | "name" | "NIM" | "avatar" | "about" | "role"
@@ -67,19 +91,26 @@ export type FilteredUserModel = Exclude<
 export type CreateUserDto = {
   email: string;
   password: string;
+  phoneNumber?: string;
   name: string;
   NIM: string;
-  phoneNumber?: string;
   avatar?: string;
   about?: string;
+  dateOfBirth: Date;
+  address: string;
+  bloodType: string;
+  medicalHistories: string[];
+  HMM: string[];
+  UKM: string[];
+  hobbies: string[];
+  lineId: string;
+  emergencyNumber: string;
 };
 
-export type UpdateBasicUserDto = {
-  name?: string;
-  NIM?: string;
-  avatar?: string;
-  about?: string;
-};
+export type UpdateBasicUserDto = Omit<
+  Partial<CreateUserDto>,
+  "email" | "password" | "phoneNumber"
+>;
 
 export type UpdateUserEmailDto = {
   email: string;

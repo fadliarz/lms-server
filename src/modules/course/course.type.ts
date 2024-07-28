@@ -1,13 +1,5 @@
-import {
-  Course,
-  CourseEnrollmentRole,
-  CourseLike,
-  CourseStatus,
-  Role,
-} from "@prisma/client";
 import { PublicUserModel, UserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 import { CourseCategoryModel } from "../category/category.type";
 import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 import {
@@ -28,6 +20,7 @@ export enum courseUrls {
   basic = courseUrls.course + "/basic",
   status = courseUrls.course + "/status",
   category = courseUrls.course + "/category",
+  code = courseUrls.course + "/code",
   enrolled = "/enrolled",
   likes = "/:courseId/likes",
   like = courseUrls.likes + "/:likeId",
@@ -81,19 +74,58 @@ export interface ICourseAuthorization {
  *
  */
 
-export type UserRoleModel = Role;
-export const UserRoleModel = Role;
+export const UserRoleModel = {
+  OWNER: "OWNER",
+  INSTRUCTOR: "INSTRUCTOR",
+  STUDENT: "STUDENT",
+} as const;
 
-export type CourseModel = Course;
-export type CourseLikeModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLike>;
-export type CourseStatusModel = CourseStatus;
-export const CourseStatusModel = CourseStatus;
-export type CourseEnrollmentRoleModel = CourseEnrollmentRole;
-export const CourseEnrollmentRoleModel = CourseEnrollmentRole;
+export type UserRoleModel = (typeof UserRoleModel)[keyof typeof UserRoleModel];
+
+export type CourseModel = {
+  id: number;
+  code: string;
+  status: CourseStatusModel;
+  image: string;
+  title: string;
+  description: string | null;
+  material: string | null;
+  totalStudents: number;
+  totalInstructors: number;
+  totalLessons: number;
+  totalVideos: number;
+  totalDurations: number;
+  totalLikes: number;
+  createdAt: Date;
+  updatedAt: Date;
+  authorId: number;
+  categoryId: number | null;
+};
+
+export type CourseLikeModel = {
+  id: number;
+  courseId: number;
+  userId: number;
+};
+
+export type CourseStatusModel =
+  (typeof CourseStatusModel)[keyof typeof CourseStatusModel];
+
+export const CourseStatusModel = {
+  PUBLISHED: "PUBLISHED",
+  DRAFT: "DRAFT",
+} as const;
+
+export const CourseEnrollmentRoleModel = {
+  INSTRUCTOR: "INSTRUCTOR",
+  STUDENT: "STUDENT",
+} as const;
+
+export type CourseEnrollmentRoleModel =
+  (typeof CourseEnrollmentRoleModel)[keyof typeof CourseEnrollmentRoleModel];
 
 export type EnrolledCourseModel = {
-  role: CourseEnrollmentRole;
+  role: CourseEnrollmentRoleModel;
   course: CourseModel;
 };
 
@@ -121,7 +153,10 @@ export type BasicCourseLessonExtension = BasicCourseLessonModel & {
  * Dto > Create
  *
  */
-type CreateCourseDtoRequiredField = Pick<CourseModel, "title" | "categoryId">;
+type CreateCourseDtoRequiredField = Pick<
+  CourseModel,
+  "title" | "categoryId" | "code"
+>;
 type CreateCourseDtoOptionalField = Partial<
   Pick<CourseModel, "image" | "description" | "material">
 >;
@@ -143,6 +178,10 @@ export type UpdateBasicCourseDto = {
   image?: string;
   title?: string;
   material?: string;
+};
+
+export type UpdateCourseCodeDto = {
+  code: string;
 };
 
 export type UpdateCourseStatusDto = {

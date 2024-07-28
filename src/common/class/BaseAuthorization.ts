@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import { Course, CourseEnrollment, User } from "@prisma/client";
 import getRoleStatus from "../functions/getRoleStatus";
 import isEqualOrIncludeCourseEnrollmentRole from "../functions/isEqualOrIncludeCourseEnrollmentRole";
 import {
@@ -114,9 +113,9 @@ export default class BaseAuthorization {
   }
 
   public validateUnexpectedScenarios(
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ): void {
     const { id: userId, role: userRole } = user;
     const { authorId } = course;

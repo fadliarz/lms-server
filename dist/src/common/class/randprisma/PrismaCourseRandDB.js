@@ -47,6 +47,7 @@ let PrismaCourseRandDB = class PrismaCourseRandDB extends RandDBUtil_1.default {
     }
     generateDto(categoryId) {
         return {
+            code: this.generateRandomString(10),
             title: this.generateRandomString(8),
             categoryId,
         };

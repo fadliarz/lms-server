@@ -38,7 +38,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     }
     createCourse(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeCreateCourse.bind(this.authorization));
                 const { user: { id: userId }, } = resourceId;
                 const newCourse = yield tx.course.create({
@@ -50,9 +50,9 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     }
     getCourseById(courseId, resourceId, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const { include_author, include_category, include_lessons, include_public_videos, } = query;
-                return yield tx.course.findUnique({
+                return tx.course.findUnique({
                     where: { id: courseId },
                     include: {
                         author: include_author
@@ -103,9 +103,9 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     }
     getCourses(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const { include_author, include_category, pageNumber, pageSize } = query;
-                return yield tx.course.findMany({
+                return tx.course.findMany({
                     skip: (pageNumber - 1) * pageSize,
                     take: pageSize,
                     include: {
@@ -129,7 +129,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     }
     getEnrolledCourses(resourceId, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 const { user: { id: userId }, } = resourceId;
                 const { include_author, include_category, limit_student_courses, limit_instructor_courses, role, } = query;
                 const roleSet = new Set(role);
@@ -138,7 +138,7 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
                     const enrollments = yield tx.courseEnrollment.findMany({
                         where: {
                             userId,
-                            role,
+                            role: role,
                         },
                         select: {
                             course: {
@@ -176,9 +176,9 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
     }
     updateCourse(courseId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 yield this.authorize(tx, Object.assign(Object.assign({}, resourceId), { courseId }), this.authorization.authorizeUpdateBasicCourse.bind(this.authorization));
-                return yield tx.course.update({
+                return tx.course.update({
                     where: { id: courseId },
                     data: dto,
                 });

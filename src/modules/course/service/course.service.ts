@@ -14,6 +14,7 @@ import {
   GetEnrolledCoursesQuery,
   UpdateBasicCourseDto,
   UpdateCourseCategoryIdDto,
+  UpdateCourseCodeDto,
   UpdateCourseStatusDto,
 } from "../course.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
@@ -21,14 +22,6 @@ import {
   IRepository,
   RepositoryDITypes,
 } from "../../../common/class/repository/repository.type";
-import { Prisma } from "@prisma/client";
-import InternalServerException from "../../../common/class/exceptions/InternalServerException";
-import HttpException from "../../../common/class/exceptions/HttpException";
-import { StatusCode } from "../../../common/constants/statusCode";
-import { ErrorCode } from "../../../common/constants/errorCode";
-import PrismaError, {
-  PrismaErrorCode,
-} from "../../../common/constants/prismaError";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
@@ -64,6 +57,11 @@ export interface ICourseService {
     resourceId: CourseResourceId,
     dto: UpdateCourseCategoryIdDto,
   ) => Promise<CourseModel>;
+  updateCourseCode: (
+    courseId: number,
+    resourceId: CourseResourceId,
+    dto: UpdateCourseCodeDto,
+  ) => Promise<CourseModel>;
   deleteCourse: (courseId: number, resourceId: CourseResourceId) => Promise<{}>;
   createLike: (resourceId: CourseLikeResourceId) => Promise<CourseLikeModel>;
   deleteLike: (likeId: number, resourceId: CourseLikeResourceId) => Promise<{}>;
@@ -96,6 +94,11 @@ export class CourseService implements ICourseService {
       throw handleRepositoryError(error, {
         foreignConstraint: {
           default: { message: "Category doesn't exist!" },
+        },
+        uniqueConstraint: {
+          code: {
+            message: "Code is already taken!",
+          },
         },
       });
     }
@@ -156,6 +159,28 @@ export class CourseService implements ICourseService {
       throw handleRepositoryError(error, {
         foreignConstraint: {
           default: { message: "Category doesn't exist!" },
+        },
+      });
+    }
+  }
+
+  public async updateCourseCode(
+    courseId: number,
+    resourceId: CourseResourceId,
+    dto: UpdateCourseCodeDto,
+  ): Promise<CourseModel> {
+    try {
+      return await this.repository.course.updateCourse(
+        courseId,
+        resourceId,
+        dto,
+      );
+    } catch (error: any) {
+      throw handleRepositoryError(error, {
+        uniqueConstraint: {
+          default: {
+            message: "code is already taken!",
+          },
         },
       });
     }

@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const RandDBUtil_1 = __importDefault(require("../randprisma/RandDBUtil"));
 const inversify_1 = require("inversify");
+const faker_1 = require("@faker-js/faker");
 let UserRandDTO = class UserRandDTO extends RandDBUtil_1.default {
     generateCreateUserDTO() {
         return {
@@ -20,6 +21,15 @@ let UserRandDTO = class UserRandDTO extends RandDBUtil_1.default {
             password: this.generateRandomString(8),
             NIM: this.generateRandomString(8),
             avatar: this.generateRandomString(16),
+            dateOfBirth: new Date(),
+            address: faker_1.faker.string.alpha(16),
+            bloodType: faker_1.faker.string.alpha(2).toUpperCase(),
+            medicalHistories: [this.generateRandomString(8)],
+            HMM: [this.generateRandomString(8)],
+            UKM: [this.generateRandomString(8)],
+            hobbies: [this.generateRandomString(8)],
+            lineId: faker_1.faker.string.alpha(10),
+            emergencyNumber: faker_1.faker.string.alpha(10),
         };
     }
 };

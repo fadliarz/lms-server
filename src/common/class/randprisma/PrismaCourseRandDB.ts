@@ -13,8 +13,6 @@ import {
   CreateCourseDto,
   UserRoleModel,
 } from "../../../modules/course/course.type";
-import { Role } from "@prisma/client";
-import getValuable from "../../functions/getValuable";
 import { inject, injectable } from "inversify";
 import PrismaClientSingleton from "../PrismaClientSingleton";
 
@@ -54,6 +52,7 @@ export default class PrismaCourseRandDB
 
   private generateDto(categoryId: number): CreateCourseDto {
     return {
+      code: this.generateRandomString(10),
       title: this.generateRandomString(8),
       categoryId,
     };

@@ -1,6 +1,5 @@
 import { UserModel } from "../user/user.type";
 import { UserRoleModel } from "../course/course.type";
-import { Event } from "@prisma/client";
 import {
   IControllerTemplate,
   IRepositoryTemplate,
@@ -62,7 +61,14 @@ export type IEventRepository = IRepositoryTemplate<
  *
  */
 
-export type EventModel = Event;
+export type EventModel = {
+  id: number;
+  title: string;
+  description: string | null;
+  date: Date;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 /**
  *

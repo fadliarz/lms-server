@@ -1,10 +1,6 @@
-import {
-  Course,
-  CourseEnrollment,
-  CourseLessonVideo,
-  User,
-} from "@prisma/client";
-import { UserRoleModel } from "../course/course.type";
+import { CourseModel, UserRoleModel } from "../course/course.type";
+import { UserModel } from "../user/user.type";
+import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 
 export const CourseLessonVideoDITypes = {
   REPOSITORY: Symbol.for("COURSE_VIDEO_REPOSITORY"),
@@ -34,29 +30,29 @@ export enum courseLessonVideoUrls {
  */
 export interface ICourseLessonVideoAuthorization {
   authorizeCreateVideo: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
   authorizeGetVideo: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
   authorizeGetVideos: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
   authorizeUpdateVideo: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
   authorizeDeleteVideo: (
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ) => void;
 }
 
@@ -67,7 +63,16 @@ export interface ICourseLessonVideoAuthorization {
  *
  *
  */
-export type CourseLessonVideoModel = CourseLessonVideo;
+export type CourseLessonVideoModel = {
+  id: number;
+  name: string;
+  description: string | null;
+  totalDurations: number;
+  youtubeLink: string;
+  createdAt: Date;
+  updatedAt: Date;
+  lessonId: number;
+};
 export type PublicCourseLessonVideoModel = Omit<
   CourseLessonVideoModel,
   "youtubeLink"

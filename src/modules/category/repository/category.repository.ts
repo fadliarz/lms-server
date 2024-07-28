@@ -9,7 +9,7 @@ import {
   UpdateBasicCourseCategoryDto,
 } from "../category.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import { CourseCategory, User } from "@prisma/client";
+import { CourseCategory } from "@prisma/client";
 
 import {
   IPrismaQueryRaw,
@@ -24,6 +24,7 @@ import getRoleStatus from "../../../common/functions/getRoleStatus";
 import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import CourseCategoryAuthorization from "../authorization/category.authorization";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { UserModel } from "../../user/user.type";
 
 export interface ICourseCategoryRepository {
   createCategory: (
@@ -128,7 +129,7 @@ export class CourseCategoryRepository implements ICourseCategoryRepository {
     resourceId: CourseCategoryResourceId,
     fn: typeof CourseCategoryAuthorization.prototype.authorizeCreateCategory,
   ): Promise<{
-    user: User;
+    user: UserModel;
   }> {
     const {
       user: { id: userId },

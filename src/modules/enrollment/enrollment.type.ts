@@ -1,4 +1,3 @@
-import { CourseEnrollment } from "@prisma/client";
 import { CourseEnrollmentRoleModel } from "../course/course.type";
 
 export const CourseEnrollmentDITypes = {
@@ -30,7 +29,15 @@ export enum CourseEnrollmentErrorMessage {
  *
  *
  */
-export type CourseEnrollmentModel = CourseEnrollment;
+export type CourseEnrollmentModel = {
+  id: number;
+  userId: number;
+  courseId: number;
+  classId: number | null;
+  role: CourseEnrollmentRoleModel;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 /**
  *

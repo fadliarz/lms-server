@@ -1,7 +1,6 @@
 import { UserModel } from "../user/user.type";
 import { CourseModel, UserRoleModel } from "../course/course.type";
 import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
-import { CourseClassAssignment } from "@prisma/client";
 import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
 import { NextFunction, Request, Response } from "express";
 
@@ -123,7 +122,15 @@ export interface ICourseClassAssignmentRepository {
   ) => Promise<{}>;
 }
 
-export type CourseClassAssignmentModel = CourseClassAssignment;
+export type CourseClassAssignmentModel = {
+  id: number;
+  title: string;
+  submission: string;
+  deadline: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  classId: number;
+};
 export type ValuableCourseClassAssignmentModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseClassAssignmentModel>;
 

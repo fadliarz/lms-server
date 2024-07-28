@@ -1,21 +1,12 @@
-import { CourseEnrollmentRole } from "@prisma/client";
 import {
   CourseEnrollmentRoleModel,
-  CourseLikeModel,
   CourseModel,
-  CreateCourseDto,
   UserRoleModel,
 } from "../../../modules/course/course.type";
-import { UserModel, UserRole } from "../../../modules/user/user.type";
-import {
-  CourseLessonModel,
-  CreateCourseLessonDto,
-} from "../../../modules/lesson/lesson.type";
+import { UserModel } from "../../../modules/user/user.type";
+import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
-import {
-  CourseCategoryModel,
-  CreateCourseCategoryDto,
-} from "../../../modules/category/category.type";
+import { CourseCategoryModel } from "../../../modules/category/category.type";
 import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
 
 export const PrismaRandDBDITypes = {
@@ -38,7 +29,7 @@ export interface IRandDB {
 }
 
 export interface IUserRandDB {
-  generateOne: (role: UserRole) => Promise<UserModel>;
+  generateOne: (role: UserRoleModel) => Promise<UserModel>;
 }
 
 export interface ICourseCategoryRandDB {

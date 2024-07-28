@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateCourseLikeDtoJoi = exports.UpdateCourseCategoryIdDtoJoi = exports.UpdateCourseStatusDtoJoi = exports.UpdateBasicCourseDtoJoi = exports.GetEnrolledCoursesQueryJoi = exports.GetCoursesQueryJoi = exports.GetCourseByIdQueryJoi = exports.CreateCourseDtoJoi = void 0;
+exports.CreateCourseLikeDtoJoi = exports.UpdateCourseCodeDtoJoi = exports.UpdateCourseCategoryIdDtoJoi = exports.UpdateCourseStatusDtoJoi = exports.UpdateBasicCourseDtoJoi = exports.GetEnrolledCoursesQueryJoi = exports.GetCoursesQueryJoi = exports.GetCourseByIdQueryJoi = exports.CreateCourseDtoJoi = void 0;
 const joi_1 = __importDefault(require("joi"));
 const course_type_1 = require("../course.type");
 /**
@@ -11,6 +11,7 @@ const course_type_1 = require("../course.type");
  *
  */
 exports.CreateCourseDtoJoi = joi_1.default.object({
+    code: joi_1.default.string().required(),
     title: joi_1.default.string().required(),
     categoryId: joi_1.default.number().required(),
     image: joi_1.default.string(),
@@ -79,6 +80,9 @@ exports.UpdateCourseStatusDtoJoi = joi_1.default.object({
 });
 exports.UpdateCourseCategoryIdDtoJoi = joi_1.default.object({
     categoryId: joi_1.default.number().required(),
+});
+exports.UpdateCourseCodeDtoJoi = joi_1.default.object({
+    code: joi_1.default.string().required(),
 });
 /**
  * CreateCourseLike

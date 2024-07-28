@@ -13,6 +13,11 @@ export async function createRandomUser(userRole: Role): Promise<UserModel> {
       password: faker.string.alpha(16),
       name: faker.string.alpha(16),
       NIM: faker.number.int({ min: 13121000, max: 13121300 }).toString(),
+      dateOfBirth: new Date(),
+      address: faker.string.alpha(16),
+      bloodType: faker.string.alpha(2).toUpperCase(),
+      lineId: faker.string.alpha(10),
+      emergencyNumber: faker.string.alpha(10),
     },
   });
 
@@ -35,6 +40,7 @@ export async function createRandomCourse(userRole: Role) {
 
   const course = await prisma.course.create({
     data: {
+      code: faker.string.alpha(5),
       title: faker.string.alpha(8),
       authorId: user.id,
       categoryId: category.id,
@@ -46,17 +52,23 @@ export async function createRandomCourse(userRole: Role) {
 
 export async function createRandomCourses(
   userRole: Role,
-  numberOfCourses: number
+  numberOfCourses: number,
 ) {
   const category = await createRandomCategory();
   const user = await createRandomUser(userRole);
 
-  let arg: { title: string; authorId: number; categoryId: number }[] = [];
+  let arg: {
+    title: string;
+    authorId: number;
+    categoryId: number;
+    code: string;
+  }[] = [];
   for (let i = 0; i < numberOfCourses; i++) {
     arg.push({
       title: faker.string.alpha(8),
       authorId: user.id,
       categoryId: category.id,
+      code: faker.string.alpha(10),
     });
   }
 
@@ -68,10 +80,11 @@ export async function createRandomCourses(
 }
 
 export function generateRandomCreateCourseDto(
-  categoryId: number
+  categoryId: number,
 ): CreateCourseDto {
   return {
     title: faker.string.alpha(8),
+    code: faker.string.alpha(10),
     categoryId,
     image: faker.string.alpha(16),
     description: faker.string.alpha(16),

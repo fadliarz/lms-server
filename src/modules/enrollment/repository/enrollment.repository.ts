@@ -26,6 +26,7 @@ import {
 } from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
+import { UserModel } from "../../user/user.type";
 
 export interface ICourseEnrollmentRepository {
   createEnrollment: (
@@ -93,7 +94,7 @@ export default class CourseEnrollmentRepository
          * validate the create enrollment logic.
          *
          */
-        let targetUser: User = user;
+        let targetUser: UserModel = user;
         const isUserIdEqual = userId === targetUserId;
         if (!isUserIdEqual) {
           targetUser =
@@ -224,7 +225,7 @@ export default class CourseEnrollmentRepository
          * 1. target user is STUDENT but new enrollment role is INSTRUCTOR
          *
          */
-        let targetUser: User = user;
+        let targetUser: UserModel = user;
         const isUserIdEqual = userId === enrollment.userId;
         if (!isUserIdEqual) {
           targetUser =

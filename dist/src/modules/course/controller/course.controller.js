@@ -144,6 +144,20 @@ let CourseController = class CourseController {
             }
         });
     }
+    updateCourseCode(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: course_joi_1.UpdateCourseCodeDtoJoi })(req, res, next);
+                const courseId = this.validateCourseId(req);
+                const resourceId = this.validateResourceId(req);
+                const updatedCourse = yield this.service.updateCourseCode(courseId, resourceId, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedCourse });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     deleteCourse(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

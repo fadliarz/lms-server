@@ -87,7 +87,7 @@ export class CourseRepository
     resourceId: CourseResourceId,
     dto: CreateCourseDto,
   ): Promise<CourseModel> {
-    return await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       await this.authorizeUserRole(
         tx,
         resourceId,
@@ -113,14 +113,14 @@ export class CourseRepository
     resourceId: CourseResourceId,
     query: GetCourseByIdQuery,
   ): Promise<GetCourseByIdData | null> {
-    return await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const {
         include_author,
         include_category,
         include_lessons,
         include_public_videos,
       } = query;
-      return await tx.course.findUnique({
+      return tx.course.findUnique({
         where: { id: courseId },
         include: {
           author: include_author
@@ -176,9 +176,9 @@ export class CourseRepository
   }
 
   public async getCourses(query: GetCoursesQuery): Promise<GetCoursesData> {
-    return await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const { include_author, include_category, pageNumber, pageSize } = query;
-      return await tx.course.findMany({
+      return tx.course.findMany({
         skip: (pageNumber - 1) * pageSize,
         take: pageSize,
         include: {
@@ -204,7 +204,7 @@ export class CourseRepository
     resourceId: CourseResourceId,
     query: GetEnrolledCoursesQuery,
   ): Promise<GetEnrolledCoursesData> {
-    return await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       const {
         user: { id: userId },
       } = resourceId;
@@ -222,7 +222,7 @@ export class CourseRepository
         const enrollments = await tx.courseEnrollment.findMany({
           where: {
             userId,
-            role,
+            role: role,
           },
           select: {
             course: {
@@ -269,7 +269,7 @@ export class CourseRepository
     resourceId: CourseResourceId,
     dto: UpdateCourseDto,
   ): Promise<CourseModel> {
-    return await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
       await this.authorize(
         tx,
         {
@@ -279,7 +279,7 @@ export class CourseRepository
         this.authorization.authorizeUpdateBasicCourse.bind(this.authorization),
       );
 
-      return await tx.course.update({
+      return tx.course.update({
         where: { id: courseId },
         data: dto,
       });

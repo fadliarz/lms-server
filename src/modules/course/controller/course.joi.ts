@@ -8,16 +8,17 @@ import {
   GetCoursesQuery,
   GetEnrolledCoursesQuery,
   UpdateCourseCategoryIdDto,
+  UpdateCourseCodeDto,
   UpdateCourseDto,
-  UpdateCourseStatusDto,
+  UpdateCourseStatusDto
 } from "../course.type";
-import { CourseStatus } from "@prisma/client";
 
 /**
  * CreateCourse
  *
  */
 export const CreateCourseDtoJoi = Joi.object<CreateCourseDto>({
+  code: Joi.string().required(),
   title: Joi.string().required(),
   categoryId: Joi.number().required(),
   image: Joi.string(),
@@ -100,6 +101,10 @@ export const UpdateCourseCategoryIdDtoJoi =
   Joi.object<UpdateCourseCategoryIdDto>({
     categoryId: Joi.number().required(),
   });
+
+export const UpdateCourseCodeDtoJoi = Joi.object<UpdateCourseCodeDto>({
+  code: Joi.string().required(),
+});
 
 /**
  * CreateCourseLike

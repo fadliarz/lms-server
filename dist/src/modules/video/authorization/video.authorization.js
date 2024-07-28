@@ -11,11 +11,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const inversify_1 = require("inversify");
-const client_1 = require("@prisma/client");
 const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
 const isEqualOrIncludeCourseEnrollmentRole_1 = __importDefault(require("../../../common/functions/isEqualOrIncludeCourseEnrollmentRole"));
 const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
 const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
+const course_type_1 = require("../../course/course.type");
 let CourseLessonVideoAuthorization = class CourseLessonVideoAuthorization extends BaseAuthorization_1.default {
     authorizeCreateVideo(user, course, enrollment) {
         const { id: userId, role: userRole } = user;
@@ -29,7 +29,7 @@ let CourseLessonVideoAuthorization = class CourseLessonVideoAuthorization extend
         if (isInstructor) {
             if (isAuthor ||
                 (enrollment &&
-                    (0, isEqualOrIncludeCourseEnrollmentRole_1.default)(enrollment.role, client_1.Role.INSTRUCTOR))) {
+                    (0, isEqualOrIncludeCourseEnrollmentRole_1.default)(enrollment.role, course_type_1.UserRoleModel.INSTRUCTOR))) {
                 isAuthorized = true;
             }
         }

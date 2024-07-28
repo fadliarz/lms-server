@@ -2,7 +2,6 @@ import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types
 import { UserModel } from "../user/user.type";
 import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 import { CourseModel, UserRoleModel } from "../course/course.type";
-import { CourseLesson } from "@prisma/client";
 
 export const CourseLessonDITypes = {
   REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
@@ -59,7 +58,17 @@ export interface ICourseLessonAuthorization {
  * Model CourseLesson
  *
  */
-export type CourseLessonModel = CourseLesson;
+export type CourseLessonModel = {
+  id: number;
+  title: string;
+  description: string | null;
+  totalVideos: number;
+  totalDurations: number;
+  totalMaterials: number;
+  createdAt: Date;
+  updatedAt: Date;
+  courseId: number;
+};
 export type ValuableCourseLessonModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonModel>;
 

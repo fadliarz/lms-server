@@ -1,10 +1,10 @@
-import { Role } from "@prisma/client";
 import isEqualOrIncludeRole from "./isEqualOrIncludeRole";
+import { UserRoleModel } from "../../modules/course/course.type";
 
-export default function getRoleStatus(userRole: Role) {
-  const isAdmin = isEqualOrIncludeRole(userRole, Role.OWNER);
-  const isInstructor = isEqualOrIncludeRole(userRole, Role.INSTRUCTOR);
-  const isStudent = isEqualOrIncludeRole(userRole, Role.STUDENT);
+export default function getRoleStatus(userRole: UserRoleModel) {
+  const isAdmin = isEqualOrIncludeRole(userRole, UserRoleModel.OWNER);
+  const isInstructor = isEqualOrIncludeRole(userRole, UserRoleModel.INSTRUCTOR);
+  const isStudent = isEqualOrIncludeRole(userRole, UserRoleModel.STUDENT);
 
   return {
     isAdmin,

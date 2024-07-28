@@ -13,6 +13,7 @@ export default class CourseRandDTO
     return {
       title: this.generateRandomString(8),
       categoryId,
+      code: this.generateRandomString(10),
     };
   }
 }

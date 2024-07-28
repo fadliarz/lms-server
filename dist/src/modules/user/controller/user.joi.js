@@ -14,6 +14,15 @@ exports.CreateUserDtoJoi = joi_1.default.object({
     password: joi_1.default.string().required(),
     name: joi_1.default.string().required(),
     NIM: joi_1.default.string().required(),
+    dateOfBirth: joi_1.default.date().required(),
+    address: joi_1.default.string().required(),
+    bloodType: joi_1.default.string().required(),
+    medicalHistories: joi_1.default.array().items(joi_1.default.string()).required(),
+    HMM: joi_1.default.array().items(joi_1.default.string()).required(),
+    UKM: joi_1.default.array().items(joi_1.default.string()).required(),
+    hobbies: joi_1.default.array().items(joi_1.default.string()).required(),
+    lineId: joi_1.default.string().required(),
+    emergencyNumber: joi_1.default.string().required(),
     /**
      * Optional
      *
@@ -23,12 +32,17 @@ exports.CreateUserDtoJoi = joi_1.default.object({
     about: joi_1.default.string(),
 });
 exports.UpdateBasicUserDtoJoi = joi_1.default.object({
-    /**
-     * Optional
-     *
-     */
     name: joi_1.default.string(),
     NIM: joi_1.default.string(),
+    dateOfBirth: joi_1.default.date(),
+    address: joi_1.default.string(),
+    bloodType: joi_1.default.string(),
+    medicalHistories: joi_1.default.array().items(joi_1.default.string()),
+    HMM: joi_1.default.array().items(joi_1.default.string()),
+    UKM: joi_1.default.array().items(joi_1.default.string()),
+    hobbies: joi_1.default.array().items(joi_1.default.string()),
+    lineId: joi_1.default.string(),
+    emergencyNumber: joi_1.default.string(),
     avatar: joi_1.default.string(),
     about: joi_1.default.string(),
 });

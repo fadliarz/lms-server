@@ -25,6 +25,11 @@ function createRandomUser(userRole) {
                 password: faker_1.faker.string.alpha(16),
                 name: faker_1.faker.string.alpha(16),
                 NIM: faker_1.faker.number.int({ min: 13121000, max: 13121300 }).toString(),
+                dateOfBirth: new Date(),
+                address: faker_1.faker.string.alpha(16),
+                bloodType: faker_1.faker.string.alpha(2).toUpperCase(),
+                lineId: faker_1.faker.string.alpha(10),
+                emergencyNumber: faker_1.faker.string.alpha(10),
             },
         });
         return (0, getValuable_1.default)(user);
@@ -48,6 +53,7 @@ function createRandomCourse(userRole) {
         const user = yield createRandomUser(userRole);
         const course = yield prisma.course.create({
             data: {
+                code: faker_1.faker.string.alpha(5),
                 title: faker_1.faker.string.alpha(8),
                 authorId: user.id,
                 categoryId: category.id,
@@ -67,6 +73,7 @@ function createRandomCourses(userRole, numberOfCourses) {
                 title: faker_1.faker.string.alpha(8),
                 authorId: user.id,
                 categoryId: category.id,
+                code: faker_1.faker.string.alpha(10),
             });
         }
         const courses = yield prisma.course.createMany({
@@ -79,6 +86,7 @@ exports.createRandomCourses = createRandomCourses;
 function generateRandomCreateCourseDto(categoryId) {
     return {
         title: faker_1.faker.string.alpha(8),
+        code: faker_1.faker.string.alpha(10),
         categoryId,
         image: faker_1.faker.string.alpha(16),
         description: faker_1.faker.string.alpha(16),

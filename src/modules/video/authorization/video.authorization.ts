@@ -1,11 +1,13 @@
 import "reflect-metadata";
 import { injectable } from "inversify";
-import { Course, CourseEnrollment, Role, User } from "@prisma/client";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import { ICourseLessonVideoAuthorization } from "../video.type";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
+import { UserModel } from "../../user/user.type";
+import { CourseModel, UserRoleModel } from "../../course/course.type";
+import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
 
 @injectable()
 export default class CourseLessonVideoAuthorization
@@ -13,9 +15,9 @@ export default class CourseLessonVideoAuthorization
   implements ICourseLessonVideoAuthorization
 {
   public authorizeCreateVideo(
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ): void {
     const { id: userId, role: userRole } = user;
     const { authorId } = course;
@@ -34,7 +36,7 @@ export default class CourseLessonVideoAuthorization
         (enrollment &&
           isEqualOrIncludeCourseEnrollmentRole(
             enrollment.role,
-            Role.INSTRUCTOR,
+            UserRoleModel.INSTRUCTOR,
           ))
       ) {
         isAuthorized = true;
@@ -51,9 +53,9 @@ export default class CourseLessonVideoAuthorization
   }
 
   public authorizeGetVideo(
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ): void {
     const { id: userId, role: userRole } = user;
     const { authorId } = course;
@@ -79,25 +81,25 @@ export default class CourseLessonVideoAuthorization
   }
 
   public authorizeGetVideos(
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ): void {
     this.authorizeGetVideo(user, course, enrollment);
   }
 
   public authorizeUpdateVideo(
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ): void {
     this.authorizeCreateVideo(user, course, enrollment);
   }
 
   public authorizeDeleteVideo(
-    user: User,
-    course: Course,
-    enrollment: CourseEnrollment | null,
+    user: UserModel,
+    course: CourseModel,
+    enrollment: CourseEnrollmentModel | null,
   ): void {
     this.authorizeCreateVideo(user, course, enrollment);
   }

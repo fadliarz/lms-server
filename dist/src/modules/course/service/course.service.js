@@ -45,6 +45,11 @@ let CourseService = class CourseService {
                     foreignConstraint: {
                         default: { message: "Category doesn't exist!" },
                     },
+                    uniqueConstraint: {
+                        code: {
+                            message: "Code is already taken!",
+                        },
+                    },
                 });
             }
         });
@@ -83,6 +88,22 @@ let CourseService = class CourseService {
                 throw (0, handleRepositoryError_1.default)(error, {
                     foreignConstraint: {
                         default: { message: "Category doesn't exist!" },
+                    },
+                });
+            }
+        });
+    }
+    updateCourseCode(courseId, resourceId, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.repository.course.updateCourse(courseId, resourceId, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error, {
+                    uniqueConstraint: {
+                        default: {
+                            message: "code is already taken!",
+                        },
                     },
                 });
             }

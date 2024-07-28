@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserRole = exports.userUrls = exports.UserDITypes = void 0;
-const client_1 = require("@prisma/client");
+exports.userUrls = exports.UserDITypes = void 0;
 exports.UserDITypes = {
     REPOSITORY: Symbol.for("USER_REPOSITORY"),
     SERVICE: Symbol.for("USER_SERVICE"),
@@ -21,4 +20,3 @@ var userUrls;
     userUrls["signIn"] = "/signin";
     userUrls["signOut"] = "/signout";
 })(userUrls || (exports.userUrls = userUrls = {}));
-exports.UserRole = client_1.Role;

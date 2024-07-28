@@ -17,6 +17,7 @@ let CourseRandDTO = class CourseRandDTO extends RandDBUtil_1.default {
         return {
             title: this.generateRandomString(8),
             categoryId,
+            code: this.generateRandomString(10),
         };
     }
 };

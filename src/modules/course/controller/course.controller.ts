@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { injectable, inject } from "inversify";
+import { inject, injectable } from "inversify";
 import {
   CourseDITypes,
   CourseLikeResourceId,
@@ -8,7 +8,7 @@ import {
   GetCoursesQuery,
   GetEnrolledCoursesQuery,
 } from "../course.type";
-import { Request, Response, NextFunction } from "express-serve-static-core";
+import { NextFunction, Request, Response } from "express-serve-static-core";
 import { StatusCode } from "../../../common/constants/statusCode";
 import { ICourseService } from "../service/course.service";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
@@ -21,6 +21,7 @@ import {
   GetEnrolledCoursesQueryJoi,
   UpdateBasicCourseDtoJoi,
   UpdateCourseCategoryIdDtoJoi,
+  UpdateCourseCodeDtoJoi,
   UpdateCourseStatusDtoJoi,
 } from "./course.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
@@ -58,6 +59,11 @@ export interface ICourseController {
     next: NextFunction,
   ) => Promise<Response | void>;
   updateCourseCategoryId: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateCourseCode: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -231,6 +237,28 @@ export class CourseController implements ICourseController {
       const courseId = this.validateCourseId(req);
       const resourceId = this.validateResourceId(req);
       const updatedCourse = await this.service.updateCourseCategoryId(
+        courseId,
+        resourceId,
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedCourse });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateCourseCode(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateCourseCodeDtoJoi })(req, res, next);
+
+      const courseId = this.validateCourseId(req);
+      const resourceId = this.validateResourceId(req);
+      const updatedCourse = await this.service.updateCourseCode(
         courseId,
         resourceId,
         req.body,

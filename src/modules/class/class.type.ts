@@ -5,7 +5,6 @@ import {
   ModifyFieldWithNullToBeOptionalAndRemoveNull,
   UnauthenticatedResourceId,
 } from "../../common/types";
-import { CourseClass } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 
 export const CourseClassDITypes = {
@@ -121,7 +120,13 @@ export interface ICourseClassRepository {
   ) => Promise<{}>;
 }
 
-export type CourseClassModel = CourseClass;
+export type CourseClassModel = {
+  id: number;
+  title: string;
+  courseId: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
 export type ValuableCourseClassModel =
   ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseClassModel>;
 

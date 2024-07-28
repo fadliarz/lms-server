@@ -1,8 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { CourseDITypes } from "../course.type";
-import { courseUrls } from "../course.type";
+import { CourseDITypes, courseUrls } from "../course.type";
 import { ICourseController } from "../controller/course.controller";
 
 export default function CourseRouter(authenticationMiddleware: any) {
@@ -62,6 +61,12 @@ export default function CourseRouter(authenticationMiddleware: any) {
     courseUrls.category,
     authenticationMiddleware,
     controller.updateCourseCategoryId.bind(controller),
+  );
+
+  router.patch(
+    courseUrls.code,
+    authenticationMiddleware,
+    controller.updateCourseCode.bind(controller),
   );
 
   /**

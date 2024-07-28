@@ -2,14 +2,14 @@ import "reflect-metadata";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import { ICourseCategoryAuthorization } from "../category.type";
-import { Course, CourseEnrollment, User } from "@prisma/client";
 import { injectable } from "inversify";
+import { UserModel } from "../../user/user.type";
 
 @injectable()
 export default class CourseCategoryAuthorization
   implements ICourseCategoryAuthorization
 {
-  public authorizeCreateCategory(user: User): void {
+  public authorizeCreateCategory(user: UserModel): void {
     const { id: userId, role: userRole } = user;
     const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
     let isAuthorized = false;
@@ -25,7 +25,7 @@ export default class CourseCategoryAuthorization
     }
   }
 
-  public authorizeUpdateCategory(user: User): void {
+  public authorizeUpdateCategory(user: UserModel): void {
     this.authorizeCreateCategory(user);
   }
 }

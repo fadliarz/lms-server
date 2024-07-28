@@ -1,5 +1,5 @@
-import { CourseCategory, User } from "@prisma/client";
 import { UserRoleModel } from "../course/course.type";
+import { UserModel } from "../user/user.type";
 
 export const CourseCategoryDITypes = {
   REPOSITORY: Symbol.for("COURSE_CATEGORY_REPOSITORY"),
@@ -27,8 +27,8 @@ export enum courseCategoryUrls {
  *
  */
 export interface ICourseCategoryAuthorization {
-  authorizeCreateCategory: (user: User) => void;
-  authorizeUpdateCategory: (user: User) => void;
+  authorizeCreateCategory: (user: UserModel) => void;
+  authorizeUpdateCategory: (user: UserModel) => void;
 }
 
 /**
@@ -43,7 +43,12 @@ export interface ICourseCategoryAuthorization {
  * Model CourseCategory
  *
  */
-export type CourseCategoryModel = CourseCategory;
+export type CourseCategoryModel = {
+  id: number;
+  title: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 /**
  *

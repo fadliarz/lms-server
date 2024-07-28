@@ -22,6 +22,7 @@ require("reflect-metadata");
 const inversify_1 = require("inversify");
 const PrismaClientSingleton_1 = __importDefault(require("../PrismaClientSingleton"));
 const RandDBUtil_1 = __importDefault(require("./RandDBUtil"));
+const faker_1 = require("@faker-js/faker");
 let PrismaUserRandDB = class PrismaUserRandDB extends RandDBUtil_1.default {
     constructor() {
         super(...arguments);
@@ -30,7 +31,7 @@ let PrismaUserRandDB = class PrismaUserRandDB extends RandDBUtil_1.default {
     generateOne(userRole) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield this.prisma.user.create({
-                data: Object.assign(Object.assign({}, this.generateInputArg()), { role: userRole }),
+                data: Object.assign(Object.assign({}, this.generateInputArg()), { role: userRole, dateOfBirth: new Date(), address: faker_1.faker.string.alpha(16), bloodType: faker_1.faker.string.alpha(2).toUpperCase(), lineId: faker_1.faker.string.alpha(10), emergencyNumber: faker_1.faker.string.alpha(10) }),
             });
             return user;
         });
