@@ -3,9 +3,8 @@ import jwt from "jsonwebtoken";
 import { isEqual } from "lodash";
 import sha256Encrypt from "../../../utils/encrypt";
 import {
+  $UserReturnData,
   CreateUserDto,
-  IUserAuthorization,
-  Me,
   PublicUserModel,
   UpdateBasicUserDto,
   UpdateUserEmailDto,
@@ -15,7 +14,6 @@ import {
   UserDITypes,
   UserModel,
 } from "../user.type";
-import { IUserRepository } from "../repository/user.repository";
 import { inject, injectable } from "inversify";
 import validateEnv from "../../../common/functions/validateEnv";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
@@ -41,62 +39,14 @@ import {
   PrismaDefaultTransactionConfigForRead,
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
-import { CourseClassAssignmentModel } from "../../assignment/assignment.type";
-import { CourseClassModel } from "../../class/class.type";
-
-export interface IUserService {
-  createUser: (dto: CreateUserDto) => Promise<UserModel>;
-  getPublicUserById: (userId: number) => Promise<PublicUserModel>;
-  getMe: (userId: number) => Promise<Me>;
-  getUserAssignments: (
-    userId: number,
-    targetUserId: number,
-  ) => Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]>;
-  updateBasicUser: (
-    userId: number,
-    targetUserId: number,
-    dto: UpdateBasicUserDto,
-  ) => Promise<UserModel>;
-  updateUserEmail: (
-    userId: number,
-    targetUserId: number,
-    storedRefreshToken: string,
-    dto: UpdateUserEmailDto,
-  ) => Promise<UserModel>;
-  updateUserPassword: (
-    userId: number,
-    targetUserId: number,
-    storedRefreshToken: string,
-    dto: UpdateUserPasswordDto,
-  ) => Promise<UserModel>;
-  updateUserRole: (
-    userId: number,
-    targetUserId: number,
-    dto: UpdateUserRoleDto,
-  ) => Promise<UserModel>;
-  updateUserPhoneNumber: (
-    userId: number,
-    targetUserId: number,
-    dto: UpdateUserPhoneNumberDto,
-  ) => Promise<UserModel>;
-  deleteUser: (userId: number, targetUserId: number) => Promise<{}>;
-  signInUser: (
-    req: Request,
-    res: Response,
-    dto: {
-      email: string;
-      password: string;
-    },
-  ) => Promise<UserModel>;
-  signOutUser: (storedRefreshToken: string) => Promise<void>;
-  generateFreshAuthenticationToken: (
-    type: Cookie.ACCESS_TOKEN | Cookie.REFRESH_TOKEN,
-    email: string,
-  ) => string;
-}
+import {
+  IUserAuthorization,
+  IUserRepository,
+  IUserService,
+} from "../user.interface";
 
 @injectable()
-export class UserService implements IUserService {
+export default class UserService implements IUserService {
   @inject(UserDITypes.REPOSITORY)
   private repository: IUserRepository;
 
@@ -121,11 +71,8 @@ export class UserService implements IUserService {
         email,
       );
       dto.password = sha256Encrypt(password);
-      const newUser = await this.repository.createUser(dto, accessToken, [
-        refreshToken,
-      ]);
 
-      return newUser;
+      return await this.repository.createUser(dto, accessToken, [refreshToken]);
     } catch (error: any) {
       throw handleRepositoryError(error, {
         uniqueConstraint: {
@@ -172,7 +119,7 @@ export class UserService implements IUserService {
   public async getUserAssignments(
     userId: number,
     targetUserId: number,
-  ): Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]> {
+  ): Promise<$UserReturnData.GetUserAssignments> {
     return this.prisma.$transaction(async (tx) => {
       const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
         tx,

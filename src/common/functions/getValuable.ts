@@ -1,7 +1,4 @@
-import {
-  ModifyFieldWithNullToBeOptionalAndRemoveNull,
-  Valuable,
-} from "../types";
+import { Valuable } from "../shared.types";
 
 export default function getValuable<T extends {}, V = Valuable<T>>(obj: T): V;
 export default function getValuable<T extends {}, V = Valuable<T>>(

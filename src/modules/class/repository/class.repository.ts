@@ -5,16 +5,18 @@ import {
   CourseClassModel,
   CourseClassResourceId,
   CreateCourseClassDto,
-  ICourseClassAuthorization,
-  ICourseClassRepository,
 } from "../class.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import { UnauthenticatedResourceId } from "../../../common/types";
 import {
   PrismaDefaultTransactionConfigForRead,
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import {
+  ICourseClassAuthorization,
+  ICourseClassRepository,
+} from "../class.interface";
+import { UnauthenticatedResourceId } from "../../../common/types";
 
 @injectable()
 export default class CourseClassRepository

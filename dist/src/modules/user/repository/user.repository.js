@@ -32,7 +32,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserRepository = void 0;
 require("reflect-metadata");
 const user_type_1 = require("../user.type");
 const inversify_1 = require("inversify");
@@ -107,11 +106,16 @@ let UserRepository = class UserRepository {
                 select: {
                     course: {
                         select: {
+                            title: true,
                             classes: {
                                 select: {
                                     assignments: {
                                         include: {
-                                            courseClass: true,
+                                            courseClass: {
+                                                select: {
+                                                    title: true,
+                                                },
+                                            },
                                         },
                                     },
                                 },
@@ -121,11 +125,11 @@ let UserRepository = class UserRepository {
                 },
             });
             const assignments = [];
-            for (const enrollment of enrollments) {
+            for (let enrollment of enrollments) {
                 for (const theClass of enrollment.course.classes) {
                     for (const assignment of theClass.assignments) {
                         const { courseClass: tempTheClass } = assignment, theAssignment = __rest(assignment, ["courseClass"]);
-                        assignments.push(Object.assign(Object.assign({}, theAssignment), { class: tempTheClass }));
+                        assignments.push(Object.assign(Object.assign({}, theAssignment), { class: tempTheClass, course: { title: enrollment.course.title } }));
                     }
                 }
             }
@@ -151,7 +155,6 @@ let UserRepository = class UserRepository {
         });
     }
 };
-exports.UserRepository = UserRepository;
 __decorate([
     (0, inversify_1.inject)(user_type_1.UserDITypes.AUTHORIZATION),
     __metadata("design:type", Object)
@@ -160,7 +163,8 @@ __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
     __metadata("design:type", Object)
 ], UserRepository.prototype, "prismaQueryRaw", void 0);
-exports.UserRepository = UserRepository = __decorate([
+UserRepository = __decorate([
     (0, inversify_1.injectable)(),
     __metadata("design:paramtypes", [])
 ], UserRepository);
+exports.default = UserRepository;

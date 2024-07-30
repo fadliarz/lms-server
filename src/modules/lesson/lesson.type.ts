@@ -1,14 +1,12 @@
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/types";
-import { UserModel } from "../user/user.type";
-import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
-import { CourseModel, UserRoleModel } from "../course/course.type";
+import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/shared.types";
+import { UserRoleModel } from "../course/course.type";
 
 export const CourseLessonDITypes = {
   REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_LESSON_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_LESSON_CONTROLLER"),
   AUTHORIZATION: Symbol.for("COURSE_LESSON_AUTHORIZATION"),
-};
+} as const;
 
 export enum courseLessonUrls {
   lessons = "/courses/:courseId/lessons",
@@ -19,45 +17,11 @@ export enum courseLessonUrls {
 /**
  *
  *
- * Interface
- *
- *
- */
-
-/**
- * Interface Authorization
- *
- */
-export interface ICourseLessonAuthorization {
-  authorizeCreateLesson: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeUpdateLesson: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeDeleteLesson: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-}
-
-/**
- *
- *
  * Model
  *
  *
  */
 
-/**
- * Model CourseLesson
- *
- */
 export type CourseLessonModel = {
   id: number;
   title: string;
@@ -80,19 +44,11 @@ export type ValuableCourseLessonModel =
  *
  */
 
-/**
- * Dto > Create
- *
- */
 export type CreateCourseLessonDto = {
   title: string;
   description?: string;
 };
 
-/**
- * Dto > Update
- *
- */
 export type UpdateBasicCourseLessonDto = Partial<CreateCourseLessonDto>;
 
 /**

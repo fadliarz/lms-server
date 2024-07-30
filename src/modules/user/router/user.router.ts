@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { IUserController } from "../controller/user.controller";
 import { UserDITypes, userUrls } from "../user.type";
+import { IUserController } from "../user.interface";
 
 export default function UserRouter(authenticationMiddleware: any) {
   const router = express.Router();

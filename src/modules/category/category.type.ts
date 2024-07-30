@@ -1,5 +1,4 @@
 import { UserRoleModel } from "../course/course.type";
-import { UserModel } from "../user/user.type";
 
 export const CourseCategoryDITypes = {
   REPOSITORY: Symbol.for("COURSE_CATEGORY_REPOSITORY"),
@@ -13,31 +12,6 @@ export enum courseCategoryUrls {
   category = "/:categoryId",
   basic = courseCategoryUrls.category + "/basic",
 }
-
-/**
- *
- *
- * Interface
- *
- *
- */
-
-/**
- * Interface Authorization
- *
- */
-export interface ICourseCategoryAuthorization {
-  authorizeCreateCategory: (user: UserModel) => void;
-  authorizeUpdateCategory: (user: UserModel) => void;
-}
-
-/**
- *
- *
- * Model
- *
- *
- */
 
 /**
  * Model CourseCategory

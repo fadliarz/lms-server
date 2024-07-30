@@ -1,11 +1,11 @@
 import "reflect-metadata";
 import { IUserPrismaQueryRaw } from "./prisma_query_raw.type";
 import { injectable } from "inversify";
-import { PrismaTransaction } from "../../types";
 import { User } from "@prisma/client";
 import { TableName } from "../../constants/tableName";
 import RecordNotFoundException from "../exceptions/RecordNotFoundException";
 import { mapPrismaQueryRawObject } from "./prisma_query_raw.utils";
+import { PrismaTransaction } from "../../types";
 
 @injectable()
 export default class UserPrismaQueryRaw implements IUserPrismaQueryRaw {

@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseService = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
@@ -30,10 +29,6 @@ const handleRepositoryError_1 = __importDefault(require("../../../common/functio
 const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
 const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
 const ClientException_1 = __importDefault(require("../../../common/class/exceptions/ClientException"));
-/**
- * Todo: Implement Unit of Work pattern, so transaction can be shared across layers
- *
- */
 let CourseService = class CourseService {
     createCourse(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -160,11 +155,11 @@ let CourseService = class CourseService {
         });
     }
 };
-exports.CourseService = CourseService;
 __decorate([
     (0, inversify_1.inject)(repository_type_1.RepositoryDITypes.FACADE),
     __metadata("design:type", repository_type_1.IRepository)
 ], CourseService.prototype, "repository", void 0);
-exports.CourseService = CourseService = __decorate([
+CourseService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseService);
+exports.default = CourseService;

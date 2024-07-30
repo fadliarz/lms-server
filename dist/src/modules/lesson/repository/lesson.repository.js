@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseLessonRepository = void 0;
 require("reflect-metadata");
 const lesson_type_1 = require("../lesson.type");
 const inversify_1 = require("inversify");
@@ -104,11 +103,11 @@ let CourseLessonRepository = class CourseLessonRepository extends BaseAuthorizat
         });
     }
 };
-exports.CourseLessonRepository = CourseLessonRepository;
 __decorate([
     (0, inversify_1.inject)(lesson_type_1.CourseLessonDITypes.AUTHORIZATION),
     __metadata("design:type", Object)
 ], CourseLessonRepository.prototype, "authorization", void 0);
-exports.CourseLessonRepository = CourseLessonRepository = __decorate([
+CourseLessonRepository = __decorate([
     (0, inversify_1.injectable)()
 ], CourseLessonRepository);
+exports.default = CourseLessonRepository;

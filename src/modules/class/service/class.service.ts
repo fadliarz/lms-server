@@ -4,13 +4,15 @@ import {
   CourseClassModel,
   CourseClassResourceId,
   CreateCourseClassDto,
-  ICourseClassRepository,
-  ICourseClassService,
   UpdateCourseClassDto,
 } from "../class.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-import { UnauthenticatedResourceId } from "../../../common/types";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import {
+  ICourseClassRepository,
+  ICourseClassService,
+} from "../class.interface";
+import { UnauthenticatedResourceId } from "../../../common/types";
 
 @injectable()
 export default class CourseClassService implements ICourseClassService {

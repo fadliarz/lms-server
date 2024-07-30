@@ -4,7 +4,6 @@ import {
   CourseLessonModel,
   CourseLessonResourceId,
   CreateCourseLessonDto,
-  ICourseLessonAuthorization,
 } from "../lesson.type";
 import { inject, injectable } from "inversify";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
@@ -14,38 +13,14 @@ import {
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
+import {
+  ICourseLessonAuthorization,
+  ICourseLessonRepository,
+} from "../lesson.interface";
 import { UnauthenticatedResourceId } from "../../../common/types";
 
-export interface ICourseLessonRepository {
-  createLesson: (
-    resourceId: CourseLessonResourceId,
-    dto: CreateCourseLessonDto,
-  ) => Promise<CourseLessonModel>;
-  getLessonById: (
-    lessonId: number,
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel | null>;
-  getLessonByIdOrThrow: (
-    lessonId: number,
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-    error?: Error,
-  ) => Promise<CourseLessonModel>;
-  getLessons: (
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel[]>;
-  updateLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-    dto: Partial<CourseLessonModel>,
-  ) => Promise<CourseLessonModel>;
-  deleteLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-  ) => Promise<{}>;
-}
-
 @injectable()
-export class CourseLessonRepository
+export default class CourseLessonRepository
   extends BaseAuthorization
   implements ICourseLessonRepository
 {

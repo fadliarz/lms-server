@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseCategoryRepository = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const category_type_1 = require("../category.type");
@@ -97,7 +96,6 @@ let CourseCategoryRepository = class CourseCategoryRepository {
         });
     }
 };
-exports.CourseCategoryRepository = CourseCategoryRepository;
 __decorate([
     (0, inversify_1.inject)(category_type_1.CourseCategoryDITypes.AUTHORIZATION),
     __metadata("design:type", Object)
@@ -106,6 +104,7 @@ __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
     __metadata("design:type", Object)
 ], CourseCategoryRepository.prototype, "prismaQueryRaw", void 0);
-exports.CourseCategoryRepository = CourseCategoryRepository = __decorate([
+CourseCategoryRepository = __decorate([
     (0, inversify_1.injectable)()
 ], CourseCategoryRepository);
+exports.default = CourseCategoryRepository;

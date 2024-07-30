@@ -4,12 +4,11 @@ import {
   EventDITypes,
   EventModel,
   EventResourceId,
-  IEventRepository,
-  IEventService,
   UpdateEventDto,
 } from "../event.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { IEventRepository, IEventService } from "../event.interface";
 
 @injectable()
 export default class EventService implements IEventService {

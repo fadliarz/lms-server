@@ -1,9 +1,10 @@
 import "reflect-metadata";
 import { injectable } from "inversify";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import { IUserAuthorization, UserModel } from "../user.type";
+import { UserModel } from "../user.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import { IUserAuthorization } from "../user.interface";
 
 @injectable()
 export default class UserAuthorization

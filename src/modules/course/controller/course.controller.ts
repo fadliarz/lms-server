@@ -10,7 +10,6 @@ import {
 } from "../course.type";
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { ICourseService } from "../service/course.service";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
@@ -26,67 +25,10 @@ import {
 } from "./course.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import processBoolean from "../../../common/functions/processBoolean";
-
-export interface ICourseController {
-  createCourse: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getCourseById: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getCourses: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getEnrolledCourses: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateBasicCourse: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateCourseStatus: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateCourseCategoryId: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateCourseCode: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  deleteCourse: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  createLike: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  deleteLike: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-}
+import { ICourseController, ICourseService } from "../course.interface";
 
 @injectable()
-export class CourseController implements ICourseController {
+export default class CourseController implements ICourseController {
   @inject(CourseDITypes.SERVICE)
   private readonly service: ICourseService;
 

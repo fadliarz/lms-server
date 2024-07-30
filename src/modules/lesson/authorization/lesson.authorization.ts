@@ -2,7 +2,6 @@ import "reflect-metadata";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
-import { ICourseLessonAuthorization } from "../lesson.type";
 import { injectable } from "inversify";
 import { UserModel } from "../../user/user.type";
 import {
@@ -11,6 +10,7 @@ import {
 } from "../../course/course.type";
 import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
+import { ICourseLessonAuthorization } from "../lesson.interface";
 
 @injectable()
 export default class CourseLessonAuthorization

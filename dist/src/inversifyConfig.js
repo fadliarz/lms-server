@@ -28,29 +28,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const inversify_1 = require("inversify");
-const user_controller_1 = require("./modules/user/controller/user.controller");
-const user_repository_1 = require("./modules/user/repository/user.repository");
-const user_service_1 = require("./modules/user/service/user.service");
 const user_type_1 = require("./modules/user/user.type");
-const course_controller_1 = require("./modules/course/controller/course.controller");
-const course_service_1 = require("./modules/course/service/course.service");
-const course_repository_1 = require("./modules/course/repository/course.repository");
 const course_type_1 = require("./modules/course/course.type");
-const enrollment_controller_1 = require("./modules/enrollment/controller/enrollment.controller");
 const enrollment_type_1 = require("./modules/enrollment/enrollment.type");
-const enrollment_service_1 = require("./modules/enrollment/service/enrollment.service");
 const enrollment_repository_1 = __importDefault(require("./modules/enrollment/repository/enrollment.repository"));
-const lesson_repository_1 = require("./modules/lesson/repository/lesson.repository");
 const lesson_type_1 = require("./modules/lesson/lesson.type");
-const lesson_service_1 = require("./modules/lesson/service/lesson.service");
-const lesson_controller_1 = require("./modules/lesson/controller/lesson.controller");
 const video_repository_1 = require("./modules/video/repository/video.repository");
 const video_type_1 = require("./modules/video/video.type");
 const video_service_1 = require("./modules/video/service/video.service");
 const video_controller_1 = require("./modules/video/controller/video.controller");
-const category_repository_1 = require("./modules/category/repository/category.repository");
-const category_service_1 = require("./modules/category/service/category.service");
-const category_controller_1 = require("./modules/category/controller/category.controller");
+const category_repository_1 = __importDefault(require("./modules/category/repository/category.repository"));
 const category_type_1 = require("./modules/category/category.type");
 const PrismaTable_1 = __importStar(require("./common/class/table/PrismaTable"));
 const PrismaCourseTable_1 = __importDefault(require("./common/class/table/PrismaCourseTable"));
@@ -87,7 +74,6 @@ const UserRandDTO_1 = __importDefault(require("./common/class/rand_dto/UserRandD
 const CourseRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseRandDTO"));
 const repository_type_1 = require("./common/class/repository/repository.type");
 const Repository_1 = __importDefault(require("./common/class/repository/Repository"));
-const course_authorization_1 = require("./modules/course/authorization/course.authorization");
 const CourseLessonRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseLessonRandDTO"));
 const CourseLessonVideoRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseLessonVideoRandDTO"));
 const BaseAuthorization_1 = __importStar(require("./common/class/BaseAuthorization"));
@@ -107,6 +93,20 @@ const event_repository_1 = __importDefault(require("./modules/event/repository/e
 const event_service_1 = __importDefault(require("./modules/event/service/event.service"));
 const event_controller_1 = __importDefault(require("./modules/event/controller/event.controller"));
 const event_authorization_1 = __importDefault(require("./modules/event/authorization/event.authorization"));
+const category_service_1 = __importDefault(require("./modules/category/service/category.service"));
+const category_controller_1 = __importDefault(require("./modules/category/controller/category.controller"));
+const course_repository_1 = __importDefault(require("./modules/course/repository/course.repository"));
+const course_service_1 = __importDefault(require("./modules/course/service/course.service"));
+const course_controller_1 = __importDefault(require("./modules/course/controller/course.controller"));
+const course_authorization_1 = __importDefault(require("./modules/course/authorization/course.authorization"));
+const enrollment_service_1 = __importDefault(require("./modules/enrollment/service/enrollment.service"));
+const enrollment_controller_1 = __importDefault(require("./modules/enrollment/controller/enrollment.controller"));
+const lesson_repository_1 = __importDefault(require("./modules/lesson/repository/lesson.repository"));
+const lesson_service_1 = __importDefault(require("./modules/lesson/service/lesson.service"));
+const lesson_controller_1 = __importDefault(require("./modules/lesson/controller/lesson.controller"));
+const user_repository_1 = __importDefault(require("./modules/user/repository/user.repository"));
+const user_service_1 = __importDefault(require("./modules/user/service/user.service"));
+const user_controller_1 = __importDefault(require("./modules/user/controller/user.controller"));
 const dIContainer = new inversify_1.Container();
 /**
  * Repository
@@ -204,9 +204,9 @@ dIContainer
  * User Container
  *
  */
-dIContainer.bind(user_type_1.UserDITypes.REPOSITORY).to(user_repository_1.UserRepository);
-dIContainer.bind(user_type_1.UserDITypes.SERVICE).to(user_service_1.UserService);
-dIContainer.bind(user_type_1.UserDITypes.CONTROLLER).to(user_controller_1.UserController);
+dIContainer.bind(user_type_1.UserDITypes.REPOSITORY).to(user_repository_1.default);
+dIContainer.bind(user_type_1.UserDITypes.SERVICE).to(user_service_1.default);
+dIContainer.bind(user_type_1.UserDITypes.CONTROLLER).to(user_controller_1.default);
 dIContainer
     .bind(user_type_1.UserDITypes.AUTHORIZATION)
     .to(user_authorization_1.default);
@@ -216,27 +216,27 @@ dIContainer
  */
 dIContainer
     .bind(course_type_1.CourseDITypes.REPOSITORY)
-    .to(course_repository_1.CourseRepository);
-dIContainer.bind(course_type_1.CourseDITypes.SERVICE).to(course_service_1.CourseService);
+    .to(course_repository_1.default);
+dIContainer.bind(course_type_1.CourseDITypes.SERVICE).to(course_service_1.default);
 dIContainer
     .bind(course_type_1.CourseDITypes.CONTROLLER)
-    .to(course_controller_1.CourseController);
+    .to(course_controller_1.default);
 dIContainer
     .bind(course_type_1.CourseDITypes.AUTHORIZATION)
-    .to(course_authorization_1.CourseAuthorization);
+    .to(course_authorization_1.default);
 /**
  * Course Category
  *
  */
 dIContainer
     .bind(category_type_1.CourseCategoryDITypes.REPOSITORY)
-    .to(category_repository_1.CourseCategoryRepository);
+    .to(category_repository_1.default);
 dIContainer
     .bind(category_type_1.CourseCategoryDITypes.SERVICE)
-    .to(category_service_1.CourseCategoryService);
+    .to(category_service_1.default);
 dIContainer
     .bind(category_type_1.CourseCategoryDITypes.CONTROLLER)
-    .to(category_controller_1.CourseCategoryController);
+    .to(category_controller_1.default);
 dIContainer
     .bind(category_type_1.CourseCategoryDITypes.AUTHORIZATION)
     .to(category_authorization_1.default);
@@ -249,10 +249,10 @@ dIContainer
     .to(enrollment_repository_1.default);
 dIContainer
     .bind(enrollment_type_1.CourseEnrollmentDITypes.SERVICE)
-    .to(enrollment_service_1.CourseEnrollmentService);
+    .to(enrollment_service_1.default);
 dIContainer
     .bind(enrollment_type_1.CourseEnrollmentDITypes.CONTROLLER)
-    .to(enrollment_controller_1.CourseEnrollmentController);
+    .to(enrollment_controller_1.default);
 dIContainer
     .bind(enrollment_type_1.CourseEnrollmentDITypes.AUTHORIZATION)
     .to(enrollment_authorization_1.default);
@@ -262,13 +262,13 @@ dIContainer
  */
 dIContainer
     .bind(lesson_type_1.CourseLessonDITypes.REPOSITORY)
-    .to(lesson_repository_1.CourseLessonRepository);
+    .to(lesson_repository_1.default);
 dIContainer
     .bind(lesson_type_1.CourseLessonDITypes.SERVICE)
-    .to(lesson_service_1.CourseLessonService);
+    .to(lesson_service_1.default);
 dIContainer
     .bind(lesson_type_1.CourseLessonDITypes.CONTROLLER)
-    .to(lesson_controller_1.CourseLessonController);
+    .to(lesson_controller_1.default);
 dIContainer
     .bind(lesson_type_1.CourseLessonDITypes.AUTHORIZATION)
     .to(lesson_authorization_1.default);

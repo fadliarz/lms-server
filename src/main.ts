@@ -1,7 +1,6 @@
 import "dotenv/config";
 import App from "./app";
 import validateEnv from "./common/functions/validateEnv";
-import { Api } from "./common/types";
 import UserRouter from "./modules/user/router/user.router";
 import { getAuthMiddleWare } from "./middlewares/getAuthMiddleware";
 import { userUrls } from "./modules/user/user.type";
@@ -13,6 +12,7 @@ import CourseLessonVideoRouter from "./modules/video/router/video.router";
 import CourseCategoryRouter from "./modules/category/router/category.router";
 import { courseCategoryUrls } from "./modules/category/category.type";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
+import { Api } from "./common/types";
 
 /**
  * Validate environment variables

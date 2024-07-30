@@ -1,11 +1,19 @@
 import { UserRoleModel } from "../course/course.type";
+import { CourseClassAssignmentModel } from "../assignment/assignment.type";
+
+export namespace $UserReturnData {
+  export type GetUserAssignments = (CourseClassAssignmentModel & {
+    class: { title: string };
+    course: { title: string };
+  })[];
+}
 
 export const UserDITypes = {
   REPOSITORY: Symbol.for("USER_REPOSITORY"),
   SERVICE: Symbol.for("USER_SERVICE"),
   CONTROLLER: Symbol.for("USER_CONTROLLER"),
   AUTHORIZATION: Symbol.for("USER_AUTHORIZATION"),
-};
+} as const;
 
 export enum userUrls {
   root = "/users",
@@ -24,28 +32,11 @@ export enum userUrls {
 /**
  *
  *
- * Interface
- *
- *
- */
-
-/**
- * Interface Authorization
- *
- */
-export interface IUserAuthorization {
-  authorizeGetUserAssignments: (user: UserModel, targetUserId: number) => void;
-  authorizeUpdateUser: (user: UserModel, targetUserId: number) => void;
-  authorizeDeleteUser: (user: UserModel, targetUserId: number) => void;
-}
-
-/**
- *
- *
  * Model
  *
  *
  */
+
 export type UserModel = {
   id: number;
   email: string;
@@ -90,6 +81,7 @@ export type FilteredUserModel = Exclude<
  *
  *
  */
+
 export type CreateUserDto = {
   email: string;
   password: string;

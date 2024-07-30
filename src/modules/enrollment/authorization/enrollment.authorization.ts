@@ -6,32 +6,17 @@ import getRoleStatus from "../../../common/functions/getRoleStatus";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
 import { CourseModel, UserRoleModel } from "../../course/course.type";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
-import { CourseEnrollment, CourseEnrollmentRole } from "@prisma/client";
+import { CourseEnrollmentRole } from "@prisma/client";
 import { injectable } from "inversify";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
 import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import { UserModel } from "../../user/user.type";
-
-export interface ICourseEnrollmentAuthorization {
-  authorizeCreateEnrollment: (
-    user: UserModel,
-    course: CourseModel,
-    dto: CreateCourseEnrollmentDto,
-  ) => void;
-  authorizeUpdateEnrollmentRole: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollment,
-  ) => void;
-  authorizeDeleteEnrollment: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel,
-  ) => void;
-}
+import { ICourseEnrollmentAuthorization } from "../enrollment.interface";
 
 @injectable()
-export default class CourseEnrollmentAuthorization {
+export default class CourseEnrollmentAuthorization
+  implements ICourseEnrollmentAuthorization
+{
   public authorizeCreateEnrollment(
     user: UserModel,
     course: CourseModel,

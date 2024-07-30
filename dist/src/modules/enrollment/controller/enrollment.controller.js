@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseEnrollmentController = void 0;
 const inversify_1 = require("inversify");
 const enrollment_type_1 = require("../enrollment.type");
 const statusCode_1 = require("../../../common/constants/statusCode");
@@ -69,7 +68,7 @@ let CourseEnrollmentController = class CourseEnrollmentController {
             try {
                 const enrollmentId = this.validateEnrollmentId(req);
                 const resourceId = this.validateResourceId(req);
-                const deletedEnrollment = yield this.service.deleteEnrollment(enrollmentId, resourceId);
+                yield this.service.deleteEnrollment(enrollmentId, resourceId);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({});
             }
             catch (error) {
@@ -96,11 +95,11 @@ let CourseEnrollmentController = class CourseEnrollmentController {
         return enrollmentId;
     }
 };
-exports.CourseEnrollmentController = CourseEnrollmentController;
 __decorate([
     (0, inversify_1.inject)(enrollment_type_1.CourseEnrollmentDITypes.SERVICE),
     __metadata("design:type", Object)
 ], CourseEnrollmentController.prototype, "service", void 0);
-exports.CourseEnrollmentController = CourseEnrollmentController = __decorate([
+CourseEnrollmentController = __decorate([
     (0, inversify_1.injectable)()
 ], CourseEnrollmentController);
+exports.default = CourseEnrollmentController;

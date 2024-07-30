@@ -8,29 +8,18 @@ import {
   CreateCourseEnrollmentDto,
   UpdateCourseEnrollmentRoleDto,
 } from "../enrollment.type";
-import { ICourseEnrollmentRepository } from "../repository/enrollment.repository";
 import { CourseDITypes, CourseErrorMessage } from "../../course/course.type";
-import { ICourseRepository } from "../../course/repository/course.repository";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-
-export interface ICourseEnrollmentService {
-  createEnrollment: (
-    resourceId: CourseEnrollmentResourceId,
-    dto: CreateCourseEnrollmentDto,
-  ) => Promise<CourseEnrollmentModel>;
-  updateEnrollmentRole: (
-    enrollmentId: number,
-    resourceId: CourseEnrollmentResourceId,
-    dto: UpdateCourseEnrollmentRoleDto,
-  ) => Promise<CourseEnrollmentModel>;
-  deleteEnrollment: (
-    enrollmentId: number,
-    resourceId: CourseEnrollmentResourceId,
-  ) => Promise<{}>;
-}
+import { ICourseRepository } from "../../course/course.interface";
+import {
+  ICourseEnrollmentRepository,
+  ICourseEnrollmentService,
+} from "../enrollment.interface";
 
 @injectable()
-export class CourseEnrollmentService implements ICourseEnrollmentService {
+export default class CourseEnrollmentService
+  implements ICourseEnrollmentService
+{
   @inject(CourseEnrollmentDITypes.REPOSITORY)
   repository: ICourseEnrollmentRepository;
 

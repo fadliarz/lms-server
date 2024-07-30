@@ -5,9 +5,8 @@ import jwt from "jsonwebtoken";
 import ForbiddenException from "../common/class/exceptions/ForbiddenException";
 import getValuable from "../common/functions/getValuable";
 import dIContainer from "../inversifyConfig";
-import { IUserService } from "../modules/user/service/user.service";
 import { UserDITypes } from "../modules/user/user.type";
-import { IUserRepository } from "../modules/user/repository/user.repository";
+import { IUserRepository, IUserService } from "../modules/user/user.interface";
 
 export default async (req: any, res: Response, next: NextFunction) => {
   const userService = dIContainer.get<IUserService>(UserDITypes.SERVICE);

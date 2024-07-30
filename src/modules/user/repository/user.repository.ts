@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {
+  $UserReturnData,
   CreateUserDto,
-  IUserAuthorization,
   UserDITypes,
   UserModel,
 } from "../user.type";
@@ -12,32 +12,13 @@ import {
 } from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { PrismaClient } from "@prisma/client";
-import { PrismaTransaction } from "../../../common/types";
 import getPrismaDb from "../../../common/functions/getPrismaDb";
 import asyncLocalStorage from "../../../common/asyncLocalStorage";
-import { CourseClassAssignmentModel } from "../../assignment/assignment.type";
-import { CourseClassModel } from "../../class/class.type";
-
-export interface IUserRepository {
-  createUser: (
-    dto: CreateUserDto,
-    accessToken: string,
-    refreshToken: string[],
-  ) => Promise<UserModel>;
-  getUserById: (userId: number) => Promise<UserModel | null>;
-  getUserByIdOrThrow: (userId: number, error?: Error) => Promise<UserModel>;
-  getUserByEmail: (email: string) => Promise<UserModel | null>;
-  getUserByAccessToken: (accessToken: string) => Promise<UserModel | null>;
-  getUserByRefreshToken: (refreshToken: string) => Promise<UserModel | null>;
-  getUserAssignments: (
-    userId: number,
-  ) => Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]>;
-  updateUser: (userId: number, dto: Partial<UserModel>) => Promise<UserModel>;
-  deleteUser: (userId: number) => Promise<UserModel>;
-}
+import { IUserAuthorization, IUserRepository } from "../user.interface";
+import { PrismaTransaction } from "../../../common/types";
 
 @injectable()
-export class UserRepository implements IUserRepository {
+export default class UserRepository implements IUserRepository {
   private db: PrismaTransaction | PrismaClient;
 
   @inject(UserDITypes.AUTHORIZATION)
@@ -115,7 +96,7 @@ export class UserRepository implements IUserRepository {
 
   public async getUserAssignments(
     userId: number,
-  ): Promise<(CourseClassAssignmentModel & { class: CourseClassModel })[]> {
+  ): Promise<$UserReturnData.GetUserAssignments> {
     const enrollments = await this.db.courseEnrollment.findMany({
       where: {
         id: userId,
@@ -123,11 +104,16 @@ export class UserRepository implements IUserRepository {
       select: {
         course: {
           select: {
+            title: true,
             classes: {
               select: {
                 assignments: {
                   include: {
-                    courseClass: true,
+                    courseClass: {
+                      select: {
+                        title: true,
+                      },
+                    },
                   },
                 },
               },
@@ -137,14 +123,16 @@ export class UserRepository implements IUserRepository {
       },
     });
 
-    const assignments: (CourseClassAssignmentModel & {
-      class: CourseClassModel;
-    })[] = [];
-    for (const enrollment of enrollments) {
+    const assignments: $UserReturnData.GetUserAssignments = [];
+    for (let enrollment of enrollments) {
       for (const theClass of enrollment.course.classes) {
         for (const assignment of theClass.assignments) {
           const { courseClass: tempTheClass, ...theAssignment } = assignment;
-          assignments.push({ ...theAssignment, class: tempTheClass });
+          assignments.push({
+            ...theAssignment,
+            class: tempTheClass,
+            course: { title: enrollment.course.title },
+          });
         }
       }
     }

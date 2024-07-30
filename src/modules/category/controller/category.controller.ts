@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import { ICourseCategoryService } from "../service/category.service";
 import {
   CourseCategoryDITypes,
   CourseCategoryResourceId,
@@ -15,32 +14,15 @@ import {
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import getValuable from "../../../common/functions/removeNullFields";
-
-export interface ICourseCategoryController {
-  createCategory: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getCategoryById: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getCategories: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateBasicCategory: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-}
+import {
+  ICourseCategoryController,
+  ICourseCategoryService,
+} from "../category.interface";
 
 @injectable()
-export class CourseCategoryController implements ICourseCategoryController {
+export default class CourseCategoryController
+  implements ICourseCategoryController
+{
   @inject(CourseCategoryDITypes.SERVICE)
   private readonly service: ICourseCategoryService;
 

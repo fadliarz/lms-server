@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { EventDITypes, IEventController, IEventService } from "../event.type";
+import { EventDITypes } from "../event.type";
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import validateJoi from "../../../common/functions/validateJoi";
 import { StatusCode } from "../../../common/constants/statusCode";
@@ -7,6 +7,7 @@ import { CourseResourceId } from "../../course/course.type";
 import { CreateEventDtoJoi, UpdateEventDtoJoi } from "./event.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
+import { IEventController, IEventService } from "../event.interface";
 
 @injectable()
 export default class EventController implements IEventController {

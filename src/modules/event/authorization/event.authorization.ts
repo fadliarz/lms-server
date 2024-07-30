@@ -1,9 +1,9 @@
 import { injectable } from "inversify";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import { IEventAuthorization } from "../event.type";
 import { UserModel } from "../../user/user.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
+import { IEventAuthorization } from "../event.interface";
 
 @injectable()
 export default class EventAuthorization

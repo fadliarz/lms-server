@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { CoursePromise, ICoursePrismaPromise } from "./prisma_promise.type";
 import { injectable } from "inversify";
-import PrismaClientSingleton from "../PrismaClientSingleton";
 import { PrismaTransaction } from "../../types";
 
 @injectable()

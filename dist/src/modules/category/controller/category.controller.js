@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseCategoryController = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const category_type_1 = require("../category.type");
@@ -107,11 +106,11 @@ let CourseCategoryController = class CourseCategoryController {
         return categoryId;
     }
 };
-exports.CourseCategoryController = CourseCategoryController;
 __decorate([
     (0, inversify_1.inject)(category_type_1.CourseCategoryDITypes.SERVICE),
     __metadata("design:type", Object)
 ], CourseCategoryController.prototype, "service", void 0);
-exports.CourseCategoryController = CourseCategoryController = __decorate([
+CourseCategoryController = __decorate([
     (0, inversify_1.injectable)()
 ], CourseCategoryController);
+exports.default = CourseCategoryController;

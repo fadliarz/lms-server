@@ -5,7 +5,7 @@ export const CourseEnrollmentDITypes = {
   SERVICE: Symbol.for("COURSE_ENROLLMENT_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_ENROLLMENT_CONTROLLER"),
   AUTHORIZATION: Symbol.for("COURSE_ENROLLMENT_AUTHORIZATION"),
-};
+} as const;
 
 export enum courseEnrollmentUrls {
   root = "/courses/:courseId/enrollments",

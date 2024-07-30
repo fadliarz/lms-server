@@ -27,22 +27,7 @@ import {
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
 import { UserModel } from "../../user/user.type";
-
-export interface ICourseEnrollmentRepository {
-  createEnrollment: (
-    resourceId: CourseEnrollmentResourceId,
-    dto: CreateCourseEnrollmentDto,
-  ) => Promise<CourseEnrollment>;
-  updateEnrollmentRole: (
-    enrollmentId: number,
-    resourceId: CourseEnrollmentResourceId,
-    dto: UpdateCourseEnrollmentRoleDto,
-  ) => Promise<CourseEnrollment>;
-  deleteEnrollment: (
-    enrollmentId: number,
-    resourceId: CourseEnrollmentResourceId,
-  ) => Promise<{}>;
-}
+import { ICourseEnrollmentRepository } from "../enrollment.interface";
 
 @injectable()
 export default class CourseEnrollmentRepository

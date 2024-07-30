@@ -4,10 +4,12 @@ import {
   CourseClassAssignmentModel,
   CourseClassAssignmentResourceId,
   CreateCourseClassAssignmentDto,
-  ICourseClassAssignmentRepository,
-  ICourseClassAssignmentService,
   UpdateCourseClassAssignmentDto,
 } from "../assignment.type";
+import {
+  ICourseClassAssignmentRepository,
+  ICourseClassAssignmentService,
+} from "../assignment.interface";
 import { CourseClassModel } from "../../class/class.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";

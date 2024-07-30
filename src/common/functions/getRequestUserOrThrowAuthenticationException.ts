@@ -1,10 +1,10 @@
-import { AuthenticatedRequest } from "../types";
 import { Request } from "express";
 import { UserModel } from "../../modules/user/user.type";
 import AuthenticationException from "../class/exceptions/AuthenticationException";
+import { AuthenticatedRequest } from "../types";
 
 export default function getRequestUserOrThrowAuthenticationException(
-  req: Request
+  req: Request,
 ): UserModel {
   const authenticatedRequest = req as AuthenticatedRequest;
 

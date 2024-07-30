@@ -13,7 +13,6 @@ import {
   GetCoursesQuery,
   GetEnrolledCoursesData,
   GetEnrolledCoursesQuery,
-  ICourseAuthorization,
   UpdateCourseDto,
 } from "../course.type";
 import { inject, injectable } from "inversify";
@@ -29,49 +28,10 @@ import {
   IPrismaQueryRaw,
   PrismaQueryRawDITypes,
 } from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
-
-export interface ICourseRepository {
-  createCourse: (
-    resourceId: CourseResourceId,
-    dto: CreateCourseDto,
-  ) => Promise<CourseModel>;
-  getCourseById: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
-  ) => Promise<GetCourseByIdData | null>;
-  getCourseByIdOrThrow: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
-    error?: Error,
-  ) => Promise<CourseModel>;
-  getCourses: (query: GetCoursesQuery) => Promise<GetCoursesData>;
-  getEnrolledCourses: (
-    resourceId: CourseResourceId,
-    query: GetEnrolledCoursesQuery,
-  ) => Promise<GetEnrolledCoursesData>;
-  updateCourse: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseDto,
-  ) => Promise<CourseModel>;
-  deleteCourse: (courseId: number, resourceId: CourseResourceId) => Promise<{}>;
-  createLike: (resourceId: CourseLikeResourceId) => Promise<CourseLikeModel>;
-  getLikeById: (
-    likeId: number,
-    resourceId: CourseLikeResourceId,
-  ) => Promise<CourseLikeModel | null>;
-  getLikeByIdOrThrow: (
-    likeId: number,
-    resourceId: CourseLikeResourceId,
-    error?: Error,
-  ) => Promise<CourseLikeModel>;
-  deleteLike: (likeId: number, resourceId: CourseLikeResourceId) => Promise<{}>;
-}
+import { ICourseAuthorization, ICourseRepository } from "../course.interface";
 
 @injectable()
-export class CourseRepository
+export default class CourseRepository
   extends BaseAuthorization
   implements ICourseRepository
 {

@@ -1,12 +1,6 @@
 import { inject, injectable } from "inversify";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import {
-  CreateEventDto,
-  EventModel,
-  EventResourceId,
-  IEventAuthorization,
-  IEventRepository,
-} from "../event.type";
+import { CreateEventDto, EventModel, EventResourceId } from "../event.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import { CourseClassDITypes } from "../../class/class.type";
 import {
@@ -14,6 +8,7 @@ import {
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { IEventAuthorization, IEventRepository } from "../event.interface";
 
 @injectable()
 export default class EventRepository

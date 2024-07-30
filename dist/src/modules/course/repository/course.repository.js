@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseRepository = void 0;
 require("reflect-metadata");
 const course_type_1 = require("../course.type");
 const inversify_1 = require("inversify");
@@ -256,7 +255,6 @@ let CourseRepository = class CourseRepository extends BaseAuthorization_1.defaul
         });
     }
 };
-exports.CourseRepository = CourseRepository;
 __decorate([
     (0, inversify_1.inject)(course_type_1.CourseDITypes.AUTHORIZATION),
     __metadata("design:type", Object)
@@ -265,6 +263,7 @@ __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
     __metadata("design:type", Object)
 ], CourseRepository.prototype, "prismaQueryRaw", void 0);
-exports.CourseRepository = CourseRepository = __decorate([
+CourseRepository = __decorate([
     (0, inversify_1.injectable)()
 ], CourseRepository);
+exports.default = CourseRepository;

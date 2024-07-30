@@ -3,17 +3,14 @@ import AuthorizationException from "../../../common/class/exceptions/Authorizati
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import { injectable } from "inversify";
 import { UserModel } from "../../user/user.type";
-import {
-  CourseEnrollmentRoleModel,
-  CourseModel,
-  ICourseAuthorization,
-} from "../course.type";
+import { CourseEnrollmentRoleModel, CourseModel } from "../course.type";
 import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
+import { ICourseAuthorization } from "../course.interface";
 
 @injectable()
-export class CourseAuthorization
+export default class CourseAuthorization
   extends BaseAuthorization
   implements ICourseAuthorization
 {

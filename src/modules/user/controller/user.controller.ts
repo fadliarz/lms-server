@@ -1,6 +1,5 @@
 import { StatusCode } from "../../../common/constants/statusCode";
 import { NextFunction, Request, Response } from "express";
-import { IUserService } from "../service/user.service";
 import { inject, injectable } from "inversify";
 import { UserDITypes } from "../user.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
@@ -18,67 +17,10 @@ import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import filterUserObject from "../../../common/functions/filterUserObject";
-
-export interface IUserController {
-  createUser: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getPublicUserById: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getMe: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getUserAssignments: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateBasicUser: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateUserEmail: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateUserPassword: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateUserPhoneNumber: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  deleteUser: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  signIn: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  signOut: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-}
+import { IUserController, IUserService } from "../user.interface";
 
 @injectable()
-export class UserController implements IUserController {
+export default class UserController implements IUserController {
   @inject(UserDITypes.SERVICE) private service: IUserService;
 
   public async createUser(

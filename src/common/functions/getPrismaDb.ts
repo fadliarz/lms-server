@@ -1,8 +1,8 @@
-import { PrismaTransaction } from "../types";
 import { PrismaClient } from "@prisma/client";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { LocalStorageKey } from "../constants/LocalStorageKey";
 import PrismaClientSingleton from "../class/PrismaClientSingleton";
+import { PrismaTransaction } from "../types";
 
 export default function getPrismaDb(
   asyncLocalStorage: AsyncLocalStorage<any>,

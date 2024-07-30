@@ -9,7 +9,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseAuthorization = void 0;
 require("reflect-metadata");
 const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
 const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
@@ -96,7 +95,7 @@ let CourseAuthorization = class CourseAuthorization extends BaseAuthorization_1.
         return this.authorizeCreateLike(user, course, enrollment);
     }
 };
-exports.CourseAuthorization = CourseAuthorization;
-exports.CourseAuthorization = CourseAuthorization = __decorate([
+CourseAuthorization = __decorate([
     (0, inversify_1.injectable)()
 ], CourseAuthorization);
+exports.default = CourseAuthorization;

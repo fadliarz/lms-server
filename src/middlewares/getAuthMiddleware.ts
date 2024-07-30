@@ -4,10 +4,10 @@ import jwt from "jsonwebtoken";
 import AuthenticationException from "../common/class/exceptions/AuthenticationException";
 import { Cookie } from "../common/constants/Cookie";
 import dIContainer from "../inversifyConfig";
-import { IUserRepository } from "../modules/user/repository/user.repository";
 import { UserDITypes } from "../modules/user/user.type";
 import getValuable from "../common/functions/getValuable";
 import refreshToken from "./refreshToken";
+import { IUserRepository } from "../modules/user/user.interface";
 
 export const getAuthMiddleWare = () => {
   const userRepository = dIContainer.get<IUserRepository>(

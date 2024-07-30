@@ -4,7 +4,6 @@ import {
   CourseEnrollmentDITypes,
   CourseEnrollmentResourceId,
 } from "../enrollment.type";
-import { ICourseEnrollmentService } from "../service/enrollment.service";
 import { StatusCode } from "../../../common/constants/statusCode";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
@@ -14,27 +13,15 @@ import {
   UpdateCourseEnrollmentRoleDtoJoi,
 } from "./enrollment.joi";
 import getValuable from "../../../common/functions/removeNullFields";
-
-export interface ICourseEnrollmentController {
-  createEnrollment: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateEnrollmentRole: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  deleteEnrollment: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-}
+import {
+  ICourseEnrollmentController,
+  ICourseEnrollmentService,
+} from "../enrollment.interface";
 
 @injectable()
-export class CourseEnrollmentController implements ICourseEnrollmentController {
+export default class CourseEnrollmentController
+  implements ICourseEnrollmentController
+{
   @inject(CourseEnrollmentDITypes.SERVICE)
   service: ICourseEnrollmentService;
 
@@ -98,10 +85,7 @@ export class CourseEnrollmentController implements ICourseEnrollmentController {
     try {
       const enrollmentId = this.validateEnrollmentId(req);
       const resourceId = this.validateResourceId(req);
-      const deletedEnrollment = await this.service.deleteEnrollment(
-        enrollmentId,
-        resourceId,
-      );
+      await this.service.deleteEnrollment(enrollmentId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({});
     } catch (error) {

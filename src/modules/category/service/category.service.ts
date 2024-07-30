@@ -7,25 +7,13 @@ import {
   CreateCourseCategoryDto,
   UpdateBasicCourseCategoryDto,
 } from "../category.type";
-import { ICourseCategoryRepository } from "../repository/category.repository";
-import getValuable from "../../../common/functions/getValuable";
-
-export interface ICourseCategoryService {
-  createCategory: (
-    resourceId: CourseCategoryResourceId,
-    dto: CreateCourseCategoryDto,
-  ) => Promise<CourseCategoryModel>;
-  getCategoryById: (categoryId: number) => Promise<CourseCategoryModel>;
-  getCategories: () => Promise<CourseCategoryModel[]>;
-  updateBasicCategory: (
-    categoryId: number,
-    resourceId: CourseCategoryResourceId,
-    dto: UpdateBasicCourseCategoryDto,
-  ) => Promise<CourseCategoryModel>;
-}
+import {
+  ICourseCategoryRepository,
+  ICourseCategoryService,
+} from "../category.interface";
 
 @injectable()
-export class CourseCategoryService implements ICourseCategoryService {
+export default class CourseCategoryService implements ICourseCategoryService {
   @inject(CourseCategoryDITypes.REPOSITORY)
   private readonly repository: ICourseCategoryRepository;
 

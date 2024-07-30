@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseLessonService = void 0;
 const inversify_1 = require("inversify");
 const lesson_type_1 = require("../lesson.type");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
@@ -80,11 +79,11 @@ let CourseLessonService = class CourseLessonService {
         });
     }
 };
-exports.CourseLessonService = CourseLessonService;
 __decorate([
     (0, inversify_1.inject)(lesson_type_1.CourseLessonDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], CourseLessonService.prototype, "repository", void 0);
-exports.CourseLessonService = CourseLessonService = __decorate([
+CourseLessonService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseLessonService);
+exports.default = CourseLessonService;

@@ -5,7 +5,6 @@ import {
   CourseLessonResourceId,
   ValuableCourseLessonModel,
 } from "../lesson.type";
-import { ICourseLessonService } from "../service/lesson.service";
 import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
@@ -15,38 +14,14 @@ import {
 import NaNException from "../../../common/class/exceptions/NaNException";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import getValuable from "../../../common/functions/removeNullFields";
+import {
+  ICourseLessonController,
+  ICourseLessonService,
+} from "../lesson.interface";
 import { UnauthenticatedResourceId } from "../../../common/types";
 
-export interface ICourseLessonController {
-  createLesson: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getLessonById: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  getLessons: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateBasicLesson: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  deleteLesson: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-}
-
 @injectable()
-export class CourseLessonController implements ICourseLessonController {
+export default class CourseLessonController implements ICourseLessonController {
   @inject(CourseLessonDITypes.SERVICE)
   private readonly service: ICourseLessonService;
 

@@ -1,59 +1,10 @@
 import "reflect-metadata";
 import { Container } from "inversify";
-import {
-  IUserController,
-  UserController,
-} from "./modules/user/controller/user.controller";
-import {
-  IUserRepository,
-  UserRepository,
-} from "./modules/user/repository/user.repository";
-import { IUserService, UserService } from "./modules/user/service/user.service";
-import { IUserAuthorization, UserDITypes } from "./modules/user/user.type";
-import {
-  CourseController,
-  ICourseController,
-} from "./modules/course/controller/course.controller";
-import {
-  CourseService,
-  ICourseService,
-} from "./modules/course/service/course.service";
-import {
-  CourseRepository,
-  ICourseRepository,
-} from "./modules/course/repository/course.repository";
-import {
-  CourseDITypes,
-  ICourseAuthorization,
-} from "./modules/course/course.type";
-import {
-  CourseEnrollmentController,
-  ICourseEnrollmentController,
-} from "./modules/enrollment/controller/enrollment.controller";
+import { UserDITypes } from "./modules/user/user.type";
+import { CourseDITypes } from "./modules/course/course.type";
 import { CourseEnrollmentDITypes } from "./modules/enrollment/enrollment.type";
-import {
-  CourseEnrollmentService,
-  ICourseEnrollmentService,
-} from "./modules/enrollment/service/enrollment.service";
-import CourseEnrollmentRepository, {
-  ICourseEnrollmentRepository,
-} from "./modules/enrollment/repository/enrollment.repository";
-import {
-  CourseLessonRepository,
-  ICourseLessonRepository,
-} from "./modules/lesson/repository/lesson.repository";
-import {
-  CourseLessonDITypes,
-  ICourseLessonAuthorization,
-} from "./modules/lesson/lesson.type";
-import {
-  CourseLessonService,
-  ICourseLessonService,
-} from "./modules/lesson/service/lesson.service";
-import {
-  CourseLessonController,
-  ICourseLessonController,
-} from "./modules/lesson/controller/lesson.controller";
+import CourseEnrollmentRepository from "./modules/enrollment/repository/enrollment.repository";
+import { CourseLessonDITypes } from "./modules/lesson/lesson.type";
 import {
   CourseLessonVideoRepository,
   ICourseLessonVideoRepository,
@@ -70,22 +21,8 @@ import {
   CourseLessonVideoController,
   ICourseLessonVideoController,
 } from "./modules/video/controller/video.controller";
-import {
-  CourseCategoryRepository,
-  ICourseCategoryRepository,
-} from "./modules/category/repository/category.repository";
-import {
-  CourseCategoryService,
-  ICourseCategoryService,
-} from "./modules/category/service/category.service";
-import {
-  CourseCategoryController,
-  ICourseCategoryController,
-} from "./modules/category/controller/category.controller";
-import {
-  CourseCategoryDITypes,
-  ICourseCategoryAuthorization,
-} from "./modules/category/category.type";
+import CourseCategoryRepository from "./modules/category/repository/category.repository";
+import { CourseCategoryDITypes } from "./modules/category/category.type";
 import {
   ICourseEnrollmentTable,
   ICourseLessonTable,
@@ -163,46 +100,88 @@ import {
   RepositoryDITypes,
 } from "./common/class/repository/repository.type";
 import Repository from "./common/class/repository/Repository";
-import { CourseAuthorization } from "./modules/course/authorization/course.authorization";
 import CourseLessonRandDTO from "./common/class/rand_dto/CourseLessonRandDTO";
 import CourseLessonVideoRandDTO from "./common/class/rand_dto/CourseLessonVideoRandDTO";
 import BaseAuthorization, {
   BaseAuthorizationDITypes,
 } from "./common/class/BaseAuthorization";
 import UserAuthorization from "./modules/user/authorization/user.authorization";
-import {
-  CourseClassDITypes,
-  ICourseClassAuthorization,
-  ICourseClassController,
-  ICourseClassRepository,
-  ICourseClassService,
-} from "./modules/class/class.type";
+import { CourseClassDITypes } from "./modules/class/class.type";
 import CourseClassRepository from "./modules/class/repository/class.repository";
 import CourseClassService from "./modules/class/service/class.service";
 import CourseClassController from "./modules/class/controller/class.controller";
 import CourseClassAuthorization from "./modules/class/authorization/class.authorization";
+import { CourseClassAssignmentDITypes } from "./modules/assignment/assignment.type";
 import {
-  CourseClassAssignmentDITypes,
   ICourseClassAssignmentAuthorization,
   ICourseClassAssignmentController,
   ICourseClassAssignmentRepository,
   ICourseClassAssignmentService,
-} from "./modules/assignment/assignment.type";
+} from "./modules/assignment/assignment.interface";
 import CourseClassAssignmentRepository from "./modules/assignment/repository/assignment.repository";
 import CourseClassAssignmentService from "./modules/assignment/service/assignment.service";
 import CourseClassAssignmentController from "./modules/assignment/controller/assignment.controller";
 import CourseClassAssignmentAuthorization from "./modules/assignment/authorization/assignment.authorization";
-import {
-  EventDITypes,
-  IEventAuthorization,
-  IEventController,
-  IEventRepository,
-  IEventService,
-} from "./modules/event/event.type";
+import { EventDITypes } from "./modules/event/event.type";
 import EventRepository from "./modules/event/repository/event.repository";
 import EventService from "./modules/event/service/event.service";
 import EventController from "./modules/event/controller/event.controller";
 import EventAuthorization from "./modules/event/authorization/event.authorization";
+import {
+  ICourseCategoryAuthorization,
+  ICourseCategoryController,
+  ICourseCategoryRepository,
+  ICourseCategoryService,
+} from "./modules/category/category.interface";
+import CourseCategoryService from "./modules/category/service/category.service";
+import CourseCategoryController from "./modules/category/controller/category.controller";
+import {
+  ICourseAuthorization,
+  ICourseController,
+  ICourseRepository,
+  ICourseService,
+} from "./modules/course/course.interface";
+import CourseRepository from "./modules/course/repository/course.repository";
+import CourseService from "./modules/course/service/course.service";
+import CourseController from "./modules/course/controller/course.controller";
+import CourseAuthorization from "./modules/course/authorization/course.authorization";
+import {
+  ICourseClassAuthorization,
+  ICourseClassController,
+  ICourseClassRepository,
+  ICourseClassService,
+} from "./modules/class/class.interface";
+import {
+  ICourseEnrollmentController,
+  ICourseEnrollmentRepository,
+  ICourseEnrollmentService,
+} from "./modules/enrollment/enrollment.interface";
+import CourseEnrollmentService from "./modules/enrollment/service/enrollment.service";
+import CourseEnrollmentController from "./modules/enrollment/controller/enrollment.controller";
+import {
+  ICourseLessonAuthorization,
+  ICourseLessonController,
+  ICourseLessonRepository,
+  ICourseLessonService,
+} from "./modules/lesson/lesson.interface";
+import CourseLessonRepository from "./modules/lesson/repository/lesson.repository";
+import CourseLessonService from "./modules/lesson/service/lesson.service";
+import CourseLessonController from "./modules/lesson/controller/lesson.controller";
+import {
+  IEventAuthorization,
+  IEventController,
+  IEventRepository,
+  IEventService,
+} from "./modules/event/event.interface";
+import {
+  IUserAuthorization,
+  IUserController,
+  IUserRepository,
+  IUserService,
+} from "./modules/user/user.interface";
+import UserRepository from "./modules/user/repository/user.repository";
+import UserService from "./modules/user/service/user.service";
+import UserController from "./modules/user/controller/user.controller";
 
 const dIContainer = new Container();
 

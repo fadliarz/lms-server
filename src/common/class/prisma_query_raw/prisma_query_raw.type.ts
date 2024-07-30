@@ -1,10 +1,10 @@
-import { PrismaTransaction } from "../../types";
 import { UserModel } from "../../../modules/user/user.type";
 import { CourseModel } from "../../../modules/course/course.type";
 import { CourseCategoryModel } from "../../../modules/category/category.type";
 import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.type";
 import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
+import { PrismaTransaction } from "../../types";
 
 export const PrismaQueryRawDITypes = {
   PRISMA_QUERY_RAW: Symbol.for("PRISMA_QUERY_RAW"),

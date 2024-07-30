@@ -3,8 +3,8 @@ import dIContainer from "../../../inversifyConfig";
 import {
   CourseClassAssignmentDITypes,
   courseClassAssignmentUrls,
-  ICourseClassAssignmentController,
 } from "../assignment.type";
+import { ICourseClassAssignmentController } from "../assignment.interface";
 
 export default function CourseClassAssignmentsRouter(
   authenticationMiddleware: any,

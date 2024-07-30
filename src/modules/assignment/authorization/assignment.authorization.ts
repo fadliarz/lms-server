@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import { ICourseClassAssignmentAuthorization } from "../assignment.type";
+import { ICourseClassAssignmentAuthorization } from "../assignment.interface";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import { UserModel } from "../../user/user.type";
 import {

@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserService = void 0;
 require("reflect-metadata");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const lodash_1 = require("lodash");
@@ -54,10 +53,7 @@ let UserService = class UserService {
                 const accessToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, email);
                 const refreshToken = this.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, email);
                 dto.password = (0, encrypt_1.default)(password);
-                const newUser = yield this.repository.createUser(dto, accessToken, [
-                    refreshToken,
-                ]);
-                return newUser;
+                return yield this.repository.createUser(dto, accessToken, [refreshToken]);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error, {
@@ -320,7 +316,6 @@ let UserService = class UserService {
         return (0, lodash_1.isEqual)((0, encrypt_1.default)(password), encryptedPassword);
     }
 };
-exports.UserService = UserService;
 __decorate([
     (0, inversify_1.inject)(user_type_1.UserDITypes.REPOSITORY),
     __metadata("design:type", Object)
@@ -333,6 +328,7 @@ __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
     __metadata("design:type", Object)
 ], UserService.prototype, "prismaQueryRaw", void 0);
-exports.UserService = UserService = __decorate([
+UserService = __decorate([
     (0, inversify_1.injectable)()
 ], UserService);
+exports.default = UserService;

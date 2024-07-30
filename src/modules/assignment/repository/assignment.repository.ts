@@ -5,9 +5,11 @@ import {
   CourseClassAssignmentModel,
   CourseClassAssignmentResourceId,
   CreateCourseClassAssignmentDto,
+} from "../assignment.type";
+import {
   ICourseClassAssignmentAuthorization,
   ICourseClassAssignmentRepository,
-} from "../assignment.type";
+} from "../assignment.interface";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import {
   PrismaDefaultTransactionConfigForRead,

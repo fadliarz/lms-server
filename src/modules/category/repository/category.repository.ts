@@ -5,7 +5,6 @@ import {
   CourseCategoryModel,
   CourseCategoryResourceId,
   CreateCourseCategoryDto,
-  ICourseCategoryAuthorization,
   UpdateBasicCourseCategoryDto,
 } from "../category.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
@@ -19,33 +18,21 @@ import {
   PrismaDefaultTransactionConfigForRead,
   PrismaDefaultTransactionConfigForWrite,
 } from "../../../common/constants/prismaDefaultConfig";
-import { PrismaTransaction } from "../../../common/types";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import CourseCategoryAuthorization from "../authorization/category.authorization";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { UserModel } from "../../user/user.type";
-
-export interface ICourseCategoryRepository {
-  createCategory: (
-    resourceId: CourseCategoryResourceId,
-    dto: CreateCourseCategoryDto,
-  ) => Promise<CourseCategory>;
-  getCategories: () => Promise<CourseCategory[]>;
-  getCategoryById: (categoryId: number) => Promise<CourseCategoryModel | null>;
-  getCategoryByIdOrThrow: (
-    categoryId: number,
-    error?: Error,
-  ) => Promise<CourseCategoryModel>;
-  updateCategory: (
-    categoryId: number,
-    resourceId: CourseCategoryResourceId,
-    dto: UpdateBasicCourseCategoryDto,
-  ) => Promise<CourseCategory>;
-}
+import {
+  ICourseCategoryAuthorization,
+  ICourseCategoryRepository,
+} from "../category.interface";
+import { PrismaTransaction } from "../../../common/types";
 
 @injectable()
-export class CourseCategoryRepository implements ICourseCategoryRepository {
+export default class CourseCategoryRepository
+  implements ICourseCategoryRepository
+{
   @inject(CourseCategoryDITypes.AUTHORIZATION)
   private readonly authorization: ICourseCategoryAuthorization;
 

@@ -1,11 +1,11 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { ICourseEnrollmentController } from "../controller/enrollment.controller";
 import {
   CourseEnrollmentDITypes,
   courseEnrollmentUrls,
 } from "../enrollment.type";
+import { ICourseEnrollmentController } from "../enrollment.interface";
 
 export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
   const router = express.Router();

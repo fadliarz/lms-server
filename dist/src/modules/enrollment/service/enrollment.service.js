@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseEnrollmentService = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const enrollment_type_1 = require("../enrollment.type");
@@ -68,7 +67,6 @@ let CourseEnrollmentService = class CourseEnrollmentService {
         });
     }
 };
-exports.CourseEnrollmentService = CourseEnrollmentService;
 __decorate([
     (0, inversify_1.inject)(enrollment_type_1.CourseEnrollmentDITypes.REPOSITORY),
     __metadata("design:type", Object)
@@ -77,6 +75,7 @@ __decorate([
     (0, inversify_1.inject)(course_type_1.CourseDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], CourseEnrollmentService.prototype, "courseRepository", void 0);
-exports.CourseEnrollmentService = CourseEnrollmentService = __decorate([
+CourseEnrollmentService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseEnrollmentService);
+exports.default = CourseEnrollmentService;

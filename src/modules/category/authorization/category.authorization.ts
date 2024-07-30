@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
-import { ICourseCategoryAuthorization } from "../category.type";
+import { ICourseCategoryAuthorization } from "../category.interface";
 import { injectable } from "inversify";
 import { UserModel } from "../../user/user.type";
 

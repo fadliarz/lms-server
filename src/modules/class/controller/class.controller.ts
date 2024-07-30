@@ -2,8 +2,6 @@ import { inject, injectable } from "inversify";
 import {
   CourseClassDITypes,
   CourseClassResourceId,
-  ICourseClassController,
-  ICourseClassService,
   ValuableCourseClassModel,
 } from "../class.type";
 import { NextFunction, Request, Response } from "express";
@@ -14,6 +12,10 @@ import { ValuableCourseLessonModel } from "../../lesson/lesson.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import { CreateCourseClassDtoJoi, UpdateCourseClassDtoJoi } from "./class.joi";
+import {
+  ICourseClassController,
+  ICourseClassService,
+} from "../class.interface";
 import { UnauthenticatedResourceId } from "../../../common/types";
 
 @injectable()

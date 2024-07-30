@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserController = void 0;
 const statusCode_1 = require("../../../common/constants/statusCode");
 const inversify_1 = require("inversify");
 const user_type_1 = require("../user.type");
@@ -245,11 +244,11 @@ let UserController = class UserController {
         return userId;
     }
 };
-exports.UserController = UserController;
 __decorate([
     (0, inversify_1.inject)(user_type_1.UserDITypes.SERVICE),
     __metadata("design:type", Object)
 ], UserController.prototype, "service", void 0);
-exports.UserController = UserController = __decorate([
+UserController = __decorate([
     (0, inversify_1.injectable)()
 ], UserController);
+exports.default = UserController;

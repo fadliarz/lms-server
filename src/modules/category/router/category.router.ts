@@ -1,7 +1,7 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { ICourseCategoryController } from "../controller/category.controller";
 import { CourseCategoryDITypes, courseCategoryUrls } from "../category.type";
+import { ICourseCategoryController } from "../category.interface";
 
 export default function CourseCategoryRouter(authenticationMiddleware: any) {
   const router = express.Router();

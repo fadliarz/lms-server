@@ -6,10 +6,10 @@ import helmet from "helmet";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import errorMiddleware from "./middlewares/errorMiddleware";
-import { Api } from "./common/types";
 import swaggerUi from "swagger-ui-express";
 import yaml from "yamljs";
 import path from "path";
+import { Api } from "./common/types";
 
 class App {
   public readonly express: Application;

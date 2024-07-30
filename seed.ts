@@ -53,6 +53,8 @@ const main = async () => {
       x(10 * courseLessons.length, {
         youtubeLink:
           "https://www.youtube.com/watch?v=NyOYW07-L5g&ab_channel=TheOrganicChemistryTutor",
+        attachment:
+          "https://libgen.is/book/index.php?md5=BBFE90154D738CC2BA66088F31CBCD5F",
       }),
     {
       connect: { courseLesson: courseLessons },

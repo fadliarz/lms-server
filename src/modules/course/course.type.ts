@@ -1,7 +1,6 @@
-import { PublicUserModel, UserModel } from "../user/user.type";
+import { PublicUserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
 import { CourseCategoryModel } from "../category/category.type";
-import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 import {
   CourseLessonVideoModel,
   PublicCourseLessonVideoModel,
@@ -12,7 +11,7 @@ export const CourseDITypes = {
   SERVICE: Symbol.for("COURSE_SERVICE"),
   CONTROLLER: Symbol.for("COURSE_CONTROLLER"),
   AUTHORIZATION: Symbol.for("COURSE_AUTHORIZATION"),
-};
+} as const;
 
 export enum courseUrls {
   root = "/courses",
@@ -28,42 +27,6 @@ export enum courseUrls {
 
 export enum CourseErrorMessage {
   COURSE_DOES_NOT_EXIST = "course doesn't exist!",
-}
-
-/**
- *
- *
- * Interface
- *
- *
- */
-
-/**
- * Interface Authorization
- *
- */
-export interface ICourseAuthorization {
-  authorizeCreateCourse: (user: UserModel) => void;
-  authorizeUpdateBasicCourse: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeDeleteCourse: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeCreateLike: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeDeleteLike: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
 }
 
 /**

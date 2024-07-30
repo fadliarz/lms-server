@@ -18,7 +18,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseCategoryService = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const category_type_1 = require("../category.type");
@@ -44,11 +43,11 @@ let CourseCategoryService = class CourseCategoryService {
         });
     }
 };
-exports.CourseCategoryService = CourseCategoryService;
 __decorate([
     (0, inversify_1.inject)(category_type_1.CourseCategoryDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], CourseCategoryService.prototype, "repository", void 0);
-exports.CourseCategoryService = CourseCategoryService = __decorate([
+CourseCategoryService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseCategoryService);
+exports.default = CourseCategoryService;

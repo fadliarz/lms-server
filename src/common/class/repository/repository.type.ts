@@ -1,11 +1,11 @@
-import { IUserRepository } from "../../../modules/user/repository/user.repository";
-import { ICourseCategoryRepository } from "../../../modules/category/repository/category.repository";
-import { ICourseRepository } from "../../../modules/course/repository/course.repository";
-import { ICourseLessonRepository } from "../../../modules/lesson/repository/lesson.repository";
 import { ICourseLessonVideoRepository } from "../../../modules/video/repository/video.repository";
-import { ICourseEnrollmentRepository } from "../../../modules/enrollment/repository/enrollment.repository";
-import { ICourseClassRepository } from "../../../modules/class/class.type";
-import { ICourseClassAssignmentRepository } from "../../../modules/assignment/assignment.type";
+import { ICourseClassAssignmentRepository } from "../../../modules/assignment/assignment.interface";
+import { ICourseCategoryRepository } from "../../../modules/category/category.interface";
+import { ICourseRepository } from "../../../modules/course/course.interface";
+import { ICourseClassRepository } from "../../../modules/class/class.interface";
+import { ICourseEnrollmentRepository } from "../../../modules/enrollment/enrollment.interface";
+import { ICourseLessonRepository } from "../../../modules/lesson/lesson.interface";
+import { IUserRepository } from "../../../modules/user/user.interface";
 
 export const RepositoryDITypes = {
   FACADE: Symbol.for("FACADE_REPOSITORY"),

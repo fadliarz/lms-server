@@ -6,43 +6,16 @@ import {
   CreateCourseLessonDto,
   UpdateBasicCourseLessonDto,
 } from "../lesson.type";
-import { ICourseLessonRepository } from "../repository/lesson.repository";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import { UnauthenticatedResourceId } from "../../../common/types";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-
-export interface ICourseLessonService {
-  createLesson: (
-    resourceId: CourseLessonResourceId,
-    dto: CreateCourseLessonDto,
-  ) => Promise<CourseLessonModel>;
-  getLessonById: (
-    lessonId: number,
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel>;
-  getLessons: (
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel[]>;
-  updateBasicLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-    dto: UpdateBasicCourseLessonDto,
-  ) => Promise<CourseLessonModel>;
-  deleteLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-  ) => Promise<{}>;
-  validateRelationBetweenResources: (
-    id: {
-      lessonId: number;
-      resourceId: CourseLessonResourceId;
-    },
-    error?: Error,
-  ) => Promise<CourseLessonModel | null>;
-}
+import {
+  ICourseLessonRepository,
+  ICourseLessonService,
+} from "../lesson.interface";
+import { UnauthenticatedResourceId } from "../../../common/types";
 
 @injectable()
-export class CourseLessonService implements ICourseLessonService {
+export default class CourseLessonService implements ICourseLessonService {
   @inject(CourseLessonDITypes.REPOSITORY)
   private readonly repository: ICourseLessonRepository;
 

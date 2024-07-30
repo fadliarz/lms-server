@@ -21,7 +21,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseController = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const course_type_1 = require("../course.type");
@@ -235,11 +234,11 @@ let CourseController = class CourseController {
         return likeId;
     }
 };
-exports.CourseController = CourseController;
 __decorate([
     (0, inversify_1.inject)(course_type_1.CourseDITypes.SERVICE),
     __metadata("design:type", Object)
 ], CourseController.prototype, "service", void 0);
-exports.CourseController = CourseController = __decorate([
+CourseController = __decorate([
     (0, inversify_1.injectable)()
 ], CourseController);
+exports.default = CourseController;

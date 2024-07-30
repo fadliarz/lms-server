@@ -2,10 +2,12 @@ import { inject, injectable } from "inversify";
 import {
   CourseClassAssignmentDITypes,
   CourseClassAssignmentResourceId,
-  ICourseClassAssignmentController,
-  ICourseClassAssignmentService,
   ValuableCourseClassAssignmentModel,
 } from "../assignment.type";
+import {
+  ICourseClassAssignmentController,
+  ICourseClassAssignmentService,
+} from "../assignment.interface";
 import { NextFunction, Request, Response } from "express";
 import validateJoi from "../../../common/functions/validateJoi";
 import { StatusCode } from "../../../common/constants/statusCode";

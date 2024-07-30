@@ -7,7 +7,6 @@ import {
   UserRoleModel,
 } from "../../modules/course/course.type";
 import InternalServerException from "./exceptions/InternalServerException";
-import { PrismaTransaction } from "../types";
 import { UserModel } from "../../modules/user/user.type";
 import { CourseEnrollmentModel } from "../../modules/enrollment/enrollment.type";
 import { inject, injectable } from "inversify";
@@ -17,6 +16,7 @@ import {
 } from "./prisma_query_raw/prisma_query_raw.type";
 import AuthenticationException from "./exceptions/AuthenticationException";
 import RecordNotFoundException from "./exceptions/RecordNotFoundException";
+import { PrismaTransaction } from "../types";
 
 export const BaseAuthorizationDITypes = Symbol.for(
   "COMMON_CLASS_BASE_AUTHORIZATION",

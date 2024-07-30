@@ -96,3 +96,16 @@ playground:
 #
 count-line:
 	git ls-files src/ prisma/ Makefile docker-compose.yaml docker-compose-dev.yaml swagger.yaml Dockerfile | xargs wc -l
+
+
+#
+# SEED
+#
+sync-dev:
+	npx @snaplet/seed sync
+
+snaplet-sync-prod:
+	npx @snaplet/seed --config ./prod/seed.config.ts sync
+
+snaplet-init-prod:
+	npx @snaplet/seed --config ./prod init

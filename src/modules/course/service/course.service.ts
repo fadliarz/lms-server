@@ -26,61 +26,10 @@ import handleRepositoryError from "../../../common/functions/handleRepositoryErr
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import ClientException from "../../../common/class/exceptions/ClientException";
-
-export interface ICourseService {
-  createCourse: (
-    resourceId: CourseResourceId,
-    dto: CreateCourseDto,
-  ) => Promise<CourseModel>;
-  getCourseById: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
-  ) => Promise<GetCourseByIdData>;
-  getCourses: (query: GetCoursesQuery) => Promise<GetCoursesData>;
-  getEnrolledCourses: (
-    resourceId: CourseResourceId,
-    query: GetEnrolledCoursesQuery,
-  ) => Promise<GetEnrolledCoursesData>;
-  updateBasicCourse: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateBasicCourseDto,
-  ) => Promise<CourseModel>;
-  updateCourseStatus: (
-    courseId: number,
-    resourceID: CourseResourceId,
-    dto: UpdateCourseStatusDto,
-  ) => Promise<CourseModel>;
-  updateCourseCategoryId: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseCategoryIdDto,
-  ) => Promise<CourseModel>;
-  updateCourseCode: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseCodeDto,
-  ) => Promise<CourseModel>;
-  deleteCourse: (courseId: number, resourceId: CourseResourceId) => Promise<{}>;
-  createLike: (resourceId: CourseLikeResourceId) => Promise<CourseLikeModel>;
-  deleteLike: (likeId: number, resourceId: CourseLikeResourceId) => Promise<{}>;
-  validateRelationBetweenResources: (
-    id: {
-      likeId: number;
-      resourceId: CourseLikeResourceId;
-    },
-    error?: Error,
-  ) => Promise<CourseLikeModel | null>;
-}
-
-/**
- * Todo: Implement Unit of Work pattern, so transaction can be shared across layers
- *
- */
+import { ICourseService } from "../course.interface";
 
 @injectable()
-export class CourseService implements ICourseService {
+export default class CourseService implements ICourseService {
   @inject(RepositoryDITypes.FACADE)
   private readonly repository: IRepository;
 
