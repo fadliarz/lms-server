@@ -1,72 +1,36 @@
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import { UserModel } from "../../user/user.type";
-import {
-  CourseEnrollmentRoleModel,
-  CourseModel,
-} from "../../course/course.type";
-import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
-import getRoleStatus from "../../../common/functions/getRoleStatus";
-import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
-import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import { ICourseClassAuthorization } from "../class.interface";
+import { ICourseLessonAuthorization } from "../../lesson/lesson.interface";
+import { CourseLessonDITypes } from "../../lesson/lesson.type";
 
 @injectable()
 export default class CourseClassAuthorization
   extends BaseAuthorization
   implements ICourseClassAuthorization
 {
-  public authorizeCreateClass(
+  @inject(CourseLessonDITypes.AUTHORIZATION)
+  private readonly lessonAuthorization: ICourseLessonAuthorization;
+
+  public async authorizeCreateClass(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-
-    this.validateUnexpectedScenarios(user, course, enrollment);
-
-    let isAuthorized = false;
-    if (isStudent) {
-    }
-
-    if (isInstructor) {
-      if (
-        isAuthor ||
-        (enrollment &&
-          isEqualOrIncludeCourseEnrollmentRole(
-            enrollment.role,
-            CourseEnrollmentRoleModel.INSTRUCTOR,
-          ))
-      ) {
-        isAuthorized = true;
-      }
-    }
-
-    if (isAdmin) {
-      isAuthorized = true;
-    }
-
-    if (!isAuthorized) {
-      throw new AuthorizationException();
-    }
+    courseId: number,
+  ): Promise<void> {
+    await this.lessonAuthorization.authorizeCreateLesson(user, courseId);
   }
 
-  public authorizeUpdateClass(
+  public async authorizeUpdateClass(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    this.authorizeCreateClass(user, course, enrollment);
+    courseId: number,
+  ): Promise<void> {
+    await this.authorizeCreateClass(user, courseId);
   }
 
-  public authorizeDeleteClass(
+  public async authorizeDeleteClass(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    this.authorizeCreateClass(user, course, enrollment);
+    courseId: number,
+  ): Promise<void> {
+    await this.authorizeCreateClass(user, courseId);
   }
 }

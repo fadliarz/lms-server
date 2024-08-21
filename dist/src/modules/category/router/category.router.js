@@ -13,18 +13,23 @@ function CourseCategoryRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post("/", authenticationMiddleware, controller.createCategory.bind(controller));
+    router.post(category_type_1.$CourseCategoryAPI.CreateCategory.endpoint, authenticationMiddleware, controller.createCategory.bind(controller));
     /**
      * Get
      *
      */
-    router.get("/", controller.getCategories.bind(controller));
-    router.get(category_type_1.courseCategoryUrls.category, controller.getCategoryById.bind(controller));
+    router.get(category_type_1.$CourseCategoryAPI.GetCategories.endpoint, controller.getCategories.bind(controller));
+    router.get(category_type_1.$CourseCategoryAPI.GetCategoryById.endpoint, controller.getCategoryById.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(category_type_1.courseCategoryUrls.basic, authenticationMiddleware, controller.updateBasicCategory.bind(controller));
+    router.patch(category_type_1.$CourseCategoryAPI.UpdateCategory.endpoint, authenticationMiddleware, controller.updateCategory.bind(controller));
+    /**
+     * Delete
+     *
+     */
+    router.delete(category_type_1.$CourseCategoryAPI.DeleteCategory.endpoint, authenticationMiddleware, controller.deleteCategory.bind(controller));
     return router;
 }
 exports.default = CourseCategoryRouter;

@@ -6,7 +6,7 @@ type PrismaErrorCode = "P2002" | "P2003" | "P2025";
 export const PrismaErrorCode = {
   UNIQUE_CONSTRAINT: "P2002",
   FOREIGN_KEY_CONSTRAINT: "P2003",
-  P2025: "P2025",
+  RECORD_NOT_FOUND: "P2025",
 };
 
 const PrismaError: Record<

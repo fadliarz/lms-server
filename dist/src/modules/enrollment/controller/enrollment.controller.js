@@ -47,13 +47,13 @@ let CourseEnrollmentController = class CourseEnrollmentController {
             }
         });
     }
-    updateEnrollmentRole(req, res, next) {
+    updateEnrollment(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: enrollment_joi_1.UpdateCourseEnrollmentRoleDtoJoi })(req, res, next);
                 const enrollmentId = this.validateEnrollmentId(req);
                 const resourceId = this.validateResourceId(req);
-                const updatedEnrollment = yield this.service.updateEnrollmentRole(enrollmentId, resourceId, req.body);
+                const updatedEnrollment = yield this.service.updateEnrollment(enrollmentId, resourceId, req.body);
                 return res
                     .status(statusCode_1.StatusCode.SUCCESS)
                     .json({ data: (0, removeNullFields_1.default)(updatedEnrollment) });
@@ -77,14 +77,14 @@ let CourseEnrollmentController = class CourseEnrollmentController {
         });
     }
     validateResourceId(req, error) {
-        const { id: userId } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
+        const user = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
             throw error || new NaNException_1.default("courseId");
         }
         return {
-            userId,
-            courseId,
+            user,
+            params: { courseId },
         };
     }
     validateEnrollmentId(req, error) {

@@ -3,16 +3,28 @@ import App from "./app";
 import validateEnv from "./common/functions/validateEnv";
 import UserRouter from "./modules/user/router/user.router";
 import { getAuthMiddleWare } from "./middlewares/getAuthMiddleware";
-import { userUrls } from "./modules/user/user.type";
 import CourseRouter from "./modules/course/router/course.router";
-import { courseUrls } from "./modules/course/course.type";
 import CourseEnrollmentRouter from "./modules/enrollment/router/enrollment.router";
 import CourseLessonRouter from "./modules/lesson/router/lesson.router";
 import CourseLessonVideoRouter from "./modules/video/router/video.router";
 import CourseCategoryRouter from "./modules/category/router/category.router";
-import { courseCategoryUrls } from "./modules/category/category.type";
 import PrismaClientSingleton from "./common/class/PrismaClientSingleton";
 import { Api } from "./common/types";
+import CourseClassRouter from "./modules/class/router/class.router";
+import CourseClassAssignmentRouter from "./modules/assignment/router/assignment.router";
+import CompetitionRouter from "./modules/competition/router/competition.router";
+import ScholarshipRouter from "./modules/scholarship/router/scholarship.router";
+import CourseScheduleRouter from "./modules/schedule/router/schedule.router";
+import DepartmentRouter from "./modules/department/router/department.router";
+import DepartmentDivisionRouter from "./modules/division/router/division.router";
+import DepartmentDivisionEnrollmentRouter from "./modules/division-enrollment/router/enrollment.router";
+import DepartmentDivisionProgramRouter from "./modules/program/router/program.router";
+import PersonalAssignmentRouter from "./modules/personal-assignment/router/assignment.router";
+import DepartmentDivisionProgramEnrollmentRouter from "./modules/program-enrollment/router/enrollment.router";
+import EventRouter from "./modules/event/router/event.router";
+import ReportRouter from "./modules/report/router/report.router";
+import { Prisma } from "@prisma/client";
+import CourseClassAssignmentCompletionRouter from "./modules/assignment-completion/router/completion.router";
 
 /**
  * Validate environment variables
@@ -26,15 +38,28 @@ validateEnv();
  */
 const userApi = {
   router: UserRouter(getAuthMiddleWare()),
-  path: "/api/v1" + userUrls.root,
+  path: "/api/v1",
 };
+const personalAssignmentApi = {
+  router: PersonalAssignmentRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const reportApi = {
+  router: ReportRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+
 const courseApi = {
   router: CourseRouter(getAuthMiddleWare()),
-  path: "/api/v1" + courseUrls.root,
+  path: "/api/v1",
+};
+const courseScheduleApi = {
+  router: CourseScheduleRouter(getAuthMiddleWare()),
+  path: "/api/v1",
 };
 const courseCategoryApi = {
   router: CourseCategoryRouter(getAuthMiddleWare()),
-  path: "/api/v1" + courseCategoryUrls.root,
+  path: "/api/v1",
 };
 const courseLessonApi = {
   router: CourseLessonRouter(getAuthMiddleWare()),
@@ -48,14 +73,74 @@ const courseLessonVideoApi = {
   router: CourseLessonVideoRouter(getAuthMiddleWare()),
   path: "/api/v1",
 };
+const courseClassApi = {
+  router: CourseClassRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const courseClassAssignmentApi = {
+  router: CourseClassAssignmentRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const courseClassAssignmentCompletionApi = {
+  router: CourseClassAssignmentCompletionRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+
+const departmentApi = {
+  router: DepartmentRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const departmentDivisionApi = {
+  router: DepartmentDivisionRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const departmentDivisionEnrollmentApi = {
+  router: DepartmentDivisionEnrollmentRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const departmentDivisionProgram = {
+  router: DepartmentDivisionProgramRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const departmentDivisionProgramEnrollment = {
+  router: DepartmentDivisionProgramEnrollmentRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+
+const event = {
+  router: EventRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const scholarshipApi = {
+  router: ScholarshipRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const competitionApi = {
+  router: CompetitionRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
 
 const routers: Api[] = [
   userApi,
+  personalAssignmentApi,
+  reportApi,
   courseApi,
+  courseScheduleApi,
   courseCategoryApi,
   courseEnrollmentApi,
   courseLessonApi,
   courseLessonVideoApi,
+  courseClassApi,
+  courseClassAssignmentApi,
+  courseClassAssignmentCompletionApi,
+  departmentApi,
+  departmentDivisionApi,
+  departmentDivisionEnrollmentApi,
+  departmentDivisionProgram,
+  departmentDivisionProgramEnrollment,
+  event,
+  scholarshipApi,
+  competitionApi,
 ];
 const port = Number(process.env.PORT) || 5000;
 
@@ -85,3 +170,9 @@ prisma
 
     console.error("error: ", error);
   });
+
+prisma.$on("query" as unknown as never, (e: Prisma.QueryEvent) => {
+  console.log("Query: " + e.query);
+  console.log("Params: " + e.params);
+  console.log("Duration: " + e.duration + "ms");
+});

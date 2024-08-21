@@ -1,132 +1,125 @@
 import "reflect-metadata";
 import {
-  CourseDITypes,
-  CourseEnrollmentRoleModel,
+  $CourseAPI,
   CourseLikeModel,
   CourseLikeResourceId,
   CourseModel,
-  CourseResourceId,
-  CreateCourseDto,
-  GetCourseByIdData,
-  GetCourseByIdQuery,
-  GetCoursesData,
-  GetCoursesQuery,
-  GetEnrolledCoursesData,
-  GetEnrolledCoursesQuery,
-  UpdateCourseDto,
 } from "../course.type";
-import { inject, injectable } from "inversify";
-import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import {
-  PrismaDefaultTransactionConfigForRead,
-  PrismaDefaultTransactionConfigForWrite,
-} from "../../../common/constants/prismaDefaultConfig";
+import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
-import {
-  IPrismaQueryRaw,
-  PrismaQueryRawDITypes,
-} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
-import { ICourseAuthorization, ICourseRepository } from "../course.interface";
+import { ICourseRepository } from "../course.interface";
+import BaseRepository from "../../../common/class/BaseRepository";
+import { UserModel } from "../../user/user.type";
 
 @injectable()
 export default class CourseRepository
-  extends BaseAuthorization
+  extends BaseRepository
   implements ICourseRepository
 {
-  @inject(CourseDITypes.AUTHORIZATION)
-  private readonly authorization: ICourseAuthorization;
-
-  private readonly prisma = PrismaClientSingleton.getInstance();
-
-  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
-  protected readonly prismaQueryRaw: IPrismaQueryRaw;
+  constructor() {
+    super();
+  }
 
   public async createCourse(
-    resourceId: CourseResourceId,
-    dto: CreateCourseDto,
+    data: { authorId: number } & $CourseAPI.CreateCourse.Dto,
   ): Promise<CourseModel> {
-    return this.prisma.$transaction(async (tx) => {
-      await this.authorizeUserRole(
-        tx,
-        resourceId,
-        this.authorization.authorizeCreateCourse.bind(this.authorization),
-      );
+    return this.db.course.create({
+      data,
+    });
+  }
 
-      const {
-        user: { id: userId },
-      } = resourceId;
-      const newCourse = await tx.course.create({
-        data: {
-          ...dto,
-          authorId: userId,
-        },
-      });
-
-      return newCourse;
-    }, PrismaDefaultTransactionConfigForWrite);
+  public async getCourses(
+    query?: Partial<$CourseAPI.GetCourses.Query>,
+  ): Promise<$CourseAPI.GetCourses.Response["data"]> {
+    return this.db.course.findMany(
+      query
+        ? {
+            skip:
+              query.pageNumber && query.pageSize
+                ? (query.pageNumber - 1) * query.pageSize
+                : 0,
+            take: query.pageSize || 0,
+            include: {
+              author: !!query.include_author
+                ? {
+                    select: {
+                      id: true,
+                      avatar: true,
+                      name: true,
+                      NIM: true,
+                    },
+                  }
+                : false,
+              category: !!query.include_category,
+            },
+          }
+        : undefined,
+    );
   }
 
   public async getCourseById(
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
-  ): Promise<GetCourseByIdData | null> {
-    return this.prisma.$transaction(async (tx) => {
-      const {
-        include_author,
-        include_category,
-        include_lessons,
-        include_public_videos,
-      } = query;
-      return tx.course.findUnique({
-        where: { id: courseId },
-        include: {
-          author: include_author
-            ? {
-                select: {
-                  id: true,
-                  name: true,
-                  NIM: true,
-                  avatar: true,
-                  about: true,
-                  role: true,
-                },
-              }
-            : false,
-          category: include_category ? true : false,
-          lessons: include_lessons
-            ? {
-                include: {
-                  videos: include_public_videos
-                    ? {
+    id: {
+      courseId: number;
+    },
+    query?: Partial<$CourseAPI.GetCourseById.Query>,
+  ): Promise<$CourseAPI.GetCourseById.Response["data"] | null> {
+    return this.db.course.findUnique({
+      where: { id: id.courseId },
+      include: query
+        ? {
+            author: query.include_author
+              ? {
+                  select: {
+                    id: true,
+                    avatar: true,
+                    name: true,
+                    NIM: true,
+                  },
+                }
+              : false,
+            category: !!query.include_category,
+            lessons: !!query.include_lessons
+              ? !!query.include_public_videos
+                ? {
+                    select: {
+                      id: true,
+                      title: true,
+                      description: true,
+                      totalVideos: true,
+                      totalMaterials: true,
+                      videos: {
                         select: {
                           id: true,
                           name: true,
                           description: true,
                           totalDurations: true,
-                          createdAt: true,
-                          updatedAt: true,
-                          lessonId: true,
                         },
-                      }
-                    : false,
-                },
-              }
-            : false,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
+                      },
+                    },
+                  }
+                : {
+                    select: {
+                      id: true,
+                      title: true,
+                      description: true,
+                      totalVideos: true,
+                      totalMaterials: true,
+                    },
+                  }
+              : false,
+          }
+        : undefined,
+    });
   }
 
   public async getCourseByIdOrThrow(
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
+    id: {
+      courseId: number;
+    },
+    query?: $CourseAPI.GetCourseById.Query,
     error?: Error,
-  ): Promise<CourseModel> {
-    const course = await this.getCourseById(courseId, resourceId, query);
+  ): Promise<$CourseAPI.GetCourseById.Response["data"]> {
+    const course = await this.getCourseById(id, query);
 
     if (!course) {
       throw error || new RecordNotFoundException();
@@ -135,181 +128,54 @@ export default class CourseRepository
     return course;
   }
 
-  public async getCourses(query: GetCoursesQuery): Promise<GetCoursesData> {
-    return this.prisma.$transaction(async (tx) => {
-      const { include_author, include_category, pageNumber, pageSize } = query;
-      return tx.course.findMany({
-        skip: (pageNumber - 1) * pageSize,
-        take: pageSize,
-        include: {
-          author: include_author
-            ? {
-                select: {
-                  id: true,
-                  name: true,
-                  NIM: true,
-                  avatar: true,
-                  about: true,
-                  role: true,
-                },
-              }
-            : false,
-          category: include_category ? true : false,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
-  public async getEnrolledCourses(
-    resourceId: CourseResourceId,
-    query: GetEnrolledCoursesQuery,
-  ): Promise<GetEnrolledCoursesData> {
-    return this.prisma.$transaction(async (tx) => {
-      const {
-        user: { id: userId },
-      } = resourceId;
-      const {
-        include_author,
-        include_category,
-        limit_student_courses,
-        limit_instructor_courses,
-        role,
-      } = query;
-
-      const roleSet = new Set(role);
-      const enrolledCourses: GetEnrolledCoursesData = [];
-      for (let role of roleSet) {
-        const enrollments = await tx.courseEnrollment.findMany({
-          where: {
-            userId,
-            role: role,
-          },
-          select: {
-            course: {
-              include: {
-                author: include_author
-                  ? {
-                      select: {
-                        id: true,
-                        name: true,
-                        NIM: true,
-                        avatar: true,
-                        about: true,
-                        role: true,
-                      },
-                    }
-                  : include_author,
-                category: include_category ? true : false,
-              },
-            },
-            role: true,
-          },
-          take: isEqualOrIncludeCourseEnrollmentRole(
-            role,
-            CourseEnrollmentRoleModel.STUDENT,
-          )
-            ? limit_student_courses
-            : limit_instructor_courses,
-        });
-
-        const courses: GetEnrolledCoursesData = [];
-        enrollments.forEach((enrollment) => {
-          courses.push({ course: enrollment.course, role });
-        });
-
-        enrolledCourses.push(...courses);
-      }
-
-      return enrolledCourses;
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
   public async updateCourse(
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseDto,
+    id: { courseId: number },
+    data: Partial<CourseModel>,
   ): Promise<CourseModel> {
-    return this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        {
-          ...resourceId,
-          courseId,
-        },
-        this.authorization.authorizeUpdateBasicCourse.bind(this.authorization),
-      );
-
-      return tx.course.update({
-        where: { id: courseId },
-        data: dto,
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+    return this.db.course.update({ where: { id: id.courseId }, data });
   }
 
-  public async deleteCourse(
-    courseId: number,
-    resourceId: CourseResourceId,
-  ): Promise<{}> {
-    await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        {
-          user: resourceId.user,
-          courseId,
-        },
-        this.authorization.authorizeDeleteCourse.bind(this.authorization),
-      );
-
-      await tx.course.delete({
-        where: {
-          id: courseId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
-
-    return {};
+  public async deleteCourse(id: { courseId: number }): Promise<{}> {
+    return this.db.course.delete({
+      where: {
+        id: id.courseId,
+      },
+    });
   }
 
   public async createLike(
-    resourceId: CourseLikeResourceId,
+    id: {
+      courseId: number;
+      resourceId?: Omit<CourseLikeResourceId["params"], "courseId">;
+    },
+    data: { userId: number } & $CourseAPI.CreateLike.Dto,
   ): Promise<CourseLikeModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeCreateLike.bind(this.authorization),
-      );
-
-      const {
-        user: { id: userId },
-        courseId,
-      } = resourceId;
-      return await tx.courseLike.create({
-        data: {
-          courseId,
-          userId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+    return this.db.courseLike.create({
+      data: { ...data, courseId: id.courseId },
+    });
   }
 
-  public async getLikeById(
-    likeId: number,
-    resourceId: CourseLikeResourceId,
-  ): Promise<CourseLikeModel | null> {
-    return await this.prisma.$transaction(async (tx) => {
-      return await tx.courseLike.findUnique({
-        where: { id: likeId },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
+  public async getLikeById(id: {
+    likeId: number;
+    resourceId?: CourseLikeResourceId["params"];
+  }): Promise<CourseLikeModel | null> {
+    const { likeId, resourceId } = id;
+
+    return this.db.courseLike.findFirst({
+      where: resourceId
+        ? { id: likeId, courseId: resourceId.courseId }
+        : { id: likeId },
+    });
   }
 
   public async getLikeByIdOrThrow(
-    likeId: number,
-    resourceId: CourseLikeResourceId,
+    id: {
+      likeId: number;
+      resourceId?: CourseLikeResourceId["params"];
+    },
     error?: Error,
   ): Promise<CourseLikeModel> {
-    const like = await this.getLikeById(likeId, resourceId);
+    const like = await this.getLikeById(id);
 
     if (!like) {
       throw error || new RecordNotFoundException();
@@ -318,35 +184,44 @@ export default class CourseRepository
     return like;
   }
 
-  public async deleteLike(
-    likeId: number,
-    resourceId: CourseLikeResourceId,
-  ): Promise<{}> {
-    await this.prisma.$transaction(async (tx) => {
-      const {
-        user: { role },
-      } = await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeDeleteLike.bind(this.authorization),
-      );
+  public async deleteLike(id: {
+    likeId: number;
+    resourceId?: CourseLikeResourceId["params"];
+  }): Promise<{}> {
+    const { likeId, resourceId } = id;
 
-      try {
-        await tx.courseLike.delete({
-          where: {
-            id: likeId,
-          },
-          select: {
-            id: true,
-          },
-        });
-      } catch (error: any) {
-        console.log(error);
+    const where = resourceId
+      ? {
+          id: likeId,
+          courseId: resourceId.courseId,
+        }
+      : { id: likeId };
 
-        throw error;
-      }
-    }, PrismaDefaultTransactionConfigForWrite);
+    return this.db.courseLike.delete({
+      where,
+    });
+  }
 
-    return {};
+  public async getCourseAuthorByIdOrThrow(
+    id: {
+      courseId: number;
+    },
+    options?: { minimalist?: boolean },
+    error?: Error,
+  ): Promise<UserModel | { id: number } | null> {
+    const course = await this.db.course.findUnique({
+      where: {
+        id: id.courseId,
+      },
+      select: {
+        author: options && options.minimalist ? { select: { id: true } } : true,
+      },
+    });
+
+    if (!course) {
+      throw error || new RecordNotFoundException();
+    }
+
+    return course.author;
   }
 }

@@ -26,15 +26,14 @@ const event_type_1 = require("../event.type");
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const statusCode_1 = require("../../../common/constants/statusCode");
 const event_joi_1 = require("./event.joi");
-const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
+const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 let EventController = class EventController {
-    create(req, res, next) {
+    createEvent(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: event_joi_1.CreateEventDtoJoi })(req, res, next);
-                const resourceId = this.validateResourceId(req);
-                const newEvent = yield this.service.create(resourceId, req.body);
+                const newEvent = yield this.service.createEvent((0, getRequestUserOrThrowAuthenticationException_1.default)(req), req.body);
                 return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({ data: newEvent });
             }
             catch (error) {
@@ -42,12 +41,12 @@ let EventController = class EventController {
             }
         });
     }
-    getById(req, res, next) {
+    getEventById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const eventId = this.validateEventId(req);
-                const resourceId = this.validateResourceId(req);
-                const event = yield this.service.getById(eventId, resourceId);
+                const event = yield this.service.getEventById({
+                    eventId: this.validateEventId(req),
+                });
                 res.status(statusCode_1.StatusCode.SUCCESS).json({ data: event });
             }
             catch (error) {
@@ -55,12 +54,10 @@ let EventController = class EventController {
             }
         });
     }
-    getMany(req, res, next) {
+    getEvents(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const eventId = this.validateEventId(req);
-                const resourceId = this.validateResourceId(req);
-                const events = yield this.service.getById(eventId, resourceId);
+                const events = yield this.service.getEvents();
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: events });
             }
             catch (error) {
@@ -68,13 +65,11 @@ let EventController = class EventController {
             }
         });
     }
-    update(req, res, next) {
+    updateEvent(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: event_joi_1.UpdateEventDtoJoi })(req, res, next);
-                const eventId = this.validateEventId(req);
-                const resourceId = this.validateResourceId(req);
-                const updatedEvent = yield this.service.update(eventId, resourceId, req.body);
+                const updatedEvent = yield this.service.updateEvent((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { eventId: this.validateEventId(req) }, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedEvent });
             }
             catch (error) {
@@ -82,27 +77,16 @@ let EventController = class EventController {
             }
         });
     }
-    delete(req, res, next) {
+    deleteEvent(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const eventId = this.validateEventId(req);
-                const resourceId = this.validateResourceId(req);
-                yield this.service.delete(eventId, resourceId);
+                yield this.service.deleteEvent((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { eventId: this.validateEventId(req) });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
             }
             catch (error) {
                 next(error);
             }
         });
-    }
-    validateResourceId(req, error) {
-        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
-        return {
-            user: {
-                id: userId,
-                role,
-            },
-        };
     }
     validateEventId(req) {
         const eventId = Number(req.params.eventId);

@@ -2,8 +2,8 @@ import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import {
+  $CourseEnrollmentAPI,
   CourseEnrollmentDITypes,
-  courseEnrollmentUrls,
 } from "../enrollment.type";
 import { ICourseEnrollmentController } from "../enrollment.interface";
 
@@ -18,8 +18,9 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
    * Create
    *
    */
+
   router.post(
-    courseEnrollmentUrls.root,
+    $CourseEnrollmentAPI.CreateEnrollment.endpoint,
     authenticationMiddleware,
     controller.createEnrollment.bind(controller),
   );
@@ -28,18 +29,20 @@ export default function CourseEnrollmentRouter(authenticationMiddleware: any) {
    * Update
    *
    */
+
   router.patch(
-    courseEnrollmentUrls.role,
+    $CourseEnrollmentAPI.UpdateEnrollment.endpoint,
     authenticationMiddleware,
-    controller.updateEnrollmentRole.bind(controller),
+    controller.updateEnrollment.bind(controller),
   );
 
   /**
    * Delete
    *
    */
+
   router.delete(
-    courseEnrollmentUrls.enrollment,
+    $CourseEnrollmentAPI.DeleteEnrollment.endpoint,
     authenticationMiddleware,
     controller.deleteEnrollment.bind(controller),
   );

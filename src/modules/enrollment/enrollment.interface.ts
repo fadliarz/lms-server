@@ -1,10 +1,9 @@
 import { UserModel } from "../user/user.type";
 import { CourseModel } from "../course/course.type";
 import {
+  $CourseEnrollmentAPI,
   CourseEnrollmentModel,
   CourseEnrollmentResourceId,
-  CreateCourseEnrollmentDto,
-  UpdateCourseEnrollmentRoleDto,
 } from "./enrollment.type";
 import { CourseEnrollment } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
@@ -13,7 +12,7 @@ export interface ICourseEnrollmentAuthorization {
   authorizeCreateEnrollment: (
     user: UserModel,
     course: CourseModel,
-    dto: CreateCourseEnrollmentDto,
+    dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
   ) => void;
   authorizeUpdateEnrollmentRole: (
     user: UserModel,
@@ -33,7 +32,7 @@ export interface ICourseEnrollmentController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  updateEnrollmentRole: (
+  updateEnrollment: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -48,31 +47,37 @@ export interface ICourseEnrollmentController {
 export interface ICourseEnrollmentService {
   createEnrollment: (
     resourceId: CourseEnrollmentResourceId,
-    dto: CreateCourseEnrollmentDto,
-  ) => Promise<CourseEnrollmentModel>;
-  updateEnrollmentRole: (
+    dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
+  ) => Promise<$CourseEnrollmentAPI.CreateEnrollment.Response["data"]>;
+  updateEnrollment: (
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
-    dto: UpdateCourseEnrollmentRoleDto,
-  ) => Promise<CourseEnrollmentModel>;
+    dto: $CourseEnrollmentAPI.UpdateEnrollment.Dto,
+  ) => Promise<$CourseEnrollmentAPI.UpdateEnrollment.Response["data"]>;
   deleteEnrollment: (
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
-  ) => Promise<{}>;
+  ) => Promise<$CourseEnrollmentAPI.DeleteEnrollment.Response["data"]>;
 }
 
 export interface ICourseEnrollmentRepository {
   createEnrollment: (
-    resourceId: CourseEnrollmentResourceId,
-    dto: CreateCourseEnrollmentDto,
-  ) => Promise<CourseEnrollment>;
-  updateEnrollmentRole: (
-    enrollmentId: number,
-    resourceId: CourseEnrollmentResourceId,
-    dto: UpdateCourseEnrollmentRoleDto,
-  ) => Promise<CourseEnrollment>;
-  deleteEnrollment: (
-    enrollmentId: number,
-    resourceId: CourseEnrollmentResourceId,
-  ) => Promise<{}>;
+    id: CourseEnrollmentResourceId["params"],
+    data: $CourseEnrollmentAPI.CreateEnrollment.Dto,
+  ) => Promise<CourseEnrollmentModel>;
+  getEnrollmentByUserIdAndCourseId: (id: {
+    userId: number;
+    courseId: number;
+  }) => Promise<CourseEnrollmentModel | null>;
+  updateEnrollment: (
+    id: {
+      enrollmentId: number;
+      resourceId?: CourseEnrollmentResourceId["params"];
+    },
+    data: Partial<CourseEnrollmentModel>,
+  ) => Promise<CourseEnrollmentModel>;
+  deleteEnrollment: (id: {
+    enrollmentId: number;
+    resourceId?: CourseEnrollmentResourceId["params"];
+  }) => Promise<{}>;
 }

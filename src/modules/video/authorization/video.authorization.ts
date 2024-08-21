@@ -1,73 +1,59 @@
 import "reflect-metadata";
-import { injectable } from "inversify";
-import getRoleStatus from "../../../common/functions/getRoleStatus";
-import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
-import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
-import { ICourseLessonVideoAuthorization } from "../video.type";
+import { inject, injectable } from "inversify";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import { UserModel } from "../../user/user.type";
-import { CourseModel, UserRoleModel } from "../../course/course.type";
-import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
+import { PrivilegeModel, UserModel } from "../../user/user.type";
+import { ICourseLessonVideoAuthorization } from "../video.interface";
+import { CourseLessonDITypes } from "../../lesson/lesson.type";
+import { ICourseLessonAuthorization } from "../../lesson/lesson.interface";
+import getRoleStatus from "../../../common/functions/getRoleStatus";
+import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 
 @injectable()
 export default class CourseLessonVideoAuthorization
   extends BaseAuthorization
   implements ICourseLessonVideoAuthorization
 {
-  public authorizeCreateVideo(
+  @inject(CourseLessonDITypes.AUTHORIZATION)
+  private readonly lessonAuthorization: ICourseLessonAuthorization;
+
+  public async authorizeCreateVideo(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-    let isAuthorized = false;
-
-    this.validateUnexpectedScenarios(user, course, enrollment);
-
-    if (isStudent) {
-    }
-
-    if (isInstructor) {
-      if (
-        isAuthor ||
-        (enrollment &&
-          isEqualOrIncludeCourseEnrollmentRole(
-            enrollment.role,
-            UserRoleModel.INSTRUCTOR,
-          ))
-      ) {
-        isAuthorized = true;
-      }
-    }
-
-    if (isAdmin) {
-      isAuthorized = true;
-    }
-
-    if (!isAuthorized) {
-      throw new AuthorizationException();
-    }
+    courseId: number,
+  ): Promise<void> {
+    await this.lessonAuthorization.authorizeUpdateLesson(user, courseId);
   }
 
-  public authorizeGetVideo(
+  public async authorizeReadVideo(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    courseId: number,
+  ): Promise<void> {
+    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+    const isAuthor = await this.isAuthor(user.id, courseId);
+
     let isAuthorized = false;
-
-    this.validateUnexpectedScenarios(user, course, enrollment);
-
     if (isStudent || isInstructor) {
-      if (isAuthor || enrollment) {
+      if (isAuthor) {
         isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        isAuthorized = await this.authorizeFromDepartmentDivision(
+          user.id,
+          PrivilegeModel.COURSE,
+        );
+      }
+
+      if (!isAuthorized) {
+        const enrollment =
+          await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
+            {
+              userId: user.id,
+              courseId: courseId,
+            },
+          );
+        if (enrollment) {
+          isAuthorized = true;
+        }
       }
     }
 
@@ -80,27 +66,17 @@ export default class CourseLessonVideoAuthorization
     }
   }
 
-  public authorizeGetVideos(
+  public async authorizeUpdateVideo(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    this.authorizeGetVideo(user, course, enrollment);
+    courseId: number,
+  ): Promise<void> {
+    await this.lessonAuthorization.authorizeUpdateLesson(user, courseId);
   }
 
-  public authorizeUpdateVideo(
+  public async authorizeDeleteVideo(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    this.authorizeCreateVideo(user, course, enrollment);
-  }
-
-  public authorizeDeleteVideo(
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    this.authorizeCreateVideo(user, course, enrollment);
+    courseId: number,
+  ): Promise<void> {
+    await this.lessonAuthorization.authorizeUpdateLesson(user, courseId);
   }
 }

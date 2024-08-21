@@ -1,6 +1,6 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { CourseCategoryDITypes, courseCategoryUrls } from "../category.type";
+import { $CourseCategoryAPI, CourseCategoryDITypes } from "../category.type";
 import { ICourseCategoryController } from "../category.interface";
 
 export default function CourseCategoryRouter(authenticationMiddleware: any) {
@@ -14,8 +14,9 @@ export default function CourseCategoryRouter(authenticationMiddleware: any) {
    * Create
    *
    */
+
   router.post(
-    "/",
+    $CourseCategoryAPI.CreateCategory.endpoint,
     authenticationMiddleware,
     controller.createCategory.bind(controller),
   );
@@ -24,10 +25,14 @@ export default function CourseCategoryRouter(authenticationMiddleware: any) {
    * Get
    *
    */
-  router.get("/", controller.getCategories.bind(controller));
 
   router.get(
-    courseCategoryUrls.category,
+    $CourseCategoryAPI.GetCategories.endpoint,
+    controller.getCategories.bind(controller),
+  );
+
+  router.get(
+    $CourseCategoryAPI.GetCategoryById.endpoint,
     controller.getCategoryById.bind(controller),
   );
 
@@ -35,10 +40,22 @@ export default function CourseCategoryRouter(authenticationMiddleware: any) {
    * Update
    *
    */
+
   router.patch(
-    courseCategoryUrls.basic,
+    $CourseCategoryAPI.UpdateCategory.endpoint,
     authenticationMiddleware,
-    controller.updateBasicCategory.bind(controller),
+    controller.updateCategory.bind(controller),
+  );
+
+  /**
+   * Delete
+   *
+   */
+
+  router.delete(
+    $CourseCategoryAPI.DeleteCategory.endpoint,
+    authenticationMiddleware,
+    controller.deleteCategory.bind(controller),
   );
 
   return router;

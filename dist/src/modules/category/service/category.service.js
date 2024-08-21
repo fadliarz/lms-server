@@ -17,29 +17,66 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const category_type_1 = require("../category.type");
+const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseCategoryService = class CourseCategoryService {
-    createCategory(resourceId, dto) {
+    createCategory(user, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.createCategory(resourceId, dto);
-        });
-    }
-    getCategoryById(categoryId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getCategoryByIdOrThrow(categoryId);
+            try {
+                this.authorization.authorizeCreateCategory(user);
+                return yield this.repository.createCategory(dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
     getCategories() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getCategories();
+            try {
+                return yield this.repository.getCategories();
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
-    updateBasicCategory(categoryId, resourceId, dto) {
+    getCategoryById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.updateCategory(categoryId, resourceId, dto);
+            try {
+                return this.repository.getCategoryByIdOrThrow(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateCategory(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.authorization.authorizeUpdateCategory(user);
+                return yield this.repository.updateCategory(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    deleteCategory(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.authorization.authorizeDeleteCategory(user);
+                return yield this.repository.deleteCategory(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
 };
@@ -47,6 +84,10 @@ __decorate([
     (0, inversify_1.inject)(category_type_1.CourseCategoryDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], CourseCategoryService.prototype, "repository", void 0);
+__decorate([
+    (0, inversify_1.inject)(category_type_1.CourseCategoryDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], CourseCategoryService.prototype, "authorization", void 0);
 CourseCategoryService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseCategoryService);

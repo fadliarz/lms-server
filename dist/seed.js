@@ -47,6 +47,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const courseLessons = getIds(1, 5 * courses.length);
     yield seed.courseLessonVideo((x) => x(10 * courseLessons.length, {
         youtubeLink: "https://www.youtube.com/watch?v=NyOYW07-L5g&ab_channel=TheOrganicChemistryTutor",
+        attachment: "https://libgen.is/book/index.php?md5=BBFE90154D738CC2BA66088F31CBCD5F",
     }), {
         connect: { courseLesson: courseLessons },
     });
@@ -93,6 +94,41 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         connect: {
             courseClass: classes,
         },
+    });
+    yield seed.report((x) => x(155, {
+        performance: 3.78,
+    }), {
+        connect: { user: getIds(1, 155) },
+    });
+    yield seed.courseSchedule((x) => x(50), {
+        connect: { course: getIds(1, 5) },
+    });
+    yield seed.scholarship((x) => x(100));
+    yield seed.competition((x) => x(100));
+    yield seed.event((x) => x(100));
+    yield seed.department((x) => x(10), {
+        connect: { user: getIds(1, 30) },
+    });
+    yield seed.personalAssignment((x) => x(750), {
+        connect: { user: getIds(1, 150) },
+    });
+    const a = getIds(31, 50);
+    const b = getIds(51, 70);
+    for (let i = 0; i < 20; i++) {
+        yield seed.departmentDivision((x) => x(1, {
+            leaderId: a[i].id,
+            coLeaderId: b[i].id,
+            departmentId: (i % 10) + 1,
+        }), {});
+    }
+    yield seed.departmentDivisionEnrollment((x) => x(60), {
+        connect: { departmentDivision: getIds(1, 20), user: getIds(71, 90) },
+    });
+    for (let i = 0; i < 50; i++) {
+        yield seed.departmentProgram((x) => x(1, { departmentId: (i % 10) + 1 }));
+    }
+    yield seed.departmentProgramEnrollment((x) => x(750), {
+        connect: { departmentProgram: getIds(1, 50), user: getIds(1, 150) },
     });
     console.log("Database seeded successfully!");
     process.exit();

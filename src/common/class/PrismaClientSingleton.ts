@@ -7,7 +7,26 @@ export default class PrismaClientSingleton {
 
   public static getInstance(): PrismaClient {
     if (!PrismaClientSingleton.instance) {
-      PrismaClientSingleton.instance = new PrismaClient();
+      PrismaClientSingleton.instance = new PrismaClient({
+        log: [
+          {
+            emit: "event",
+            level: "query",
+          },
+          {
+            emit: "stdout",
+            level: "error",
+          },
+          {
+            emit: "stdout",
+            level: "info",
+          },
+          {
+            emit: "stdout",
+            level: "warn",
+          },
+        ],
+      });
     }
 
     return PrismaClientSingleton.instance;

@@ -1,195 +1,143 @@
 import { inject, injectable } from "inversify";
 import {
-  CourseLessonVideoModel,
+  $CourseLessonVideoAPI,
+  CourseLessonVideoDITypes,
   CourseLessonVideoResourceId,
-  CreateCourseLessonVideoDto,
-  UpdateBasicCourseLessonVideoDto,
-  UpdateCourseLessonVideoSourceDto,
 } from "../video.type";
-import { CourseLessonModel } from "../../lesson/lesson.type";
-import { CourseLesson } from "@prisma/client";
-import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import { CourseModel } from "../../course/course.type";
-import {
-  IRepository,
-  RepositoryDITypes,
-} from "../../../common/class/repository/repository.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-
-export interface ICourseLessonVideoService {
-  createVideo: (
-    resourceId: CourseLessonVideoResourceId,
-    dto: CreateCourseLessonVideoDto,
-  ) => Promise<CourseLessonVideoModel>;
-  getVideoById: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ) => Promise<CourseLessonVideoModel>;
-  getVideos: (
-    resourceId: CourseLessonVideoResourceId,
-  ) => Promise<CourseLessonVideoModel[]>;
-  updateBasicVideo: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-    videoDetails: UpdateBasicCourseLessonVideoDto,
-  ) => Promise<CourseLessonVideoModel>;
-  updateVideoSource: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-    videoDetails: UpdateCourseLessonVideoSourceDto,
-  ) => Promise<CourseLessonVideoModel>;
-  deleteVideo: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ) => Promise<{}>;
-}
+import {
+  ICourseLessonVideoAuthorization,
+  ICourseLessonVideoRepository,
+  ICourseLessonVideoService,
+} from "../video.interface";
+import { UserModel } from "../../user/user.type";
 
 @injectable()
-export class CourseLessonVideoService implements ICourseLessonVideoService {
-  @inject(RepositoryDITypes.FACADE)
-  repository: IRepository;
+export default class CourseLessonVideoService
+  implements ICourseLessonVideoService
+{
+  @inject(CourseLessonVideoDITypes.REPOSITORY)
+  repository: ICourseLessonVideoRepository;
+
+  @inject(CourseLessonVideoDITypes.AUTHORIZATION)
+  authorization: ICourseLessonVideoAuthorization;
 
   public async createVideo(
-    resourceId: CourseLessonVideoResourceId,
-    dto: CreateCourseLessonVideoDto,
-  ): Promise<CourseLessonVideoModel> {
+    user: UserModel,
+    id: {
+      resourceId: CourseLessonVideoResourceId;
+    },
+    dto: $CourseLessonVideoAPI.CreateVideo.Dto,
+  ): Promise<$CourseLessonVideoAPI.CreateVideo.Response["data"]> {
     try {
-      await this.validateRelationBetweenResources({ resourceId });
+      await this.authorization.authorizeCreateVideo(
+        user,
+        id.resourceId.courseId,
+      );
 
-      return await this.repository.courseLessonVideo.createVideo(
-        resourceId,
+      const { lessonId, ...theResourceId } = id.resourceId;
+
+      return await this.repository.createVideo(
+        { lessonId, resourceId: theResourceId },
         dto,
       );
     } catch (error: any) {
-      throw handleRepositoryError(error, {
-        foreignConstraint: {
-          default: { message: "lesson doesn't exist!" },
-        },
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getVideos(
+    user: UserModel,
+    id: {
+      resourceId: CourseLessonVideoResourceId;
+    },
+  ): Promise<$CourseLessonVideoAPI.GetVideos.Response["data"]> {
+    try {
+      await this.authorization.authorizeReadVideo(user, id.resourceId.courseId);
+
+      const { lessonId, ...theResourceId } = id.resourceId;
+
+      return await this.repository.getVideos({
+        lessonId,
+        resourceId: theResourceId,
       });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
   }
 
   public async getVideoById(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ): Promise<CourseLessonVideoModel> {
-    const { video } = await this.validateRelationBetweenResources({
-      videoId,
-      resourceId,
-    });
-
-    return video;
-  }
-
-  public async getVideos(
-    resourceId: CourseLessonVideoResourceId,
-  ): Promise<CourseLessonVideoModel[]> {
-    await this.validateRelationBetweenResources({ resourceId });
-
-    return await this.repository.courseLessonVideo.getVideos(resourceId);
-  }
-
-  public async updateBasicVideo(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-    dto: UpdateBasicCourseLessonVideoDto,
-  ): Promise<CourseLessonVideoModel> {
-    await this.validateRelationBetweenResources({ resourceId });
-
-    return await this.repository.courseLessonVideo.updateVideo(
-      videoId,
-      resourceId,
-      dto,
-    );
-  }
-
-  public async updateVideoSource(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-    dto: UpdateCourseLessonVideoSourceDto,
-  ): Promise<CourseLessonVideoModel> {
-    await this.validateRelationBetweenResources({ resourceId });
-
-    return await this.repository.courseLessonVideo.updateVideo(
-      videoId,
-      resourceId,
-      dto,
-    );
-  }
-
-  public async deleteVideo(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ): Promise<{}> {
-    await this.repository.courseLessonVideo.deleteVideo(videoId, resourceId);
-
-    return {};
-  }
-
-  private async validateRelationBetweenResources(id: {
-    resourceId: CourseLessonVideoResourceId;
-  }): Promise<{
-    course: CourseModel;
-    lesson: CourseLessonModel;
-  }>;
-  private async validateRelationBetweenResources(id: {
-    videoId: number;
-    resourceId: CourseLessonVideoResourceId;
-  }): Promise<{
-    course: CourseModel;
-    lesson: CourseLessonModel;
-    video: CourseLessonVideoModel;
-  }>;
-  private async validateRelationBetweenResources<
-    T1 extends {
-      resourceId: CourseLessonVideoResourceId;
-    },
-    T2 extends {
+    user: UserModel,
+    id: {
       videoId: number;
       resourceId: CourseLessonVideoResourceId;
     },
-  >(
-    id: T1 | T2,
-  ): Promise<
-    | {
-        lesson: CourseLesson;
-      }
-    | {
-        lesson: CourseLessonModel;
-        video: CourseLessonVideoModel;
-      }
-  > {
-    const { resourceId } = id;
-    const { courseId, lessonId } = resourceId;
+  ): Promise<$CourseLessonVideoAPI.GetVideoById.Response["data"]> {
+    try {
+      await this.authorization.authorizeReadVideo(user, id.resourceId.courseId);
 
-    const lesson = await this.repository.courseLesson.getLessonById(
-      lessonId,
-      resourceId,
-    );
-
-    if (!lesson || lesson.courseId !== courseId) {
-      throw new RecordNotFoundException("lesson doesn't exist!");
+      return await this.repository.getVideoByIdOrThrow(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
+  }
 
-    if ((id as T2).videoId) {
-      const { videoId } = id as T2;
-      const video = await this.repository.courseLessonVideo.getVideoById(
-        videoId,
-        resourceId,
+  public async updateVideo(
+    user: UserModel,
+    id: {
+      videoId: number;
+      resourceId: CourseLessonVideoResourceId;
+    },
+    dto: $CourseLessonVideoAPI.UpdateVideo.Dto,
+  ): Promise<$CourseLessonVideoAPI.UpdateVideo.Response["data"]> {
+    try {
+      await this.authorization.authorizeUpdateVideo(
+        user,
+        id.resourceId.courseId,
       );
 
-      if (!video || video.lessonId !== lessonId) {
-        throw new RecordNotFoundException("video doesn't exist!");
-      }
-
-      if (videoId) {
-        return {
-          lesson,
-          video,
-        };
-      }
+      return await this.repository.updateVideo(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
+  }
 
-    return { lesson };
+  public async updateVideoSource(
+    user: UserModel,
+    id: {
+      videoId: number;
+      resourceId: CourseLessonVideoResourceId;
+    },
+    dto: $CourseLessonVideoAPI.UpdateVideo.Dto,
+  ): Promise<$CourseLessonVideoAPI.UpdateVideoSource.Response["data"]> {
+    try {
+      await this.authorization.authorizeUpdateVideo(
+        user,
+        id.resourceId.courseId,
+      );
+
+      return await this.repository.updateVideo(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async deleteVideo(
+    user: UserModel,
+    id: {
+      videoId: number;
+      resourceId: CourseLessonVideoResourceId;
+    },
+  ): Promise<$CourseLessonVideoAPI.DeleteVideo.Response["data"]> {
+    try {
+      await this.authorization.authorizeDeleteVideo(
+        user,
+        id.resourceId.courseId,
+      );
+
+      return await this.repository.deleteVideo(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 }

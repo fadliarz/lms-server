@@ -1,12 +1,12 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import {
+  $CourseClassAssignmentAPI,
   CourseClassAssignmentDITypes,
-  courseClassAssignmentUrls,
 } from "../assignment.type";
 import { ICourseClassAssignmentController } from "../assignment.interface";
 
-export default function CourseClassAssignmentsRouter(
+export default function CourseClassAssignmentRouter(
   authenticationMiddleware: any,
 ) {
   const router = express.Router();
@@ -18,8 +18,9 @@ export default function CourseClassAssignmentsRouter(
    * Create
    *
    */
+
   router.post(
-    courseClassAssignmentUrls.root,
+    $CourseClassAssignmentAPI.CreateAssignment.endpoint,
     authenticationMiddleware,
     controller.createAssignment.bind(controller),
   );
@@ -28,14 +29,15 @@ export default function CourseClassAssignmentsRouter(
    * Get
    *
    */
+
   router.get(
-    courseClassAssignmentUrls.root,
+    $CourseClassAssignmentAPI.GetAssignments.endpoint,
     authenticationMiddleware,
     controller.getAssignments.bind(controller),
   );
 
   router.get(
-    courseClassAssignmentUrls.assignment,
+    $CourseClassAssignmentAPI.GetAssignmentById.endpoint,
     authenticationMiddleware,
     controller.getAssignmentById.bind(controller),
   );
@@ -44,8 +46,9 @@ export default function CourseClassAssignmentsRouter(
    * Update
    *
    */
+
   router.patch(
-    courseClassAssignmentUrls.assignment,
+    $CourseClassAssignmentAPI.UpdateAssignment.endpoint,
     authenticationMiddleware,
     controller.updateAssignment.bind(controller),
   );
@@ -54,8 +57,9 @@ export default function CourseClassAssignmentsRouter(
    * Delete
    *
    */
+
   router.delete(
-    courseClassAssignmentUrls.assignment,
+    $CourseClassAssignmentAPI.DeleteAssignment.endpoint,
     authenticationMiddleware,
     controller.deleteAssignment.bind(controller),
   );

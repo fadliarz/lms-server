@@ -1,47 +1,23 @@
 import { UserModel } from "../user/user.type";
-import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 import {
+  $CourseAPI,
   CourseLikeModel,
   CourseLikeResourceId,
   CourseModel,
   CourseResourceId,
-  CreateCourseDto,
-  GetCourseByIdData,
-  GetCourseByIdQuery,
-  GetCoursesData,
-  GetCoursesQuery,
-  GetEnrolledCoursesData,
-  GetEnrolledCoursesQuery,
-  UpdateBasicCourseDto,
-  UpdateCourseCategoryIdDto,
-  UpdateCourseCodeDto,
-  UpdateCourseDto,
-  UpdateCourseStatusDto,
 } from "./course.type";
 import { NextFunction, Request, Response } from "express-serve-static-core";
 
 export interface ICourseAuthorization {
-  authorizeCreateCourse: (user: UserModel) => void;
-  authorizeUpdateBasicCourse: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeDeleteCourse: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeCreateLike: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
+  authorizeCreateCourse: (user: UserModel) => Promise<void>;
+  authorizeUpdateCourse: (user: UserModel, courseId: number) => Promise<void>;
+  authorizeDeleteCourse: (user: UserModel, courseId: number) => Promise<void>;
+  authorizeCreateLike: (user: UserModel, courseId: number) => Promise<void>;
   authorizeDeleteLike: (
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
+    courseId: number,
+    likeId: number,
+  ) => Promise<void>;
 }
 
 export interface ICourseController {
@@ -60,12 +36,7 @@ export interface ICourseController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  getEnrolledCourses: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateBasicCourse: (
+  updateCourse: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -104,87 +75,108 @@ export interface ICourseController {
 
 export interface ICourseService {
   createCourse: (
-    resourceId: CourseResourceId,
-    dto: CreateCourseDto,
+    id: { resourceId: CourseResourceId },
+    dto: $CourseAPI.CreateCourse.Dto,
   ) => Promise<CourseModel>;
+  getCourses: (
+    query: $CourseAPI.GetCourses.Query,
+  ) => Promise<$CourseAPI.GetCourses.Response["data"]>;
   getCourseById: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
-  ) => Promise<GetCourseByIdData>;
-  getCourses: (query: GetCoursesQuery) => Promise<GetCoursesData>;
-  getEnrolledCourses: (
-    resourceId: CourseResourceId,
-    query: GetEnrolledCoursesQuery,
-  ) => Promise<GetEnrolledCoursesData>;
-  updateBasicCourse: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateBasicCourseDto,
+    id: {
+      courseId: number;
+    },
+    query: $CourseAPI.GetCourseById.Query,
+  ) => Promise<$CourseAPI.GetCourseById.Response["data"]>;
+  updateCourse: (
+    id: {
+      courseId: number;
+      resourceId: CourseResourceId;
+    },
+    dto: $CourseAPI.UpdateCourse.Dto,
   ) => Promise<CourseModel>;
   updateCourseStatus: (
-    courseId: number,
-    resourceID: CourseResourceId,
-    dto: UpdateCourseStatusDto,
+    id: {
+      courseId: number;
+      resourceId: CourseResourceId;
+    },
+    dto: $CourseAPI.UpdateCourseStatus.Dto,
   ) => Promise<CourseModel>;
   updateCourseCategoryId: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseCategoryIdDto,
+    id: {
+      courseId: number;
+      resourceId: CourseResourceId;
+    },
+    dto: $CourseAPI.UpdateCourseCategoryId.Dto,
   ) => Promise<CourseModel>;
   updateCourseCode: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseCodeDto,
-  ) => Promise<CourseModel>;
-  deleteCourse: (courseId: number, resourceId: CourseResourceId) => Promise<{}>;
-  createLike: (resourceId: CourseLikeResourceId) => Promise<CourseLikeModel>;
-  deleteLike: (likeId: number, resourceId: CourseLikeResourceId) => Promise<{}>;
-  validateRelationBetweenResources: (
     id: {
-      likeId: number;
-      resourceId: CourseLikeResourceId;
+      courseId: number;
+      resourceId: CourseResourceId;
     },
-    error?: Error,
-  ) => Promise<CourseLikeModel | null>;
+    dto: $CourseAPI.UpdateCourseCode.Dto,
+  ) => Promise<CourseModel>;
+  deleteCourse: (id: {
+    courseId: number;
+    resourceId: CourseResourceId;
+  }) => Promise<{}>;
+  createLike: (id: {
+    resourceId: CourseLikeResourceId;
+  }) => Promise<CourseLikeModel>;
+  deleteLike: (id: {
+    likeId: number;
+    resourceId: CourseLikeResourceId;
+  }) => Promise<{}>;
 }
 
 export interface ICourseRepository {
   createCourse: (
-    resourceId: CourseResourceId,
-    dto: CreateCourseDto,
+    data: { authorId: number } & $CourseAPI.CreateCourse.Dto,
   ) => Promise<CourseModel>;
+  getCourses: (
+    query?: Partial<$CourseAPI.GetCourses.Query>,
+  ) => Promise<$CourseAPI.GetCourses.Response["data"]>;
   getCourseById: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
-  ) => Promise<GetCourseByIdData | null>;
+    id: {
+      courseId: number;
+    },
+    query?: Partial<$CourseAPI.GetCourseById.Query>,
+  ) => Promise<$CourseAPI.GetCourseById.Response["data"] | null>;
   getCourseByIdOrThrow: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
+    id: {
+      courseId: number;
+    },
+    query?: Partial<$CourseAPI.GetCourseById.Query>,
     error?: Error,
-  ) => Promise<CourseModel>;
-  getCourses: (query: GetCoursesQuery) => Promise<GetCoursesData>;
-  getEnrolledCourses: (
-    resourceId: CourseResourceId,
-    query: GetEnrolledCoursesQuery,
-  ) => Promise<GetEnrolledCoursesData>;
+  ) => Promise<$CourseAPI.GetCourseById.Response["data"]>;
+  getCourseAuthorByIdOrThrow: (
+    id: {
+      courseId: number;
+    },
+    options?: { minimalist?: boolean },
+    error?: Error,
+  ) => Promise<UserModel | { id: number } | null>;
   updateCourse: (
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseDto,
+    id: { courseId: number },
+    data: Partial<CourseModel>,
   ) => Promise<CourseModel>;
-  deleteCourse: (courseId: number, resourceId: CourseResourceId) => Promise<{}>;
-  createLike: (resourceId: CourseLikeResourceId) => Promise<CourseLikeModel>;
-  getLikeById: (
-    likeId: number,
-    resourceId: CourseLikeResourceId,
-  ) => Promise<CourseLikeModel | null>;
+  deleteCourse: (id: { courseId: number }) => Promise<{}>;
+  createLike: (
+    id: {
+      courseId: number;
+      resourceId?: Omit<CourseLikeResourceId["params"], "courseId">;
+    },
+    data: { userId: number } & $CourseAPI.CreateLike.Dto,
+  ) => Promise<CourseLikeModel>;
+  getLikeById: (id: {
+    likeId: number;
+    resourceId?: CourseLikeResourceId["params"];
+  }) => Promise<CourseLikeModel | null>;
   getLikeByIdOrThrow: (
-    likeId: number,
-    resourceId: CourseLikeResourceId,
+    id: { likeId: number; resourceId?: CourseLikeResourceId["params"] },
     error?: Error,
   ) => Promise<CourseLikeModel>;
-  deleteLike: (likeId: number, resourceId: CourseLikeResourceId) => Promise<{}>;
+  deleteLike: (id: {
+    likeId: number;
+    resourceId?: CourseLikeResourceId["params"];
+  }) => Promise<{}>;
 }

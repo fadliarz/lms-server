@@ -23,59 +23,56 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const lesson_type_1 = require("../lesson.type");
-const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseLessonService = class CourseLessonService {
-    createLesson(resourceId, dto) {
+    createLesson(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.createLesson(resourceId, dto);
+                yield this.authorization.authorizeCreateLesson(user, id.resourceId.courseId);
+                return yield this.repository.createLesson({ courseId: id.resourceId.courseId }, dto);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    foreignConstraint: {
-                        default: { message: "Course doesn't exist!" },
-                    },
-                });
+                throw (0, handleRepositoryError_1.default)(error, {});
             }
         });
     }
-    getLessonById(lessonId, resourceId) {
+    getLessonById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const lesson = yield this.validateRelationBetweenResources({
-                lessonId,
-                resourceId,
+            try {
+                return yield this.repository.getLessonByIdOrThrow(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    getLessons(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.repository.getLessons({
+                courseId: id.resourceId.courseId,
             });
-            return lesson;
         });
     }
-    getLessons(resourceId) {
+    updateLesson(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getLessons(resourceId);
-        });
-    }
-    updateBasicLesson(lessonId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ lessonId, resourceId });
-            return yield this.repository.updateLesson(lessonId, resourceId, dto);
-        });
-    }
-    deleteLesson(lessonId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ lessonId, resourceId });
-            yield this.repository.deleteLesson(lessonId, resourceId);
-            return {};
-        });
-    }
-    validateRelationBetweenResources(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { lessonId, resourceId } = id;
-            const { courseId } = resourceId;
-            const lesson = yield this.repository.getLessonById(lessonId, resourceId);
-            if (!lesson || lesson.courseId !== courseId) {
-                throw new RecordNotFoundException_1.default();
+            try {
+                yield this.authorization.authorizeUpdateLesson(user, id.resourceId.courseId);
+                return yield this.repository.updateLesson(id, dto);
             }
-            return lesson;
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    deleteLesson(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeDeleteLesson(user, id.resourceId.courseId);
+                return yield this.repository.deleteLesson(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
 };
@@ -83,6 +80,10 @@ __decorate([
     (0, inversify_1.inject)(lesson_type_1.CourseLessonDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], CourseLessonService.prototype, "repository", void 0);
+__decorate([
+    (0, inversify_1.inject)(lesson_type_1.CourseLessonDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], CourseLessonService.prototype, "authorization", void 0);
 CourseLessonService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseLessonService);

@@ -33,31 +33,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
-const user_type_1 = require("../user.type");
 const inversify_1 = require("inversify");
-const prisma_query_raw_type_1 = require("../../../common/class/prisma_query_raw/prisma_query_raw.type");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-const getPrismaDb_1 = __importDefault(require("../../../common/functions/getPrismaDb"));
-const asyncLocalStorage_1 = __importDefault(require("../../../common/asyncLocalStorage"));
-let UserRepository = class UserRepository {
+const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+let UserRepository = class UserRepository extends BaseRepository_1.default {
     constructor() {
-        this.wrapMethods();
+        super();
     }
-    createUser(dto, accessToken, refreshToken) {
+    createUser(data) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.user.create({
-                data: Object.assign(Object.assign({}, dto), { accessToken, refreshToken }),
+                data,
             });
         });
     }
-    getUserById(userId) {
+    createUserAndBlankReport(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.user.findUnique({ where: { id: userId } });
+            console.log(data);
+            return this.db.user.create({
+                data: Object.assign(Object.assign({}, data), { report: {
+                        create: {},
+                    } }),
+            });
         });
     }
-    getUserByIdOrThrow(userId, error) {
+    getUserById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.getUserById(userId);
+            return this.db.user.findUnique({
+                where: {
+                    id: id.userId,
+                },
+            });
+        });
+    }
+    getUserByIdOrThrow(id, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.getUserById(id);
             if (!user) {
                 throw error || new RecordNotFoundException_1.default();
             }
@@ -89,80 +100,193 @@ let UserRepository = class UserRepository {
             });
         });
     }
-    updateUser(userId, dto) {
+    getUserAssignments(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.user.update({
-                where: { id: userId },
-                data: dto,
-            });
-        });
-    }
-    getUserAssignments(userId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const enrollments = yield this.db.courseEnrollment.findMany({
+            const classAssignments = yield this.db.courseClassAssignment.findMany({
                 where: {
-                    id: userId,
-                },
-                select: {
-                    course: {
-                        select: {
-                            title: true,
-                            classes: {
-                                select: {
-                                    assignments: {
-                                        include: {
-                                            courseClass: {
-                                                select: {
-                                                    title: true,
-                                                },
-                                            },
-                                        },
-                                    },
+                    courseClass: {
+                        course: {
+                            enrollments: {
+                                some: {
+                                    userId: id.userId,
                                 },
                             },
                         },
                     },
+                    assignmentCompletions: {
+                        some: {
+                            userId: id.userId,
+                        },
+                    },
+                },
+                include: {
+                    courseClass: {
+                        select: {
+                            id: true,
+                            title: true,
+                            course: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                },
+                            },
+                        },
+                    },
+                    assignmentCompletions: true,
                 },
             });
             const assignments = [];
-            for (let enrollment of enrollments) {
-                for (const theClass of enrollment.course.classes) {
-                    for (const assignment of theClass.assignments) {
-                        const { courseClass: tempTheClass } = assignment, theAssignment = __rest(assignment, ["courseClass"]);
-                        assignments.push(Object.assign(Object.assign({}, theAssignment), { class: tempTheClass, course: { title: enrollment.course.title } }));
-                    }
-                }
+            for (let theAssignment of classAssignments) {
+                const { courseClass: theCourseClass, assignmentCompletions: theCompletions } = theAssignment, assignment = __rest(theAssignment, ["courseClass", "assignmentCompletions"]);
+                const { course: theCourse } = theCourseClass, theClass = __rest(theCourseClass, ["course"]);
+                assignments.push({
+                    type: "course",
+                    assignment: Object.assign(Object.assign({}, theAssignment), { class: theClass, course: theCourse, completion: theCompletions.length > 0 ? theCompletions[0] : null }),
+                });
             }
-            assignments.sort((a, b) => b.id - a.id);
+            const personalAssignments = yield this.db.personalAssignment.findMany({
+                where: id,
+            });
+            for (let theAssignment of personalAssignments) {
+                assignments.push({
+                    type: "personal",
+                    assignment: theAssignment,
+                });
+            }
+            assignments.sort((a, b) => b.assignment.deadline.getTime() - a.assignment.deadline.getTime());
             return assignments;
         });
     }
-    deleteUser(userId) {
+    getUserEventAndCourseSchedules(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.user.delete({
-                where: { id: userId },
+            const events = yield this.db.event.findMany();
+            const schedules = yield this.db.courseSchedule.findMany({
+                where: {
+                    course: {
+                        OR: [
+                            {
+                                enrollments: {
+                                    some: {
+                                        userId: id.userId,
+                                    },
+                                },
+                            },
+                            { authorId: id.userId },
+                        ],
+                    },
+                },
+            });
+            const allUpcoming = [...events, ...schedules];
+            allUpcoming.sort((a, b) => b.date.getTime() - a.date.getTime());
+            return allUpcoming;
+        });
+    }
+    getUserEnrolledCourses(id, where) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const enrollments = yield this.db.courseEnrollment.findMany({
+                where: { userId: id.userId, role: where.role },
+                select: {
+                    course: true,
+                },
+            });
+            const courses = [];
+            for (const enrollment of enrollments) {
+                courses.push(enrollment.course);
+            }
+            return courses;
+        });
+    }
+    getUserEnrolledDepartmentPrograms(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const enrollments = yield this.db.departmentProgramEnrollment.findMany({
+                where: {
+                    userId: id.userId,
+                },
+                select: {
+                    program: true,
+                },
+            });
+            const programs = [];
+            for (const enrollment of enrollments) {
+                programs.push(enrollment.program);
+            }
+            programs.sort((a, b) => b.date.getTime() - a.date.getTime());
+            return programs;
+        });
+    }
+    getUserLedDepartments(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.department.findMany({
+                where: {
+                    OR: [{ leaderId: id.userId }, { coLeaderId: id.userId }],
+                },
             });
         });
     }
-    wrapMethods() {
-        const methodNames = Object.getOwnPropertyNames(Object.getPrototypeOf(this)).filter((name) => name !== "constructor" && typeof this[name] === "function");
-        methodNames.forEach((methodName) => {
-            const originalMethod = this[methodName];
-            this[methodName] = (...args) => {
-                this.db = (0, getPrismaDb_1.default)(asyncLocalStorage_1.default);
-                return originalMethod.apply(this, args);
-            };
+    getUserLedDepartmentDivisions(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.departmentDivision.findMany({
+                where: {
+                    OR: [{ leaderId: id.userId }, { coLeaderId: id.userId }],
+                },
+                include: {
+                    department: { select: { id: true, title: true } },
+                },
+            });
+        });
+    }
+    getUserReportOrThrow(id, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const report = yield this.db.report.findUnique({
+                where: id,
+            });
+            if (!report) {
+                throw error || new RecordNotFoundException_1.default();
+            }
+            return report;
+        });
+    }
+    getUserAuthorizationStatusFromPrivilege(id, privilege) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const department = yield this.db.department.findFirst({
+                where: {
+                    OR: [
+                        { leaderId: id.userId },
+                        { coLeaderId: id.userId },
+                        {
+                            divisions: {
+                                some: {
+                                    privileges: {
+                                        privilege,
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                },
+            });
+            if (!department) {
+                return false;
+            }
+            return true;
+        });
+    }
+    updateUser(id, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.user.update({
+                where: { id: id.userId },
+                data,
+            });
+        });
+    }
+    deleteUser(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.user.delete({
+                where: { id: id.userId },
+            });
         });
     }
 };
-__decorate([
-    (0, inversify_1.inject)(user_type_1.UserDITypes.AUTHORIZATION),
-    __metadata("design:type", Object)
-], UserRepository.prototype, "authorization", void 0);
-__decorate([
-    (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
-    __metadata("design:type", Object)
-], UserRepository.prototype, "prismaQueryRaw", void 0);
 UserRepository = __decorate([
     (0, inversify_1.injectable)(),
     __metadata("design:paramtypes", [])

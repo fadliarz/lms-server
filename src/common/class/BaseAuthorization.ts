@@ -7,7 +7,7 @@ import {
   UserRoleModel,
 } from "../../modules/course/course.type";
 import InternalServerException from "./exceptions/InternalServerException";
-import { UserModel } from "../../modules/user/user.type";
+import { PrivilegeModel, UserModel } from "../../modules/user/user.type";
 import { CourseEnrollmentModel } from "../../modules/enrollment/enrollment.type";
 import { inject, injectable } from "inversify";
 import {
@@ -17,6 +17,7 @@ import {
 import AuthenticationException from "./exceptions/AuthenticationException";
 import RecordNotFoundException from "./exceptions/RecordNotFoundException";
 import { PrismaTransaction } from "../types";
+import { IRepository, RepositoryDITypes } from "./repository/repository.type";
 
 export const BaseAuthorizationDITypes = Symbol.for(
   "COMMON_CLASS_BASE_AUTHORIZATION",
@@ -24,8 +25,33 @@ export const BaseAuthorizationDITypes = Symbol.for(
 
 @injectable()
 export default class BaseAuthorization {
+  @inject(RepositoryDITypes.FACADE)
+  protected readonly globalRepository: IRepository;
+
   @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
   protected readonly prismaQueryRaw: IPrismaQueryRaw;
+
+  protected async authorizeFromDepartmentDivision(
+    userId: number,
+    privilege: PrivilegeModel,
+  ): Promise<boolean> {
+    return await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
+      { userId },
+      privilege,
+    );
+  }
+
+  protected async isAuthor(userId: number, courseId: number): Promise<boolean> {
+    const author =
+      await this.globalRepository.course.getCourseAuthorByIdOrThrow(
+        {
+          courseId,
+        },
+        { minimalist: true },
+      );
+
+    return !!(author && author.id === userId);
+  }
 
   public async authorizeUserRole(
     tx: PrismaTransaction,

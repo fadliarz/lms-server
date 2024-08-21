@@ -3,14 +3,9 @@ import jwt from "jsonwebtoken";
 import { isEqual } from "lodash";
 import sha256Encrypt from "../../../utils/encrypt";
 import {
-  $UserReturnData,
-  CreateUserDto,
+  $UserAPI,
+  PrivilegeModel,
   PublicUserModel,
-  UpdateBasicUserDto,
-  UpdateUserEmailDto,
-  UpdateUserPasswordDto,
-  UpdateUserPhoneNumberDto,
-  UpdateUserRoleDto,
   UserDITypes,
   UserModel,
 } from "../user.type";
@@ -21,44 +16,45 @@ import ClientException from "../../../common/class/exceptions/ClientException";
 import { Request, Response } from "express";
 import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
-import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import {
-  IPrismaQueryRaw,
-  PrismaQueryRawDITypes,
-} from "../../../common/class/prisma_query_raw/prisma_query_raw.type";
 import asyncLocalStorage from "../../../common/asyncLocalStorage";
 import { LocalStorageKey } from "../../../common/constants/LocalStorageKey";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
-import getRoleStatus from "../../../common/functions/getRoleStatus";
 import {
   CourseEnrollmentRoleModel,
   UserRoleModel,
 } from "../../course/course.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import {
-  PrismaDefaultTransactionConfigForRead,
-  PrismaDefaultTransactionConfigForWrite,
-} from "../../../common/constants/prismaDefaultConfig";
-import {
   IUserAuthorization,
   IUserRepository,
   IUserService,
 } from "../user.interface";
+import {
+  IRepository,
+  RepositoryDITypes,
+} from "../../../common/class/repository/repository.type";
+import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
+import getRoleStatus from "../../../common/functions/getRoleStatus";
+import BaseService from "../../../common/class/BaseService";
 
 @injectable()
-export default class UserService implements IUserService {
+export default class UserService extends BaseService implements IUserService {
   @inject(UserDITypes.REPOSITORY)
   private repository: IUserRepository;
+
+  @inject(RepositoryDITypes.FACADE)
+  private globalRepository: IRepository;
 
   @inject(UserDITypes.AUTHORIZATION)
   private readonly authorization: IUserAuthorization;
 
-  @inject(PrismaQueryRawDITypes.PRISMA_QUERY_RAW)
-  private readonly prismaQueryRaw: IPrismaQueryRaw;
-
   private readonly prisma = PrismaClientSingleton.getInstance();
 
-  public async createUser(dto: CreateUserDto): Promise<UserModel> {
+  public async createUser(dto: $UserAPI.CreateUser.Dto): Promise<
+    {
+      token: { accessToken: string; refreshToken: string };
+    } & { user: $UserAPI.CreateUser.Response["data"] }
+  > {
     try {
       dto.email = dto.email.toLowerCase();
       const { email, password } = dto;
@@ -72,16 +68,26 @@ export default class UserService implements IUserService {
       );
       dto.password = sha256Encrypt(password);
 
-      return await this.repository.createUser(dto, accessToken, [refreshToken]);
+      const newUser = await this.repository.createUserAndBlankReport({
+        ...dto,
+        accessToken,
+        refreshToken: [refreshToken],
+      });
+
+      return {
+        user: this.getPublicUser(newUser),
+        token: {
+          accessToken,
+          refreshToken,
+        },
+      };
     } catch (error: any) {
       throw handleRepositoryError(error, {
         uniqueConstraint: {
           email: {
             message: "email is already taken!",
           },
-          nim: {
-            message: "NIM is already taken!",
-          },
+
           default: {
             message: "unique constraint failed!",
           },
@@ -90,242 +96,341 @@ export default class UserService implements IUserService {
     }
   }
 
-  public async getPublicUserById(userId: number): Promise<PublicUserModel> {
-    const user = await this.repository.getUserById(userId);
+  public async getUserById(id: {
+    userId: number;
+  }): Promise<$UserAPI.GetUserById.Response["data"]> {
+    const targetUser = await this.repository.getUserById(id);
 
-    if (!user) {
+    if (!targetUser) {
       throw new RecordNotFoundException();
     }
 
-    return {
-      id: user.id,
-      name: user.name,
-      NIM: user.NIM,
-      avatar: user.avatar,
-      about: user.about,
-      role: user.role,
-    };
+    return this.getPublicUser(targetUser);
   }
 
-  public async getMe(userId: number): Promise<UserModel> {
-    const me = await this.repository.getUserByIdOrThrow(userId);
-
-    me.accessToken = null;
-    me.refreshToken = [];
-
-    return me;
+  public async getMe(user: UserModel): Promise<PublicUserModel> {
+    return this.getPublicUser(user);
   }
 
   public async getUserAssignments(
-    userId: number,
-    targetUserId: number,
-  ): Promise<$UserReturnData.GetUserAssignments> {
-    return this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeGetUserAssignments(user, targetUserId);
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserAssignments.Response["data"]> {
+    try {
+      this.authorization.authorizeGetUserAssignments(user, id.userId);
 
-      return await asyncLocalStorage.run(
-        { [LocalStorageKey.TRANSACTION]: tx },
-        async () => {
-          return this.repository.getUserAssignments(userId);
-        },
+      return await this.repository.getUserAssignments(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserEnrolledAsStudentCourses(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserEnrolledAsStudentCourses.Response["data"]> {
+    try {
+      this.authorization.authorizeGetUserEnrolledAsStudentCourses(
+        user,
+        id.userId,
       );
-    }, PrismaDefaultTransactionConfigForRead);
+
+      return await this.repository.getUserEnrolledCourses(id, {
+        role: CourseEnrollmentRoleModel.STUDENT,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserManagedCourses(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserManagedCourses.Response["data"]> {
+    try {
+      await this.authorization.authorizeGetUserManagedCourses(user, id.userId);
+
+      const isAcademicDivision =
+        await this.repository.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.COURSE,
+        );
+      if (isAcademicDivision) {
+        return await this.globalRepository.course.getCourses();
+      }
+
+      const targetUser = await this.repository.getUserByIdOrThrow(id);
+      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.OWNER)) {
+        return await this.globalRepository.course.getCourses();
+      }
+
+      return await this.repository.getUserEnrolledCourses(id, {
+        role: CourseEnrollmentRoleModel.INSTRUCTOR,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserEventAndCourseSchedules(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserEventAndCourseSchedules.Response["data"]> {
+    try {
+      this.authorization.authorizeGetUserEventAndCourseSchedules(
+        user,
+        id.userId,
+      );
+
+      return await this.repository.getUserEventAndCourseSchedules(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserEnrolledDepartmentPrograms(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserEnrolledDepartmentPrograms.Response["data"]> {
+    try {
+      await this.authorization.authorizeGetUserEnrolledDepartmentPrograms(
+        user,
+        id.userId,
+      );
+
+      return await this.repository.getUserEnrolledDepartmentPrograms(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserManagedDepartments(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserManagedDepartments.Response["data"]> {
+    try {
+      await this.authorization.authorizeGetUserManagedDepartments(
+        user,
+        id.userId,
+      );
+
+      const targetUser = await this.repository.getUserByIdOrThrow(id);
+      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.OWNER)) {
+        return await this.globalRepository.department.getDepartments();
+      }
+
+      return await this.repository.getUserLedDepartments({
+        userId: id.userId,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserManagedDepartmentDivisions(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserManagedDepartmentDivisions.Response["data"]> {
+    try {
+      await this.authorization.authorizeGetUserManagedDepartmentDivisions(
+        user,
+        id.userId,
+      );
+
+      const targetUser = await this.repository.getUserByIdOrThrow(id);
+      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.OWNER)) {
+        return await this.globalRepository.departmentDivision.getAllExtendedDivisions();
+      }
+
+      return await this.repository.getUserLedDepartmentDivisions({
+        userId: id.userId,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserReport(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserReport.Response["data"]> {
+    try {
+      await this.authorization.authorizeGetUserReport(user, id.userId);
+
+      return await this.repository.getUserReportOrThrow({
+        userId: id.userId,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async updateBasicUser(
-    userId: number,
-    targetUserId: number,
-    dto: UpdateBasicUserDto,
-  ): Promise<UserModel> {
-    return this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeUpdateUser(user, targetUserId);
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+    dto: $UserAPI.UpdateBasicUser.Dto,
+  ): Promise<$UserAPI.UpdateBasicUser.Response["data"]> {
+    try {
+      this.authorization.authorizeUpdateUser(user, id.userId);
 
-      return await asyncLocalStorage.run(
-        { [LocalStorageKey.TRANSACTION]: tx },
-        async () => {
-          return this.repository.updateUser(targetUserId, dto);
-        },
-      );
-    }, PrismaDefaultTransactionConfigForWrite);
+      return await this.repository.updateUser(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async updateUserEmail(
-    userId: number,
-    targetUserId: number,
-    storedRefreshToken: string,
-    dto: UpdateUserEmailDto,
-  ): Promise<UserModel> {
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+    data: {
+      storedRefreshToken: string;
+      dto: $UserAPI.UpdateUserEmail.Dto;
+    },
+  ): Promise<$UserAPI.UpdateUserEmail.Response["data"]> {
     try {
-      return this.prisma.$transaction(async (tx) => {
-        dto.email = dto.email.toLowerCase();
-        const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-          tx,
-          userId,
-          new AuthenticationException(),
-        );
-        this.authorization.authorizeUpdateUser(user, targetUserId);
+      const { dto, storedRefreshToken } = data;
+      dto.email = dto.email.toLowerCase();
 
-        return await asyncLocalStorage.run(
-          { [LocalStorageKey.TRANSACTION]: tx },
-          async () => {
-            return await this.repository.updateUser(targetUserId, {
-              ...dto,
-              refreshToken: [storedRefreshToken],
-            });
-          },
-        );
-      }, PrismaDefaultTransactionConfigForWrite);
-    } catch (error: any) {
-      throw handleRepositoryError(error, {
-        uniqueConstraint: {
-          default: {
-            message: "email is already taken!",
-          },
-        },
+      this.authorization.authorizeUpdateUser(user, id.userId);
+
+      return await this.repository.updateUser(id, {
+        ...dto,
+        refreshToken: [storedRefreshToken],
       });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
   }
 
   public async updateUserPassword(
-    userId: number,
-    targetUserId: number,
-    storedRefreshToken: string,
-    dto: UpdateUserPasswordDto,
-  ): Promise<UserModel> {
-    return this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeUpdateUser(user, targetUserId);
+    user: UserModel,
+    id: { userId: number },
+    data: {
+      storedRefreshToken: string;
+      dto: $UserAPI.UpdateUserPassword.Dto;
+    },
+  ): Promise<$UserAPI.UpdateUserPassword.Response["data"]> {
+    try {
+      this.authorization.authorizeUpdateUser(user, id.userId);
 
-      return await asyncLocalStorage.run(
-        { [LocalStorageKey.TRANSACTION]: tx },
-        async () => {
-          return await this.repository.updateUser(targetUserId, {
-            ...dto,
-            refreshToken: [storedRefreshToken],
-          });
-        },
-      );
-    }, PrismaDefaultTransactionConfigForWrite);
-  }
-
-  public async updateUserPhoneNumber(
-    userId: number,
-    targetUserId: number,
-    dto: UpdateUserPhoneNumberDto,
-  ): Promise<UserModel> {
-    return this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeUpdateUser(user, targetUserId);
-
-      return await asyncLocalStorage.run(
-        { [LocalStorageKey.TRANSACTION]: tx },
-        async () => {
-          return await this.repository.updateUser(targetUserId, dto);
-        },
-      );
-    }, PrismaDefaultTransactionConfigForWrite);
+      return await this.repository.updateUser(id, {
+        ...data.dto,
+        refreshToken: [data.storedRefreshToken],
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async updateUserRole(
-    userId: number,
-    targetUserId: number,
-    dto: UpdateUserRoleDto,
-  ): Promise<UserModel> {
-    return this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeUpdateUser(user, targetUserId);
+    user: UserModel,
+    id: { userId: number },
+    dto: $UserAPI.UpdateUserRole.Dto,
+  ): Promise<$UserAPI.UpdateUserRole.Response["data"]> {
+    try {
+      return this.prisma.$transaction(async (tx) => {
+        this.authorization.authorizeUpdateUser(user, id.userId);
 
-      const targetUser =
-        await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-          tx,
-          targetUserId,
-          new RecordNotFoundException(),
+        const targetUser = await this.repository.getUserByIdOrThrow(
+          { userId: id.userId },
+          new RecordNotFoundException("user doesn't exist!"),
         );
 
-      const currentRole = targetUser.role;
-      const { role: newRole } = dto;
-      if (isEqualOrIncludeRole(currentRole, newRole)) {
-        return targetUser;
-      }
+        const currentRole = targetUser.role;
+        const { role: newRole } = dto;
+        if (isEqualOrIncludeRole(currentRole, newRole)) {
+          return targetUser;
+        }
 
-      const { isStudent, isInstructor, isAdmin } = getRoleStatus(currentRole);
+        const { isStudent, isInstructor } = getRoleStatus(currentRole);
 
-      if (
-        (isStudent || isInstructor) &&
-        isEqualOrIncludeRole(newRole, UserRoleModel.STUDENT)
-      ) {
-        await tx.courseEnrollment.updateMany({
-          where: {
-            userId: targetUserId,
+        if (
+          (isStudent || isInstructor) &&
+          isEqualOrIncludeRole(newRole, UserRoleModel.STUDENT)
+        ) {
+          await tx.courseEnrollment.deleteMany({
+            where: {
+              userId: id.userId,
+              role: CourseEnrollmentRoleModel.INSTRUCTOR,
+            },
+          });
+
+          await tx.course.updateMany({
+            where: {
+              authorId: id.userId,
+            },
+            data: {
+              authorId: null,
+            },
+          });
+        }
+
+        const updatedUser = await asyncLocalStorage.run(
+          { [LocalStorageKey.TRANSACTION]: tx },
+          async () => {
+            return await this.repository.deleteUser({ userId: id.userId });
           },
-          data: {
-            role: CourseEnrollmentRoleModel.INSTRUCTOR,
-          },
-        });
+        );
 
-        await tx.course.deleteMany({
-          where: {
-            authorId: targetUserId,
-          },
-        });
-      }
-
-      return await asyncLocalStorage.run(
-        { [LocalStorageKey.TRANSACTION]: tx },
-        async () => {
-          return await this.repository.updateUser(targetUserId, dto);
-        },
-      );
-    }, PrismaDefaultTransactionConfigForWrite);
+        return this.getPublicUser(updatedUser);
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
-  public async deleteUser(userId: number, targetUserId: number): Promise<{}> {
-    return this.prisma.$transaction(async (tx) => {
-      const user = await this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(
-        tx,
-        userId,
-        new AuthenticationException(),
-      );
-      this.authorization.authorizeDeleteUser(user, targetUserId);
+  public async updateUserPhoneNumber(
+    user: UserModel,
+    id: { userId: number },
+    dto: $UserAPI.UpdateUserPhoneNumber.Dto,
+  ): Promise<$UserAPI.UpdateUserPhoneNumber.Response["data"]> {
+    try {
+      this.authorization.authorizeUpdateUser(user, id.userId);
 
-      await asyncLocalStorage.run(
-        { [LocalStorageKey.TRANSACTION]: tx },
-        async () => {
-          return await this.repository.deleteUser(targetUserId);
-        },
-      );
+      return await this.repository.updateUser(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
 
-      return {};
-    }, PrismaDefaultTransactionConfigForWrite);
+  public async deleteUser(
+    user: UserModel,
+    id: { userId: number },
+  ): Promise<{}> {
+    try {
+      this.authorization.authorizeDeleteUser(user, id.userId);
+
+      return await this.repository.deleteUser({ userId: id.userId });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   async signInUser(
     req: Request,
     res: Response,
     dto: { email: string; password: string },
-  ): Promise<UserModel> {
+  ): Promise<{}> {
     return this.prisma.$transaction(async (tx) => {
       dto.email = dto.email.toLowerCase();
       const { email, password } = dto;
@@ -402,18 +507,15 @@ export default class UserService implements IUserService {
       await asyncLocalStorage.run(
         { [LocalStorageKey.TRANSACTION]: tx },
         async () => {
-          return await this.repository.updateUser(userRelatedToSignInEmail.id, {
-            accessToken,
-            refreshToken: newRefreshTokenArray,
-          });
+          return await this.repository.updateUser(
+            { userId: userRelatedToSignInEmail.id },
+            {
+              accessToken,
+              refreshToken: newRefreshTokenArray,
+            },
+          );
         },
       );
-
-      const user = {
-        ...userRelatedToSignInEmail,
-        accessToken,
-        newRefreshTokenArray,
-      };
 
       res
         .cookie(Cookie.ACCESS_TOKEN, accessToken, {
@@ -428,11 +530,11 @@ export default class UserService implements IUserService {
           sameSite: "strict",
         });
 
-      return user;
+      return {};
     });
   }
 
-  public async signOutUser(storedRefreshToken: string): Promise<void> {
+  public async signOutUser(storedRefreshToken: string): Promise<{}> {
     return this.prisma.$transaction(async (tx) => {
       const userRelatedToStoredRefreshToken = await asyncLocalStorage.run(
         { [LocalStorageKey.TRANSACTION]: tx },
@@ -451,7 +553,7 @@ export default class UserService implements IUserService {
         { [LocalStorageKey.TRANSACTION]: tx },
         async () => {
           return await this.repository.updateUser(
-            userRelatedToStoredRefreshToken.id,
+            { userId: userRelatedToStoredRefreshToken.id },
             {
               refreshToken:
                 userRelatedToStoredRefreshToken?.refreshToken.filter(
@@ -461,6 +563,8 @@ export default class UserService implements IUserService {
           );
         },
       );
+
+      return {};
     });
   }
 
@@ -487,5 +591,11 @@ export default class UserService implements IUserService {
 
   private verifyPassword(password: string, encryptedPassword: string): boolean {
     return isEqual(sha256Encrypt(password), encryptedPassword);
+  }
+
+  private getPublicUser(user: UserModel): PublicUserModel {
+    const { accessToken, refreshToken, password, ...publicUser } = user;
+
+    return publicUser;
   }
 }

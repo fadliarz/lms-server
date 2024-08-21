@@ -13,7 +13,7 @@ const url = {
 
 export default defineConfig({
   adapter: () => {
-    const POSTGRES_URL: string | undefined = url.prod;
+    const POSTGRES_URL: string | undefined = url.dev;
     if (!POSTGRES_URL) {
       throw new Error("POSTGRES_URL is not defined");
     }

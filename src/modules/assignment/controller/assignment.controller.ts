@@ -2,7 +2,6 @@ import { inject, injectable } from "inversify";
 import {
   CourseClassAssignmentDITypes,
   CourseClassAssignmentResourceId,
-  ValuableCourseClassAssignmentModel,
 } from "../assignment.type";
 import {
   ICourseClassAssignmentController,
@@ -11,20 +10,19 @@ import {
 import { NextFunction, Request, Response } from "express";
 import validateJoi from "../../../common/functions/validateJoi";
 import { StatusCode } from "../../../common/constants/statusCode";
-import getValuable from "../../../common/functions/removeNullFields";
-import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import isNaNArray from "../../../common/functions/isNaNArray";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import {
   CreateCourseClassAssignmentDtoJoi,
   UpdateCourseClassAssignmentDtoJoi,
 } from "./assignment.joi";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 @injectable()
 export default class CourseClassAssignmentController
   implements ICourseClassAssignmentController
 {
-  @inject(CourseClassAssignmentDITypes.CONTROLLER)
+  @inject(CourseClassAssignmentDITypes.SERVICE)
   private readonly service: ICourseClassAssignmentService;
 
   public async createAssignment(
@@ -39,39 +37,14 @@ export default class CourseClassAssignmentController
         next,
       );
 
-      const resourceId = this.validateResourceId(req);
       const newAssignment = await this.service.createAssignment(
-        resourceId,
+        getRequestUserOrThrowAuthenticationException(req),
+        { resourceId: this.validateResourceId(req) },
         req.body,
       );
 
       return res.status(StatusCode.RESOURCE_CREATED).json({
-        data: getValuable(
-          newAssignment,
-        ) satisfies ValuableCourseClassAssignmentModel,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getAssignmentById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      const assignmentId = this.validateAssignmentId(req);
-      const resourceId = this.validateResourceId(req);
-      const assignment = await this.service.getAssignmentById(
-        assignmentId,
-        resourceId,
-      );
-
-      return res.status(StatusCode.SUCCESS).json({
-        data: getValuable(
-          assignment,
-        ) satisfies ValuableCourseClassAssignmentModel,
+        data: newAssignment,
       });
     } catch (error) {
       next(error);
@@ -84,13 +57,35 @@ export default class CourseClassAssignmentController
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const resourceId = this.validateResourceId(req);
-      const assignments = await this.service.getAssignments(resourceId);
+      const assignments = await this.service.getAssignments(
+        getRequestUserOrThrowAuthenticationException(req),
+        { resourceId: this.validateResourceId(req) },
+      );
 
       return res.status(StatusCode.SUCCESS).json({
-        data: assignments.map((assignment) =>
-          getValuable(assignment),
-        ) satisfies ValuableCourseClassAssignmentModel[],
+        data: assignments,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getAssignmentById(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const assignment = await this.service.getAssignmentById(
+        getRequestUserOrThrowAuthenticationException(req),
+        {
+          assignmentId: this.validateAssignmentId(req),
+          resourceId: this.validateResourceId(req),
+        },
+      );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: assignment,
       });
     } catch (error) {
       next(error);
@@ -109,16 +104,17 @@ export default class CourseClassAssignmentController
         next,
       );
 
-      const assignmentId = this.validateAssignmentId(req);
-      const resourceId = this.validateResourceId(req);
       const updatedAssignment = await this.service.updateAssignment(
-        assignmentId,
-        resourceId,
+        getRequestUserOrThrowAuthenticationException(req),
+        {
+          assignmentId: this.validateAssignmentId(req),
+          resourceId: this.validateResourceId(req),
+        },
         req.body,
       );
 
       return res.status(StatusCode.SUCCESS).json({
-        data: updatedAssignment satisfies ValuableCourseClassAssignmentModel,
+        data: updatedAssignment,
       });
     } catch (error) {
       next(error);
@@ -131,9 +127,13 @@ export default class CourseClassAssignmentController
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const assignmentId = this.validateAssignmentId(req);
-      const resourceId = this.validateResourceId(req);
-      await this.service.deleteAssignment(assignmentId, resourceId);
+      await this.service.deleteAssignment(
+        getRequestUserOrThrowAuthenticationException(req),
+        {
+          assignmentId: this.validateAssignmentId(req),
+          resourceId: this.validateResourceId(req),
+        },
+      );
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
@@ -142,8 +142,6 @@ export default class CourseClassAssignmentController
   }
 
   private validateResourceId(req: Request): CourseClassAssignmentResourceId {
-    const { id: userId, role } =
-      getRequestUserOrThrowAuthenticationException(req);
     const courseId: number = Number(req.params.courseId);
     const classId: number = Number(req.params.classId);
     if (isNaNArray([courseId, classId])) {
@@ -151,10 +149,6 @@ export default class CourseClassAssignmentController
     }
 
     return {
-      user: {
-        id: userId,
-        role,
-      },
       courseId,
       classId,
     };

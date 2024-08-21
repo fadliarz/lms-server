@@ -5,6 +5,7 @@ import {
   ICourseLessonPrismaQueryRaw,
   ICourseLessonVideoPrismaQueryRaw,
   ICoursePrismaQueryRaw,
+  IDepartmentPrismaQueryRaw,
   IPrismaQueryRaw,
   IUserPrismaQueryRaw,
   PrismaQueryRawDITypes,
@@ -30,4 +31,7 @@ export default class PrismaQueryRaw implements IPrismaQueryRaw {
 
   @inject(PrismaQueryRawDITypes.COURSE_LESSON_VIDEO)
   public readonly courseLessonVideo: ICourseLessonVideoPrismaQueryRaw;
+
+  @inject(PrismaQueryRawDITypes.DEPARTMENT)
+  public readonly department: IDepartmentPrismaQueryRaw;
 }

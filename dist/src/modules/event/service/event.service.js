@@ -23,38 +23,60 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const event_type_1 = require("../event.type");
+const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
-const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-let EventService = class EventService {
-    create(resourceId, dto) {
+let EventService = class EventService extends BaseAuthorization_1.default {
+    createEvent(user, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.create(resourceId, dto);
+                this.authorization.authorizeCreateEvent(user);
+                return yield this.repository.createEvent(dto);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {});
+                throw (0, handleRepositoryError_1.default)(error);
             }
         });
     }
-    getById(id, resourceId) {
+    getEvents() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getByIdOrThrow(id, resourceId, new RecordNotFoundException_1.default());
+            try {
+                return yield this.repository.getEvents();
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
-    getMany(resourceId) {
+    getEventById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getMany(resourceId);
+            try {
+                return yield this.repository.getEventByIdOrThrow(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
-    update(id, resourceId, dto) {
+    updateEvent(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.update(id, resourceId, dto);
+            try {
+                this.authorization.authorizeUpdateEvent(user);
+                return yield this.repository.updateEvent(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
-    delete(id, resourceId) {
+    deleteEvent(user, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.repository.delete(id, resourceId);
-            return {};
+            try {
+                this.authorization.authorizeDeleteEvent(user);
+                return yield this.repository.deleteEvent(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
 };
@@ -62,6 +84,10 @@ __decorate([
     (0, inversify_1.inject)(event_type_1.EventDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], EventService.prototype, "repository", void 0);
+__decorate([
+    (0, inversify_1.inject)(event_type_1.EventDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], EventService.prototype, "authorization", void 0);
 EventService = __decorate([
     (0, inversify_1.injectable)()
 ], EventService);

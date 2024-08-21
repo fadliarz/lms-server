@@ -24,58 +24,60 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const class_type_1 = require("../class.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
-const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 let CourseClassService = class CourseClassService {
-    createClass(resourceId, dto) {
+    createClass(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.createClass(resourceId, dto);
+                yield this.authorization.authorizeCreateClass(user, id.resourceId.courseId);
+                return yield this.repository.createClass({ courseId: id.resourceId.courseId }, dto);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    foreignConstraint: {
-                        default: { message: "Course doesn't exist!" },
-                    },
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    getClasses(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.repository.getClasses({
+                    courseId: id.resourceId.courseId,
                 });
             }
-        });
-    }
-    getClassById(classId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const theClass = yield this.validateRelationBetweenResources({
-                classId,
-                resourceId,
-            });
-            return theClass;
-        });
-    }
-    getClasses(resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getClasses(resourceId);
-        });
-    }
-    updateClass(classId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ classId, resourceId });
-            return yield this.repository.updateClass(classId, resourceId, dto);
-        });
-    }
-    deleteClass(classId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ classId, resourceId });
-            yield this.repository.deleteClass(classId, resourceId);
-            return {};
-        });
-    }
-    validateRelationBetweenResources(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { classId, resourceId } = id;
-            const { courseId } = resourceId;
-            const theClass = yield this.repository.getClassById(classId, resourceId);
-            if (!theClass || theClass.courseId !== courseId) {
-                throw new RecordNotFoundException_1.default();
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
             }
-            return theClass;
+        });
+    }
+    getClassById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.repository.getClassByIdOrThrow(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateClass(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateClass(user, id.resourceId.courseId);
+                return yield this.repository.updateClass(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    deleteClass(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeDeleteClass(user, id.resourceId.courseId);
+                return yield this.repository.deleteClass(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
 };
@@ -83,6 +85,10 @@ __decorate([
     (0, inversify_1.inject)(class_type_1.CourseClassDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], CourseClassService.prototype, "repository", void 0);
+__decorate([
+    (0, inversify_1.inject)(class_type_1.CourseClassDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], CourseClassService.prototype, "authorization", void 0);
 CourseClassService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseClassService);

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { CourseLessonDITypes, courseLessonUrls } from "../lesson.type";
+import { $CourseLessonAPI, CourseLessonDITypes } from "../lesson.type";
 import { ICourseLessonController } from "../lesson.interface";
 
 export default function CourseLessonRouter(authenticationMiddleware: any) {
@@ -15,8 +15,9 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
    * Create
    *
    */
+
   router.post(
-    courseLessonUrls.lessons,
+    $CourseLessonAPI.CreateLesson.endpoint,
     authenticationMiddleware,
     controller.createLesson.bind(controller),
   );
@@ -25,29 +26,35 @@ export default function CourseLessonRouter(authenticationMiddleware: any) {
    * Get
    *
    */
+
   router.get(
-    courseLessonUrls.lesson,
-    controller.getLessonById.bind(controller),
+    $CourseLessonAPI.GetLessons.endpoint,
+    controller.getLessons.bind(controller),
   );
 
-  router.get(courseLessonUrls.lessons, controller.getLessons.bind(controller));
+  router.get(
+    $CourseLessonAPI.GetLessonById.endpoint,
+    controller.getLessonById.bind(controller),
+  );
 
   /**
    * Update
    *
    */
+
   router.patch(
-    courseLessonUrls.basic,
+    $CourseLessonAPI.UpdateLesson.endpoint,
     authenticationMiddleware,
-    controller.updateBasicLesson.bind(controller),
+    controller.updateLesson.bind(controller),
   );
 
   /**
    * Delete
    *
    */
+
   router.delete(
-    courseLessonUrls.lesson,
+    $CourseLessonAPI.DeleteLesson.endpoint,
     authenticationMiddleware,
     controller.deleteLesson.bind(controller),
   );

@@ -33,10 +33,7 @@ const course_type_1 = require("./modules/course/course.type");
 const enrollment_type_1 = require("./modules/enrollment/enrollment.type");
 const enrollment_repository_1 = __importDefault(require("./modules/enrollment/repository/enrollment.repository"));
 const lesson_type_1 = require("./modules/lesson/lesson.type");
-const video_repository_1 = require("./modules/video/repository/video.repository");
 const video_type_1 = require("./modules/video/video.type");
-const video_service_1 = require("./modules/video/service/video.service");
-const video_controller_1 = require("./modules/video/controller/video.controller");
 const category_repository_1 = __importDefault(require("./modules/category/repository/category.repository"));
 const category_type_1 = require("./modules/category/category.type");
 const PrismaTable_1 = __importStar(require("./common/class/table/PrismaTable"));
@@ -60,22 +57,8 @@ const video_authorization_1 = __importDefault(require("./modules/video/authoriza
 const CourseLessonVideoPrismaQueryRaw_1 = __importDefault(require("./common/class/prisma_query_raw/CourseLessonVideoPrismaQueryRaw"));
 const category_authorization_1 = __importDefault(require("./modules/category/authorization/category.authorization"));
 const CourseCategoryPrismaQueryRaw_1 = __importDefault(require("./common/class/prisma_query_raw/CourseCategoryPrismaQueryRaw"));
-const rand_type_1 = require("./common/class/randprisma/rand.type");
-const RandPrisma_1 = __importDefault(require("./common/class/randprisma/RandPrisma"));
-const PrismaUserRandDB_1 = __importDefault(require("./common/class/randprisma/PrismaUserRandDB"));
-const PrismaCourseRandDB_1 = __importDefault(require("./common/class/randprisma/PrismaCourseRandDB"));
-const PrismaCourseCategoryRandDB_1 = __importDefault(require("./common/class/randprisma/PrismaCourseCategoryRandDB"));
-const PrismaCourseLessonRandDB_1 = __importDefault(require("./common/class/randprisma/PrismaCourseLessonRandDB"));
-const PrismaCourseLessonVideoRandDB_1 = __importDefault(require("./common/class/randprisma/PrismaCourseLessonVideoRandDB"));
-const PrismaCourseEnrollmentRandDB_1 = __importDefault(require("./common/class/randprisma/PrismaCourseEnrollmentRandDB"));
-const rand_dto_type_1 = require("./common/class/rand_dto/rand_dto.type");
-const RandDTO_1 = __importDefault(require("./common/class/rand_dto/RandDTO"));
-const UserRandDTO_1 = __importDefault(require("./common/class/rand_dto/UserRandDTO"));
-const CourseRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseRandDTO"));
 const repository_type_1 = require("./common/class/repository/repository.type");
 const Repository_1 = __importDefault(require("./common/class/repository/Repository"));
-const CourseLessonRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseLessonRandDTO"));
-const CourseLessonVideoRandDTO_1 = __importDefault(require("./common/class/rand_dto/CourseLessonVideoRandDTO"));
 const BaseAuthorization_1 = __importStar(require("./common/class/BaseAuthorization"));
 const user_authorization_1 = __importDefault(require("./modules/user/authorization/user.authorization"));
 const class_type_1 = require("./modules/class/class.type");
@@ -107,46 +90,71 @@ const lesson_controller_1 = __importDefault(require("./modules/lesson/controller
 const user_repository_1 = __importDefault(require("./modules/user/repository/user.repository"));
 const user_service_1 = __importDefault(require("./modules/user/service/user.service"));
 const user_controller_1 = __importDefault(require("./modules/user/controller/user.controller"));
+const video_repository_1 = __importDefault(require("./modules/video/repository/video.repository"));
+const video_service_1 = __importDefault(require("./modules/video/service/video.service"));
+const video_controller_1 = __importDefault(require("./modules/video/controller/video.controller"));
+const assignment_type_2 = require("./modules/personal-assignment/assignment.type");
+const assignment_repository_2 = __importDefault(require("./modules/personal-assignment/repository/assignment.repository"));
+const assignment_service_2 = __importDefault(require("./modules/personal-assignment/service/assignment.service"));
+const assignment_controller_2 = __importDefault(require("./modules/personal-assignment/controller/assignment.controller"));
+const assignment_authorization_2 = __importDefault(require("./modules/personal-assignment/authorization/assignment.authorization"));
+const competition_repository_1 = __importDefault(require("./modules/competition/repository/competition.repository"));
+const competition_service_1 = __importDefault(require("./modules/competition/service/competition.service"));
+const competition_controller_1 = __importDefault(require("./modules/competition/controller/competition.controller"));
+const competition_type_1 = require("./modules/competition/competition.type");
+const competition_authorization_1 = __importDefault(require("./modules/competition/authorization/competition.authorization"));
+const schedule_repository_1 = __importDefault(require("./modules/schedule/repository/schedule.repository"));
+const schedule_service_1 = __importDefault(require("./modules/schedule/service/schedule.service"));
+const schedule_authorization_1 = __importDefault(require("./modules/schedule/authorization/schedule.authorization"));
+const schedule_type_1 = require("./modules/schedule/schedule.type");
+const department_repository_1 = __importDefault(require("./modules/department/repository/department.repository"));
+const department_service_1 = __importDefault(require("./modules/department/service/department.service"));
+const department_controller_1 = __importDefault(require("./modules/department/controller/department.controller"));
+const department_authorization_1 = __importDefault(require("./modules/department/authorization/department.authorization"));
+const department_type_1 = require("./modules/department/department.type");
+const division_type_1 = require("./modules/division/division.type");
+const division_repository_1 = __importDefault(require("./modules/division/repository/division.repository"));
+const division_service_1 = __importDefault(require("./modules/division/service/division.service"));
+const division_controller_1 = __importDefault(require("./modules/division/controller/division.controller"));
+const division_authorization_1 = __importDefault(require("./modules/division/authorization/division.authorization"));
+const enrollment_type_2 = require("./modules/division-enrollment/enrollment.type");
+const enrollment_repository_2 = __importDefault(require("./modules/division-enrollment/repository/enrollment.repository"));
+const enrollment_service_2 = __importDefault(require("./modules/division-enrollment/service/enrollment.service"));
+const enrollment_controller_2 = __importDefault(require("./modules/division-enrollment/controller/enrollment.controller"));
+const enrollment_authorization_2 = __importDefault(require("./modules/division-enrollment/authorization/enrollment.authorization"));
+const enrollment_repository_3 = __importDefault(require("./modules/program-enrollment/repository/enrollment.repository"));
+const enrollment_service_3 = __importDefault(require("./modules/program-enrollment/service/enrollment.service"));
+const enrollment_controller_3 = __importDefault(require("./modules/program-enrollment/controller/enrollment.controller"));
+const enrollment_authorization_3 = __importDefault(require("./modules/program-enrollment/authorization/enrollment.authorization"));
+const enrollment_type_3 = require("./modules/program-enrollment/enrollment.type");
+const report_type_1 = require("./modules/report/report.type");
+const report_repository_1 = __importDefault(require("./modules/report/repository/report.repository"));
+const report_service_1 = __importDefault(require("./modules/report/service/report.service"));
+const report_controller_1 = __importDefault(require("./modules/report/controller/report.controller"));
+const report_authorization_1 = __importDefault(require("./modules/report/authorization/report.authorization"));
+const scholarship_repository_1 = __importDefault(require("./modules/scholarship/repository/scholarship.repository"));
+const scholarship_service_1 = __importDefault(require("./modules/scholarship/service/scholarship.service"));
+const scholarship_controller_1 = __importDefault(require("./modules/scholarship/controller/scholarship.controller"));
+const scholarship_authorization_1 = __importDefault(require("./modules/scholarship/authorization/scholarship.authorization"));
+const scholarship_type_1 = require("./modules/scholarship/scholarship.type");
+const schedule_controller_1 = __importDefault(require("./modules/schedule/controller/schedule.controller"));
+const DepartmentPrismaQueryRaw_1 = __importDefault(require("./common/class/prisma_query_raw/DepartmentPrismaQueryRaw"));
+const completion_type_1 = require("./modules/assignment-completion/completion.type");
+const completion_repository_1 = __importDefault(require("./modules/assignment-completion/repository/completion.repository"));
+const completion_service_1 = __importDefault(require("./modules/assignment-completion/service/completion.service"));
+const completion_authorization_1 = __importDefault(require("./modules/assignment-completion/authorization/completion.authorization"));
+const completion_controller_1 = __importDefault(require("./modules/assignment-completion/controller/completion.controller"));
+const program_type_1 = require("./modules/program/program.type");
+const program_repository_1 = __importDefault(require("./modules/program/repository/program.repository"));
+const program_service_1 = __importDefault(require("./modules/program/service/program.service"));
+const program_controller_1 = __importDefault(require("./modules/program/controller/program.controller"));
+const program_authorization_1 = __importDefault(require("./modules/program/authorization/program.authorization"));
 const dIContainer = new inversify_1.Container();
 /**
  * Repository
  *
  */
 dIContainer.bind(repository_type_1.RepositoryDITypes.FACADE).to(Repository_1.default);
-/**
- * RandDTO
- *
- */
-dIContainer.bind(rand_dto_type_1.RandDTODITypes.FACADE).to(RandDTO_1.default);
-dIContainer.bind(rand_dto_type_1.RandDTODITypes.USER).to(UserRandDTO_1.default);
-dIContainer.bind(rand_dto_type_1.RandDTODITypes.COURSE).to(CourseRandDTO_1.default);
-dIContainer
-    .bind(rand_dto_type_1.RandDTODITypes.COURSE_LESSON)
-    .to(CourseLessonRandDTO_1.default);
-dIContainer
-    .bind(rand_dto_type_1.RandDTODITypes.COURSE_LESSON_VIDEO)
-    .to(CourseLessonVideoRandDTO_1.default);
-/**
- * PrismaRandDB
- *
- */
-dIContainer.bind(rand_type_1.PrismaRandDBDITypes.FACADE).to(RandPrisma_1.default);
-dIContainer.bind(rand_type_1.PrismaRandDBDITypes.USER).to(PrismaUserRandDB_1.default);
-dIContainer
-    .bind(rand_type_1.PrismaRandDBDITypes.COURSE)
-    .to(PrismaCourseRandDB_1.default);
-dIContainer
-    .bind(rand_type_1.PrismaRandDBDITypes.COURSE_CATEGORY)
-    .to(PrismaCourseCategoryRandDB_1.default);
-dIContainer
-    .bind(rand_type_1.PrismaRandDBDITypes.COURSE_ENROLLMENT)
-    .to(PrismaCourseEnrollmentRandDB_1.default);
-dIContainer
-    .bind(rand_type_1.PrismaRandDBDITypes.COURSE_LESSON)
-    .to(PrismaCourseLessonRandDB_1.default);
-dIContainer
-    .bind(rand_type_1.PrismaRandDBDITypes.COURSE_LESSON_VIDEO)
-    .to(PrismaCourseLessonVideoRandDB_1.default);
 /**
  * PrismaQueryRaw
  *
@@ -172,6 +180,9 @@ dIContainer
 dIContainer
     .bind(prisma_query_raw_type_1.PrismaQueryRawDITypes.COURSE_LESSON_VIDEO)
     .to(CourseLessonVideoPrismaQueryRaw_1.default);
+dIContainer
+    .bind(prisma_query_raw_type_1.PrismaQueryRawDITypes.DEPARTMENT)
+    .to(DepartmentPrismaQueryRaw_1.default);
 /**
  * PrismaPromise
  *
@@ -210,6 +221,22 @@ dIContainer.bind(user_type_1.UserDITypes.CONTROLLER).to(user_controller_1.defaul
 dIContainer
     .bind(user_type_1.UserDITypes.AUTHORIZATION)
     .to(user_authorization_1.default);
+/**
+ * PersonalAssignment Container
+ *
+ */
+dIContainer
+    .bind(assignment_type_2.PersonalAssignmentDITypes.REPOSITORY)
+    .to(assignment_repository_2.default);
+dIContainer
+    .bind(assignment_type_2.PersonalAssignmentDITypes.SERVICE)
+    .to(assignment_service_2.default);
+dIContainer
+    .bind(assignment_type_2.PersonalAssignmentDITypes.CONTROLLER)
+    .to(assignment_controller_2.default);
+dIContainer
+    .bind(assignment_type_2.PersonalAssignmentDITypes.AUTHORIZATION)
+    .to(assignment_authorization_2.default);
 /**
  * Course Container
  *
@@ -278,13 +305,13 @@ dIContainer
  */
 dIContainer
     .bind(video_type_1.CourseLessonVideoDITypes.REPOSITORY)
-    .to(video_repository_1.CourseLessonVideoRepository);
+    .to(video_repository_1.default);
 dIContainer
     .bind(video_type_1.CourseLessonVideoDITypes.SERVICE)
-    .to(video_service_1.CourseLessonVideoService);
+    .to(video_service_1.default);
 dIContainer
     .bind(video_type_1.CourseLessonVideoDITypes.CONTROLLER)
-    .to(video_controller_1.CourseLessonVideoController);
+    .to(video_controller_1.default);
 dIContainer
     .bind(video_type_1.CourseLessonVideoDITypes.AUTHORIZATION)
     .to(video_authorization_1.default);
@@ -320,6 +347,164 @@ dIContainer
 dIContainer
     .bind(assignment_type_1.CourseClassAssignmentDITypes.AUTHORIZATION)
     .to(assignment_authorization_1.default);
+/**
+ * Course Class Assignment Completion
+ *
+ */
+dIContainer
+    .bind(completion_type_1.CourseClassAssignmentCompletionDITypes.REPOSITORY)
+    .to(completion_repository_1.default);
+dIContainer
+    .bind(completion_type_1.CourseClassAssignmentCompletionDITypes.SERVICE)
+    .to(completion_service_1.default);
+dIContainer
+    .bind(completion_type_1.CourseClassAssignmentCompletionDITypes.CONTROLLER)
+    .to(completion_controller_1.default);
+dIContainer
+    .bind(completion_type_1.CourseClassAssignmentCompletionDITypes.AUTHORIZATION)
+    .to(completion_authorization_1.default);
+/**
+ * Course Schedule
+ *
+ */
+dIContainer
+    .bind(schedule_type_1.CourseScheduleDITypes.REPOSITORY)
+    .to(schedule_repository_1.default);
+dIContainer
+    .bind(schedule_type_1.CourseScheduleDITypes.SERVICE)
+    .to(schedule_service_1.default);
+dIContainer
+    .bind(schedule_type_1.CourseScheduleDITypes.CONTROLLER)
+    .to(schedule_controller_1.default);
+dIContainer
+    .bind(schedule_type_1.CourseScheduleDITypes.AUTHORIZATION)
+    .to(schedule_authorization_1.default);
+/**
+ * Department
+ *
+ */
+dIContainer
+    .bind(department_type_1.DepartmentDITypes.REPOSITORY)
+    .to(department_repository_1.default);
+dIContainer
+    .bind(department_type_1.DepartmentDITypes.SERVICE)
+    .to(department_service_1.default);
+dIContainer
+    .bind(department_type_1.DepartmentDITypes.CONTROLLER)
+    .to(department_controller_1.default);
+dIContainer
+    .bind(department_type_1.DepartmentDITypes.AUTHORIZATION)
+    .to(department_authorization_1.default);
+/**
+ * Department Division
+ *
+ */
+dIContainer
+    .bind(division_type_1.DepartmentDivisionDITypes.REPOSITORY)
+    .to(division_repository_1.default);
+dIContainer
+    .bind(division_type_1.DepartmentDivisionDITypes.SERVICE)
+    .to(division_service_1.default);
+dIContainer
+    .bind(division_type_1.DepartmentDivisionDITypes.CONTROLLER)
+    .to(division_controller_1.default);
+dIContainer
+    .bind(division_type_1.DepartmentDivisionDITypes.AUTHORIZATION)
+    .to(division_authorization_1.default);
+/**
+ * Department Division Enrollment
+ *
+ */
+dIContainer
+    .bind(enrollment_type_2.DepartmentDivisionEnrollmentDITypes.REPOSITORY)
+    .to(enrollment_repository_2.default);
+dIContainer
+    .bind(enrollment_type_2.DepartmentDivisionEnrollmentDITypes.SERVICE)
+    .to(enrollment_service_2.default);
+dIContainer
+    .bind(enrollment_type_2.DepartmentDivisionEnrollmentDITypes.CONTROLLER)
+    .to(enrollment_controller_2.default);
+dIContainer
+    .bind(enrollment_type_2.DepartmentDivisionEnrollmentDITypes.AUTHORIZATION)
+    .to(enrollment_authorization_2.default);
+/**
+ * Department Division Program
+ *
+ */
+dIContainer
+    .bind(program_type_1.DepartmentProgramDITypes.REPOSITORY)
+    .to(program_repository_1.default);
+dIContainer
+    .bind(program_type_1.DepartmentProgramDITypes.SERVICE)
+    .to(program_service_1.default);
+dIContainer
+    .bind(program_type_1.DepartmentProgramDITypes.CONTROLLER)
+    .to(program_controller_1.default);
+dIContainer
+    .bind(program_type_1.DepartmentProgramDITypes.AUTHORIZATION)
+    .to(program_authorization_1.default);
+/**
+ * Department Division Program Enrollment
+ *
+ */
+dIContainer
+    .bind(enrollment_type_3.DepartmentProgramEnrollmentDITypes.REPOSITORY)
+    .to(enrollment_repository_3.default);
+dIContainer
+    .bind(enrollment_type_3.DepartmentProgramEnrollmentDITypes.SERVICE)
+    .to(enrollment_service_3.default);
+dIContainer
+    .bind(enrollment_type_3.DepartmentProgramEnrollmentDITypes.CONTROLLER)
+    .to(enrollment_controller_3.default);
+dIContainer
+    .bind(enrollment_type_3.DepartmentProgramEnrollmentDITypes.AUTHORIZATION)
+    .to(enrollment_authorization_3.default);
+/**
+ * Report
+ *
+ */
+dIContainer
+    .bind(report_type_1.ReportDITypes.REPOSITORY)
+    .to(report_repository_1.default);
+dIContainer.bind(report_type_1.ReportDITypes.SERVICE).to(report_service_1.default);
+dIContainer
+    .bind(report_type_1.ReportDITypes.CONTROLLER)
+    .to(report_controller_1.default);
+dIContainer
+    .bind(report_type_1.ReportDITypes.AUTHORIZATION)
+    .to(report_authorization_1.default);
+/**
+ * Scholarship
+ *
+ */
+dIContainer
+    .bind(scholarship_type_1.ScholarshipDITypes.REPOSITORY)
+    .to(scholarship_repository_1.default);
+dIContainer
+    .bind(scholarship_type_1.ScholarshipDITypes.SERVICE)
+    .to(scholarship_service_1.default);
+dIContainer
+    .bind(scholarship_type_1.ScholarshipDITypes.CONTROLLER)
+    .to(scholarship_controller_1.default);
+dIContainer
+    .bind(scholarship_type_1.ScholarshipDITypes.AUTHORIZATION)
+    .to(scholarship_authorization_1.default);
+/**
+ * Competition
+ *
+ */
+dIContainer
+    .bind(competition_type_1.CompetitionDITypes.REPOSITORY)
+    .to(competition_repository_1.default);
+dIContainer
+    .bind(competition_type_1.CompetitionDITypes.SERVICE)
+    .to(competition_service_1.default);
+dIContainer
+    .bind(competition_type_1.CompetitionDITypes.CONTROLLER)
+    .to(competition_controller_1.default);
+dIContainer
+    .bind(competition_type_1.CompetitionDITypes.AUTHORIZATION)
+    .to(competition_authorization_1.default);
 /**
  * Event
  *

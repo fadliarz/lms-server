@@ -1,35 +1,25 @@
 import { NextFunction, Request, Response } from "express";
 import { UserModel } from "../user/user.type";
-import { CourseModel } from "../course/course.type";
-import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 import {
+  $CourseClassAssignmentAPI,
   CourseClassAssignmentModel,
   CourseClassAssignmentResourceId,
-  CreateCourseClassAssignmentDto,
-  UpdateCourseClassAssignmentDto,
 } from "./assignment.type";
 
 export interface ICourseClassAssignmentAuthorization {
   authorizeCreateAssignment: (
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeReadAssignment: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
+    courseId: number,
+  ) => Promise<void>;
+  authorizeReadAssignment: (user: UserModel, courseId: number) => Promise<void>;
   authorizeUpdateAssignment: (
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
+    courseId: number,
+  ) => Promise<void>;
   authorizeDeleteAssignment: (
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
+    courseId: number,
+  ) => Promise<void>;
 }
 
 export interface ICourseClassAssignmentController {
@@ -62,51 +52,72 @@ export interface ICourseClassAssignmentController {
 
 export interface ICourseClassAssignmentService {
   createAssignment: (
-    resourceId: CourseClassAssignmentResourceId,
-    dto: CreateCourseClassAssignmentDto,
-  ) => Promise<CourseClassAssignmentModel>;
-  getAssignmentById: (
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-  ) => Promise<CourseClassAssignmentModel>;
+    user: UserModel,
+    id: { resourceId: CourseClassAssignmentResourceId },
+    dto: $CourseClassAssignmentAPI.CreateAssignment.Dto,
+  ) => Promise<$CourseClassAssignmentAPI.CreateAssignment.Response["data"]>;
   getAssignments: (
-    resourceId: CourseClassAssignmentResourceId,
-  ) => Promise<CourseClassAssignmentModel[]>;
+    user: UserModel,
+    id: {
+      resourceId: CourseClassAssignmentResourceId;
+    },
+  ) => Promise<$CourseClassAssignmentAPI.GetAssignments.Response["data"]>;
+  getAssignmentById: (
+    user: UserModel,
+    id: {
+      assignmentId: number;
+      resourceId: CourseClassAssignmentResourceId;
+    },
+  ) => Promise<$CourseClassAssignmentAPI.GetAssignmentById.Response["data"]>;
   updateAssignment: (
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-    dto: UpdateCourseClassAssignmentDto,
-  ) => Promise<CourseClassAssignmentModel>;
+    user: UserModel,
+    id: {
+      assignmentId: number;
+      resourceId: CourseClassAssignmentResourceId;
+    },
+    dto: $CourseClassAssignmentAPI.UpdateAssignment.Dto,
+  ) => Promise<$CourseClassAssignmentAPI.UpdateAssignment.Response["data"]>;
   deleteAssignment: (
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-  ) => Promise<{}>;
+    user: UserModel,
+    id: {
+      assignmentId: number;
+      resourceId: CourseClassAssignmentResourceId;
+    },
+  ) => Promise<$CourseClassAssignmentAPI.DeleteAssignment.Response["data"]>;
 }
 
 export interface ICourseClassAssignmentRepository {
   createAssignment: (
-    resourceId: CourseClassAssignmentResourceId,
-    dto: CreateCourseClassAssignmentDto,
+    id: {
+      classId: number;
+      resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
+    },
+    data: $CourseClassAssignmentAPI.CreateAssignment.Dto,
   ) => Promise<CourseClassAssignmentModel>;
-  getAssignmentById: (
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-  ) => Promise<CourseClassAssignmentModel | null>;
+  getAssignments: (id: {
+    classId: number;
+    resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
+  }) => Promise<CourseClassAssignmentModel[]>;
+  getAssignmentById: (id: {
+    assignmentId: number;
+    resourceId?: CourseClassAssignmentResourceId;
+  }) => Promise<CourseClassAssignmentModel | null>;
   getAssignmentByIdOrThrow: (
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
+    id: {
+      assignmentId: number;
+      resourceId?: CourseClassAssignmentResourceId;
+    },
     error?: Error,
   ) => Promise<CourseClassAssignmentModel>;
-  getAssignments: (
-    resourceId: CourseClassAssignmentResourceId,
-  ) => Promise<CourseClassAssignmentModel[]>;
   updateAssignment: (
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-    dto: Partial<CourseClassAssignmentModel>,
+    id: {
+      assignmentId: number;
+      resourceId?: CourseClassAssignmentResourceId;
+    },
+    data: Partial<CourseClassAssignmentModel>,
   ) => Promise<CourseClassAssignmentModel>;
-  deleteAssignment: (
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-  ) => Promise<{}>;
+  deleteAssignment: (id: {
+    assignmentId: number;
+    resourceId: CourseClassAssignmentResourceId;
+  }) => Promise<{}>;
 }

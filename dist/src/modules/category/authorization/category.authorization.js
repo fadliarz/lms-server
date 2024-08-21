@@ -30,6 +30,9 @@ let CourseCategoryAuthorization = class CourseCategoryAuthorization {
     authorizeUpdateCategory(user) {
         this.authorizeCreateCategory(user);
     }
+    authorizeDeleteCategory(user) {
+        this.authorizeCreateCategory(user);
+    }
 };
 CourseCategoryAuthorization = __decorate([
     (0, inversify_1.injectable)()

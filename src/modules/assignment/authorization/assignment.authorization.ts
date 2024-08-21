@@ -1,14 +1,10 @@
-import { injectable } from "inversify";
+import { inject, injectable } from "inversify";
 import { ICourseClassAssignmentAuthorization } from "../assignment.interface";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import { UserModel } from "../../user/user.type";
-import {
-  CourseEnrollmentRoleModel,
-  CourseModel,
-} from "../../course/course.type";
-import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
+import { PrivilegeModel, UserModel } from "../../user/user.type";
+import { ICourseLessonAuthorization } from "../../lesson/lesson.interface";
+import { CourseLessonDITypes } from "../../lesson/lesson.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
-import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 
 @injectable()
@@ -16,32 +12,48 @@ export default class CourseClassAssignmentAuthorization
   extends BaseAuthorization
   implements ICourseClassAssignmentAuthorization
 {
-  public authorizeCreateAssignment(
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+  @inject(CourseLessonDITypes.AUTHORIZATION)
+  private readonly lessonAuthorization: ICourseLessonAuthorization;
 
-    this.validateUnexpectedScenarios(user, course, enrollment);
+  public async authorizeCreateAssignment(
+    user: UserModel,
+    courseId: number,
+  ): Promise<void> {
+    await this.lessonAuthorization.authorizeCreateLesson(user, courseId);
+  }
+
+  public async authorizeReadAssignment(
+    user: UserModel,
+    courseId: number,
+  ): Promise<void> {
+    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+    const isAuthor = await this.isAuthor(user.id, courseId);
 
     let isAuthorized = false;
-    if (isStudent) {
-    }
-
-    if (isInstructor) {
-      if (
-        isAuthor ||
-        (enrollment &&
-          isEqualOrIncludeCourseEnrollmentRole(
-            enrollment.role,
-            CourseEnrollmentRoleModel.INSTRUCTOR,
-          ))
-      ) {
+    if (isStudent || isInstructor) {
+      const enrollment =
+        await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
+          {
+            userId: user.id,
+            courseId: courseId,
+          },
+        );
+      if (enrollment) {
         isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        const isAuthor = await this.isAuthor(user.id, courseId);
+        if (isAuthor) {
+          isAuthorized = true;
+        }
+      }
+
+      if (!isAuthorized) {
+        isAuthorized = await this.authorizeFromDepartmentDivision(
+          user.id,
+          PrivilegeModel.COURSE,
+        );
       }
     }
 
@@ -54,66 +66,17 @@ export default class CourseClassAssignmentAuthorization
     }
   }
 
-  public authorizeReadAssignment(
+  public async authorizeUpdateAssignment(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-
-    this.validateUnexpectedScenarios(user, course, enrollment);
-
-    let isAuthorized = false;
-    if (isStudent) {
-      if (
-        enrollment &&
-        isEqualOrIncludeCourseEnrollmentRole(
-          enrollment.role,
-          CourseEnrollmentRoleModel.STUDENT,
-        )
-      ) {
-        isAuthorized = true;
-      }
-    }
-
-    if (isInstructor) {
-      if (
-        isAuthor ||
-        (enrollment &&
-          isEqualOrIncludeCourseEnrollmentRole(
-            enrollment.role,
-            CourseEnrollmentRoleModel.INSTRUCTOR,
-          ))
-      ) {
-        isAuthorized = true;
-      }
-    }
-
-    if (isAdmin) {
-      isAuthorized = true;
-    }
-
-    if (!isAuthorized) {
-      throw new AuthorizationException();
-    }
+    courseId: number,
+  ): Promise<void> {
+    await this.authorizeCreateAssignment(user, courseId);
   }
 
-  public authorizeUpdateAssignment(
+  public async authorizeDeleteAssignment(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    this.authorizeCreateAssignment(user, course, enrollment);
-  }
-
-  public authorizeDeleteAssignment(
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    this.authorizeCreateAssignment(user, course, enrollment);
+    courseId: number,
+  ): Promise<void> {
+    await this.authorizeCreateAssignment(user, courseId);
   }
 }

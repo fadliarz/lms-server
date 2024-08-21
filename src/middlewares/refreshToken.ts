@@ -42,9 +42,12 @@ export default async (req: any, res: Response, next: NextFunction) => {
           decoded.email,
         );
         if (userRelatedToEmail) {
-          await userRepository.updateUser(userRelatedToEmail.id, {
-            refreshToken: [],
-          });
+          await userRepository.updateUser(
+            { userId: userRelatedToEmail.id },
+            {
+              refreshToken: [],
+            },
+          );
         }
 
         throw new Error();
@@ -83,10 +86,13 @@ export default async (req: any, res: Response, next: NextFunction) => {
       );
 
       newRefreshTokenArray = [...newRefreshTokenArray, refreshToken];
-      await userRepository.updateUser(user.id, {
-        accessToken,
-        refreshToken: newRefreshTokenArray,
-      });
+      await userRepository.updateUser(
+        { userId: user.id },
+        {
+          accessToken,
+          refreshToken: newRefreshTokenArray,
+        },
+      );
 
       res
         .cookie(Cookie.ACCESS_TOKEN, accessToken, {
@@ -108,9 +114,12 @@ export default async (req: any, res: Response, next: NextFunction) => {
        * 2. User email and decoded email don't match
        *
        */
-      await userRepository.updateUser(user.id, {
-        refreshToken: newRefreshTokenArray,
-      });
+      await userRepository.updateUser(
+        { userId: user.id },
+        {
+          refreshToken: newRefreshTokenArray,
+        },
+      );
 
       throw new ForbiddenException();
     }

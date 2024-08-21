@@ -25,47 +25,44 @@ const statusCode_1 = require("../../../common/constants/statusCode");
 const inversify_1 = require("inversify");
 const user_type_1 = require("../user.type");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
-const getValuable_1 = __importDefault(require("../../../common/functions/getValuable"));
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const user_joi_1 = require("./user.joi");
 const Cookie_1 = require("../../../common/constants/Cookie");
 const AuthenticationException_1 = __importDefault(require("../../../common/class/exceptions/AuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
-const filterUserObject_1 = __importDefault(require("../../../common/functions/filterUserObject"));
 let UserController = class UserController {
     createUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: user_joi_1.CreateUserDtoJoi })(req, res, next);
-                const newUser = yield this.service.createUser(req.body);
+                const { user: newUser, token: { accessToken, refreshToken }, } = yield this.service.createUser(req.body);
                 return res
-                    .cookie(Cookie_1.Cookie.ACCESS_TOKEN, newUser.accessToken, {
+                    .cookie(Cookie_1.Cookie.ACCESS_TOKEN, accessToken, {
                     httpOnly: false,
                     maxAge: 1000 * 60 * 60 * Cookie_1.Cookie.ACCESS_TOKEN_EXPIRES_IN_HOUR,
                     secure: process.env.NODE_ENV === "production",
                 })
-                    .cookie(Cookie_1.Cookie.REFRESH_TOKEN, newUser.refreshToken[0], {
+                    .cookie(Cookie_1.Cookie.REFRESH_TOKEN, refreshToken, {
                     httpOnly: true,
                     maxAge: 1000 * 60 * 60 * 24 * Cookie_1.Cookie.REFRESH_TOKEN_EXPIRES_IN_DAY,
                     secure: process.env.NODE_ENV === "production",
                     sameSite: "strict",
                 })
                     .status(statusCode_1.StatusCode.RESOURCE_CREATED)
-                    .json({ data: (0, filterUserObject_1.default)(newUser) });
+                    .json({ data: newUser });
             }
             catch (error) {
                 next(error);
             }
         });
     }
-    getPublicUserById(req, res, next) {
+    getUserById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = this.validateUserId(req);
-                const publicUser = yield this.service.getPublicUserById(userId);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, getValuable_1.default)(publicUser) });
+                const user = yield this.service.getUserById({
+                    userId: this.validateUserId(req),
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: user });
             }
             catch (error) {
                 next(error);
@@ -75,11 +72,8 @@ let UserController = class UserController {
     getMe(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = this.validateResourceId(req);
-                const me = yield this.service.getMe(userId);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, filterUserObject_1.default)(me) });
+                const me = yield this.service.getMe((0, getRequestUserOrThrowAuthenticationException_1.default)(req));
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: me });
             }
             catch (error) {
                 next(error);
@@ -89,12 +83,101 @@ let UserController = class UserController {
     getUserAssignments(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = this.validateResourceId(req);
-                const targetUserId = this.validateUserId(req);
-                const assignments = yield this.service.getUserAssignments(userId, targetUserId);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, getValuable_1.default)(assignments) });
+                const assignments = yield this.service.getUserAssignments((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: assignments,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserEnrolledAsStudentCourses(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const courses = yield this.service.getUserEnrolledAsStudentCourses((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: courses,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserManagedCourses(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const courses = yield this.service.getUserManagedCourses((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: courses,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserEventAndCourseSchedules(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const upcoming = yield this.service.getUserEventAndCourseSchedules((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: upcoming,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserEnrolledDepartmentPrograms(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const programs = yield this.service.getUserEnrolledDepartmentPrograms((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: programs,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserManagedDepartments(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const departments = yield this.service.getUserManagedDepartments((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: departments,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserManagedDepartmentDivisions(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const divisions = yield this.service.getUserManagedDepartmentDivisions((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: divisions,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserReport(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const report = yield this.service.getUserReport((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: report,
+                });
             }
             catch (error) {
                 next(error);
@@ -105,12 +188,10 @@ let UserController = class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateBasicUserDtoJoi })(req, res, next);
-                const userId = this.validateResourceId(req);
-                const targetUserId = this.validateUserId(req);
-                const updatedUser = yield this.service.updateBasicUser(userId, targetUserId, req.body);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
+                const updatedUser = yield this.service.updateBasicUser((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedUser,
+                });
             }
             catch (error) {
                 next(error);
@@ -125,12 +206,13 @@ let UserController = class UserController {
                     throw new AuthenticationException_1.default();
                 }
                 yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserEmailDtoJoi })(req, res, next);
-                const userId = this.validateResourceId(req);
-                const targetUserId = this.validateUserId(req);
-                const updatedUser = yield this.service.updateUserEmail(userId, targetUserId, storedRefreshToken, req.body);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
+                const updatedUser = yield this.service.updateUserEmail((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, {
+                    dto: req.body,
+                    storedRefreshToken,
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedUser,
+                });
             }
             catch (error) {
                 next(error);
@@ -145,12 +227,27 @@ let UserController = class UserController {
                     throw new AuthenticationException_1.default();
                 }
                 yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserPasswordDtoJoi })(req, res, next);
-                const userId = this.validateResourceId(req);
-                const targetUserId = this.validateUserId(req);
-                const updatedUser = yield this.service.updateUserPassword(userId, targetUserId, storedRefreshToken, req.body);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
+                const updatedUser = yield this.service.updateUserPassword((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, {
+                    dto: req.body,
+                    storedRefreshToken,
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedUser,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateUserRole(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserRoleDtoJoi })(req, res, next);
+                const updatedUser = yield this.service.updateUserRole((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedUser,
+                });
             }
             catch (error) {
                 next(error);
@@ -161,12 +258,10 @@ let UserController = class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserPhoneNumberDtoJoi })(req, res, next);
-                const userId = this.validateResourceId(req);
-                const targetUserId = this.validateUserId(req);
-                const updatedUser = yield this.service.updateUserPhoneNumber(userId, targetUserId, req.body);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, filterUserObject_1.default)(updatedUser) });
+                const updatedUser = yield this.service.updateUserPhoneNumber((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedUser,
+                });
             }
             catch (error) {
                 next(error);
@@ -176,9 +271,7 @@ let UserController = class UserController {
     deleteUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = this.validateResourceId(req);
-                const targetUserId = this.validateUserId(req);
-                yield this.service.deleteUser(userId, targetUserId);
+                yield this.service.deleteUser((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
             }
             catch (error) {
@@ -237,10 +330,6 @@ let UserController = class UserController {
         if (isNaN(userId)) {
             throw error || new NaNException_1.default("userId");
         }
-        return userId;
-    }
-    validateResourceId(req, error) {
-        const { id: userId } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         return userId;
     }
 };

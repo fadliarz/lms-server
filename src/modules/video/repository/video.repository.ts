@@ -1,104 +1,78 @@
 import "reflect-metadata";
-import { inject, injectable } from "inversify";
+import { injectable } from "inversify";
 import {
-  CourseLessonVideoDITypes,
+  $CourseLessonVideoAPI,
   CourseLessonVideoModel,
   CourseLessonVideoResourceId,
-  CreateCourseLessonVideoDto,
-  ICourseLessonVideoAuthorization,
 } from "../video.type";
-import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import {
-  PrismaDefaultTransactionConfigForRead,
-  PrismaDefaultTransactionConfigForWrite,
-} from "../../../common/constants/prismaDefaultConfig";
-import BaseAuthorization from "../../../common/class/BaseAuthorization";
-
-export interface ICourseLessonVideoRepository {
-  createVideo: (
-    resourceId: CourseLessonVideoResourceId,
-    dto: CreateCourseLessonVideoDto,
-  ) => Promise<CourseLessonVideoModel>;
-  getVideoById: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ) => Promise<CourseLessonVideoModel | null>;
-  getVideoByIdOrThrow: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-    error?: Error,
-  ) => Promise<CourseLessonVideoModel>;
-  getVideos: (
-    resourceId: CourseLessonVideoResourceId,
-  ) => Promise<CourseLessonVideoModel[]>;
-  updateVideo: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-    dto: Partial<CourseLessonVideoModel>,
-  ) => Promise<CourseLessonVideoModel>;
-  deleteVideo: (
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ) => Promise<{}>;
-}
+import { ICourseLessonVideoRepository } from "../video.interface";
+import BaseRepository from "../../../common/class/BaseRepository";
 
 @injectable()
-export class CourseLessonVideoRepository
-  extends BaseAuthorization
+export default class CourseLessonVideoRepository
+  extends BaseRepository
   implements ICourseLessonVideoRepository
 {
-  private readonly prisma = PrismaClientSingleton.getInstance();
-
-  @inject(CourseLessonVideoDITypes.AUTHORIZATION)
-  private readonly authorization: ICourseLessonVideoAuthorization;
-
-  public async createVideo(
-    resourceId: CourseLessonVideoResourceId,
-    dto: CreateCourseLessonVideoDto,
-  ): Promise<CourseLessonVideoModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeCreateVideo.bind(this.authorization),
-      );
-      const { lessonId } = resourceId;
-
-      return await tx.courseLessonVideo.create({
-        data: {
-          ...dto,
-          lessonId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+  constructor() {
+    super();
   }
 
-  public async getVideoById(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ): Promise<CourseLessonVideoModel | null> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeGetVideo.bind(this.authorization),
-      );
+  public async createVideo(
+    id: {
+      lessonId: number;
+      resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
+    },
+    data: $CourseLessonVideoAPI.CreateVideo.Dto,
+  ): Promise<CourseLessonVideoModel> {
+    const { lessonId, resourceId } = id;
 
-      return await tx.courseLessonVideo.findUnique({
+    if (resourceId) {
+      this.db.courseLesson.findFirst({
         where: {
-          id: videoId,
+          id: lessonId,
+          course: {
+            id: resourceId.courseId,
+          },
         },
       });
-    }, PrismaDefaultTransactionConfigForRead);
+    }
+
+    return this.db.courseLessonVideo.create({
+      data: {
+        ...data,
+        lessonId,
+      },
+    });
+  }
+
+  public async getVideos(id: {
+    lessonId: number;
+    resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
+  }): Promise<CourseLessonVideoModel[]> {
+    return this.db.courseLessonVideo.findMany({
+      where: this.getWhereObjectForFirstLevelOperation(id),
+    });
+  }
+
+  public async getVideoById(id: {
+    videoId: number;
+    resourceId?: CourseLessonVideoResourceId;
+  }): Promise<CourseLessonVideoModel | null> {
+    return this.db.courseLessonVideo.findUnique({
+      where: this.getWhereObjectForSecondLevelOperation(id),
+    });
   }
 
   public async getVideoByIdOrThrow(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
+    id: {
+      videoId: number;
+      resourceId?: CourseLessonVideoResourceId;
+    },
     error?: Error,
   ): Promise<CourseLessonVideoModel> {
-    const video = await this.getVideoById(videoId, resourceId);
+    const video = await this.getVideoById(id);
+
     if (!video) {
       throw error || new RecordNotFoundException();
     }
@@ -106,63 +80,74 @@ export class CourseLessonVideoRepository
     return video;
   }
 
-  public async getVideos(
-    resourceId: CourseLessonVideoResourceId,
-  ): Promise<CourseLessonVideoModel[]> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeGetVideos.bind(this.authorization),
-      );
-
-      const { lessonId } = resourceId;
-      return await tx.courseLessonVideo.findMany({
-        where: {
-          lessonId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
   public async updateVideo(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-    dto: Partial<CourseLessonVideoModel>,
+    id: {
+      videoId: number;
+      resourceId: CourseLessonVideoResourceId;
+    },
+    data: Partial<CourseLessonVideoModel>,
   ) {
-    const { courseId, lessonId } = resourceId;
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeUpdateVideo.bind(this.authorization),
-      );
-
-      return await tx.courseLessonVideo.update({
-        where: { id: videoId },
-        data: dto,
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+    return this.db.courseLessonVideo.update({
+      where: this.getWhereObjectForSecondLevelOperation(id),
+      data,
+    });
   }
 
-  public async deleteVideo(
-    videoId: number,
-    resourceId: CourseLessonVideoResourceId,
-  ): Promise<{}> {
-    await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeUpdateVideo.bind(this.authorization),
-      );
+  public async deleteVideo(id: {
+    videoId: number;
+    resourceId: CourseLessonVideoResourceId;
+  }): Promise<{}> {
+    return this.db.courseLessonVideo.delete({
+      where: this.getWhereObjectForSecondLevelOperation(id),
+      select: {},
+    });
+  }
 
-      await tx.courseLessonVideo.delete({
-        where: {
-          id: videoId,
+  private getWhereObjectForFirstLevelOperation(id: {
+    lessonId: number;
+    resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
+  }):
+    | {
+        id: number;
+      }
+    | {
+        id: number;
+        course: {
+          id: number;
+        };
+      } {
+    if (id.resourceId) {
+      return {
+        id: id.lessonId,
+        course: {
+          id: id.resourceId.courseId,
         },
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+      };
+    }
 
-    return {};
+    return {
+      id: id.lessonId,
+    };
+  }
+
+  private getWhereObjectForSecondLevelOperation(id: {
+    videoId: number;
+    resourceId?: CourseLessonVideoResourceId;
+  }):
+    | { id: number }
+    | { id: number; lesson: { id: number; course: { id: number } } } {
+    const { videoId, resourceId } = id;
+
+    if (resourceId) {
+      return {
+        id: videoId,
+        lesson: {
+          id: resourceId.lessonId,
+          course: { id: resourceId.courseId },
+        },
+      };
+    }
+
+    return { id: videoId };
   }
 }

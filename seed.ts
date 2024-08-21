@@ -128,6 +128,58 @@ const main = async () => {
     },
   });
 
+  await seed.report(
+    (x) =>
+      x(155, {
+        performance: 3.78,
+      }),
+    {
+      connect: { user: getIds(1, 155) },
+    },
+  );
+
+  await seed.courseSchedule((x) => x(50), {
+    connect: { course: getIds(1, 5) },
+  });
+
+  await seed.scholarship((x) => x(100));
+  await seed.competition((x) => x(100));
+  await seed.event((x) => x(100));
+
+  await seed.department((x) => x(10), {
+    connect: { user: getIds(1, 30) },
+  });
+
+  await seed.personalAssignment((x) => x(750), {
+    connect: { user: getIds(1, 150) },
+  });
+
+  const a = getIds(31, 50);
+  const b = getIds(51, 70);
+  for (let i = 0; i < 20; i++) {
+    await seed.departmentDivision(
+      (x) =>
+        x(1, {
+          leaderId: a[i].id,
+          coLeaderId: b[i].id,
+          departmentId: (i % 10) + 1,
+        }),
+      {},
+    );
+  }
+
+  await seed.departmentDivisionEnrollment((x) => x(60), {
+    connect: { departmentDivision: getIds(1, 20), user: getIds(71, 90) },
+  });
+
+  for (let i = 0; i < 50; i++) {
+    await seed.departmentProgram((x) => x(1, { departmentId: (i % 10) + 1 }));
+  }
+
+  await seed.departmentProgramEnrollment((x) => x(750), {
+    connect: { departmentProgram: getIds(1, 50), user: getIds(1, 150) },
+  });
+
   console.log("Database seeded successfully!");
 
   process.exit();

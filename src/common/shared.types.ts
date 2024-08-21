@@ -25,3 +25,11 @@ export type ModifyFieldWithNullToBeOptionalAndRemoveNull<T> = {
 } & {
   [K in keyof PickNotNullable<T>]: T[K];
 };
+
+export type Exact<T, U extends T> = {
+  [Key in keyof U]: Key extends keyof T
+    ? U[Key] extends object
+      ? Exact<T[Key], U[Key]>
+      : U[Key]
+    : never;
+};

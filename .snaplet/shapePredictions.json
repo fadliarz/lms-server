@@ -39,6 +39,44 @@
   },
   {
     "schemaName": "public",
+    "tableName": "competition",
+    "predictions": [
+      {
+        "input": "public competition description",
+        "column": "description",
+        "shape": "FINANCE_TRANSACTION_DESCRIPTION",
+        "confidence": 0.3839050829410553,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public competition organizer",
+        "column": "organizer",
+        "shape": "COMMERCE_PRODUCT",
+        "confidence": 0.0960608646273613,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public competition reference",
+        "column": "reference",
+        "shape": "FINANCE_TRANSACTION_DESCRIPTION",
+        "confidence": 0.748687744140625,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public competition title",
+        "column": "title",
+        "shape": "COMMERCE_PRODUCT_NAME",
+        "confidence": 0.2800577878952026,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
     "tableName": "course",
     "predictions": [
       {
@@ -149,6 +187,28 @@
   },
   {
     "schemaName": "public",
+    "tableName": "course_schedule",
+    "predictions": [
+      {
+        "input": "public course_schedule description",
+        "column": "description",
+        "shape": "SYSTEM_CRON",
+        "confidence": 0.6087435483932495,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public course_schedule title",
+        "column": "title",
+        "shape": "SYSTEM_CRON",
+        "confidence": 0.5279626250267029,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
     "tableName": "course_video",
     "predictions": [
       {
@@ -187,6 +247,72 @@
   },
   {
     "schemaName": "public",
+    "tableName": "department",
+    "predictions": [
+      {
+        "input": "public department description",
+        "column": "description",
+        "shape": "COMMERCE_PRODUCT_DESCRIPTION",
+        "confidence": 0.5427802801132202,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public department title",
+        "column": "title",
+        "shape": "COMMERCE_DEPARTMENT",
+        "confidence": 0.7871180772781372,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "department_division",
+    "predictions": [
+      {
+        "input": "public department_division description",
+        "column": "description",
+        "shape": "COMMERCE_DEPARTMENT",
+        "confidence": 0.9614994525909424,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public department_division title",
+        "column": "title",
+        "shape": "COMMERCE_DEPARTMENT",
+        "confidence": 0.8773596286773682,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "department_program",
+    "predictions": [
+      {
+        "input": "public department_program description",
+        "column": "description",
+        "shape": "COMMERCE_DEPARTMENT",
+        "confidence": 0.6285961866378784,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public department_program title",
+        "column": "title",
+        "shape": "COMMERCE_DEPARTMENT",
+        "confidence": 0.4311240017414093,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
     "tableName": "event",
     "predictions": [
       {
@@ -202,6 +328,96 @@
         "column": "title",
         "shape": "POST_TITLE",
         "confidence": 0.4093151688575745,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "personal_assignment",
+    "predictions": [
+      {
+        "input": "public personal_assignment submission",
+        "column": "submission",
+        "shape": "STATUS",
+        "confidence": 0.7551519274711609,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public personal_assignment title",
+        "column": "title",
+        "shape": "POST_TITLE",
+        "confidence": 0.5535182356834412,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "product",
+    "predictions": [
+      {
+        "input": "public product description",
+        "column": "description",
+        "shape": "COMMERCE_PRODUCT_DESCRIPTION",
+        "confidence": 0.8473999500274658,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public product size",
+        "column": "size",
+        "shape": "SEARCH_VECTOR",
+        "confidence": 0.15096814930439,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public product title",
+        "column": "title",
+        "shape": "COMMERCE_PRODUCT_NAME",
+        "confidence": 0.9157878756523132,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "scholarship",
+    "predictions": [
+      {
+        "input": "public scholarship description",
+        "column": "description",
+        "shape": "COMPANY_CATCH_PHRASE",
+        "confidence": 0.7514969706535339,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public scholarship provider",
+        "column": "provider",
+        "shape": "AUTHENTICATION_PROVIDER",
+        "confidence": 0.5046029090881348,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public scholarship reference",
+        "column": "reference",
+        "shape": "COMPANY_CATCH_PHRASE",
+        "confidence": 0.2236726135015488,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public scholarship title",
+        "column": "title",
+        "shape": "POST_TITLE",
+        "confidence": 0.2427242994308472,
         "context": "GENERAL",
         "confidenceContext": 0
       }

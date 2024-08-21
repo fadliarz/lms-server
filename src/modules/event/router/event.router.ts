@@ -1,6 +1,6 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { EventDITypes, eventUrls } from "../event.type";
+import { $EventAPI, EventDITypes } from "../event.type";
 import { IEventController } from "../event.interface";
 
 export default function EventRouter(authenticationMiddleware: any) {
@@ -12,45 +12,51 @@ export default function EventRouter(authenticationMiddleware: any) {
    * Create
    *
    */
+
   router.post(
-    "/",
+    $EventAPI.CreateEvent.endpoint,
     authenticationMiddleware,
-    controller.create.bind(controller),
+    controller.createEvent.bind(controller),
   );
 
   /**
    * Get
    *
    */
+
   router.get(
-    "/",
+    $EventAPI.GetEvents.endpoint,
     authenticationMiddleware,
-    controller.getMany.bind(controller),
+    controller.getEvents.bind(controller),
   );
 
   router.get(
-    eventUrls.event,
+    $EventAPI.GetEventById.endpoint,
     authenticationMiddleware,
-    controller.getById.bind(controller),
+    controller.getEventById.bind(controller),
   );
 
   /**
    * Update
    *
    */
+
   router.patch(
-    eventUrls.event,
+    $EventAPI.UpdateEvent.endpoint,
     authenticationMiddleware,
-    controller.update.bind(controller),
+    controller.updateEvent.bind(controller),
   );
 
   /**
    * Delete
    *
    */
+
   router.delete(
-    eventUrls.event,
+    $EventAPI.DeleteEvent.endpoint,
     authenticationMiddleware,
-    controller.delete.bind(controller),
+    controller.deleteEvent.bind(controller),
   );
+
+  return router;
 }

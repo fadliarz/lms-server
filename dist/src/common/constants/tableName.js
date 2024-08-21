@@ -10,4 +10,5 @@ var TableName;
     TableName["COURSE_LIKE"] = "course_like";
     TableName["COURSE_LESSON"] = "course_lesson";
     TableName["COURSE_LESSON_VIDEO"] = "course_video";
+    TableName["DEPARTMENT"] = "department";
 })(TableName || (exports.TableName = TableName = {}));

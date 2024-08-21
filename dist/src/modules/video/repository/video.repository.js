@@ -21,95 +21,100 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseLessonVideoRepository = void 0;
 require("reflect-metadata");
 const inversify_1 = require("inversify");
-const video_type_1 = require("../video.type");
-const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
-const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
-let CourseLessonVideoRepository = class CourseLessonVideoRepository extends BaseAuthorization_1.default {
+const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+let CourseLessonVideoRepository = class CourseLessonVideoRepository extends BaseRepository_1.default {
     constructor() {
-        super(...arguments);
-        this.prisma = PrismaClientSingleton_1.default.getInstance();
+        super();
     }
-    createVideo(resourceId, dto) {
+    createVideo(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeCreateVideo.bind(this.authorization));
-                const { lessonId } = resourceId;
-                return yield tx.courseLessonVideo.create({
-                    data: Object.assign(Object.assign({}, dto), { lessonId }),
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-        });
-    }
-    getVideoById(videoId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeGetVideo.bind(this.authorization));
-                return yield tx.courseLessonVideo.findUnique({
+            const { lessonId, resourceId } = id;
+            if (resourceId) {
+                this.db.courseLesson.findFirst({
                     where: {
-                        id: videoId,
+                        id: lessonId,
+                        course: {
+                            id: resourceId.courseId,
+                        },
                     },
                 });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            }
+            return this.db.courseLessonVideo.create({
+                data: Object.assign(Object.assign({}, data), { lessonId }),
+            });
         });
     }
-    getVideoByIdOrThrow(videoId, resourceId, error) {
+    getVideos(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const video = yield this.getVideoById(videoId, resourceId);
+            return this.db.courseLessonVideo.findMany({
+                where: this.getWhereObjectForFirstLevelOperation(id),
+            });
+        });
+    }
+    getVideoById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.courseLessonVideo.findUnique({
+                where: this.getWhereObjectForSecondLevelOperation(id),
+            });
+        });
+    }
+    getVideoByIdOrThrow(id, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const video = yield this.getVideoById(id);
             if (!video) {
                 throw error || new RecordNotFoundException_1.default();
             }
             return video;
         });
     }
-    getVideos(resourceId) {
+    updateVideo(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeGetVideos.bind(this.authorization));
-                const { lessonId } = resourceId;
-                return yield tx.courseLessonVideo.findMany({
-                    where: {
-                        lessonId,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.courseLessonVideo.update({
+                where: this.getWhereObjectForSecondLevelOperation(id),
+                data,
+            });
         });
     }
-    updateVideo(videoId, resourceId, dto) {
+    deleteVideo(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { courseId, lessonId } = resourceId;
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeUpdateVideo.bind(this.authorization));
-                return yield tx.courseLessonVideo.update({
-                    where: { id: videoId },
-                    data: dto,
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+            return this.db.courseLessonVideo.delete({
+                where: this.getWhereObjectForSecondLevelOperation(id),
+                select: {},
+            });
         });
     }
-    deleteVideo(videoId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeUpdateVideo.bind(this.authorization));
-                yield tx.courseLessonVideo.delete({
-                    where: {
-                        id: videoId,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-            return {};
-        });
+    getWhereObjectForFirstLevelOperation(id) {
+        if (id.resourceId) {
+            return {
+                id: id.lessonId,
+                course: {
+                    id: id.resourceId.courseId,
+                },
+            };
+        }
+        return {
+            id: id.lessonId,
+        };
+    }
+    getWhereObjectForSecondLevelOperation(id) {
+        const { videoId, resourceId } = id;
+        if (resourceId) {
+            return {
+                id: videoId,
+                lesson: {
+                    id: resourceId.lessonId,
+                    course: { id: resourceId.courseId },
+                },
+            };
+        }
+        return { id: videoId };
     }
 };
-exports.CourseLessonVideoRepository = CourseLessonVideoRepository;
-__decorate([
-    (0, inversify_1.inject)(video_type_1.CourseLessonVideoDITypes.AUTHORIZATION),
-    __metadata("design:type", Object)
-], CourseLessonVideoRepository.prototype, "authorization", void 0);
-exports.CourseLessonVideoRepository = CourseLessonVideoRepository = __decorate([
-    (0, inversify_1.injectable)()
+CourseLessonVideoRepository = __decorate([
+    (0, inversify_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], CourseLessonVideoRepository);
+exports.default = CourseLessonVideoRepository;

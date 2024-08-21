@@ -1,90 +1,104 @@
 import { inject, injectable } from "inversify";
 import {
+  $CourseClassAPI,
   CourseClassDITypes,
-  CourseClassModel,
   CourseClassResourceId,
-  CreateCourseClassDto,
-  UpdateCourseClassDto,
 } from "../class.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import {
+  ICourseClassAuthorization,
   ICourseClassRepository,
   ICourseClassService,
 } from "../class.interface";
-import { UnauthenticatedResourceId } from "../../../common/types";
+import { UserModel } from "../../user/user.type";
 
 @injectable()
 export default class CourseClassService implements ICourseClassService {
   @inject(CourseClassDITypes.REPOSITORY)
   private readonly repository: ICourseClassRepository;
 
+  @inject(CourseClassDITypes.AUTHORIZATION)
+  private readonly authorization: ICourseClassAuthorization;
+
   public async createClass(
-    resourceId: CourseClassResourceId,
-    dto: CreateCourseClassDto,
-  ): Promise<CourseClassModel> {
+    user: UserModel,
+    id: { resourceId: CourseClassResourceId },
+    dto: $CourseClassAPI.CreateClass.Dto,
+  ): Promise<$CourseClassAPI.CreateClass.Response["data"]> {
     try {
-      return await this.repository.createClass(resourceId, dto);
+      await this.authorization.authorizeCreateClass(
+        user,
+        id.resourceId.courseId,
+      );
+
+      return await this.repository.createClass(
+        { courseId: id.resourceId.courseId },
+        dto,
+      );
     } catch (error: any) {
-      throw handleRepositoryError(error, {
-        foreignConstraint: {
-          default: { message: "Course doesn't exist!" },
-        },
-      });
+      throw handleRepositoryError(error);
     }
   }
 
-  public async getClassById(
-    classId: number,
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>,
-  ): Promise<CourseClassModel> {
-    const theClass = await this.validateRelationBetweenResources({
-      classId,
-      resourceId,
-    });
-
-    return theClass;
+  public async getClasses(id: {
+    resourceId: CourseClassResourceId;
+  }): Promise<$CourseClassAPI.GetClasses.Response["data"]> {
+    try {
+      return await this.repository.getClasses({
+        courseId: id.resourceId.courseId,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
-  public async getClasses(
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>,
-  ): Promise<CourseClassModel[]> {
-    return await this.repository.getClasses(resourceId);
+  public async getClassById(id: {
+    classId: number;
+    resourceId: CourseClassResourceId;
+  }): Promise<$CourseClassAPI.GetClassById.Response["data"]> {
+    try {
+      return await this.repository.getClassByIdOrThrow(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async updateClass(
-    classId: number,
-    resourceId: CourseClassResourceId,
-    dto: UpdateCourseClassDto,
-  ): Promise<CourseClassModel> {
-    await this.validateRelationBetweenResources({ classId, resourceId });
+    user: UserModel,
+    id: {
+      classId: number;
+      resourceId: CourseClassResourceId;
+    },
+    dto: $CourseClassAPI.UpdateClass.Dto,
+  ): Promise<$CourseClassAPI.UpdateClass.Response["data"]> {
+    try {
+      await this.authorization.authorizeUpdateClass(
+        user,
+        id.resourceId.courseId,
+      );
 
-    return await this.repository.updateClass(classId, resourceId, dto);
+      return await this.repository.updateClass(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async deleteClass(
-    classId: number,
-    resourceId: CourseClassResourceId,
-  ): Promise<{}> {
-    await this.validateRelationBetweenResources({ classId, resourceId });
+    user: UserModel,
+    id: {
+      classId: number;
+      resourceId: CourseClassResourceId;
+    },
+  ): Promise<$CourseClassAPI.DeleteClass.Response["data"]> {
+    try {
+      await this.authorization.authorizeDeleteClass(
+        user,
+        id.resourceId.courseId,
+      );
 
-    await this.repository.deleteClass(classId, resourceId);
-
-    return {};
-  }
-
-  private async validateRelationBetweenResources(id: {
-    classId: number;
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>;
-  }): Promise<CourseClassModel> {
-    const { classId, resourceId } = id;
-    const { courseId } = resourceId;
-    const theClass = await this.repository.getClassById(classId, resourceId);
-
-    if (!theClass || theClass.courseId !== courseId) {
-      throw new RecordNotFoundException();
+      return await this.repository.deleteClass(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
-
-    return theClass;
   }
 }

@@ -14,23 +14,23 @@ function CourseLessonRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post(lesson_type_1.courseLessonUrls.lessons, authenticationMiddleware, controller.createLesson.bind(controller));
+    router.post(lesson_type_1.$CourseLessonAPI.CreateLesson.endpoint, authenticationMiddleware, controller.createLesson.bind(controller));
     /**
      * Get
      *
      */
-    router.get(lesson_type_1.courseLessonUrls.lesson, controller.getLessonById.bind(controller));
-    router.get(lesson_type_1.courseLessonUrls.lessons, controller.getLessons.bind(controller));
+    router.get(lesson_type_1.$CourseLessonAPI.GetLessons.endpoint, controller.getLessons.bind(controller));
+    router.get(lesson_type_1.$CourseLessonAPI.GetLessonById.endpoint, controller.getLessonById.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(lesson_type_1.courseLessonUrls.basic, authenticationMiddleware, controller.updateBasicLesson.bind(controller));
+    router.patch(lesson_type_1.$CourseLessonAPI.UpdateLesson.endpoint, authenticationMiddleware, controller.updateLesson.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(lesson_type_1.courseLessonUrls.lesson, authenticationMiddleware, controller.deleteLesson.bind(controller));
+    router.delete(lesson_type_1.$CourseLessonAPI.DeleteLesson.endpoint, authenticationMiddleware, controller.deleteLesson.bind(controller));
     return router;
 }
 exports.default = CourseLessonRouter;

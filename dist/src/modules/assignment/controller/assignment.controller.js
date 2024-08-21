@@ -25,35 +25,18 @@ const inversify_1 = require("inversify");
 const assignment_type_1 = require("../assignment.type");
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const statusCode_1 = require("../../../common/constants/statusCode");
-const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
-const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 const isNaNArray_1 = __importDefault(require("../../../common/functions/isNaNArray"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const assignment_joi_1 = require("./assignment.joi");
+const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 let CourseClassAssignmentController = class CourseClassAssignmentController {
     createAssignment(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: assignment_joi_1.CreateCourseClassAssignmentDtoJoi })(req, res, next);
-                const resourceId = this.validateResourceId(req);
-                const newAssignment = yield this.service.createAssignment(resourceId, req.body);
+                const newAssignment = yield this.service.createAssignment((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) }, req.body);
                 return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({
-                    data: (0, removeNullFields_1.default)(newAssignment),
-                });
-            }
-            catch (error) {
-                next(error);
-            }
-        });
-    }
-    getAssignmentById(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const assignmentId = this.validateAssignmentId(req);
-                const resourceId = this.validateResourceId(req);
-                const assignment = yield this.service.getAssignmentById(assignmentId, resourceId);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: (0, removeNullFields_1.default)(assignment),
+                    data: newAssignment,
                 });
             }
             catch (error) {
@@ -64,10 +47,25 @@ let CourseClassAssignmentController = class CourseClassAssignmentController {
     getAssignments(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const resourceId = this.validateResourceId(req);
-                const assignments = yield this.service.getAssignments(resourceId);
+                const assignments = yield this.service.getAssignments((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: assignments.map((assignment) => (0, removeNullFields_1.default)(assignment)),
+                    data: assignments,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getAssignmentById(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const assignment = yield this.service.getAssignmentById((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    assignmentId: this.validateAssignmentId(req),
+                    resourceId: this.validateResourceId(req),
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: assignment,
                 });
             }
             catch (error) {
@@ -79,9 +77,10 @@ let CourseClassAssignmentController = class CourseClassAssignmentController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: assignment_joi_1.UpdateCourseClassAssignmentDtoJoi })(req, res, next);
-                const assignmentId = this.validateAssignmentId(req);
-                const resourceId = this.validateResourceId(req);
-                const updatedAssignment = yield this.service.updateAssignment(assignmentId, resourceId, req.body);
+                const updatedAssignment = yield this.service.updateAssignment((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    assignmentId: this.validateAssignmentId(req),
+                    resourceId: this.validateResourceId(req),
+                }, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: updatedAssignment,
                 });
@@ -94,9 +93,10 @@ let CourseClassAssignmentController = class CourseClassAssignmentController {
     deleteAssignment(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const assignmentId = this.validateAssignmentId(req);
-                const resourceId = this.validateResourceId(req);
-                yield this.service.deleteAssignment(assignmentId, resourceId);
+                yield this.service.deleteAssignment((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    assignmentId: this.validateAssignmentId(req),
+                    resourceId: this.validateResourceId(req),
+                });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
             }
             catch (error) {
@@ -105,17 +105,12 @@ let CourseClassAssignmentController = class CourseClassAssignmentController {
         });
     }
     validateResourceId(req) {
-        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         const courseId = Number(req.params.courseId);
         const classId = Number(req.params.classId);
         if ((0, isNaNArray_1.default)([courseId, classId])) {
             throw new NaNException_1.default("courseId || classId");
         }
         return {
-            user: {
-                id: userId,
-                role,
-            },
             courseId,
             classId,
         };
@@ -129,7 +124,7 @@ let CourseClassAssignmentController = class CourseClassAssignmentController {
     }
 };
 __decorate([
-    (0, inversify_1.inject)(assignment_type_1.CourseClassAssignmentDITypes.CONTROLLER),
+    (0, inversify_1.inject)(assignment_type_1.CourseClassAssignmentDITypes.SERVICE),
     __metadata("design:type", Object)
 ], CourseClassAssignmentController.prototype, "service", void 0);
 CourseClassAssignmentController = __decorate([

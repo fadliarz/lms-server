@@ -14,24 +14,24 @@ function CourseLessonVideoRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post(video_type_1.courseLessonVideoUrls.root, authenticationMiddleware, controller.createVideo.bind(controller));
+    router.post(video_type_1.$CourseLessonVideoAPI.CreateVideo.endpoint, authenticationMiddleware, controller.createVideo.bind(controller));
     /**
      * Get
      *
      */
-    router.get(video_type_1.courseLessonVideoUrls.root, authenticationMiddleware, controller.getVideos.bind(controller));
-    router.get(video_type_1.courseLessonVideoUrls.video, authenticationMiddleware, controller.getVideoById.bind(controller));
+    router.get(video_type_1.$CourseLessonVideoAPI.GetVideos.endpoint, authenticationMiddleware, controller.getVideos.bind(controller));
+    router.get(video_type_1.$CourseLessonVideoAPI.GetVideoById.endpoint, authenticationMiddleware, controller.getVideoById.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(video_type_1.courseLessonVideoUrls.basic, authenticationMiddleware, controller.updateBasicVideo.bind(controller));
-    router.patch(video_type_1.courseLessonVideoUrls.source, authenticationMiddleware, controller.updateVideoSource.bind(controller));
+    router.patch(video_type_1.$CourseLessonVideoAPI.UpdateVideo.endpoint, authenticationMiddleware, controller.updateVideo.bind(controller));
+    router.patch(video_type_1.$CourseLessonVideoAPI.UpdateVideoSource.endpoint, authenticationMiddleware, controller.updateVideoSource.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(video_type_1.courseLessonVideoUrls.video, authenticationMiddleware, controller.deleteVideo.bind(controller));
+    router.delete(video_type_1.$CourseLessonVideoAPI.DeleteVideo.endpoint, authenticationMiddleware, controller.deleteVideo.bind(controller));
     return router;
 }
 exports.default = CourseLessonVideoRouter;

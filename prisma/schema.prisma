@@ -9,51 +9,73 @@ datasource db {
 }
 
 model User {
-  id                  Int      @id @default(autoincrement())
-  email               String   @unique
-  password            String
-  accessToken         String?  @map("access_token")
-  refreshToken        String[] @map("refresh_token")
-  phoneNumber         String?  @map("phone_number")
-  name                String
-  NIM                 String   @map("nim")
-  avatar              String   @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
-  about               String?
-  totalCourses        Int      @default(0) @map("total_courses")
-  totalLessons        Int      @default(0) @map("total_lessons")
-  totalUnreadMessages Int      @default(0) @map("total_unread_messages")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
-  role                Role     @default(STUDENT)
-
-  dateOfBirth      DateTime @map("date_of_birth")
-  address          String
-  bloodType        String   @map("blood_type")
-  medicalHistories String[] @map("medical_histories")
-  HMM              String[] @map("hmm")
-  UKM              String[] @map("ukm")
-  hobbies          String[]
-  lineId           String   @map("line_id")
-  emergencyNumber  String   @map("emergency_number")
-
-  courses           Course[]
-  courseEnrollments CourseEnrollment[]
-  courseLikes       CourseLike[]
+  id                               Int                               @id @default(autoincrement())
+  email                            String                            @unique
+  password                         String
+  accessToken                      String?                           @map("access_token")
+  phoneNumber                      String                            @map("phone_number")
+  name                             String
+  NIM                              String                            @unique @map("nim")
+  avatar                           String                            @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
+  about                            String?
+  totalCourses                     Int                               @default(0) @map("total_courses")
+  totalLessons                     Int                               @default(0) @map("total_lessons")
+  totalUnreadMessages              Int                               @default(0) @map("total_unread_messages")
+  createdAt                        DateTime                          @default(now()) @map("created_at")
+  updatedAt                        DateTime                          @updatedAt @map("updated_at")
+  role                             Role                              @default(STUDENT)
+  refreshToken                     String[]                          @map("refresh_token")
+  address                          String
+  bloodType                        String                            @map("blood_type")
+  dateOfBirth                      DateTime                          @map("date_of_birth")
+  emergencyNumber                  String                            @map("emergency_number")
+  HMM                              String                            @map("hmm")
+  hobbies                          String
+  lineId                           String                            @map("line_id")
+  medicalHistories                 String                            @map("medical_histories")
+  UKM                              String                            @map("ukm")
+  courses                          Course[]
+  courseEnrollments                CourseEnrollment[]
+  courseLikes                      CourseLike[]
+  departmentCoLeaders              Department?                       @relation("DepartmentCoLeaders")
+  departmentLeaders                Department?                       @relation("DepartmentLeaders")
+  departmentDivisionCoLeaders      DepartmentDivision?               @relation("DepartmentDivisionCoLeaders")
+  departmentDivisionLeaders        DepartmentDivision?               @relation("DepartmentDivisionLeaders")
+  divisionEnrollments              DepartmentDivisionEnrollment[]
+  workProgramEnrollments           DepartmentProgramEnrollment[]
+  orders                           Order[]
+  personalAssignments              PersonalAssignment[]
+  courseClassAssignmentCompletions CourseClassAssignmentCompletion[]
+  report                           Report?
 
   @@map("user")
+}
+
+model PersonalAssignment {
+  id         Int      @id @default(autoincrement())
+  title      String
+  submission String
+  deadline   DateTime
+  isDone     Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+  userId     Int      @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("personal_assignment")
 }
 
 model CourseEnrollment {
   id        Int                  @id @default(autoincrement())
   userId    Int                  @map("user_id")
   courseId  Int                  @map("course_id")
-  classId   Int?                 @map("class_id")
   role      CourseEnrollmentRole @default(STUDENT)
   createdAt DateTime             @default(now()) @map("created_at")
   updatedAt DateTime             @default(now()) @updatedAt @map("updated_at")
-  user      User                 @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  course    Course               @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  class     CourseClass?         @relation(fields: [classId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  classId   Int?                 @map("class_id")
+  class     CourseClass?         @relation(fields: [classId], references: [id])
+  course    Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, userId], name: "userId_courseId")
   @@map("course_enrollment")
@@ -61,7 +83,6 @@ model CourseEnrollment {
 
 model Course {
   id               Int                @id @default(autoincrement())
-  code             String
   status           CourseStatus       @default(PUBLISHED)
   image            String             @default("https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg")
   title            String
@@ -75,14 +96,16 @@ model Course {
   totalLikes       Int                @default(0) @map("total_likes")
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at")
-  authorId         Int                @map("author_id")
+  authorId         Int?               @map("author_id")
   categoryId       Int?               @map("category_id")
-  author           User               @relation(fields: [authorId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  category         CourseCategory?    @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  code             String
+  author           User?              @relation(fields: [authorId], references: [id])
+  category         CourseCategory?    @relation(fields: [categoryId], references: [id])
+  classes          CourseClass[]
   enrollments      CourseEnrollment[]
   lessons          CourseLesson[]
-  classes          CourseClass[]
   likes            CourseLike[]
+  schedules        CourseSchedule[]
 
   @@index([authorId])
   @@index([categoryId])
@@ -99,7 +122,7 @@ model CourseLesson {
   createdAt      DateTime            @default(now()) @map("created_at")
   updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at")
   courseId       Int                 @map("course_id")
-  course         Course              @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  course         Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
   videos         CourseLessonVideo[]
 
   @@map("course_lesson")
@@ -110,12 +133,12 @@ model CourseLessonVideo {
   name           String
   description    String?
   totalDurations Float        @map("total_durations")
-  attachment     String?
   youtubeLink    String       @map("youtube_link")
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at")
   lessonId       Int          @map("lesson_id")
-  lesson         CourseLesson @relation(fields: [lessonId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  attachment     String?
+  lesson         CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@index([lessonId])
   @@map("course_video")
@@ -125,8 +148,8 @@ model CourseLike {
   id       Int    @id @default(autoincrement())
   courseId Int    @map("course_id")
   userId   Int    @map("user_id")
-  course   Course @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  user     User   @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
   @@map("course_like")
@@ -144,29 +167,37 @@ model CourseCategory {
 
 model CourseClass {
   id               Int                     @id @default(autoincrement())
-  title            String
+  title            String                  @unique
   courseId         Int                     @map("course_id")
   createdAt        DateTime                @default(now()) @map("created_at")
   updatedAt        DateTime                @default(now()) @updatedAt @map("updated_at")
-  course           Course                  @relation(fields: [courseId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  course           Course                  @relation(fields: [courseId], references: [id], onDelete: Cascade)
   assignments      CourseClassAssignment[]
   CourseEnrollment CourseEnrollment[]
 
-  @@unique([title])
   @@map("course_class")
 }
 
 model CourseClassAssignment {
-  id          Int         @id @default(autoincrement())
-  title       String
-  submission  String
-  deadline    DateTime
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @default(now()) @updatedAt @map("updated_at")
-  classId     Int         @map("class_id")
-  courseClass CourseClass @relation(fields: [classId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id                    Int                               @id @default(autoincrement())
+  title                 String
+  submission            String
+  deadline              DateTime
+  createdAt             DateTime                          @default(now()) @map("created_at")
+  updatedAt             DateTime                          @default(now()) @updatedAt @map("updated_at")
+  classId               Int                               @map("class_id")
+  courseClass           CourseClass                       @relation(fields: [classId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  assignmentCompletions CourseClassAssignmentCompletion[]
 
   @@map("course_class_assignment")
+}
+
+model CourseClassAssignmentCompletion {
+  id           Int                   @id @default(autoincrement())
+  userId       Int                   @map("user_id")
+  user         User                  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  assignmentId Int                   @map("assignment_id")
+  assignment   CourseClassAssignment @relation(fields: [assignmentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 }
 
 model Event {
@@ -178,6 +209,173 @@ model Event {
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("event")
+}
+
+model CourseSchedule {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  date        DateTime
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  courseId    Int      @map("course_id")
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("course_schedule")
+}
+
+model Department {
+  id                      Int                  @id @default(autoincrement())
+  title                   String
+  description             String?
+  totalDivisions          Int                  @default(0) @map("total_divisions")
+  totalMembers            Int                  @default(0) @map("total_members")
+  totalPrograms           Int                  @default(0) @map("total_programs")
+  totalProgramEnrollments Int                  @default(0) @map("total_program_enrollments")
+  createdAt               DateTime             @default(now()) @map("created_at")
+  updatedAt               DateTime             @default(now()) @updatedAt @map("updated_at")
+  leaderId                Int?                 @unique @map("leader_id")
+  coLeaderId              Int?                 @unique @map("co_leader_id")
+  coLeader                User?                @relation("DepartmentCoLeaders", fields: [coLeaderId], references: [id])
+  leader                  User?                @relation("DepartmentLeaders", fields: [leaderId], references: [id])
+  divisions               DepartmentDivision[]
+  workPlans               DepartmentProgram[]
+
+  @@map("department")
+}
+
+model DepartmentDivision {
+  id           Int                            @id @default(autoincrement())
+  title        String
+  description  String?
+  totalMembers Int                            @default(0) @map("total_members")
+  createdAt    DateTime                       @default(now()) @map("created_at")
+  updatedAt    DateTime                       @default(now()) @updatedAt @map("updated_at")
+  departmentId Int                            @map("department_id")
+  leaderId     Int?                           @unique @map("leader_id")
+  coLeaderId   Int?                           @unique @map("co_leader_id")
+  coLeader     User?                          @relation("DepartmentDivisionCoLeaders", fields: [coLeaderId], references: [id])
+  department   Department                     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  leader       User?                          @relation("DepartmentDivisionLeaders", fields: [leaderId], references: [id])
+  enrollments  DepartmentDivisionEnrollment[]
+  privileges   DivisionPrivilege?
+
+  @@map("department_division")
+}
+
+model DepartmentDivisionEnrollment {
+  id         Int                @id @default(autoincrement())
+  userId     Int                @map("user_id")
+  divisionId Int                @map("division_id")
+  division   DepartmentDivision @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, divisionId])
+  @@map("department_division_enrollment")
+}
+
+model DepartmentProgram {
+  id                    Int                           @id @default(autoincrement())
+  title                 String
+  description           String?
+  date                  DateTime
+  departmentId          Int                           @map("department_id")
+  department            Department                    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  WorkProgramEnrollment DepartmentProgramEnrollment[]
+
+  @@map("department_program")
+}
+
+model DepartmentProgramEnrollment {
+  id        Int               @id @default(autoincrement())
+  userId    Int               @map("user_id")
+  programId Int               @map("program_id")
+  program   DepartmentProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("department_program_enrollment")
+}
+
+model Report {
+  id            Int      @id @default(autoincrement())
+  points        Float?
+  performance   Float?
+  participation Float?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+  userId        Int      @unique @map("user_id")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("report")
+}
+
+model Scholarship {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  provider    String
+  deadline    DateTime
+  reference   String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("scholarship")
+}
+
+model Competition {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  organizer   String
+  deadline    DateTime
+  reference   String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("competition")
+}
+
+model DivisionPrivilege {
+  id         Int                @id @default(autoincrement())
+  divisionId Int                @unique @map("division_id")
+  privilege  Privilege
+  division   DepartmentDivision @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+
+  @@unique([divisionId, privilege])
+  @@map("division_privilege")
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  price       Float
+  size        String[]
+  Order       Order[]
+
+  @@map("product")
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  userId    Int
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("order")
+}
+
+enum Privilege {
+  DEPARTMENT
+  DIVISION
+  PROGRAM
+  SCHOLARSHIP
+  COMPETITION
+  REPORT
+  COURSE
 }
 
 enum Role {

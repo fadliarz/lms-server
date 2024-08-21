@@ -25,34 +25,17 @@ const inversify_1 = require("inversify");
 const class_type_1 = require("../class.type");
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const statusCode_1 = require("../../../common/constants/statusCode");
-const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
-const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const class_joi_1 = require("./class.joi");
+const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 let CourseClassController = class CourseClassController {
     createClass(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: class_joi_1.CreateCourseClassDtoJoi })(req, res, next);
-                const resourceId = this.validateResourceId(req);
-                const newClass = yield this.service.createClass(resourceId, req.body);
+                const newClass = yield this.service.createClass((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) }, req.body);
                 return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({
-                    data: (0, removeNullFields_1.default)(newClass),
-                });
-            }
-            catch (error) {
-                next(error);
-            }
-        });
-    }
-    getClassById(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const classId = this.validateClassId(req);
-                const resourceId = this.validateUnauthenticatedResourceId(req);
-                const theClass = yield this.service.getClassById(classId, resourceId);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: (0, removeNullFields_1.default)(theClass),
+                    data: newClass,
                 });
             }
             catch (error) {
@@ -63,10 +46,27 @@ let CourseClassController = class CourseClassController {
     getClasses(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const resourceId = this.validateUnauthenticatedResourceId(req);
-                const classes = yield this.service.getClasses(resourceId);
+                const classes = yield this.service.getClasses({
+                    resourceId: this.validateResourceId(req),
+                });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: classes.map((theClass) => (0, removeNullFields_1.default)(theClass)),
+                    data: classes,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getClassById(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const theClass = yield this.service.getClassById({
+                    classId: this.validateClassId(req),
+                    resourceId: this.validateResourceId(req),
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: theClass,
                 });
             }
             catch (error) {
@@ -78,11 +78,12 @@ let CourseClassController = class CourseClassController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: class_joi_1.UpdateCourseClassDtoJoi })(req, res, next);
-                const classId = this.validateClassId(req);
-                const resourceId = this.validateResourceId(req);
-                const updatedClass = yield this.service.updateClass(classId, resourceId, req.body);
+                const updatedClass = yield this.service.updateClass((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    classId: this.validateClassId(req),
+                    resourceId: this.validateResourceId(req),
+                }, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: (0, removeNullFields_1.default)(updatedClass),
+                    data: updatedClass,
                 });
             }
             catch (error) {
@@ -93,9 +94,10 @@ let CourseClassController = class CourseClassController {
     deleteClass(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const classId = this.validateClassId(req);
-                const resourceId = this.validateResourceId(req);
-                yield this.service.deleteClass(classId, resourceId);
+                yield this.service.deleteClass((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    classId: this.validateClassId(req),
+                    resourceId: this.validateResourceId(req),
+                });
                 res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
             }
             catch (error) {
@@ -104,17 +106,6 @@ let CourseClassController = class CourseClassController {
         });
     }
     validateResourceId(req) {
-        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
-        const courseId = Number(req.params.courseId);
-        if (isNaN(courseId)) {
-            throw new NaNException_1.default("courseId");
-        }
-        return {
-            user: { id: userId, role },
-            courseId,
-        };
-    }
-    validateUnauthenticatedResourceId(req) {
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
             throw new NaNException_1.default("courseId");

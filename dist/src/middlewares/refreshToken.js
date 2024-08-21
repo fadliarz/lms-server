@@ -38,7 +38,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
                 decoded = jsonwebtoken_1.default.verify(storedRefreshToken, process.env.REFRESH_TOKEN_PRIVATE_KEY);
                 const userRelatedToEmail = yield userRepository.getUserByEmail(decoded.email);
                 if (userRelatedToEmail) {
-                    yield userRepository.updateUser(userRelatedToEmail.id, {
+                    yield userRepository.updateUser({ userId: userRelatedToEmail.id }, {
                         refreshToken: [],
                     });
                 }
@@ -61,7 +61,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             const accessToken = userService.generateFreshAuthenticationToken(Cookie_1.Cookie.ACCESS_TOKEN, decoded.email);
             const refreshToken = userService.generateFreshAuthenticationToken(Cookie_1.Cookie.REFRESH_TOKEN, decoded.email);
             newRefreshTokenArray = [...newRefreshTokenArray, refreshToken];
-            yield userRepository.updateUser(user.id, {
+            yield userRepository.updateUser({ userId: user.id }, {
                 accessToken,
                 refreshToken: newRefreshTokenArray,
             });
@@ -86,7 +86,7 @@ exports.default = (req, res, next) => __awaiter(void 0, void 0, void 0, function
              * 2. User email and decoded email don't match
              *
              */
-            yield userRepository.updateUser(user.id, {
+            yield userRepository.updateUser({ userId: user.id }, {
                 refreshToken: newRefreshTokenArray,
             });
             throw new ForbiddenException_1.default();

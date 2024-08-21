@@ -38,6 +38,10 @@ __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.COURSE_LESSON_VIDEO),
     __metadata("design:type", Object)
 ], PrismaQueryRaw.prototype, "courseLessonVideo", void 0);
+__decorate([
+    (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.DEPARTMENT),
+    __metadata("design:type", Object)
+], PrismaQueryRaw.prototype, "department", void 0);
 PrismaQueryRaw = __decorate([
     (0, inversify_1.injectable)()
 ], PrismaQueryRaw);

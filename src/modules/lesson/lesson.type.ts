@@ -1,5 +1,54 @@
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/shared.types";
-import { UserRoleModel } from "../course/course.type";
+export namespace $CourseLessonAPI {
+  const root = "/courses/:courseId/lessons";
+  const lesson = root + "/:lessonId";
+
+  export namespace CreateLesson {
+    export const endpoint = root;
+    export const generateUrl = (courseId: number) =>
+      `/courses/${courseId}/lessons`;
+    export type Dto = {
+      title: string;
+      description?: string;
+    };
+    export type Response = {
+      data: CourseLessonModel;
+    };
+  }
+
+  export namespace GetLessons {
+    export const endpoint = root;
+    export const generateUrl = (courseId: number) =>
+      `/courses/${courseId}/lessons`;
+    export type Response = {
+      data: CourseLessonModel[];
+    };
+  }
+
+  export namespace GetLessonById {
+    export const endpoint = lesson;
+    export const generateUrl = (courseId: number, lessonId: number) =>
+      `/courses/${courseId}/lessons/${lessonId}`;
+    export type Response = { data: CourseLessonModel };
+  }
+
+  export namespace UpdateLesson {
+    export const endpoint = lesson;
+    export const generateUrl = (courseId: number, lessonId: number) =>
+      `/courses/${courseId}/lessons/${lessonId}`;
+    export type Dto = {
+      title: string;
+      description?: string;
+    };
+    export type Response = { data: CourseLessonModel };
+  }
+
+  export namespace DeleteLesson {
+    export const endpoint = lesson;
+    export const generateUrl = (courseId: number, lessonId: number) =>
+      `/courses/${courseId}/lessons/${lessonId}`;
+    export type Response = { data: {} };
+  }
+}
 
 export const CourseLessonDITypes = {
   REPOSITORY: Symbol.for("COURSE_LESSON_REPOSITORY"),
@@ -7,20 +56,6 @@ export const CourseLessonDITypes = {
   CONTROLLER: Symbol.for("COURSE_LESSON_CONTROLLER"),
   AUTHORIZATION: Symbol.for("COURSE_LESSON_AUTHORIZATION"),
 } as const;
-
-export enum courseLessonUrls {
-  lessons = "/courses/:courseId/lessons",
-  lesson = courseLessonUrls.lessons + "/:lessonId",
-  basic = courseLessonUrls.lesson + "/basic",
-}
-
-/**
- *
- *
- * Model
- *
- *
- */
 
 export type CourseLessonModel = {
   id: number;
@@ -33,36 +68,7 @@ export type CourseLessonModel = {
   updatedAt: Date;
   courseId: number;
 };
-export type ValuableCourseLessonModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseLessonModel>;
-
-/**
- *
- *
- * Dto
- *
- *
- */
-
-export type CreateCourseLessonDto = {
-  title: string;
-  description?: string;
-};
-
-export type UpdateBasicCourseLessonDto = Partial<CreateCourseLessonDto>;
-
-/**
- *
- *
- * ResourceId
- *
- *
- */
 
 export type CourseLessonResourceId = {
-  user: {
-    id: number;
-    role: UserRoleModel;
-  };
   courseId: number;
 };

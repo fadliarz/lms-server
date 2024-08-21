@@ -17,94 +17,106 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseLessonVideoService = void 0;
 const inversify_1 = require("inversify");
-const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-const repository_type_1 = require("../../../common/class/repository/repository.type");
+const video_type_1 = require("../video.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseLessonVideoService = class CourseLessonVideoService {
-    createVideo(resourceId, dto) {
+    createVideo(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.validateRelationBetweenResources({ resourceId });
-                return yield this.repository.courseLessonVideo.createVideo(resourceId, dto);
+                yield this.authorization.authorizeCreateVideo(user, id.resourceId.courseId);
+                const _a = id.resourceId, { lessonId } = _a, theResourceId = __rest(_a, ["lessonId"]);
+                return yield this.repository.createVideo({ lessonId, resourceId: theResourceId }, dto);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    foreignConstraint: {
-                        default: { message: "lesson doesn't exist!" },
-                    },
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    getVideos(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeReadVideo(user, id.resourceId.courseId);
+                const _a = id.resourceId, { lessonId } = _a, theResourceId = __rest(_a, ["lessonId"]);
+                return yield this.repository.getVideos({
+                    lessonId,
+                    resourceId: theResourceId,
                 });
             }
-        });
-    }
-    getVideoById(videoId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { video } = yield this.validateRelationBetweenResources({
-                videoId,
-                resourceId,
-            });
-            return video;
-        });
-    }
-    getVideos(resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ resourceId });
-            return yield this.repository.courseLessonVideo.getVideos(resourceId);
-        });
-    }
-    updateBasicVideo(videoId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ resourceId });
-            return yield this.repository.courseLessonVideo.updateVideo(videoId, resourceId, dto);
-        });
-    }
-    updateVideoSource(videoId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({ resourceId });
-            return yield this.repository.courseLessonVideo.updateVideo(videoId, resourceId, dto);
-        });
-    }
-    deleteVideo(videoId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.repository.courseLessonVideo.deleteVideo(videoId, resourceId);
-            return {};
-        });
-    }
-    validateRelationBetweenResources(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { resourceId } = id;
-            const { courseId, lessonId } = resourceId;
-            const lesson = yield this.repository.courseLesson.getLessonById(lessonId, resourceId);
-            if (!lesson || lesson.courseId !== courseId) {
-                throw new RecordNotFoundException_1.default("lesson doesn't exist!");
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
             }
-            if (id.videoId) {
-                const { videoId } = id;
-                const video = yield this.repository.courseLessonVideo.getVideoById(videoId, resourceId);
-                if (!video || video.lessonId !== lessonId) {
-                    throw new RecordNotFoundException_1.default("video doesn't exist!");
-                }
-                if (videoId) {
-                    return {
-                        lesson,
-                        video,
-                    };
-                }
+        });
+    }
+    getVideoById(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeReadVideo(user, id.resourceId.courseId);
+                return yield this.repository.getVideoByIdOrThrow(id);
             }
-            return { lesson };
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateVideo(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateVideo(user, id.resourceId.courseId);
+                return yield this.repository.updateVideo(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateVideoSource(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateVideo(user, id.resourceId.courseId);
+                return yield this.repository.updateVideo(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    deleteVideo(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeDeleteVideo(user, id.resourceId.courseId);
+                return yield this.repository.deleteVideo(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
 };
-exports.CourseLessonVideoService = CourseLessonVideoService;
 __decorate([
-    (0, inversify_1.inject)(repository_type_1.RepositoryDITypes.FACADE),
-    __metadata("design:type", repository_type_1.IRepository)
+    (0, inversify_1.inject)(video_type_1.CourseLessonVideoDITypes.REPOSITORY),
+    __metadata("design:type", Object)
 ], CourseLessonVideoService.prototype, "repository", void 0);
-exports.CourseLessonVideoService = CourseLessonVideoService = __decorate([
+__decorate([
+    (0, inversify_1.inject)(video_type_1.CourseLessonVideoDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], CourseLessonVideoService.prototype, "authorization", void 0);
+CourseLessonVideoService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseLessonVideoService);
+exports.default = CourseLessonVideoService;

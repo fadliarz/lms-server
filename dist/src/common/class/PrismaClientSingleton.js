@@ -5,7 +5,26 @@ class PrismaClientSingleton {
     constructor() { }
     static getInstance() {
         if (!PrismaClientSingleton.instance) {
-            PrismaClientSingleton.instance = new client_1.PrismaClient();
+            PrismaClientSingleton.instance = new client_1.PrismaClient({
+                log: [
+                    {
+                        emit: "event",
+                        level: "query",
+                    },
+                    {
+                        emit: "stdout",
+                        level: "error",
+                    },
+                    {
+                        emit: "stdout",
+                        level: "info",
+                    },
+                    {
+                        emit: "stdout",
+                        level: "warn",
+                    },
+                ],
+            });
         }
         return PrismaClientSingleton.instance;
     }

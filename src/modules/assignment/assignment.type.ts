@@ -1,5 +1,71 @@
-import { UserRoleModel } from "../course/course.type";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/shared.types";
+export namespace $CourseClassAssignmentAPI {
+  const root = "/courses/:courseId/classes/:classId/assignments";
+  const assignment = root + "/:assignmentId";
+
+  export namespace CreateAssignment {
+    export const endpoint = root;
+    export const generateUrl = (courseId: number, classId: number) =>
+      `/courses/${courseId}/classes/${classId}/assignments`;
+    export type Dto = {
+      title: string;
+      submission: string;
+      deadline: Date;
+    };
+    export type Response = {
+      data: CourseClassAssignmentModel;
+    };
+  }
+
+  export namespace GetAssignments {
+    export const endpoint = root;
+    export const generateUrl = (courseId: number, classId: number) =>
+      `/courses/${courseId}/classes/${classId}/assignments`;
+    export type Response = {
+      data: CourseClassAssignmentModel[];
+    };
+  }
+
+  export namespace GetAssignmentById {
+    export const endpoint = assignment;
+    export const generateUrl = (
+      courseId: number,
+      classId: number,
+      assignmentId: number,
+    ) => `/courses/${courseId}/classes/${classId}/assignments/${assignmentId}`;
+    export type Response = {
+      data: CourseClassAssignmentModel;
+    };
+  }
+
+  export namespace UpdateAssignment {
+    export const endpoint = assignment;
+    export const generateUrl = (
+      courseId: number,
+      classId: number,
+      assignmentId: number,
+    ) => `/courses/${courseId}/classes/${classId}/assignments/${assignmentId}`;
+    export type Dto = {
+      title?: string;
+      submission?: string;
+      deadline?: Date;
+    };
+    export type Response = {
+      data: CourseClassAssignmentModel;
+    };
+  }
+
+  export namespace DeleteAssignment {
+    export const endpoint = assignment;
+    export const generateUrl = (
+      courseId: number,
+      classId: number,
+      assignmentId: number,
+    ) => `/courses/${courseId}/classes/${classId}/assignments/${assignmentId}`;
+    export type Response = {
+      data: {};
+    };
+  }
+}
 
 export const CourseClassAssignmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_CLASS_ASSIGNMENT_REPOSITORY"),
@@ -7,15 +73,6 @@ export const CourseClassAssignmentDITypes = {
   CONTROLLER: Symbol.for("COURSE_CLASS_ASSIGNMENT_CONTROLLER"),
   AUTHORIZATION: Symbol.for("COURSE_CLASS_ASSIGNMENT_AUTHORIZATION"),
 } as const;
-
-export enum courseClassAssignmentUrls {
-  root = "/courses/:courseId/classes/:classId/assignments",
-  assignment = courseClassAssignmentUrls.root + "/:assignmentId",
-}
-
-export enum CourseClassAssignmentErrorMessage {
-  ASSIGNMENT_DOES_NOT_EXIST = "assignment doesn't exist!",
-}
 
 export type CourseClassAssignmentModel = {
   id: number;
@@ -27,36 +84,7 @@ export type CourseClassAssignmentModel = {
   classId: number;
 };
 
-export type ValuableCourseClassAssignmentModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseClassAssignmentModel>;
-
-/**
- *
- *
- * Dto
- *
- *
- */
-
-export type CreateCourseClassAssignmentDto = {
-  title: string;
-  submission: string;
-  deadline: Date;
-};
-
-export type UpdateCourseClassAssignmentDto =
-  Partial<CreateCourseClassAssignmentDto>;
-
-/**
- *
- *
- * ResourceId
- *
- *
- */
-
 export type CourseClassAssignmentResourceId = {
-  user: { id: number; role: UserRoleModel };
   courseId: number;
   classId: number;
 };

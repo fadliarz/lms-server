@@ -3,18 +3,17 @@ import { EventDITypes } from "../event.type";
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import validateJoi from "../../../common/functions/validateJoi";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { CourseResourceId } from "../../course/course.type";
 import { CreateEventDtoJoi, UpdateEventDtoJoi } from "./event.joi";
-import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import { IEventController, IEventService } from "../event.interface";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 @injectable()
 export default class EventController implements IEventController {
   @inject(EventDITypes.SERVICE)
   private readonly service: IEventService;
 
-  public async create(
+  public async createEvent(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -22,8 +21,10 @@ export default class EventController implements IEventController {
     try {
       await validateJoi({ body: CreateEventDtoJoi })(req, res, next);
 
-      const resourceId = this.validateResourceId(req);
-      const newEvent = await this.service.create(resourceId, req.body);
+      const newEvent = await this.service.createEvent(
+        getRequestUserOrThrowAuthenticationException(req),
+        req.body,
+      );
 
       return res.status(StatusCode.RESOURCE_CREATED).json({ data: newEvent });
     } catch (error) {
@@ -31,15 +32,15 @@ export default class EventController implements IEventController {
     }
   }
 
-  public async getById(
+  public async getEventById(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const eventId = this.validateEventId(req);
-      const resourceId = this.validateResourceId(req);
-      const event = await this.service.getById(eventId, resourceId);
+      const event = await this.service.getEventById({
+        eventId: this.validateEventId(req),
+      });
 
       res.status(StatusCode.SUCCESS).json({ data: event });
     } catch (error) {
@@ -47,15 +48,13 @@ export default class EventController implements IEventController {
     }
   }
 
-  public async getMany(
+  public async getEvents(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const eventId = this.validateEventId(req);
-      const resourceId = this.validateResourceId(req);
-      const events = await this.service.getById(eventId, resourceId);
+      const events = await this.service.getEvents();
 
       return res.status(StatusCode.SUCCESS).json({ data: events });
     } catch (error) {
@@ -63,7 +62,7 @@ export default class EventController implements IEventController {
     }
   }
 
-  public async update(
+  public async updateEvent(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -71,11 +70,9 @@ export default class EventController implements IEventController {
     try {
       await validateJoi({ body: UpdateEventDtoJoi })(req, res, next);
 
-      const eventId = this.validateEventId(req);
-      const resourceId = this.validateResourceId(req);
-      const updatedEvent = await this.service.update(
-        eventId,
-        resourceId,
+      const updatedEvent = await this.service.updateEvent(
+        getRequestUserOrThrowAuthenticationException(req),
+        { eventId: this.validateEventId(req) },
         req.body,
       );
 
@@ -85,32 +82,21 @@ export default class EventController implements IEventController {
     }
   }
 
-  public async delete(
+  public async deleteEvent(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const eventId = this.validateEventId(req);
-      const resourceId = this.validateResourceId(req);
-      await this.service.delete(eventId, resourceId);
+      await this.service.deleteEvent(
+        getRequestUserOrThrowAuthenticationException(req),
+        { eventId: this.validateEventId(req) },
+      );
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
       next(error);
     }
-  }
-
-  private validateResourceId(req: Request, error?: Error): CourseResourceId {
-    const { id: userId, role } =
-      getRequestUserOrThrowAuthenticationException(req);
-
-    return {
-      user: {
-        id: userId,
-        role,
-      },
-    };
   }
 
   private validateEventId(req: Request): number {

@@ -28,16 +28,14 @@ const validateJoi_1 = __importDefault(require("../../../common/functions/validat
 const lesson_joi_1 = require("./lesson.joi");
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
-const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
 let CourseLessonController = class CourseLessonController {
     createLesson(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: lesson_joi_1.CreateCourseLessonDtoJoi })(req, res, next);
-                const resourceId = this.validateResourceId(req);
-                const newLesson = yield this.service.createLesson(resourceId, req.body);
+                const newLesson = yield this.service.createLesson((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) }, req.body);
                 return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({
-                    data: (0, removeNullFields_1.default)(newLesson),
+                    data: newLesson,
                 });
             }
             catch (error) {
@@ -48,11 +46,12 @@ let CourseLessonController = class CourseLessonController {
     getLessonById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const lessonId = this.validateLessonId(req);
-                const resourceId = this.validateUnauthenticatedResourceId(req);
-                const lesson = yield this.service.getLessonById(lessonId, resourceId);
+                const lesson = yield this.service.getLessonById({
+                    lessonId: this.validateLessonId(req),
+                    resourceId: this.validateResourceId(req),
+                });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: (0, removeNullFields_1.default)(lesson),
+                    data: lesson,
                 });
             }
             catch (error) {
@@ -63,10 +62,11 @@ let CourseLessonController = class CourseLessonController {
     getLessons(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const resourceId = this.validateUnauthenticatedResourceId(req);
-                const lessons = yield this.service.getLessons(resourceId);
+                const lessons = yield this.service.getLessons({
+                    resourceId: this.validateResourceId(req),
+                });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: lessons.map((lesson) => (0, removeNullFields_1.default)(lesson)),
+                    data: lessons,
                 });
             }
             catch (error) {
@@ -74,15 +74,16 @@ let CourseLessonController = class CourseLessonController {
             }
         });
     }
-    updateBasicLesson(req, res, next) {
+    updateLesson(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: lesson_joi_1.UpdateBasicCourseLessonDtoJoi })(req, res, next);
-                const lessonId = this.validateLessonId(req);
-                const resourceId = this.validateResourceId(req);
-                const updatedLesson = yield this.service.updateBasicLesson(lessonId, resourceId, req.body);
+                const updatedLesson = yield this.service.updateLesson((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    lessonId: this.validateLessonId(req),
+                    resourceId: this.validateResourceId(req),
+                }, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: (0, removeNullFields_1.default)(updatedLesson),
+                    data: updatedLesson,
                 });
             }
             catch (error) {
@@ -93,9 +94,10 @@ let CourseLessonController = class CourseLessonController {
     deleteLesson(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const lessonId = this.validateLessonId(req);
-                const resourceId = this.validateResourceId(req);
-                yield this.service.deleteLesson(lessonId, resourceId);
+                yield this.service.deleteLesson((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    lessonId: this.validateLessonId(req),
+                    resourceId: this.validateResourceId(req),
+                });
                 res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
             }
             catch (error) {
@@ -104,17 +106,6 @@ let CourseLessonController = class CourseLessonController {
         });
     }
     validateResourceId(req) {
-        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
-        const courseId = Number(req.params.courseId);
-        if (isNaN(courseId)) {
-            throw new NaNException_1.default("courseId");
-        }
-        return {
-            user: { id: userId, role },
-            courseId,
-        };
-    }
-    validateUnauthenticatedResourceId(req) {
         const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
             throw new NaNException_1.default("courseId");

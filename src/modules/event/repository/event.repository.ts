@@ -1,69 +1,45 @@
-import { inject, injectable } from "inversify";
-import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import { CreateEventDto, EventModel, EventResourceId } from "../event.type";
-import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import { CourseClassDITypes } from "../../class/class.type";
-import {
-  PrismaDefaultTransactionConfigForRead,
-  PrismaDefaultTransactionConfigForWrite,
-} from "../../../common/constants/prismaDefaultConfig";
+import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import { IEventAuthorization, IEventRepository } from "../event.interface";
+import { IEventRepository } from "../event.interface";
+import BaseRepository from "../../../common/class/BaseRepository";
+import { $EventAPI, EventModel } from "../event.type";
 
 @injectable()
 export default class EventRepository
-  extends BaseAuthorization
+  extends BaseRepository
   implements IEventRepository
 {
-  @inject(CourseClassDITypes.AUTHORIZATION)
-  private readonly authorization: IEventAuthorization;
+  constructor() {
+    super();
+  }
 
-  private readonly prisma = PrismaClientSingleton.getInstance();
-
-  public async create(
-    resourceId: EventResourceId,
-    dto: CreateEventDto,
-  ): Promise<EventModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorizeUserRole(
-        tx,
-        resourceId,
-        this.authorization.authorizeCreateEvent.bind(this.authorization),
-      );
-
-      return await tx.event.create({
-        data: {
-          ...dto,
-        },
-      });
+  public async createEvent(
+    data: $EventAPI.CreateEvent.Dto,
+  ): Promise<$EventAPI.CreateEvent.Response["data"]> {
+    return this.db.event.create({
+      data,
     });
   }
 
-  public async getById(
-    id: number,
-    resourceId: EventResourceId,
-  ): Promise<EventModel | null> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorizeUserRole(
-        tx,
-        resourceId,
-        this.authorization.authorizeReadEvent.bind(this.authorization),
-      );
-
-      return await tx.event.findUnique({
-        where: {
-          id,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
+  public async getEvents(): Promise<EventModel[]> {
+    return this.db.event.findMany();
   }
 
-  public async getByIdOrThrow(
-    id: number,
-    resourceId: EventResourceId,
+  public async getEventById(id: {
+    eventId: number;
+  }): Promise<EventModel | null> {
+    return this.db.event.findUnique({
+      where: {
+        id: id.eventId,
+      },
+    });
+  }
+
+  public async getEventByIdOrThrow(
+    id: { eventId: number },
     error?: Error,
   ): Promise<EventModel> {
-    const event = await this.getById(id, resourceId);
+    const event = await this.getEventById(id);
 
     if (!event) {
       throw error || new RecordNotFoundException();
@@ -72,54 +48,23 @@ export default class EventRepository
     return event;
   }
 
-  public async getMany(resourceId: EventResourceId): Promise<EventModel[]> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorizeUserRole(
-        tx,
-        resourceId,
-        this.authorization.authorizeReadEvents.bind(this.authorization),
-      );
-
-      return await tx.event.findMany();
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
-  public async update(
-    id: number,
-    resourceId: EventResourceId,
-    dto: Partial<EventModel>,
+  public async updateEvent(
+    id: { eventId: number },
+    data: Partial<EventModel>,
   ): Promise<EventModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorizeUserRole(
-        tx,
-        resourceId,
-        this.authorization.authorizeUpdateEvent.bind(this.authorization),
-      );
-
-      return await tx.event.update({
-        where: {
-          id,
-        },
-        data: dto,
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+    return this.db.event.update({
+      where: {
+        id: id.eventId,
+      },
+      data,
+    });
   }
 
-  public async delete(id: number, resourceId: EventResourceId): Promise<{}> {
-    await this.prisma.$transaction(async (tx) => {
-      await this.authorizeUserRole(
-        tx,
-        resourceId,
-        this.authorization.authorizeDeleteEvent.bind(this.authorization),
-      );
-
-      await tx.event.delete({
-        where: {
-          id,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
-
-    return {};
+  public async deleteEvent(id: { eventId: number }): Promise<EventModel> {
+    return this.db.event.delete({
+      where: {
+        id: id.eventId,
+      },
+    });
   }
 }

@@ -1,12 +1,12 @@
 import Joi from "joi";
-import { CreateCourseClassAssignmentDto, UpdateCourseClassAssignmentDto } from "../assignment.type";
+import { $CourseClassAssignmentAPI } from "../assignment.type";
 
 /**
  * Create
  *
  */
 export const CreateCourseClassAssignmentDtoJoi =
-  Joi.object<CreateCourseClassAssignmentDto>({
+  Joi.object<$CourseClassAssignmentAPI.CreateAssignment.Dto>({
     title: Joi.string().required(),
     submission: Joi.string().required(),
     deadline: Joi.date().required(),
@@ -17,7 +17,7 @@ export const CreateCourseClassAssignmentDtoJoi =
  *
  */
 export const UpdateCourseClassAssignmentDtoJoi =
-  Joi.object<UpdateCourseClassAssignmentDto>({
+  Joi.object<$CourseClassAssignmentAPI.UpdateAssignment.Dto>({
     title: Joi.string(),
     submission: Joi.string(),
     deadline: Joi.date(),

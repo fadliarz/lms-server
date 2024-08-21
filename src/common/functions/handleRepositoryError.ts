@@ -7,11 +7,14 @@ export type DatabaseOperationConstraint = {
   foreignConstraint?: Record<string, { message: string }> & {
     default?: { message: string };
   };
+  recordNotFound?: Record<string, { message: string }> & {
+    default?: { message: string };
+  };
 };
 
 export default function handleRepositoryError(
   error: Error,
-  constraint: DatabaseOperationConstraint,
+  constraint?: DatabaseOperationConstraint,
 ): Error {
   return handlePrismaRepositoryError(error, constraint);
 }

@@ -1,6 +1,6 @@
 import {
+  $CourseEnrollmentAPI,
   CourseEnrollmentModel,
-  CreateCourseEnrollmentDto,
 } from "../enrollment.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
@@ -20,7 +20,7 @@ export default class CourseEnrollmentAuthorization
   public authorizeCreateEnrollment(
     user: UserModel,
     course: CourseModel,
-    dto: CreateCourseEnrollmentDto,
+    dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
   ): void {
     const { id: userId, role: userRole } = user;
     const { authorId } = course;

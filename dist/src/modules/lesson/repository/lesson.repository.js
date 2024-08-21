@@ -22,92 +22,70 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
-const lesson_type_1 = require("../lesson.type");
 const inversify_1 = require("inversify");
-const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
-const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
-let CourseLessonRepository = class CourseLessonRepository extends BaseAuthorization_1.default {
+const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+let CourseLessonRepository = class CourseLessonRepository extends BaseRepository_1.default {
     constructor() {
-        super(...arguments);
-        this.prisma = PrismaClientSingleton_1.default.getInstance();
+        super();
     }
-    createLesson(resourceId, dto) {
+    createLesson(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeCreateLesson.bind(this.authorization));
-                const { courseId } = resourceId;
-                return yield tx.courseLesson.create({
-                    data: Object.assign(Object.assign({}, dto), { courseId }),
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+            return this.db.courseLesson.create({
+                data: Object.assign(Object.assign({}, data), { courseId: id.courseId }),
+            });
         });
     }
-    getLessonById(lessonId, resourceId) {
+    getLessonById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                return yield tx.courseLesson.findUnique({
-                    where: {
-                        id: lessonId,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.courseLesson.findUnique({
+                where: this.getWhereObject(id),
+            });
         });
     }
-    getLessonByIdOrThrow(lessonId, resourceId, error) {
+    getLessonByIdOrThrow(id, error) {
         return __awaiter(this, void 0, void 0, function* () {
-            const lesson = yield this.getLessonById(lessonId, resourceId);
+            const lesson = yield this.getLessonById(id);
             if (!lesson) {
                 throw error || new RecordNotFoundException_1.default();
             }
             return lesson;
         });
     }
-    getLessons(resourceId) {
+    getLessons(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                const { courseId } = resourceId;
-                return yield tx.courseLesson.findMany({
-                    where: {
-                        courseId,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.courseLesson.findMany({
+                where: {
+                    id: id.courseId,
+                },
+            });
         });
     }
-    updateLesson(lessonId, resourceId, dto) {
+    updateLesson(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeUpdateLesson.bind(this.authorization));
-                return yield tx.courseLesson.update({
-                    where: {
-                        id: lessonId,
-                    },
-                    data: dto,
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+            return this.db.courseLesson.update({
+                where: this.getWhereObject(id),
+                data: data,
+            });
         });
     }
-    deleteLesson(lessonId, resourceId) {
+    deleteLesson(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeDeleteLesson.bind(this.authorization));
-                yield tx.courseLesson.delete({
-                    where: {
-                        id: lessonId,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-            return {};
+            return this.db.courseLesson.delete({
+                where: this.getWhereObject(id),
+                select: {},
+            });
         });
+    }
+    getWhereObject(id) {
+        const { lessonId, resourceId } = id;
+        return resourceId
+            ? { id: lessonId, course: { id: resourceId.courseId } }
+            : { id: lessonId };
     }
 };
-__decorate([
-    (0, inversify_1.inject)(lesson_type_1.CourseLessonDITypes.AUTHORIZATION),
-    __metadata("design:type", Object)
-], CourseLessonRepository.prototype, "authorization", void 0);
 CourseLessonRepository = __decorate([
-    (0, inversify_1.injectable)()
+    (0, inversify_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], CourseLessonRepository);
 exports.default = CourseLessonRepository;

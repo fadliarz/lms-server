@@ -22,87 +22,64 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
-const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
-const class_type_1 = require("../../class/class.type");
-const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-let EventRepository = class EventRepository extends BaseAuthorization_1.default {
+const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+let EventRepository = class EventRepository extends BaseRepository_1.default {
     constructor() {
-        super(...arguments);
-        this.prisma = PrismaClientSingleton_1.default.getInstance();
+        super();
     }
-    create(resourceId, dto) {
+    createEvent(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeCreateEvent.bind(this.authorization));
-                return yield tx.event.create({
-                    data: Object.assign({}, dto),
-                });
-            }));
+            return this.db.event.create({
+                data,
+            });
         });
     }
-    getById(id, resourceId) {
+    getEvents() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeReadEvent.bind(this.authorization));
-                return yield tx.event.findUnique({
-                    where: {
-                        id,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.event.findMany();
         });
     }
-    getByIdOrThrow(id, resourceId, error) {
+    getEventById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const event = yield this.getById(id, resourceId);
+            return this.db.event.findUnique({
+                where: {
+                    id: id.eventId,
+                },
+            });
+        });
+    }
+    getEventByIdOrThrow(id, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const event = yield this.getEventById(id);
             if (!event) {
                 throw error || new RecordNotFoundException_1.default();
             }
             return event;
         });
     }
-    getMany(resourceId) {
+    updateEvent(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeReadEvents.bind(this.authorization));
-                return yield tx.event.findMany();
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.event.update({
+                where: {
+                    id: id.eventId,
+                },
+                data,
+            });
         });
     }
-    update(id, resourceId, dto) {
+    deleteEvent(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeUpdateEvent.bind(this.authorization));
-                return yield tx.event.update({
-                    where: {
-                        id,
-                    },
-                    data: dto,
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-        });
-    }
-    delete(id, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorizeUserRole(tx, resourceId, this.authorization.authorizeDeleteEvent.bind(this.authorization));
-                yield tx.event.delete({
-                    where: {
-                        id,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-            return {};
+            return this.db.event.delete({
+                where: {
+                    id: id.eventId,
+                },
+            });
         });
     }
 };
-__decorate([
-    (0, inversify_1.inject)(class_type_1.CourseClassDITypes.AUTHORIZATION),
-    __metadata("design:type", Object)
-], EventRepository.prototype, "authorization", void 0);
 EventRepository = __decorate([
-    (0, inversify_1.injectable)()
+    (0, inversify_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], EventRepository);
 exports.default = EventRepository;

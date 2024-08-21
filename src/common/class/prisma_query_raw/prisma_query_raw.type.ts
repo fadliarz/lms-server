@@ -5,6 +5,7 @@ import { CourseEnrollmentModel } from "../../../modules/enrollment/enrollment.ty
 import { CourseLessonModel } from "../../../modules/lesson/lesson.type";
 import { CourseLessonVideoModel } from "../../../modules/video/video.type";
 import { PrismaTransaction } from "../../types";
+import { DepartmentModel } from "../../../modules/department/department.type";
 
 export const PrismaQueryRawDITypes = {
   PRISMA_QUERY_RAW: Symbol.for("PRISMA_QUERY_RAW"),
@@ -14,6 +15,7 @@ export const PrismaQueryRawDITypes = {
   COURSE_ENROLLMENT: Symbol.for("PRISMA_QUERY_RAW_COURSE_ENROLLMENT"),
   COURSE_LESSON: Symbol.for("PRISMA_QUERY_RAW_COURSE_LESSON"),
   COURSE_LESSON_VIDEO: Symbol.for("PRISMA_QUERY_RAW_COURSE_LESSON_VIDEO"),
+  DEPARTMENT: Symbol.for("RISMA_QUERY_RAW_DEPARTMENT"),
 };
 
 export interface IPrismaQueryRaw {
@@ -23,6 +25,7 @@ export interface IPrismaQueryRaw {
   courseEnrollment: ICourseEnrollmentPrismaQueryRaw;
   courseLesson: ICourseLessonPrismaQueryRaw;
   courseLessonVideo: ICourseLessonVideoPrismaQueryRaw;
+  department: IDepartmentPrismaQueryRaw;
 }
 
 export interface IUserPrismaQueryRaw {
@@ -110,4 +113,16 @@ export interface ICourseLessonVideoPrismaQueryRaw {
     videoId: number,
     error?: Error,
   ) => Promise<CourseLessonVideoModel>;
+}
+
+export interface IDepartmentPrismaQueryRaw {
+  selectForUpdateById: (
+    tx: PrismaTransaction,
+    departmentId: number,
+  ) => Promise<DepartmentModel | null>;
+  selectForUpdateByIdOrThrow: (
+    tx: PrismaTransaction,
+    departmentId: number,
+    error?: Error,
+  ) => Promise<DepartmentModel>;
 }

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { UserDITypes, userUrls } from "../user.type";
+import { $UserAPI, UserDITypes } from "../user.type";
 import { IUserController } from "../user.interface";
 
 export default function UserRouter(authenticationMiddleware: any) {
@@ -12,15 +12,17 @@ export default function UserRouter(authenticationMiddleware: any) {
    * SignIn
    *
    */
-  router.post(userUrls.signIn, controller.signIn.bind(controller));
+
+  router.post($UserAPI.SignIn.endpoint, controller.signIn.bind(controller));
 
   /**
    *
    * SignOut
    *
    */
+
   router.post(
-    userUrls.signOut,
+    $UserAPI.SignOut.endpoint,
     authenticationMiddleware,
     controller.signOut.bind(controller),
   );
@@ -29,50 +31,108 @@ export default function UserRouter(authenticationMiddleware: any) {
    * Create
    *
    */
-  router.post("/", controller.createUser.bind(controller));
+
+  router.post(
+    $UserAPI.CreateUser.endpoint,
+    controller.createUser.bind(controller),
+  );
 
   /**
    * Get
    *
    */
+
   router.get(
-    userUrls.me,
+    $UserAPI.GetUserById.endpoint,
+    authenticationMiddleware,
+    controller.getUserById.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetMe.endpoint,
     authenticationMiddleware,
     controller.getMe.bind(controller),
   );
 
-  router.get(userUrls.public, controller.getPublicUserById.bind(controller));
-
   router.get(
-    userUrls.assignments,
+    $UserAPI.GetUserAssignments.endpoint,
     authenticationMiddleware,
     controller.getUserAssignments.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserEnrolledAsStudentCourses.endpoint,
+    authenticationMiddleware,
+    controller.getUserEnrolledAsStudentCourses.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserManagedCourses.endpoint,
+    authenticationMiddleware,
+    controller.getUserManagedCourses.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserEventAndCourseSchedules.endpoint,
+    authenticationMiddleware,
+    controller.getUserEventAndCourseSchedules.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserEnrolledDepartmentPrograms.endpoint,
+    authenticationMiddleware,
+    controller.getUserEnrolledDepartmentPrograms.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserManagedDepartments.endpoint,
+    authenticationMiddleware,
+    controller.getUserManagedDepartments.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserManagedDepartmentDivisions.endpoint,
+    authenticationMiddleware,
+    controller.getUserManagedDepartmentDivisions.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserReport.endpoint,
+    authenticationMiddleware,
+    controller.getUserReport.bind(controller),
   );
 
   /**
    * Update
    *
    */
+
   router.patch(
-    userUrls.basic,
+    $UserAPI.UpdateBasicUser.endpoint,
     authenticationMiddleware,
     controller.updateBasicUser.bind(controller),
   );
 
   router.patch(
-    userUrls.email,
+    $UserAPI.UpdateUserEmail.endpoint,
     authenticationMiddleware,
     controller.updateUserEmail.bind(controller),
   );
 
   router.patch(
-    userUrls.password,
+    $UserAPI.UpdateUserPassword.endpoint,
     authenticationMiddleware,
     controller.updateUserPassword.bind(controller),
   );
 
   router.patch(
-    userUrls.phoneNumber,
+    $UserAPI.UpdateUserRole.endpoint,
+    authenticationMiddleware,
+    controller.updateUserRole.bind(controller),
+  );
+
+  router.patch(
+    $UserAPI.UpdateUserPhoneNumber.endpoint,
     authenticationMiddleware,
     controller.updateUserPhoneNumber.bind(controller),
   );
@@ -81,8 +141,9 @@ export default function UserRouter(authenticationMiddleware: any) {
    * Delete
    *
    */
+
   router.delete(
-    userUrls.user,
+    $UserAPI.DeleteUser.endpoint,
     authenticationMiddleware,
     controller.deleteUser.bind(controller),
   );

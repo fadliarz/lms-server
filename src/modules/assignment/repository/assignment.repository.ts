@@ -1,78 +1,76 @@
-import { inject, injectable } from "inversify";
-import BaseAuthorization from "../../../common/class/BaseAuthorization";
+import { injectable } from "inversify";
 import {
-  CourseClassAssignmentDITypes,
+  $CourseClassAssignmentAPI,
   CourseClassAssignmentModel,
   CourseClassAssignmentResourceId,
-  CreateCourseClassAssignmentDto,
 } from "../assignment.type";
-import {
-  ICourseClassAssignmentAuthorization,
-  ICourseClassAssignmentRepository,
-} from "../assignment.interface";
-import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import {
-  PrismaDefaultTransactionConfigForRead,
-  PrismaDefaultTransactionConfigForWrite,
-} from "../../../common/constants/prismaDefaultConfig";
+import { ICourseClassAssignmentRepository } from "../assignment.interface";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import BaseRepository from "../../../common/class/BaseRepository";
 
 @injectable()
 export default class CourseClassAssignmentRepository
-  extends BaseAuthorization
+  extends BaseRepository
   implements ICourseClassAssignmentRepository
 {
-  @inject(CourseClassAssignmentDITypes.AUTHORIZATION)
-  private readonly authorization: ICourseClassAssignmentAuthorization;
-
-  private readonly prisma = PrismaClientSingleton.getInstance();
+  constructor() {
+    super();
+  }
 
   public async createAssignment(
-    resourceId: CourseClassAssignmentResourceId,
-    dto: CreateCourseClassAssignmentDto,
+    id: {
+      classId: number;
+      resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
+    },
+    data: $CourseClassAssignmentAPI.CreateAssignment.Dto,
   ): Promise<CourseClassAssignmentModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeCreateAssignment.bind(this.authorization),
-      );
-
-      const { classId } = resourceId;
-      return tx.courseClassAssignment.create({
-        data: {
-          ...dto,
-          classId,
+    if (id.resourceId) {
+      const theClass = await this.db.courseClass.findFirst({
+        where: {
+          id: id.classId,
+          course: {
+            id: id.resourceId.courseId,
+          },
         },
+        select: {},
       });
+
+      if (theClass === null) {
+        throw new RecordNotFoundException();
+      }
+    }
+
+    return this.db.courseClassAssignment.create({
+      data: { ...data, classId: id.classId },
     });
   }
 
-  public async getAssignmentById(
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-  ): Promise<CourseClassAssignmentModel | null> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeReadAssignment.bind(this.authorization),
-      );
+  public async getAssignments(id: {
+    classId: number;
+    resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
+  }): Promise<CourseClassAssignmentModel[]> {
+    return this.db.courseClassAssignment.findMany({
+      where: this.getWhereObjectForFirstLevelOperation(id),
+    });
+  }
 
-      return await tx.courseClassAssignment.findUnique({
-        where: {
-          id: assignmentId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
+  public async getAssignmentById(id: {
+    assignmentId: number;
+    resourceId?: CourseClassAssignmentResourceId;
+  }): Promise<CourseClassAssignmentModel | null> {
+    return this.db.courseClassAssignment.findUnique({
+      where: this.getWhereObjectForSecondLevelOperation(id),
+    });
   }
 
   public async getAssignmentByIdOrThrow(
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
+    id: {
+      assignmentId: number;
+      resourceId?: CourseClassAssignmentResourceId;
+    },
     error?: Error,
   ): Promise<CourseClassAssignmentModel> {
-    const assignment = await this.getAssignmentById(assignmentId, resourceId);
+    const assignment = await this.getAssignmentById(id);
 
     if (!assignment) {
       throw error || new RecordNotFoundException();
@@ -81,64 +79,74 @@ export default class CourseClassAssignmentRepository
     return assignment;
   }
 
-  public async getAssignments(
-    resourceId: CourseClassAssignmentResourceId,
-  ): Promise<CourseClassAssignmentModel[]> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeReadAssignment.bind(this.authorization),
-      );
-
-      const { classId } = resourceId;
-      return await tx.courseClassAssignment.findMany({
-        where: {
-          classId,
-        },
-      });
-    }, PrismaDefaultTransactionConfigForRead);
-  }
-
   public async updateAssignment(
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-    dto: Partial<CourseClassAssignmentModel>,
+    id: {
+      assignmentId: number;
+      resourceId?: CourseClassAssignmentResourceId;
+    },
+    data: Partial<CourseClassAssignmentModel>,
   ): Promise<CourseClassAssignmentModel> {
-    return await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeUpdateAssignment.bind(this.authorization),
-      );
-
-      return await tx.courseClassAssignment.update({
-        where: {
-          id: assignmentId,
-        },
-        data: dto,
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+    return this.db.courseClassAssignment.update({
+      where: this.getWhereObjectForSecondLevelOperation(id),
+      data,
+    });
   }
 
-  public async deleteAssignment(
-    assignmentId: number,
-    resourceId: CourseClassAssignmentResourceId,
-  ): Promise<{}> {
-    await this.prisma.$transaction(async (tx) => {
-      await this.authorize(
-        tx,
-        resourceId,
-        this.authorization.authorizeDeleteAssignment.bind(this.authorization),
-      );
+  public async deleteAssignment(id: {
+    assignmentId: number;
+    resourceId: CourseClassAssignmentResourceId;
+  }): Promise<{}> {
+    return this.db.courseClassAssignment.delete({
+      where: this.getWhereObjectForSecondLevelOperation(id),
+      select: {},
+    });
+  }
 
-      await tx.courseClassAssignment.delete({
-        where: {
-          id: assignmentId,
+  private getWhereObjectForFirstLevelOperation(id: {
+    classId: number;
+    resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
+  }):
+    | {
+        id: number;
+      }
+    | {
+        id: number;
+        course: {
+          id: number;
+        };
+      } {
+    if (id.resourceId) {
+      return {
+        id: id.classId,
+        course: {
+          id: id.resourceId.courseId,
         },
-      });
-    }, PrismaDefaultTransactionConfigForWrite);
+      };
+    }
 
-    return {};
+    return {
+      id: id.classId,
+    };
+  }
+
+  private getWhereObjectForSecondLevelOperation(id: {
+    assignmentId: number;
+    resourceId?: CourseClassAssignmentResourceId;
+  }):
+    | { id: number }
+    | { id: number; class: { id: number; course: { id: number } } } {
+    const { assignmentId, resourceId } = id;
+
+    if (resourceId) {
+      return {
+        id: assignmentId,
+        class: {
+          id: resourceId.classId,
+          course: { id: resourceId.courseId },
+        },
+      };
+    }
+
+    return { id: assignmentId };
   }
 }

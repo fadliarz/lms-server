@@ -27,20 +27,6 @@ let EventAuthorization = class EventAuthorization extends BaseAuthorization_1.de
             throw new AuthorizationException_1.default();
         }
     }
-    authorizeReadEvent(user) {
-        const { id: userId, role: userRole } = user;
-        const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
-        let isAuthorized = false;
-        if (isStudent || isInstructor || isAdmin) {
-            true;
-        }
-        if (!isAuthorized) {
-            throw new AuthorizationException_1.default();
-        }
-    }
-    authorizeReadEvents(user) {
-        this.authorizeReadEvent(user);
-    }
     authorizeUpdateEvent(user) {
         this.authorizeCreateEvent(user);
     }

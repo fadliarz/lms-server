@@ -23,88 +23,62 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const inversify_1 = require("inversify");
-const category_type_1 = require("../category.type");
-const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
-const prisma_query_raw_type_1 = require("../../../common/class/prisma_query_raw/prisma_query_raw.type");
-const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
-const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
-const InternalServerException_1 = __importDefault(require("../../../common/class/exceptions/InternalServerException"));
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-let CourseCategoryRepository = class CourseCategoryRepository {
+const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+let CourseCategoryRepository = class CourseCategoryRepository extends BaseRepository_1.default {
     constructor() {
-        this.prisma = PrismaClientSingleton_1.default.getInstance();
+        super();
     }
-    createCategory(resourceId, dto) {
+    createCategory(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeCreateCategory);
-                return yield tx.courseCategory.create({ data: dto });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+            return this.db.courseCategory.create({ data });
         });
     }
-    getCategoryById(categoryId) {
+    getCategories() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                return yield tx.courseCategory.findUnique({
-                    where: { id: categoryId },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.courseCategory.findMany();
         });
     }
-    getCategoryByIdOrThrow(categoryId, error) {
+    getCategoryById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const category = yield this.getCategoryById(categoryId);
+            return this.db.courseCategory.findUnique({
+                where: {
+                    id: id.categoryId,
+                },
+            });
+        });
+    }
+    getCategoryByIdOrThrow(id, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const category = yield this.getCategoryById(id);
             if (!category) {
                 throw new RecordNotFoundException_1.default();
             }
             return category;
         });
     }
-    getCategories() {
+    updateCategory(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                return yield tx.courseCategory.findMany();
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.courseCategory.update({
+                where: {
+                    id: id.categoryId,
+                },
+                data,
+            });
         });
     }
-    updateCategory(categoryId, resourceId, dto) {
+    deleteCategory(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeUpdateCategory.bind(this.authorization));
-                yield this.prismaQueryRaw.courseCategory.selectForUpdateByIdOrThrow(tx, categoryId);
-                return yield tx.courseCategory.update({
-                    where: {
-                        id: categoryId,
-                    },
-                    data: dto,
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-        });
-    }
-    authorize(tx, resourceId, fn) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { user: { id: userId }, } = resourceId;
-            const user = yield this.prismaQueryRaw.user.selectForUpdateByIdOrThrow(tx, userId);
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
-            if (!(isStudent || isInstructor || isAdmin)) {
-                throw new InternalServerException_1.default();
-            }
-            fn(user);
-            return {
-                user,
-            };
+            return this.db.courseCategory.delete({
+                where: {
+                    id: id.categoryId,
+                },
+            });
         });
     }
 };
-__decorate([
-    (0, inversify_1.inject)(category_type_1.CourseCategoryDITypes.AUTHORIZATION),
-    __metadata("design:type", Object)
-], CourseCategoryRepository.prototype, "authorization", void 0);
-__decorate([
-    (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
-    __metadata("design:type", Object)
-], CourseCategoryRepository.prototype, "prismaQueryRaw", void 0);
 CourseCategoryRepository = __decorate([
-    (0, inversify_1.injectable)()
+    (0, inversify_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], CourseCategoryRepository);
 exports.default = CourseCategoryRepository;

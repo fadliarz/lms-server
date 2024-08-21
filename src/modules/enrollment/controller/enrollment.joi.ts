@@ -1,12 +1,9 @@
 import Joi from "joi";
-import {
-  CreateCourseEnrollmentDto,
-  UpdateCourseEnrollmentRoleDto,
-} from "../enrollment.type";
+import { $CourseEnrollmentAPI } from "../enrollment.type";
 import { CourseEnrollmentRoleModel } from "../../course/course.type";
 
 export const CreateCourseEnrollmentDtoJoi =
-  Joi.object<CreateCourseEnrollmentDto>({
+  Joi.object<$CourseEnrollmentAPI.CreateEnrollment.Dto>({
     userId: Joi.number().required(),
     role: Joi.string()
       .required()
@@ -18,7 +15,7 @@ export const CreateCourseEnrollmentDtoJoi =
       ),
   });
 export const UpdateCourseEnrollmentRoleDtoJoi =
-  Joi.object<UpdateCourseEnrollmentRoleDto>({
+  Joi.object<$CourseEnrollmentAPI.UpdateEnrollment.Dto>({
     role: Joi.string()
       .required()
       .valid(

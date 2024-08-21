@@ -13,22 +13,23 @@ function CourseClassRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post(class_type_1.courseClassUrls.root, authenticationMiddleware, controller.createClass.bind(controller));
+    router.post(class_type_1.$CourseClassAPI.CreateClass.endpoint, authenticationMiddleware, controller.createClass.bind(controller));
     /**
      * Get
      *
      */
-    router.get(class_type_1.courseClassUrls.class, authenticationMiddleware, controller.getClassById.bind(controller));
-    router.get(class_type_1.courseClassUrls.root, authenticationMiddleware, controller.getClasses.bind(controller));
+    router.get(class_type_1.$CourseClassAPI.GetClasses.endpoint, authenticationMiddleware, controller.getClasses.bind(controller));
+    router.get(class_type_1.$CourseClassAPI.GetClassById.endpoint, authenticationMiddleware, controller.getClassById.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(class_type_1.courseClassUrls.class, authenticationMiddleware, controller.updateClass.bind(controller));
+    router.patch(class_type_1.$CourseClassAPI.UpdateClass.endpoint, authenticationMiddleware, controller.updateClass.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(class_type_1.courseClassUrls.class, authenticationMiddleware, controller.deleteClass.bind(controller));
+    router.delete(class_type_1.$CourseClassAPI.DeleteClass.endpoint, authenticationMiddleware, controller.deleteClass.bind(controller));
+    return router;
 }
 exports.default = CourseClassRouter;

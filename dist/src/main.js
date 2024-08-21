@@ -17,15 +17,26 @@ const app_1 = __importDefault(require("./app"));
 const validateEnv_1 = __importDefault(require("./common/functions/validateEnv"));
 const user_router_1 = __importDefault(require("./modules/user/router/user.router"));
 const getAuthMiddleware_1 = require("./middlewares/getAuthMiddleware");
-const user_type_1 = require("./modules/user/user.type");
 const course_router_1 = __importDefault(require("./modules/course/router/course.router"));
-const course_type_1 = require("./modules/course/course.type");
 const enrollment_router_1 = __importDefault(require("./modules/enrollment/router/enrollment.router"));
 const lesson_router_1 = __importDefault(require("./modules/lesson/router/lesson.router"));
 const video_router_1 = __importDefault(require("./modules/video/router/video.router"));
 const category_router_1 = __importDefault(require("./modules/category/router/category.router"));
-const category_type_1 = require("./modules/category/category.type");
 const PrismaClientSingleton_1 = __importDefault(require("./common/class/PrismaClientSingleton"));
+const class_router_1 = __importDefault(require("./modules/class/router/class.router"));
+const assignment_router_1 = __importDefault(require("./modules/assignment/router/assignment.router"));
+const competition_router_1 = __importDefault(require("./modules/competition/router/competition.router"));
+const scholarship_router_1 = __importDefault(require("./modules/scholarship/router/scholarship.router"));
+const schedule_router_1 = __importDefault(require("./modules/schedule/router/schedule.router"));
+const department_router_1 = __importDefault(require("./modules/department/router/department.router"));
+const division_router_1 = __importDefault(require("./modules/division/router/division.router"));
+const enrollment_router_2 = __importDefault(require("./modules/division-enrollment/router/enrollment.router"));
+const program_router_1 = __importDefault(require("./modules/program/router/program.router"));
+const assignment_router_2 = __importDefault(require("./modules/personal-assignment/router/assignment.router"));
+const enrollment_router_3 = __importDefault(require("./modules/program-enrollment/router/enrollment.router"));
+const event_router_1 = __importDefault(require("./modules/event/router/event.router"));
+const report_router_1 = __importDefault(require("./modules/report/router/report.router"));
+const completion_router_1 = __importDefault(require("./modules/assignment-completion/router/completion.router"));
 /**
  * Validate environment variables
  *
@@ -37,15 +48,27 @@ const PrismaClientSingleton_1 = __importDefault(require("./common/class/PrismaCl
  */
 const userApi = {
     router: (0, user_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: "/api/v1" + user_type_1.userUrls.root,
+    path: "/api/v1",
+};
+const personalAssignmentApi = {
+    router: (0, assignment_router_2.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const reportApi = {
+    router: (0, report_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
 };
 const courseApi = {
     router: (0, course_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: "/api/v1" + course_type_1.courseUrls.root,
+    path: "/api/v1",
+};
+const courseScheduleApi = {
+    router: (0, schedule_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
 };
 const courseCategoryApi = {
     router: (0, category_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
-    path: "/api/v1" + category_type_1.courseCategoryUrls.root,
+    path: "/api/v1",
 };
 const courseLessonApi = {
     router: (0, lesson_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
@@ -59,13 +82,71 @@ const courseLessonVideoApi = {
     router: (0, video_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
     path: "/api/v1",
 };
+const courseClassApi = {
+    router: (0, class_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const courseClassAssignmentApi = {
+    router: (0, assignment_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const courseClassAssignmentCompletionApi = {
+    router: (0, completion_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const departmentApi = {
+    router: (0, department_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const departmentDivisionApi = {
+    router: (0, division_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const departmentDivisionEnrollmentApi = {
+    router: (0, enrollment_router_2.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const departmentDivisionProgram = {
+    router: (0, program_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const departmentDivisionProgramEnrollment = {
+    router: (0, enrollment_router_3.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const event = {
+    router: (0, event_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const scholarshipApi = {
+    router: (0, scholarship_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const competitionApi = {
+    router: (0, competition_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
 const routers = [
     userApi,
+    personalAssignmentApi,
+    reportApi,
     courseApi,
+    courseScheduleApi,
     courseCategoryApi,
     courseEnrollmentApi,
     courseLessonApi,
     courseLessonVideoApi,
+    courseClassApi,
+    courseClassAssignmentApi,
+    courseClassAssignmentCompletionApi,
+    departmentApi,
+    departmentDivisionApi,
+    departmentDivisionEnrollmentApi,
+    departmentDivisionProgram,
+    departmentDivisionProgramEnrollment,
+    event,
+    scholarshipApi,
+    competitionApi,
 ];
 const port = Number(process.env.PORT) || 5000;
 /**
@@ -89,4 +170,9 @@ prisma
     .catch((error) => {
     console.log("Failed establishing a database connection!");
     console.error("error: ", error);
+});
+prisma.$on("query", (e) => {
+    console.log("Query: " + e.query);
+    console.log("Params: " + e.params);
+    console.log("Duration: " + e.duration + "ms");
 });

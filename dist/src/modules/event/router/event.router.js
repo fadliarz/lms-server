@@ -13,22 +13,23 @@ function EventRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post("/", authenticationMiddleware, controller.create.bind(controller));
+    router.post(event_type_1.$EventAPI.CreateEvent.endpoint, authenticationMiddleware, controller.createEvent.bind(controller));
     /**
      * Get
      *
      */
-    router.get("/", authenticationMiddleware, controller.getMany.bind(controller));
-    router.get(event_type_1.eventUrls.event, authenticationMiddleware, controller.getById.bind(controller));
+    router.get(event_type_1.$EventAPI.GetEvents.endpoint, authenticationMiddleware, controller.getEvents.bind(controller));
+    router.get(event_type_1.$EventAPI.GetEventById.endpoint, authenticationMiddleware, controller.getEventById.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(event_type_1.eventUrls.event, authenticationMiddleware, controller.update.bind(controller));
+    router.patch(event_type_1.$EventAPI.UpdateEvent.endpoint, authenticationMiddleware, controller.updateEvent.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(event_type_1.eventUrls.event, authenticationMiddleware, controller.delete.bind(controller));
+    router.delete(event_type_1.$EventAPI.DeleteEvent.endpoint, authenticationMiddleware, controller.deleteEvent.bind(controller));
+    return router;
 }
 exports.default = EventRouter;

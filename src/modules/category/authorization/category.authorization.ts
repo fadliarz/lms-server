@@ -28,4 +28,8 @@ export default class CourseCategoryAuthorization
   public authorizeUpdateCategory(user: UserModel): void {
     this.authorizeCreateCategory(user);
   }
+
+  public authorizeDeleteCategory(user: UserModel): void {
+    this.authorizeCreateCategory(user);
+  }
 }

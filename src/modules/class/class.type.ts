@@ -1,5 +1,58 @@
-import { UserRoleModel } from "../course/course.type";
-import { ModifyFieldWithNullToBeOptionalAndRemoveNull } from "../../common/shared.types";
+export namespace $CourseClassAPI {
+  const root = "/courses/:courseId/classes";
+  const theClass = root + "/:classId";
+
+  export namespace CreateClass {
+    export const endpoint = root;
+    export const generateUrl = (courseId: number) =>
+      `/courses/${courseId}/classes`;
+    export type Dto = {
+      title: string;
+    };
+    export type Response = {
+      data: CourseClassModel;
+    };
+  }
+
+  export namespace GetClasses {
+    export const endpoint = root;
+    export const generateUrl = (courseId: number) =>
+      `/courses/${courseId}/classes`;
+    export type Response = {
+      data: CourseClassModel[];
+    };
+  }
+
+  export namespace GetClassById {
+    export const endpoint = theClass;
+    export const generateUrl = (courseId: number, classId: number) =>
+      `/courses/${courseId}/classes/${classId}`;
+    export type Response = {
+      data: CourseClassModel;
+    };
+  }
+
+  export namespace UpdateClass {
+    export const endpoint = theClass;
+    export const generateUrl = (courseId: number, classId: number) =>
+      `/courses/${courseId}/classes/${classId}`;
+    export type Dto = {
+      title?: string;
+    };
+    export type Response = {
+      data: CourseClassModel;
+    };
+  }
+
+  export namespace DeleteClass {
+    export const endpoint = theClass;
+    export const generateUrl = (courseId: number, classId: number) =>
+      `/courses/${courseId}/classes/${classId}`;
+    export type Response = {
+      data: {};
+    };
+  }
+}
 
 export const CourseClassDITypes = {
   REPOSITORY: Symbol.for("COURSE_CLASS_REPOSITORY"),
@@ -7,15 +60,6 @@ export const CourseClassDITypes = {
   CONTROLLER: Symbol.for("COURSE_CLASS_CONTROLLER"),
   AUTHORIZATION: Symbol.for("COURSE_CLASS_AUTHORIZATION"),
 } as const;
-
-export enum courseClassUrls {
-  root = "/courses/:courseId/classes",
-  class = courseClassUrls.root + "/:classId",
-}
-
-export enum CourseClassErrorMessage {
-  CLASS_DOES_NOT_EXIST = "class doesn't exist!",
-}
 
 export type CourseClassModel = {
   id: number;
@@ -25,37 +69,6 @@ export type CourseClassModel = {
   updatedAt: Date;
 };
 
-export type ValuableCourseClassModel =
-  ModifyFieldWithNullToBeOptionalAndRemoveNull<CourseClassModel>;
-
-/**
- *
- *
- * Dto
- *
- *
- */
-
-export type CreateCourseClassDto = {
-  title: string;
-};
-
-export type UpdateCourseClassDto = {
-  title?: string;
-};
-
-/**
- *
- *
- * ResourceId
- *
- *
- */
-
 export type CourseClassResourceId = {
-  user: {
-    id: number;
-    role: UserRoleModel;
-  };
   courseId: number;
 };

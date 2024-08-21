@@ -6,4 +6,5 @@ export enum TableName {
   COURSE_LIKE = "course_like",
   COURSE_LESSON = "course_lesson",
   COURSE_LESSON_VIDEO = "course_video",
+  DEPARTMENT = "department",
 }

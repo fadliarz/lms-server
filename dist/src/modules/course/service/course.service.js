@@ -23,142 +23,132 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const inversify_1 = require("inversify");
-const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-const repository_type_1 = require("../../../common/class/repository/repository.type");
+const course_type_1 = require("../course.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
-const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
-const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
-const ClientException_1 = __importDefault(require("../../../common/class/exceptions/ClientException"));
 let CourseService = class CourseService {
-    createCourse(resourceId, dto) {
+    createCourse(id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.course.createCourse(resourceId, dto);
+                yield this.authorization.authorizeCreateCourse(id.resourceId.user);
+                return yield this.repository.createCourse(Object.assign(Object.assign({}, dto), { authorId: id.resourceId.user.id }));
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    foreignConstraint: {
-                        default: { message: "Category doesn't exist!" },
-                    },
-                    uniqueConstraint: {
-                        code: {
-                            message: "Code is already taken!",
-                        },
-                    },
-                });
+                throw (0, handleRepositoryError_1.default)(error);
             }
-        });
-    }
-    getCourseById(courseId, resourceId, query) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.getCourseByIdOrThrow(courseId, resourceId, query, new RecordNotFoundException_1.default());
         });
     }
     getCourses(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.getCourses(query);
-        });
-    }
-    getEnrolledCourses(resourceId, query) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.getEnrolledCourses(resourceId, query);
-        });
-    }
-    updateBasicCourse(courseId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.updateCourse(courseId, resourceId, dto);
-        });
-    }
-    updateCourseStatus(courseId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.course.updateCourse(courseId, resourceId, dto);
-        });
-    }
-    updateCourseCategoryId(courseId, resourceId, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.course.updateCourse(courseId, resourceId, dto);
+                return yield this.repository.getCourses(query);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    foreignConstraint: {
-                        default: { message: "Category doesn't exist!" },
-                    },
-                });
+                throw (0, handleRepositoryError_1.default)(error);
             }
         });
     }
-    updateCourseCode(courseId, resourceId, dto) {
+    getCourseById(id, query) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.course.updateCourse(courseId, resourceId, dto);
+                return yield this.repository.getCourseByIdOrThrow(id, query);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    uniqueConstraint: {
-                        default: {
-                            message: "code is already taken!",
-                        },
-                    },
-                });
+                throw (0, handleRepositoryError_1.default)(error);
             }
         });
     }
-    deleteCourse(courseId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.repository.course.deleteCourse(courseId, resourceId);
-            return {};
-        });
-    }
-    createLike(resourceId) {
+    updateCourse(id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.course.createLike(resourceId);
+                yield this.authorization.authorizeUpdateCourse(id.resourceId.user, id.courseId);
+                return yield this.repository.updateCourse(id, dto);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    uniqueConstraint: {
-                        default: { message: "Like already exists!" },
-                    },
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateCourseStatus(id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateCourse(id.resourceId.user, id.courseId);
+                return yield this.repository.updateCourse(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateCourseCategoryId(id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateCourse(id.resourceId.user, id.courseId);
+                return yield this.repository.updateCourse(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateCourseCode(id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateCourse(id.resourceId.user, id.courseId);
+                return yield this.repository.updateCourse(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    deleteCourse(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeDeleteCourse(id.resourceId.user, id.courseId);
+                return yield this.repository.deleteCourse(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    createLike(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeCreateLike(id.resourceId.user, id.resourceId.params.courseId);
+                return yield this.repository.createLike({
+                    courseId: id.resourceId.params.courseId,
+                }, {
+                    userId: id.resourceId.user.id,
                 });
             }
-        });
-    }
-    deleteLike(likeId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.validateRelationBetweenResources({
-                likeId,
-                resourceId,
-            });
-            yield this.repository.course.deleteLike(likeId, resourceId);
-            return {};
-        });
-    }
-    validateRelationBetweenResources(id) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const { likeId, resourceId } = id;
-            const { courseId, user: { id: userId, role }, } = resourceId;
-            const { isAdmin } = (0, getRoleStatus_1.default)(role);
-            const like = yield this.repository.course.getLikeById(likeId, resourceId);
-            if (!like || like.courseId !== courseId) {
-                if (!isAdmin) {
-                    throw new AuthorizationException_1.default();
-                }
-                if (!like) {
-                    throw new RecordNotFoundException_1.default("like doesn't exist!");
-                }
-                if (like.courseId !== courseId) {
-                    throw new ClientException_1.default("course_likeId doesn't match likeId!");
-                }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
             }
-            return like;
+        });
+    }
+    deleteLike(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeDeleteLike(id.resourceId.user, id.resourceId.params.courseId, id.likeId);
+                return yield this.repository.deleteLike({
+                    likeId: id.likeId,
+                });
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
 };
 __decorate([
-    (0, inversify_1.inject)(repository_type_1.RepositoryDITypes.FACADE),
-    __metadata("design:type", repository_type_1.IRepository)
+    (0, inversify_1.inject)(course_type_1.CourseDITypes.REPOSITORY),
+    __metadata("design:type", Object)
 ], CourseService.prototype, "repository", void 0);
+__decorate([
+    (0, inversify_1.inject)(course_type_1.CourseDITypes.AUTHORIZATION),
+    __metadata("design:type", Object)
+], CourseService.prototype, "authorization", void 0);
 CourseService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseService);

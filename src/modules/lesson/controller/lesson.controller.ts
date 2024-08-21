@@ -1,10 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import {
-  CourseLessonDITypes,
-  CourseLessonResourceId,
-  ValuableCourseLessonModel,
-} from "../lesson.type";
+import { CourseLessonDITypes, CourseLessonResourceId } from "../lesson.type";
 import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
@@ -12,13 +8,11 @@ import {
   UpdateBasicCourseLessonDtoJoi,
 } from "./lesson.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
-import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
-import getValuable from "../../../common/functions/removeNullFields";
 import {
   ICourseLessonController,
   ICourseLessonService,
 } from "../lesson.interface";
-import { UnauthenticatedResourceId } from "../../../common/types";
+import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 
 @injectable()
 export default class CourseLessonController implements ICourseLessonController {
@@ -33,11 +27,14 @@ export default class CourseLessonController implements ICourseLessonController {
     try {
       await validateJoi({ body: CreateCourseLessonDtoJoi })(req, res, next);
 
-      const resourceId = this.validateResourceId(req);
-      const newLesson = await this.service.createLesson(resourceId, req.body);
+      const newLesson = await this.service.createLesson(
+        getRequestUserOrThrowAuthenticationException(req),
+        { resourceId: this.validateResourceId(req) },
+        req.body,
+      );
 
       return res.status(StatusCode.RESOURCE_CREATED).json({
-        data: getValuable(newLesson) satisfies ValuableCourseLessonModel,
+        data: newLesson,
       });
     } catch (error) {
       next(error);
@@ -50,12 +47,13 @@ export default class CourseLessonController implements ICourseLessonController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const lessonId = this.validateLessonId(req);
-      const resourceId = this.validateUnauthenticatedResourceId(req);
-      const lesson = await this.service.getLessonById(lessonId, resourceId);
+      const lesson = await this.service.getLessonById({
+        lessonId: this.validateLessonId(req),
+        resourceId: this.validateResourceId(req),
+      });
 
       return res.status(StatusCode.SUCCESS).json({
-        data: getValuable(lesson) satisfies ValuableCourseLessonModel,
+        data: lesson,
       });
     } catch (error) {
       next(error);
@@ -68,20 +66,19 @@ export default class CourseLessonController implements ICourseLessonController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const resourceId = this.validateUnauthenticatedResourceId(req);
-      const lessons = await this.service.getLessons(resourceId);
+      const lessons = await this.service.getLessons({
+        resourceId: this.validateResourceId(req),
+      });
 
       return res.status(StatusCode.SUCCESS).json({
-        data: lessons.map((lesson) =>
-          getValuable(lesson),
-        ) satisfies ValuableCourseLessonModel[],
+        data: lessons,
       });
     } catch (error) {
       next(error);
     }
   }
 
-  public async updateBasicLesson(
+  public async updateLesson(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -93,16 +90,17 @@ export default class CourseLessonController implements ICourseLessonController {
         next,
       );
 
-      const lessonId = this.validateLessonId(req);
-      const resourceId = this.validateResourceId(req);
-      const updatedLesson = await this.service.updateBasicLesson(
-        lessonId,
-        resourceId,
+      const updatedLesson = await this.service.updateLesson(
+        getRequestUserOrThrowAuthenticationException(req),
+        {
+          lessonId: this.validateLessonId(req),
+          resourceId: this.validateResourceId(req),
+        },
         req.body,
       );
 
       return res.status(StatusCode.SUCCESS).json({
-        data: getValuable(updatedLesson) satisfies ValuableCourseLessonModel,
+        data: updatedLesson,
       });
     } catch (error) {
       next(error);
@@ -115,9 +113,13 @@ export default class CourseLessonController implements ICourseLessonController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const lessonId = this.validateLessonId(req);
-      const resourceId = this.validateResourceId(req);
-      await this.service.deleteLesson(lessonId, resourceId);
+      await this.service.deleteLesson(
+        getRequestUserOrThrowAuthenticationException(req),
+        {
+          lessonId: this.validateLessonId(req),
+          resourceId: this.validateResourceId(req),
+        },
+      );
 
       res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
@@ -126,22 +128,6 @@ export default class CourseLessonController implements ICourseLessonController {
   }
 
   private validateResourceId(req: Request): CourseLessonResourceId {
-    const { id: userId, role } =
-      getRequestUserOrThrowAuthenticationException(req);
-    const courseId = Number(req.params.courseId);
-    if (isNaN(courseId)) {
-      throw new NaNException("courseId");
-    }
-
-    return {
-      user: { id: userId, role },
-      courseId,
-    };
-  }
-
-  private validateUnauthenticatedResourceId(
-    req: Request,
-  ): UnauthenticatedResourceId<CourseLessonResourceId> {
     const courseId = Number(req.params.courseId);
     if (isNaN(courseId)) {
       throw new NaNException("courseId");

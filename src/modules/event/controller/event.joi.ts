@@ -1,21 +1,13 @@
 import Joi from "joi";
-import { CreateEventDto } from "../event.type";
+import { $EventAPI } from "../event.type";
 
-/**
- * Create
- *
- */
-export const CreateEventDtoJoi = Joi.object<CreateEventDto>({
+export const CreateEventDtoJoi = Joi.object<$EventAPI.CreateEvent.Dto>({
   title: Joi.string().required(),
   description: Joi.string(),
   date: Joi.date().required(),
 });
 
-/**
- * Update
- *
- */
-export const UpdateEventDtoJoi = Joi.object<CreateEventDto>({
+export const UpdateEventDtoJoi = Joi.object<$EventAPI.UpdateEvent.Dto>({
   title: Joi.string(),
   description: Joi.string(),
   date: Joi.date(),

@@ -1,202 +1,197 @@
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
+  $CourseAPI,
+  CourseDITypes,
   CourseLikeModel,
   CourseLikeResourceId,
   CourseModel,
   CourseResourceId,
-  CreateCourseDto,
-  GetCourseByIdData,
-  GetCourseByIdQuery,
-  GetCoursesData,
-  GetCoursesQuery,
-  GetEnrolledCoursesData,
-  GetEnrolledCoursesQuery,
-  UpdateBasicCourseDto,
-  UpdateCourseCategoryIdDto,
-  UpdateCourseCodeDto,
-  UpdateCourseStatusDto,
 } from "../course.type";
-import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
-import {
-  IRepository,
-  RepositoryDITypes,
-} from "../../../common/class/repository/repository.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-import getRoleStatus from "../../../common/functions/getRoleStatus";
-import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
-import ClientException from "../../../common/class/exceptions/ClientException";
-import { ICourseService } from "../course.interface";
+import {
+  ICourseAuthorization,
+  ICourseRepository,
+  ICourseService,
+} from "../course.interface";
 
 @injectable()
 export default class CourseService implements ICourseService {
-  @inject(RepositoryDITypes.FACADE)
-  private readonly repository: IRepository;
+  @inject(CourseDITypes.REPOSITORY)
+  private readonly repository: ICourseRepository;
+
+  @inject(CourseDITypes.AUTHORIZATION)
+  private readonly authorization: ICourseAuthorization;
 
   public async createCourse(
-    resourceId: CourseResourceId,
-    dto: CreateCourseDto,
+    id: { resourceId: CourseResourceId },
+    dto: $CourseAPI.CreateCourse.Dto,
   ): Promise<CourseModel> {
     try {
-      return await this.repository.course.createCourse(resourceId, dto);
-    } catch (error: any) {
-      throw handleRepositoryError(error, {
-        foreignConstraint: {
-          default: { message: "Category doesn't exist!" },
-        },
-        uniqueConstraint: {
-          code: {
-            message: "Code is already taken!",
-          },
-        },
+      await this.authorization.authorizeCreateCourse(id.resourceId.user);
+
+      return await this.repository.createCourse({
+        ...dto,
+        authorId: id.resourceId.user.id,
       });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getCourses(
+    query: $CourseAPI.GetCourses.Query,
+  ): Promise<$CourseAPI.GetCourses.Response["data"]> {
+    try {
+      return await this.repository.getCourses(query);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
   }
 
   public async getCourseById(
-    courseId: number,
-    resourceId: CourseResourceId,
-    query: GetCourseByIdQuery,
-  ): Promise<GetCourseByIdData> {
-    return await this.repository.course.getCourseByIdOrThrow(
-      courseId,
-      resourceId,
-      query,
-      new RecordNotFoundException(),
-    );
+    id: {
+      courseId: number;
+    },
+    query: $CourseAPI.GetCourseById.Query,
+  ): Promise<$CourseAPI.GetCourseById.Response["data"]> {
+    try {
+      return await this.repository.getCourseByIdOrThrow(id, query);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
-  public async getCourses(query: GetCoursesQuery): Promise<GetCoursesData> {
-    return await this.repository.course.getCourses(query);
-  }
-
-  public async getEnrolledCourses(
-    resourceId: CourseResourceId,
-    query: GetEnrolledCoursesQuery,
-  ): Promise<GetEnrolledCoursesData> {
-    return await this.repository.course.getEnrolledCourses(resourceId, query);
-  }
-
-  public async updateBasicCourse(
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateBasicCourseDto,
+  public async updateCourse(
+    id: {
+      courseId: number;
+      resourceId: CourseResourceId;
+    },
+    dto: $CourseAPI.UpdateCourse.Dto,
   ): Promise<CourseModel> {
-    return await this.repository.course.updateCourse(courseId, resourceId, dto);
+    try {
+      await this.authorization.authorizeUpdateCourse(
+        id.resourceId.user,
+        id.courseId,
+      );
+
+      return await this.repository.updateCourse(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async updateCourseStatus(
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseStatusDto,
+    id: {
+      courseId: number;
+      resourceId: CourseResourceId;
+    },
+    dto: $CourseAPI.UpdateCourseStatus.Dto,
   ): Promise<CourseModel> {
-    return await this.repository.course.updateCourse(courseId, resourceId, dto);
+    try {
+      await this.authorization.authorizeUpdateCourse(
+        id.resourceId.user,
+        id.courseId,
+      );
+
+      return await this.repository.updateCourse(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async updateCourseCategoryId(
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseCategoryIdDto,
+    id: {
+      courseId: number;
+      resourceId: CourseResourceId;
+    },
+    dto: $CourseAPI.UpdateCourseCategoryId.Dto,
   ): Promise<CourseModel> {
     try {
-      return await this.repository.course.updateCourse(
-        courseId,
-        resourceId,
-        dto,
+      await this.authorization.authorizeUpdateCourse(
+        id.resourceId.user,
+        id.courseId,
       );
+
+      return await this.repository.updateCourse(id, dto);
     } catch (error: any) {
-      throw handleRepositoryError(error, {
-        foreignConstraint: {
-          default: { message: "Category doesn't exist!" },
-        },
-      });
+      throw handleRepositoryError(error);
     }
   }
 
   public async updateCourseCode(
-    courseId: number,
-    resourceId: CourseResourceId,
-    dto: UpdateCourseCodeDto,
+    id: {
+      courseId: number;
+      resourceId: CourseResourceId;
+    },
+    dto: $CourseAPI.UpdateCourseCode.Dto,
   ): Promise<CourseModel> {
     try {
-      return await this.repository.course.updateCourse(
-        courseId,
-        resourceId,
-        dto,
+      await this.authorization.authorizeUpdateCourse(
+        id.resourceId.user,
+        id.courseId,
+      );
+
+      return await this.repository.updateCourse(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async deleteCourse(id: {
+    courseId: number;
+    resourceId: CourseResourceId;
+  }): Promise<{}> {
+    try {
+      await this.authorization.authorizeDeleteCourse(
+        id.resourceId.user,
+        id.courseId,
+      );
+
+      return await this.repository.deleteCourse(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async createLike(id: {
+    resourceId: CourseLikeResourceId;
+  }): Promise<CourseLikeModel> {
+    try {
+      await this.authorization.authorizeCreateLike(
+        id.resourceId.user,
+        id.resourceId.params.courseId,
+      );
+
+      return await this.repository.createLike(
+        {
+          courseId: id.resourceId.params.courseId,
+        },
+        {
+          userId: id.resourceId.user.id,
+        },
       );
     } catch (error: any) {
-      throw handleRepositoryError(error, {
-        uniqueConstraint: {
-          default: {
-            message: "code is already taken!",
-          },
-        },
-      });
+      throw handleRepositoryError(error);
     }
   }
 
-  public async deleteCourse(
-    courseId: number,
-    resourceId: CourseResourceId,
-  ): Promise<{}> {
-    await this.repository.course.deleteCourse(courseId, resourceId);
-
-    return {};
-  }
-
-  public async createLike(
-    resourceId: CourseLikeResourceId,
-  ): Promise<CourseLikeModel> {
-    try {
-      return await this.repository.course.createLike(resourceId);
-    } catch (error: any) {
-      throw handleRepositoryError(error, {
-        uniqueConstraint: {
-          default: { message: "Like already exists!" },
-        },
-      });
-    }
-  }
-
-  public async deleteLike(
-    likeId: number,
-    resourceId: CourseLikeResourceId,
-  ): Promise<{}> {
-    await this.validateRelationBetweenResources({
-      likeId,
-      resourceId,
-    });
-    await this.repository.course.deleteLike(likeId, resourceId);
-
-    return {};
-  }
-
-  public async validateRelationBetweenResources(id: {
+  public async deleteLike(id: {
     likeId: number;
     resourceId: CourseLikeResourceId;
-  }): Promise<CourseLikeModel | null> {
-    const { likeId, resourceId } = id;
-    const {
-      courseId,
-      user: { id: userId, role },
-    } = resourceId;
+  }): Promise<{}> {
+    try {
+      await this.authorization.authorizeDeleteLike(
+        id.resourceId.user,
+        id.resourceId.params.courseId,
+        id.likeId,
+      );
 
-    const { isAdmin } = getRoleStatus(role);
-    const like = await this.repository.course.getLikeById(likeId, resourceId);
-    if (!like || like.courseId !== courseId) {
-      if (!isAdmin) {
-        throw new AuthorizationException();
-      }
-
-      if (!like) {
-        throw new RecordNotFoundException("like doesn't exist!");
-      }
-
-      if (like.courseId !== courseId) {
-        throw new ClientException("course_likeId doesn't match likeId!");
-      }
+      return await this.repository.deleteLike({
+        likeId: id.likeId,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
-
-    return like;
   }
 }

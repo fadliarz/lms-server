@@ -1,16 +1,12 @@
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
-import {
-  CourseCategoryModel,
-  CourseCategoryResourceId,
-  CreateCourseCategoryDto,
-  UpdateBasicCourseCategoryDto,
-} from "./category.type";
+import { $CourseCategoryAPI, CourseCategoryModel } from "./category.type";
 import { CourseCategory } from "@prisma/client";
 
 export interface ICourseCategoryAuthorization {
   authorizeCreateCategory: (user: UserModel) => void;
   authorizeUpdateCategory: (user: UserModel) => void;
+  authorizeDeleteCategory: (user: UserModel) => void;
 }
 
 export interface ICourseCategoryController {
@@ -29,7 +25,12 @@ export interface ICourseCategoryController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  updateBasicCategory: (
+  updateCategory: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  deleteCategory: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -38,32 +39,43 @@ export interface ICourseCategoryController {
 
 export interface ICourseCategoryService {
   createCategory: (
-    resourceId: CourseCategoryResourceId,
-    dto: CreateCourseCategoryDto,
-  ) => Promise<CourseCategoryModel>;
-  getCategoryById: (categoryId: number) => Promise<CourseCategoryModel>;
-  getCategories: () => Promise<CourseCategoryModel[]>;
-  updateBasicCategory: (
-    categoryId: number,
-    resourceId: CourseCategoryResourceId,
-    dto: UpdateBasicCourseCategoryDto,
-  ) => Promise<CourseCategoryModel>;
+    user: UserModel,
+    dto: $CourseCategoryAPI.CreateCategory.Dto,
+  ) => Promise<$CourseCategoryAPI.CreateCategory.Response["data"]>;
+  getCategories: () => Promise<
+    $CourseCategoryAPI.GetCategories.Response["data"]
+  >;
+  getCategoryById: (id: {
+    categoryId: number;
+  }) => Promise<$CourseCategoryAPI.GetCategoryById.Response["data"]>;
+  updateCategory: (
+    user: UserModel,
+    id: { categoryId: number },
+    dto: $CourseCategoryAPI.UpdateCategory.Dto,
+  ) => Promise<$CourseCategoryAPI.UpdateCategory.Response["data"]>;
+  deleteCategory: (
+    user: UserModel,
+    id: { categoryId: number },
+  ) => Promise<$CourseCategoryAPI.DeleteCategory.Response["data"]>;
 }
 
 export interface ICourseCategoryRepository {
   createCategory: (
-    resourceId: CourseCategoryResourceId,
-    dto: CreateCourseCategoryDto,
+    data: $CourseCategoryAPI.CreateCategory.Dto,
   ) => Promise<CourseCategory>;
   getCategories: () => Promise<CourseCategory[]>;
-  getCategoryById: (categoryId: number) => Promise<CourseCategoryModel | null>;
+  getCategoryById: (id: {
+    categoryId: number;
+  }) => Promise<CourseCategoryModel | null>;
   getCategoryByIdOrThrow: (
-    categoryId: number,
+    id: { categoryId: number },
     error?: Error,
   ) => Promise<CourseCategoryModel>;
   updateCategory: (
-    categoryId: number,
-    resourceId: CourseCategoryResourceId,
-    dto: UpdateBasicCourseCategoryDto,
+    id: {
+      categoryId: number;
+    },
+    data: $CourseCategoryAPI.UpdateCategory.Dto,
   ) => Promise<CourseCategory>;
+  deleteCategory: (id: { categoryId: number }) => Promise<{}>;
 }

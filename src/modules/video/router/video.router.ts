@@ -1,8 +1,8 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { ICourseLessonVideoController } from "../controller/video.controller";
-import { CourseLessonVideoDITypes, courseLessonVideoUrls } from "../video.type";
+import { $CourseLessonVideoAPI, CourseLessonVideoDITypes } from "../video.type";
+import { ICourseLessonVideoController } from "../video.interface";
 
 export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -15,7 +15,7 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
    *
    */
   router.post(
-    courseLessonVideoUrls.root,
+    $CourseLessonVideoAPI.CreateVideo.endpoint,
     authenticationMiddleware,
     controller.createVideo.bind(controller),
   );
@@ -25,13 +25,13 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
    *
    */
   router.get(
-    courseLessonVideoUrls.root,
+    $CourseLessonVideoAPI.GetVideos.endpoint,
     authenticationMiddleware,
     controller.getVideos.bind(controller),
   );
 
   router.get(
-    courseLessonVideoUrls.video,
+    $CourseLessonVideoAPI.GetVideoById.endpoint,
     authenticationMiddleware,
     controller.getVideoById.bind(controller),
   );
@@ -41,13 +41,13 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
    *
    */
   router.patch(
-    courseLessonVideoUrls.basic,
+    $CourseLessonVideoAPI.UpdateVideo.endpoint,
     authenticationMiddleware,
-    controller.updateBasicVideo.bind(controller),
+    controller.updateVideo.bind(controller),
   );
 
   router.patch(
-    courseLessonVideoUrls.source,
+    $CourseLessonVideoAPI.UpdateVideoSource.endpoint,
     authenticationMiddleware,
     controller.updateVideoSource.bind(controller),
   );
@@ -57,7 +57,7 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
    *
    */
   router.delete(
-    courseLessonVideoUrls.video,
+    $CourseLessonVideoAPI.DeleteVideo.endpoint,
     authenticationMiddleware,
     controller.deleteVideo.bind(controller),
   );

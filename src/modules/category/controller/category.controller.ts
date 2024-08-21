@@ -1,19 +1,15 @@
 import "reflect-metadata";
 import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import {
-  CourseCategoryDITypes,
-  CourseCategoryResourceId,
-} from "../category.type";
+import { CourseCategoryDITypes } from "../category.type";
 import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseCategoryDtoJoi,
-  UpdateBasicCourseCategoryDtoJoi,
+  UpdateCourseCategoryDtoJoi,
 } from "./category.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
-import getValuable from "../../../common/functions/removeNullFields";
 import {
   ICourseCategoryController,
   ICourseCategoryService,
@@ -34,32 +30,14 @@ export default class CourseCategoryController
     try {
       await validateJoi({ body: CreateCourseCategoryDtoJoi })(req, res, next);
 
-      const resourceId = this.validateResourceId(req);
       const newCategory = await this.service.createCategory(
-        resourceId,
+        getRequestUserOrThrowAuthenticationException(req),
         req.body,
       );
 
       return res.status(StatusCode.RESOURCE_CREATED).json({
-        data: getValuable(newCategory),
+        data: newCategory,
       });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getCategoryById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      const categoryId = this.validateCategoryId(req);
-      const category = await this.service.getCategoryById(categoryId);
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json({ data: getValuable(category) });
     } catch (error) {
       next(error);
     }
@@ -73,55 +51,63 @@ export default class CourseCategoryController
     try {
       const categories = await this.service.getCategories();
 
-      return res
-        .status(StatusCode.SUCCESS)
-        .json({ data: categories.map((category) => getValuable(category)) });
+      return res.status(StatusCode.SUCCESS).json({ data: categories });
     } catch (error) {
       next(error);
     }
   }
 
-  public async updateBasicCategory(
+  public async getCategoryById(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await validateJoi({ body: UpdateBasicCourseCategoryDtoJoi })(
-        req,
-        res,
-        next,
-      );
+      const category = await this.service.getCategoryById({
+        categoryId: this.validateCategoryId(req),
+      });
 
-      const categoryId = this.validateCategoryId(req);
-      const resourceId = this.validateResourceId(req);
-      const updatedCategory = await this.service.updateBasicCategory(
-        categoryId,
-        resourceId,
-        req.body,
-      );
-
-      return res
-        .status(StatusCode.SUCCESS)
-        .json({ data: getValuable(updatedCategory) });
+      return res.status(StatusCode.SUCCESS).json({ data: category });
     } catch (error) {
       next(error);
     }
   }
 
-  private validateResourceId(
+  public async updateCategory(
     req: Request,
-    error?: Error,
-  ): CourseCategoryResourceId {
-    const { id: userId, role } =
-      getRequestUserOrThrowAuthenticationException(req);
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateCourseCategoryDtoJoi })(req, res, next);
 
-    return {
-      user: {
-        id: userId,
-        role,
-      },
-    };
+      const updatedCategory = await this.service.updateCategory(
+        getRequestUserOrThrowAuthenticationException(req),
+        { categoryId: this.validateCategoryId(req) },
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: updatedCategory });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async deleteCategory(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await this.service.deleteCategory(
+        getRequestUserOrThrowAuthenticationException(req),
+        { categoryId: this.validateCategoryId(req) },
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: {} });
+    } catch (error) {
+      next(error);
+    }
   }
 
   private validateCategoryId(req: Request, error?: Error): number {

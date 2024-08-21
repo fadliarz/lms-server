@@ -31,8 +31,22 @@ const inversify_1 = require("inversify");
 const prisma_query_raw_type_1 = require("./prisma_query_raw/prisma_query_raw.type");
 const AuthenticationException_1 = __importDefault(require("./exceptions/AuthenticationException"));
 const RecordNotFoundException_1 = __importDefault(require("./exceptions/RecordNotFoundException"));
+const repository_type_1 = require("./repository/repository.type");
 exports.BaseAuthorizationDITypes = Symbol.for("COMMON_CLASS_BASE_AUTHORIZATION");
 let BaseAuthorization = class BaseAuthorization {
+    authorizeFromDepartmentDivision(userId, privilege) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.globalRepository.user.getUserAuthorizationStatusFromPrivilege({ userId }, privilege);
+        });
+    }
+    isAuthor(userId, courseId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const author = yield this.globalRepository.course.getCourseAuthorByIdOrThrow({
+                courseId,
+            }, { minimalist: true });
+            return !!(author && author.id === userId);
+        });
+    }
     authorizeUserRole(tx, resourceId, fn) {
         return __awaiter(this, void 0, void 0, function* () {
             const { user: { id: userId }, } = resourceId;
@@ -91,6 +105,10 @@ let BaseAuthorization = class BaseAuthorization {
         }
     }
 };
+__decorate([
+    (0, inversify_1.inject)(repository_type_1.RepositoryDITypes.FACADE),
+    __metadata("design:type", repository_type_1.IRepository)
+], BaseAuthorization.prototype, "globalRepository", void 0);
 __decorate([
     (0, inversify_1.inject)(prisma_query_raw_type_1.PrismaQueryRawDITypes.PRISMA_QUERY_RAW),
     __metadata("design:type", Object)

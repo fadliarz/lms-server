@@ -1,12 +1,10 @@
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
+  $CourseAPI,
   CourseDITypes,
   CourseLikeResourceId,
   CourseResourceId,
-  GetCourseByIdQuery,
-  GetCoursesQuery,
-  GetEnrolledCoursesQuery,
 } from "../course.type";
 import { NextFunction, Request, Response } from "express-serve-static-core";
 import { StatusCode } from "../../../common/constants/statusCode";
@@ -17,15 +15,14 @@ import {
   CreateCourseLikeDtoJoi,
   GetCourseByIdQueryJoi,
   GetCoursesQueryJoi,
-  GetEnrolledCoursesQueryJoi,
-  UpdateBasicCourseDtoJoi,
   UpdateCourseCategoryIdDtoJoi,
   UpdateCourseCodeDtoJoi,
+  UpdateCourseDtoJoi,
   UpdateCourseStatusDtoJoi,
 } from "./course.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
-import processBoolean from "../../../common/functions/processBoolean";
 import { ICourseController, ICourseService } from "../course.interface";
+import convertStringToBoolean from "../../../common/functions/convertStringToBoolean";
 
 @injectable()
 export default class CourseController implements ICourseController {
@@ -41,9 +38,43 @@ export default class CourseController implements ICourseController {
       await validateJoi({ body: CreateCourseDtoJoi })(req, res, next);
 
       const resourceId = this.validateResourceId(req);
-      const newCourse = await this.service.createCourse(resourceId, req.body);
+      const newCourse = await this.service.createCourse(
+        { resourceId },
+        req.body,
+      );
 
       return res.status(StatusCode.RESOURCE_CREATED).json({ data: newCourse });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getCourses(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
+
+      const reqQuery = req.query as Record<
+        keyof $CourseAPI.GetCourses.Query,
+        any
+      >;
+      const query: $CourseAPI.GetCourses.Query = {
+        include_author: convertStringToBoolean(reqQuery.include_author),
+        include_category: convertStringToBoolean(reqQuery.include_category),
+        pageSize: !isNaN(reqQuery.pageSize)
+          ? Number(reqQuery.pageSize)
+          : undefined,
+        pageNumber: !isNaN(reqQuery.pageNumber)
+          ? Number(reqQuery.pageNumber)
+          : undefined,
+      };
+
+      const courses = await this.service.getCourses(query);
+
+      return res.status(StatusCode.SUCCESS).json({ data: courses });
     } catch (error) {
       next(error);
     }
@@ -58,85 +89,44 @@ export default class CourseController implements ICourseController {
       await validateJoi({ query: GetCourseByIdQueryJoi })(req, res, next);
 
       const courseId = this.validateCourseId(req);
-      const resourceId = {} as CourseResourceId;
-      const query = req.query as unknown as GetCourseByIdQuery;
-      query.include_author = processBoolean(query.include_author as any);
-      query.include_category = processBoolean(query.include_category as any);
-      query.include_public_videos = processBoolean(
-        query.include_public_videos as any,
-      );
-      const course = await this.service.getCourseById(
-        courseId,
-        resourceId,
-        query,
-      );
+      const reqQuery = req.query as {
+        [K in keyof $CourseAPI.GetCourseById.Query]: string | undefined;
+      };
+      const query: $CourseAPI.GetCourseById.Query = {
+        include_author: convertStringToBoolean(reqQuery.include_author),
+        include_category: convertStringToBoolean(reqQuery.include_category),
+        include_lessons: convertStringToBoolean(reqQuery.include_lessons),
+        include_public_videos: convertStringToBoolean(
+          reqQuery.include_public_videos,
+        ),
+      };
 
-      res.status(StatusCode.SUCCESS).json({ data: course });
+      const course = await this.service.getCourseById({ courseId }, query);
+
+      res.status(StatusCode.SUCCESS).json({
+        data: course,
+      });
     } catch (error) {
       next(error);
     }
   }
 
-  public async getCourses(
+  public async updateCourse(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
-
-      const query = req.query as any as GetCoursesQuery;
-      query.include_author = processBoolean(query.include_author as any);
-      query.include_category = processBoolean(query.include_category as any);
-      query.pageNumber = Number(query.pageNumber);
-      query.pageSize = Number(query.pageSize);
-      const courses = await this.service.getCourses(query);
-
-      return res.status(StatusCode.SUCCESS).json({ data: courses });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async getEnrolledCourses(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      await validateJoi({ query: GetEnrolledCoursesQueryJoi })(req, res, next);
-
-      const query = req.query as unknown as GetEnrolledCoursesQuery;
-      query.limit_student_courses = query.limit_student_courses
-        ? Number(query.limit_student_courses)
-        : 3;
-      query.limit_instructor_courses = query.limit_instructor_courses
-        ? Number(query.limit_instructor_courses)
-        : 3;
-      query.include_author = processBoolean(query.include_author as any);
-      query.include_category = processBoolean(query.include_category as any);
-      const resourceId = this.validateResourceId(req);
-      const courses = await this.service.getEnrolledCourses(resourceId, query);
-
-      return res.status(StatusCode.SUCCESS).json({ data: courses });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async updateBasicCourse(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      await validateJoi({ body: UpdateBasicCourseDtoJoi })(req, res, next);
+      await validateJoi({ body: UpdateCourseDtoJoi })(req, res, next);
 
       const courseId = this.validateCourseId(req);
       const resourceId = this.validateResourceId(req);
-      const updatedCourse = await this.service.updateBasicCourse(
-        courseId,
-        resourceId,
+
+      const updatedCourse = await this.service.updateCourse(
+        {
+          courseId,
+          resourceId,
+        },
         req.body,
       );
 
@@ -156,9 +146,12 @@ export default class CourseController implements ICourseController {
 
       const courseId = this.validateCourseId(req);
       const resourceId = this.validateResourceId(req);
+
       const updatedCourse = await this.service.updateCourseStatus(
-        courseId,
-        resourceId,
+        {
+          courseId,
+          resourceId,
+        },
         req.body,
       );
 
@@ -178,9 +171,12 @@ export default class CourseController implements ICourseController {
 
       const courseId = this.validateCourseId(req);
       const resourceId = this.validateResourceId(req);
+
       const updatedCourse = await this.service.updateCourseCategoryId(
-        courseId,
-        resourceId,
+        {
+          courseId,
+          resourceId,
+        },
         req.body,
       );
 
@@ -200,9 +196,12 @@ export default class CourseController implements ICourseController {
 
       const courseId = this.validateCourseId(req);
       const resourceId = this.validateResourceId(req);
+
       const updatedCourse = await this.service.updateCourseCode(
-        courseId,
-        resourceId,
+        {
+          courseId,
+          resourceId,
+        },
         req.body,
       );
 
@@ -220,7 +219,8 @@ export default class CourseController implements ICourseController {
     try {
       const courseId = this.validateCourseId(req);
       const resourceId = this.validateResourceId(req);
-      await this.service.deleteCourse(courseId, resourceId);
+
+      await this.service.deleteCourse({ courseId, resourceId });
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
@@ -237,7 +237,8 @@ export default class CourseController implements ICourseController {
       await validateJoi({ body: CreateCourseLikeDtoJoi })(req, res, next);
 
       const resourceId = this.validateLikeResourceId(req);
-      const newLike = await this.service.createLike(resourceId);
+
+      const newLike = await this.service.createLike({ resourceId });
 
       return res.status(StatusCode.RESOURCE_CREATED).json({ data: newLike });
     } catch (error) {
@@ -253,7 +254,8 @@ export default class CourseController implements ICourseController {
     try {
       const likeId = this.validateLikeId(req);
       const resourceId = this.validateLikeResourceId(req);
-      await this.service.deleteLike(likeId, resourceId);
+
+      await this.service.deleteLike({ likeId, resourceId });
 
       return res.status(StatusCode.SUCCESS).json({ data: {} });
     } catch (error) {
@@ -262,31 +264,23 @@ export default class CourseController implements ICourseController {
   }
 
   private validateResourceId(req: Request, error?: Error): CourseResourceId {
-    const { id: userId, role } =
-      getRequestUserOrThrowAuthenticationException(req);
+    const user = getRequestUserOrThrowAuthenticationException(req);
 
     return {
-      user: {
-        id: userId,
-        role,
-      },
+      user,
     };
   }
 
   private validateLikeResourceId(req: Request): CourseLikeResourceId {
-    const { id: userId, role } =
-      getRequestUserOrThrowAuthenticationException(req);
+    const user = getRequestUserOrThrowAuthenticationException(req);
     const courseId = Number(req.params.courseId);
     if (isNaN(courseId)) {
       throw new NaNException("courseId");
     }
 
     return {
-      user: {
-        id: userId,
-        role,
-      },
-      courseId,
+      user,
+      params: { courseId },
     };
   }
 

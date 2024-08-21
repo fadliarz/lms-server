@@ -1,90 +1,102 @@
 import { inject, injectable } from "inversify";
 import {
+  $CourseLessonAPI,
   CourseLessonDITypes,
   CourseLessonModel,
   CourseLessonResourceId,
-  CreateCourseLessonDto,
-  UpdateBasicCourseLessonDto,
 } from "../lesson.type";
-import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import {
+  ICourseLessonAuthorization,
   ICourseLessonRepository,
   ICourseLessonService,
 } from "../lesson.interface";
 import { UnauthenticatedResourceId } from "../../../common/types";
+import { UserModel } from "../../user/user.type";
 
 @injectable()
 export default class CourseLessonService implements ICourseLessonService {
   @inject(CourseLessonDITypes.REPOSITORY)
   private readonly repository: ICourseLessonRepository;
 
+  @inject(CourseLessonDITypes.AUTHORIZATION)
+  private readonly authorization: ICourseLessonAuthorization;
+
   public async createLesson(
-    resourceId: CourseLessonResourceId,
-    dto: CreateCourseLessonDto,
+    user: UserModel,
+    id: { resourceId: CourseLessonResourceId },
+    dto: $CourseLessonAPI.CreateLesson.Dto,
   ): Promise<CourseLessonModel> {
     try {
-      return await this.repository.createLesson(resourceId, dto);
+      await this.authorization.authorizeCreateLesson(
+        user,
+        id.resourceId.courseId,
+      );
+
+      return await this.repository.createLesson(
+        { courseId: id.resourceId.courseId },
+        dto,
+      );
     } catch (error: any) {
-      throw handleRepositoryError(error, {
-        foreignConstraint: {
-          default: { message: "Course doesn't exist!" },
-        },
-      });
+      throw handleRepositoryError(error, {});
     }
   }
 
-  public async getLessonById(
-    lessonId: number,
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ): Promise<CourseLessonModel> {
-    const lesson = await this.validateRelationBetweenResources({
-      lessonId,
-      resourceId,
-    });
-
-    return lesson;
-  }
-
-  public async getLessons(
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ): Promise<CourseLessonModel[]> {
-    return await this.repository.getLessons(resourceId);
-  }
-
-  public async updateBasicLesson(
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-    dto: UpdateBasicCourseLessonDto,
-  ): Promise<CourseLessonModel> {
-    await this.validateRelationBetweenResources({ lessonId, resourceId });
-
-    return await this.repository.updateLesson(lessonId, resourceId, dto);
-  }
-
-  public async deleteLesson(
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-  ): Promise<{}> {
-    await this.validateRelationBetweenResources({ lessonId, resourceId });
-
-    await this.repository.deleteLesson(lessonId, resourceId);
-
-    return {};
-  }
-
-  public async validateRelationBetweenResources(id: {
+  public async getLessonById(id: {
     lessonId: number;
     resourceId: UnauthenticatedResourceId<CourseLessonResourceId>;
   }): Promise<CourseLessonModel> {
-    const { lessonId, resourceId } = id;
-    const { courseId } = resourceId;
-    const lesson = await this.repository.getLessonById(lessonId, resourceId);
-
-    if (!lesson || lesson.courseId !== courseId) {
-      throw new RecordNotFoundException();
+    try {
+      return await this.repository.getLessonByIdOrThrow(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
+  }
 
-    return lesson;
+  public async getLessons(id: {
+    resourceId: CourseLessonResourceId;
+  }): Promise<CourseLessonModel[]> {
+    return await this.repository.getLessons({
+      courseId: id.resourceId.courseId,
+    });
+  }
+
+  public async updateLesson(
+    user: UserModel,
+    id: {
+      lessonId: number;
+      resourceId: CourseLessonResourceId;
+    },
+    dto: $CourseLessonAPI.UpdateLesson.Response["data"],
+  ): Promise<CourseLessonModel> {
+    try {
+      await this.authorization.authorizeUpdateLesson(
+        user,
+        id.resourceId.courseId,
+      );
+
+      return await this.repository.updateLesson(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async deleteLesson(
+    user: UserModel,
+    id: {
+      lessonId: number;
+      resourceId: CourseLessonResourceId;
+    },
+  ): Promise<{}> {
+    try {
+      await this.authorization.authorizeDeleteLesson(
+        user,
+        id.resourceId.courseId,
+      );
+
+      return await this.repository.deleteLesson(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 }

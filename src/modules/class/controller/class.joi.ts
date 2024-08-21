@@ -1,18 +1,12 @@
-import { CreateCourseClassDto, UpdateCourseClassDto } from "../class.type";
 import Joi from "joi";
+import { $CourseClassAPI } from "../class.type";
 
-/**
- * Create
- *
- */
-export const CreateCourseClassDtoJoi = Joi.object<CreateCourseClassDto>({
-  title: Joi.string().required(),
-});
+export const CreateCourseClassDtoJoi =
+  Joi.object<$CourseClassAPI.CreateClass.Dto>({
+    title: Joi.string().required(),
+  });
 
-/**
- * Update
- *
- */
-export const UpdateCourseClassDtoJoi = Joi.object<UpdateCourseClassDto>({
-  title: Joi.string(),
-});
+export const UpdateCourseClassDtoJoi =
+  Joi.object<$CourseClassAPI.UpdateClass.Dto>({
+    title: Joi.string(),
+  });

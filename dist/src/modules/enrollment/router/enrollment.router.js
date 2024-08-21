@@ -14,17 +14,17 @@ function CourseEnrollmentRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post(enrollment_type_1.courseEnrollmentUrls.root, authenticationMiddleware, controller.createEnrollment.bind(controller));
+    router.post(enrollment_type_1.$CourseEnrollmentAPI.CreateEnrollment.endpoint, authenticationMiddleware, controller.createEnrollment.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(enrollment_type_1.courseEnrollmentUrls.role, authenticationMiddleware, controller.updateEnrollmentRole.bind(controller));
+    router.patch(enrollment_type_1.$CourseEnrollmentAPI.UpdateEnrollment.endpoint, authenticationMiddleware, controller.updateEnrollment.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(enrollment_type_1.courseEnrollmentUrls.enrollment, authenticationMiddleware, controller.deleteEnrollment.bind(controller));
+    router.delete(enrollment_type_1.$CourseEnrollmentAPI.DeleteEnrollment.endpoint, authenticationMiddleware, controller.deleteEnrollment.bind(controller));
     return router;
 }
 exports.default = CourseEnrollmentRouter;

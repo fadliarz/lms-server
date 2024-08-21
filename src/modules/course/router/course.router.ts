@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { CourseDITypes, courseUrls } from "../course.type";
+import { $CourseAPI, CourseDITypes } from "../course.type";
 import { ICourseController } from "../course.interface";
 
 export default function CourseRouter(authenticationMiddleware: any) {
@@ -15,14 +15,15 @@ export default function CourseRouter(authenticationMiddleware: any) {
    * CreateCourse
    *
    */
+
   router.post(
-    "/",
+    $CourseAPI.CreateCourse.endpoint,
     authenticationMiddleware,
     controller.createCourse.bind(controller),
   );
 
   router.post(
-    courseUrls.likes,
+    $CourseAPI.CreateLike.endpoint,
     authenticationMiddleware,
     controller.createLike.bind(controller),
   );
@@ -31,40 +32,42 @@ export default function CourseRouter(authenticationMiddleware: any) {
    * Get
    *
    */
-  router.get("/", controller.getCourses.bind(controller));
 
   router.get(
-    courseUrls.enrolled,
-    authenticationMiddleware,
-    controller.getEnrolledCourses.bind(controller),
+    $CourseAPI.GetCourses.endpoint,
+    controller.getCourses.bind(controller),
   );
 
-  router.get(courseUrls.course, controller.getCourseById.bind(controller));
+  router.get(
+    $CourseAPI.GetCourseById.endpoint,
+    controller.getCourseById.bind(controller),
+  );
 
   /**
    * Update
    *
    */
+
   router.patch(
-    courseUrls.basic,
+    $CourseAPI.UpdateCourse.endpoint,
     authenticationMiddleware,
-    controller.updateBasicCourse.bind(controller),
+    controller.updateCourse.bind(controller),
   );
 
   router.patch(
-    courseUrls.status,
+    $CourseAPI.UpdateCourseStatus.endpoint,
     authenticationMiddleware,
     controller.updateCourseStatus.bind(controller),
   );
 
   router.patch(
-    courseUrls.category,
+    $CourseAPI.UpdateCourseCategoryId.endpoint,
     authenticationMiddleware,
     controller.updateCourseCategoryId.bind(controller),
   );
 
   router.patch(
-    courseUrls.code,
+    $CourseAPI.UpdateCourseCode.endpoint,
     authenticationMiddleware,
     controller.updateCourseCode.bind(controller),
   );
@@ -73,14 +76,15 @@ export default function CourseRouter(authenticationMiddleware: any) {
    * Delete
    *
    */
+
   router.delete(
-    courseUrls.course,
+    $CourseAPI.DeleteCourse.endpoint,
     authenticationMiddleware,
     controller.deleteCourse.bind(controller),
   );
 
   router.delete(
-    courseUrls.like,
+    $CourseAPI.DeleteLike.endpoint,
     authenticationMiddleware,
     controller.deleteLike.bind(controller),
   );

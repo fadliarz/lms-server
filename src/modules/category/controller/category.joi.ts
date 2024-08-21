@@ -1,22 +1,12 @@
 import Joi from "joi";
-import {
-  CreateCourseCategoryDto,
-  UpdateBasicCourseCategoryDto,
-} from "../category.type";
+import { $CourseCategoryAPI } from "../category.type";
 
-/**
- * CreateCourseCategory
- *
- */
-export const CreateCourseCategoryDtoJoi = Joi.object<CreateCourseCategoryDto>({
-  title: Joi.string().required(),
-});
+export const CreateCourseCategoryDtoJoi =
+  Joi.object<$CourseCategoryAPI.CreateCategory.Dto>({
+    title: Joi.string().required(),
+  });
 
-/**
- * UpdateCourseCategory
- *
- */
-export const UpdateBasicCourseCategoryDtoJoi =
-  Joi.object<UpdateBasicCourseCategoryDto>({
+export const UpdateCourseCategoryDtoJoi =
+  Joi.object<$CourseCategoryAPI.UpdateCategory.Dto>({
     title: Joi.string(),
   });

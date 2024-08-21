@@ -1,6 +1,6 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { CourseClassDITypes, courseClassUrls } from "../class.type";
+import { $CourseClassAPI, CourseClassDITypes } from "../class.type";
 import { ICourseClassController } from "../class.interface";
 
 export default function CourseClassRouter(authenticationMiddleware: any) {
@@ -14,8 +14,9 @@ export default function CourseClassRouter(authenticationMiddleware: any) {
    * Create
    *
    */
+
   router.post(
-    courseClassUrls.root,
+    $CourseClassAPI.CreateClass.endpoint,
     authenticationMiddleware,
     controller.createClass.bind(controller),
   );
@@ -24,24 +25,26 @@ export default function CourseClassRouter(authenticationMiddleware: any) {
    * Get
    *
    */
+
   router.get(
-    courseClassUrls.class,
+    $CourseClassAPI.GetClasses.endpoint,
     authenticationMiddleware,
-    controller.getClassById.bind(controller),
+    controller.getClasses.bind(controller),
   );
 
   router.get(
-    courseClassUrls.root,
+    $CourseClassAPI.GetClassById.endpoint,
     authenticationMiddleware,
-    controller.getClasses.bind(controller),
+    controller.getClassById.bind(controller),
   );
 
   /**
    * Update
    *
    */
+
   router.patch(
-    courseClassUrls.class,
+    $CourseClassAPI.UpdateClass.endpoint,
     authenticationMiddleware,
     controller.updateClass.bind(controller),
   );
@@ -50,9 +53,12 @@ export default function CourseClassRouter(authenticationMiddleware: any) {
    * Delete
    *
    */
+
   router.delete(
-    courseClassUrls.class,
+    $CourseClassAPI.DeleteClass.endpoint,
     authenticationMiddleware,
     controller.deleteClass.bind(controller),
   );
+
+  return router;
 }

@@ -49,7 +49,7 @@ export default class CourseEnrollmentController
     }
   }
 
-  public async updateEnrollmentRole(
+  public async updateEnrollment(
     req: Request,
     res: Response,
     next: NextFunction,
@@ -63,7 +63,7 @@ export default class CourseEnrollmentController
 
       const enrollmentId = this.validateEnrollmentId(req);
       const resourceId = this.validateResourceId(req);
-      const updatedEnrollment = await this.service.updateEnrollmentRole(
+      const updatedEnrollment = await this.service.updateEnrollment(
         enrollmentId,
         resourceId,
         req.body,
@@ -97,15 +97,15 @@ export default class CourseEnrollmentController
     req: Request,
     error?: Error,
   ): CourseEnrollmentResourceId {
-    const { id: userId } = getRequestUserOrThrowAuthenticationException(req);
+    const user = getRequestUserOrThrowAuthenticationException(req);
     const courseId = Number(req.params.courseId);
     if (isNaN(courseId)) {
       throw error || new NaNException("courseId");
     }
 
     return {
-      userId,
-      courseId,
+      user,
+      params: { courseId },
     };
   }
 

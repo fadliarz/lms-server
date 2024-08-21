@@ -2,5 +2,7 @@ node_modules
 coverage
 .vscode
 .env
+.env.prod
 dist
 prod
+playground.ts

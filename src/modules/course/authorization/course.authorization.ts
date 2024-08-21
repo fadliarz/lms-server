@@ -2,9 +2,8 @@ import "reflect-metadata";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import { injectable } from "inversify";
-import { UserModel } from "../../user/user.type";
-import { CourseEnrollmentRoleModel, CourseModel } from "../course.type";
-import { CourseEnrollmentModel } from "../../enrollment/enrollment.type";
+import { PrivilegeModel, UserModel } from "../../user/user.type";
+import { CourseEnrollmentRoleModel } from "../course.type";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
 import { ICourseAuthorization } from "../course.interface";
@@ -14,11 +13,15 @@ export default class CourseAuthorization
   extends BaseAuthorization
   implements ICourseAuthorization
 {
-  public authorizeCreateCourse(user: UserModel): void {
-    const { id: userId, role: userRole } = user;
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(userRole);
+  public async authorizeCreateCourse(user: UserModel): Promise<void> {
+    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+
     let isAuthorized = false;
     if (isStudent) {
+      isAuthorized = await this.authorizeFromDepartmentDivision(
+        user.id,
+        PrivilegeModel.COURSE,
+      );
     }
 
     if (isInstructor || isAdmin) {
@@ -30,64 +33,44 @@ export default class CourseAuthorization
     }
   }
 
-  public authorizeUpdateBasicCourse(
+  public async authorizeUpdateCourse(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-
-    this.validateUnexpectedScenarios(user, course, enrollment);
+    courseId: number,
+  ): Promise<void> {
+    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+    const isAuthor = await this.isAuthor(user.id, courseId);
 
     let isAuthorized = false;
-    if (isStudent) {
-    }
-
-    if (isInstructor) {
-      if (
-        isAuthor ||
-        (enrollment &&
-          isEqualOrIncludeCourseEnrollmentRole(
-            enrollment.role,
-            CourseEnrollmentRoleModel.INSTRUCTOR,
-          ))
-      ) {
-        isAuthorized = true;
-      }
-    }
-
-    if (isAdmin) {
-      isAuthorized = true;
-    }
-
-    if (!isAuthorized) {
-      throw new AuthorizationException();
-    }
-  }
-
-  public authorizeDeleteCourse(
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-
-    this.validateUnexpectedScenarios(user, course, enrollment);
-
-    let isAuthorized = false;
-    if (isStudent) {
-    }
-
-    if (isInstructor) {
+    if (isStudent || isInstructor) {
       if (isAuthor) {
         isAuthorized = true;
       }
+
+      if (!isAuthorized) {
+        isAuthorized = await this.authorizeFromDepartmentDivision(
+          user.id,
+          PrivilegeModel.COURSE,
+        );
+      }
+
+      if (!isAuthorized && isInstructor) {
+        const enrollment =
+          await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
+            {
+              userId: user.id,
+              courseId: courseId,
+            },
+          );
+        if (
+          enrollment &&
+          isEqualOrIncludeCourseEnrollmentRole(
+            enrollment.role,
+            CourseEnrollmentRoleModel.INSTRUCTOR,
+          )
+        ) {
+          isAuthorized = true;
+        }
+      }
     }
 
     if (isAdmin) {
@@ -99,20 +82,28 @@ export default class CourseAuthorization
     }
   }
 
-  public authorizeCreateLike(
+  public async authorizeDeleteCourse(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    courseId: number,
+  ): Promise<void> {
+    await this.authorizeUpdateCourse(user, courseId);
+  }
 
-    this.validateUnexpectedScenarios(user, course, enrollment);
+  public async authorizeCreateLike(
+    user: UserModel,
+    courseId: number,
+  ): Promise<void> {
+    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
     if (isStudent || isInstructor || isAdmin) {
+      const enrollment =
+        await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
+          {
+            userId: user.id,
+            courseId: courseId,
+          },
+        );
       if (
         enrollment &&
         isEqualOrIncludeCourseEnrollmentRole(
@@ -129,11 +120,31 @@ export default class CourseAuthorization
     }
   }
 
-  public authorizeDeleteLike(
+  public async authorizeDeleteLike(
     user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    return this.authorizeCreateLike(user, course, enrollment);
+    courseId: number,
+    likeId: number,
+  ): Promise<void> {
+    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+
+    let isAuthorized = false;
+    if (isStudent || isInstructor || isAdmin) {
+      const like = await this.globalRepository.course.getLikeByIdOrThrow({
+        likeId,
+        resourceId: { courseId },
+      });
+
+      if (isAdmin) {
+        isAuthorized = true;
+      }
+
+      if (like.userId == user.id) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
   }
 }

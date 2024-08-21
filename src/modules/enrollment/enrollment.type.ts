@@ -1,4 +1,45 @@
 import { CourseEnrollmentRoleModel } from "../course/course.type";
+import { UserModel } from "../user/user.type";
+
+export namespace $CourseEnrollmentAPI {
+  const root = "/courses/:courseId/enrollments";
+  const enrollment = root + "/:enrollmentId";
+
+  export namespace CreateEnrollment {
+    export const endpoint = root;
+    export const generateUrl = (courseId: number) =>
+      `/courses/${courseId}/enrollments`;
+    export type Dto = {
+      userId: number;
+      role: CourseEnrollmentRoleModel;
+    };
+    export type Response = {
+      data: CourseEnrollmentModel;
+    };
+  }
+
+  export namespace UpdateEnrollment {
+    export const endpoint = enrollment;
+    export const generateUrl = (courseId: number, enrollmentId: number) =>
+      `/courses/${courseId}/enrollments/${enrollmentId}`;
+    export type Dto = {
+      role: CourseEnrollmentRoleModel;
+    };
+    export type Response = {
+      data: CourseEnrollmentModel;
+    };
+  }
+
+  export namespace DeleteEnrollment {
+    export const endpoint = enrollment;
+    export const generateUrl = (courseId: number, enrollmentId: number) =>
+      `/courses/${courseId}/enrollments/${enrollmentId}`;
+
+    export type Response = {
+      data: {};
+    };
+  }
+}
 
 export const CourseEnrollmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_ENROLLMENT_REPOSITORY"),
@@ -7,28 +48,6 @@ export const CourseEnrollmentDITypes = {
   AUTHORIZATION: Symbol.for("COURSE_ENROLLMENT_AUTHORIZATION"),
 } as const;
 
-export enum courseEnrollmentUrls {
-  root = "/courses/:courseId/enrollments",
-  enrollment = courseEnrollmentUrls.root + "/:enrollmentId",
-  role = courseEnrollmentUrls.enrollment + "/role",
-}
-
-export enum CourseEnrollmentErrorMessage {
-  ENROLLMENT_DOES_NOT_EXIST = "enrollment doesn't exist!",
-  UNEXPECTED_SCENARIO = "unexpected scenario, please submit a ticket!",
-  STUDENT_SHOULD_NOT_ENROLLED_AS_INSTRUCTOR = "user with role STUDENT can't be enrolled as INSTRUCTOR on a course!",
-  AUTHOR_SHOULD_NOT_BE_ENROLLED = "author should not be enrolled!",
-  TARGET_USER_DOES_NOT_EXIST = "target user doesn't exist!",
-  TARGET_USER_IS_ALREADY_ENROLLED = "target user is already enrolled!",
-}
-
-/**
- *
- *
- * Model
- *
- *
- */
 export type CourseEnrollmentModel = {
   id: number;
   userId: number;
@@ -39,32 +58,9 @@ export type CourseEnrollmentModel = {
   updatedAt: Date;
 };
 
-/**
- *
- *
- * Dto
- *
- *
- */
-
-/**
- * Dto CreateEnrollment
- *
- */
-export type CreateCourseEnrollmentDto = {
-  userId: number;
-  role: CourseEnrollmentRoleModel;
-};
-
-export type UpdateCourseEnrollmentRoleDto = {
-  role: CourseEnrollmentRoleModel;
-};
-
-/**
- * ResourceId CourseEnrollment
- *
- */
 export type CourseEnrollmentResourceId = {
-  userId: number;
-  courseId: number;
+  user: UserModel;
+  params: {
+    courseId: number;
+  };
 };

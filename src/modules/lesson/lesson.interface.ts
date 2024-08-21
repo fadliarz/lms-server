@@ -1,31 +1,15 @@
 import { UserModel } from "../user/user.type";
-import { CourseModel } from "../course/course.type";
-import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 import { NextFunction, Request, Response } from "express";
 import {
+  $CourseLessonAPI,
   CourseLessonModel,
   CourseLessonResourceId,
-  CreateCourseLessonDto,
-  UpdateBasicCourseLessonDto,
 } from "./lesson.type";
-import { UnauthenticatedResourceId } from "../../common/types";
 
 export interface ICourseLessonAuthorization {
-  authorizeCreateLesson: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeUpdateLesson: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeDeleteLesson: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
+  authorizeCreateLesson: (user: UserModel, courseId: number) => Promise<void>;
+  authorizeUpdateLesson: (user: UserModel, courseId: number) => Promise<void>;
+  authorizeDeleteLesson: (user: UserModel, courseId: number) => Promise<void>;
 }
 
 export interface ICourseLessonController {
@@ -44,7 +28,7 @@ export interface ICourseLessonController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  updateBasicLesson: (
+  updateLesson: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -58,58 +42,62 @@ export interface ICourseLessonController {
 
 export interface ICourseLessonService {
   createLesson: (
-    resourceId: CourseLessonResourceId,
-    dto: CreateCourseLessonDto,
-  ) => Promise<CourseLessonModel>;
-  getLessonById: (
-    lessonId: number,
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel>;
-  getLessons: (
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel[]>;
-  updateBasicLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-    dto: UpdateBasicCourseLessonDto,
-  ) => Promise<CourseLessonModel>;
-  deleteLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-  ) => Promise<{}>;
-  validateRelationBetweenResources: (
+    user: UserModel,
+    id: { resourceId: CourseLessonResourceId },
+    dto: $CourseLessonAPI.CreateLesson.Dto,
+  ) => Promise<$CourseLessonAPI.CreateLesson.Response["data"]>;
+  getLessonById: (id: {
+    lessonId: number;
+    resourceId: CourseLessonResourceId;
+  }) => Promise<$CourseLessonAPI.GetLessonById.Response["data"]>;
+  getLessons: (id: {
+    resourceId: CourseLessonResourceId;
+  }) => Promise<$CourseLessonAPI.GetLessons.Response["data"]>;
+  updateLesson: (
+    user: UserModel,
     id: {
       lessonId: number;
       resourceId: CourseLessonResourceId;
     },
-    error?: Error,
-  ) => Promise<CourseLessonModel | null>;
-}
-
-export interface ICourseLessonRepository {
-  createLesson: (
-    resourceId: CourseLessonResourceId,
-    dto: CreateCourseLessonDto,
-  ) => Promise<CourseLessonModel>;
-  getLessonById: (
-    lessonId: number,
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel | null>;
-  getLessonByIdOrThrow: (
-    lessonId: number,
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-    error?: Error,
-  ) => Promise<CourseLessonModel>;
-  getLessons: (
-    resourceId: UnauthenticatedResourceId<CourseLessonResourceId>,
-  ) => Promise<CourseLessonModel[]>;
-  updateLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-    dto: Partial<CourseLessonModel>,
+    dto: $CourseLessonAPI.UpdateLesson.Response["data"],
   ) => Promise<CourseLessonModel>;
   deleteLesson: (
-    lessonId: number,
-    resourceId: CourseLessonResourceId,
-  ) => Promise<{}>;
+    user: UserModel,
+    id: {
+      lessonId: number;
+      resourceId: CourseLessonResourceId;
+    },
+  ) => Promise<$CourseLessonAPI.DeleteLesson.Response["data"]>;
+}
+
+export interface ICourseLessonRepository<> {
+  createLesson: (
+    id: {
+      courseId: number;
+    },
+    data: $CourseLessonAPI.CreateLesson.Dto,
+  ) => Promise<CourseLessonModel>;
+  getLessonById: (id: {
+    lessonId: number;
+    resourceId?: CourseLessonResourceId;
+  }) => Promise<CourseLessonModel | null>;
+  getLessonByIdOrThrow: (
+    id: {
+      lessonId: number;
+      resourceId?: CourseLessonResourceId;
+    },
+    error?: Error,
+  ) => Promise<CourseLessonModel>;
+  getLessons: (id: { courseId: number }) => Promise<CourseLessonModel[]>;
+  updateLesson: (
+    id: {
+      lessonId: number;
+      resourceId?: CourseLessonResourceId;
+    },
+    data: Partial<CourseLessonModel>,
+  ) => Promise<CourseLessonModel>;
+  deleteLesson: (id: {
+    lessonId: number;
+    resourceId: CourseLessonResourceId;
+  }) => Promise<{}>;
 }

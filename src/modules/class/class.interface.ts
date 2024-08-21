@@ -1,31 +1,15 @@
 import { UserModel } from "../user/user.type";
-import { CourseModel } from "../course/course.type";
-import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 import { NextFunction, Request, Response } from "express";
 import {
+  $CourseClassAPI,
   CourseClassModel,
   CourseClassResourceId,
-  CreateCourseClassDto,
-  UpdateCourseClassDto,
 } from "./class.type";
-import { UnauthenticatedResourceId } from "../../common/types";
 
 export interface ICourseClassAuthorization {
-  authorizeCreateClass: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeUpdateClass: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
-  authorizeDeleteClass: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ) => void;
+  authorizeCreateClass: (user: UserModel, courseId: number) => Promise<void>;
+  authorizeUpdateClass: (user: UserModel, courseId: number) => Promise<void>;
+  authorizeDeleteClass: (user: UserModel, courseId: number) => Promise<void>;
 }
 
 export interface ICourseClassController {
@@ -58,51 +42,62 @@ export interface ICourseClassController {
 
 export interface ICourseClassService {
   createClass: (
-    resourceId: CourseClassResourceId,
-    dto: CreateCourseClassDto,
-  ) => Promise<CourseClassModel>;
-  getClassById: (
-    classId: number,
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>,
-  ) => Promise<CourseClassModel>;
-  getClasses: (
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>,
-  ) => Promise<CourseClassModel[]>;
+    user: UserModel,
+    id: { resourceId: CourseClassResourceId },
+    dto: $CourseClassAPI.CreateClass.Dto,
+  ) => Promise<$CourseClassAPI.CreateClass.Response["data"]>;
+  getClasses: (id: {
+    resourceId: CourseClassResourceId;
+  }) => Promise<$CourseClassAPI.GetClasses.Response["data"]>;
+  getClassById: (id: {
+    classId: number;
+    resourceId: CourseClassResourceId;
+  }) => Promise<$CourseClassAPI.GetClassById.Response["data"]>;
   updateClass: (
-    classId: number,
-    resourceId: CourseClassResourceId,
-    dto: UpdateCourseClassDto,
-  ) => Promise<CourseClassModel>;
+    user: UserModel,
+    id: {
+      classId: number;
+      resourceId: CourseClassResourceId;
+    },
+    dto: $CourseClassAPI.UpdateClass.Dto,
+  ) => Promise<$CourseClassAPI.UpdateClass.Response["data"]>;
   deleteClass: (
-    classId: number,
-    resourceId: CourseClassResourceId,
-  ) => Promise<{}>;
+    user: UserModel,
+    id: {
+      classId: number;
+      resourceId: CourseClassResourceId;
+    },
+  ) => Promise<$CourseClassAPI.DeleteClass.Response["data"]>;
 }
 
 export interface ICourseClassRepository {
   createClass: (
-    resourceId: CourseClassResourceId,
-    dto: CreateCourseClassDto,
+    id: {
+      courseId: number;
+    },
+    data: $CourseClassAPI.CreateClass.Dto,
   ) => Promise<CourseClassModel>;
-  getClassById: (
-    classId: number,
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>,
-  ) => Promise<CourseClassModel | null>;
+  getClasses: (id: { courseId: number }) => Promise<CourseClassModel[]>;
+  getClassById: (id: {
+    classId: number;
+    resourceId?: CourseClassResourceId;
+  }) => Promise<CourseClassModel | null>;
   getClassByIdOrThrow: (
-    classId: number,
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>,
+    id: {
+      classId: number;
+      resourceId?: CourseClassResourceId;
+    },
     error?: Error,
   ) => Promise<CourseClassModel>;
-  getClasses: (
-    resourceId: UnauthenticatedResourceId<CourseClassResourceId>,
-  ) => Promise<CourseClassModel[]>;
   updateClass: (
-    classId: number,
-    resourceId: CourseClassResourceId,
-    dto: Partial<CourseClassModel>,
+    id: {
+      classId: number;
+      resourceId?: CourseClassResourceId;
+    },
+    data: Partial<CourseClassModel>,
   ) => Promise<CourseClassModel>;
-  deleteClass: (
-    classId: number,
-    resourceId: CourseClassResourceId,
-  ) => Promise<{}>;
+  deleteClass: (id: {
+    classId: number;
+    resourceId: CourseClassResourceId;
+  }) => Promise<{}>;
 }

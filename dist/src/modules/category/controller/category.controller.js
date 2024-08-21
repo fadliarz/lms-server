@@ -29,31 +29,15 @@ const validateJoi_1 = __importDefault(require("../../../common/functions/validat
 const category_joi_1 = require("./category.joi");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
-const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
 let CourseCategoryController = class CourseCategoryController {
     createCategory(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ body: category_joi_1.CreateCourseCategoryDtoJoi })(req, res, next);
-                const resourceId = this.validateResourceId(req);
-                const newCategory = yield this.service.createCategory(resourceId, req.body);
+                const newCategory = yield this.service.createCategory((0, getRequestUserOrThrowAuthenticationException_1.default)(req), req.body);
                 return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({
-                    data: (0, removeNullFields_1.default)(newCategory),
+                    data: newCategory,
                 });
-            }
-            catch (error) {
-                next(error);
-            }
-        });
-    }
-    getCategoryById(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const categoryId = this.validateCategoryId(req);
-                const category = yield this.service.getCategoryById(categoryId);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, removeNullFields_1.default)(category) });
             }
             catch (error) {
                 next(error);
@@ -64,39 +48,48 @@ let CourseCategoryController = class CourseCategoryController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const categories = yield this.service.getCategories();
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: categories.map((category) => (0, removeNullFields_1.default)(category)) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: categories });
             }
             catch (error) {
                 next(error);
             }
         });
     }
-    updateBasicCategory(req, res, next) {
+    getCategoryById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield (0, validateJoi_1.default)({ body: category_joi_1.UpdateBasicCourseCategoryDtoJoi })(req, res, next);
-                const categoryId = this.validateCategoryId(req);
-                const resourceId = this.validateResourceId(req);
-                const updatedCategory = yield this.service.updateBasicCategory(categoryId, resourceId, req.body);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: (0, removeNullFields_1.default)(updatedCategory) });
+                const category = yield this.service.getCategoryById({
+                    categoryId: this.validateCategoryId(req),
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: category });
             }
             catch (error) {
                 next(error);
             }
         });
     }
-    validateResourceId(req, error) {
-        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
-        return {
-            user: {
-                id: userId,
-                role,
-            },
-        };
+    updateCategory(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: category_joi_1.UpdateCourseCategoryDtoJoi })(req, res, next);
+                const updatedCategory = yield this.service.updateCategory((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { categoryId: this.validateCategoryId(req) }, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedCategory });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    deleteCategory(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.service.deleteCategory((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { categoryId: this.validateCategoryId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
     }
     validateCategoryId(req, error) {
         const categoryId = Number(req.params.categoryId);

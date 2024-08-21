@@ -19,12 +19,26 @@ const lesson_type_1 = require("../../../modules/lesson/lesson.type");
 const video_type_1 = require("../../../modules/video/video.type");
 const class_type_1 = require("../../../modules/class/class.type");
 const assignment_type_1 = require("../../../modules/assignment/assignment.type");
+const department_type_1 = require("../../../modules/department/department.type");
+const division_type_1 = require("../../../modules/division/division.type");
+const assignment_type_2 = require("../../../modules/personal-assignment/assignment.type");
+const report_type_1 = require("../../../modules/report/report.type");
+const completion_type_1 = require("../../../modules/assignment-completion/completion.type");
+const program_type_1 = require("../../../modules/program/program.type");
 let Repository = class Repository {
 };
 __decorate([
     (0, inversify_1.inject)(user_type_1.UserDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], Repository.prototype, "user", void 0);
+__decorate([
+    (0, inversify_1.inject)(report_type_1.ReportDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "report", void 0);
+__decorate([
+    (0, inversify_1.inject)(assignment_type_2.PersonalAssignmentDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "personalAssignment", void 0);
 __decorate([
     (0, inversify_1.inject)(category_type_1.CourseCategoryDITypes.REPOSITORY),
     __metadata("design:type", Object)
@@ -53,6 +67,22 @@ __decorate([
     (0, inversify_1.inject)(assignment_type_1.CourseClassAssignmentDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], Repository.prototype, "courseClassAssignment", void 0);
+__decorate([
+    (0, inversify_1.inject)(completion_type_1.CourseClassAssignmentCompletionDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "courseClassAssignmentCompletion", void 0);
+__decorate([
+    (0, inversify_1.inject)(department_type_1.DepartmentDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "department", void 0);
+__decorate([
+    (0, inversify_1.inject)(program_type_1.DepartmentProgramDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "departmentProgram", void 0);
+__decorate([
+    (0, inversify_1.inject)(division_type_1.DepartmentDivisionDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "departmentDivision", void 0);
 Repository = __decorate([
     (0, inversify_1.injectable)()
 ], Repository);

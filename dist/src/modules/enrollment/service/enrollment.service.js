@@ -27,43 +27,37 @@ const enrollment_type_1 = require("../enrollment.type");
 const course_type_1 = require("../../course/course.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseEnrollmentService = class CourseEnrollmentService {
-    /**
-     *
-     * Course & Enrollment existence and their relation should be checked in Repository layer while authorizing because
-     * it's necessary to lock the rows while performing the features.
-     *
-     * So no need to implement those type of business logic in Service layer.
-     *
-     */
     createEnrollment(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.repository.createEnrollment(resourceId, dto);
+                return yield this.repository.createEnrollment(resourceId.params, dto);
             }
             catch (error) {
-                throw (0, handleRepositoryError_1.default)(error, {
-                    uniqueConstraint: {
-                        default: {
-                            message: enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_IS_ALREADY_ENROLLED,
-                        },
-                    },
-                    foreignConstraint: {
-                        default: {
-                            message: enrollment_type_1.CourseEnrollmentErrorMessage.TARGET_USER_DOES_NOT_EXIST.concat(" or ", course_type_1.CourseErrorMessage.COURSE_DOES_NOT_EXIST),
-                        },
-                    },
-                });
+                throw (0, handleRepositoryError_1.default)(error);
             }
         });
     }
-    updateEnrollmentRole(enrollmentId, resourceId, dto) {
+    updateEnrollment(enrollmentId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.updateEnrollmentRole(enrollmentId, resourceId, dto);
+            try {
+                return yield this.repository.updateEnrollment({ enrollmentId, resourceId: resourceId.params }, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
     deleteEnrollment(enrollmentId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.deleteEnrollment(enrollmentId, resourceId);
+            try {
+                return yield this.repository.deleteEnrollment({
+                    enrollmentId,
+                    resourceId: resourceId.params,
+                });
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
 };

@@ -22,93 +22,101 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
-const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
-const assignment_type_1 = require("../assignment.type");
-const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
-const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
-let CourseClassAssignmentRepository = class CourseClassAssignmentRepository extends BaseAuthorization_1.default {
+const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+let CourseClassAssignmentRepository = class CourseClassAssignmentRepository extends BaseRepository_1.default {
     constructor() {
-        super(...arguments);
-        this.prisma = PrismaClientSingleton_1.default.getInstance();
+        super();
     }
-    createAssignment(resourceId, dto) {
+    createAssignment(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeCreateAssignment.bind(this.authorization));
-                const { classId } = resourceId;
-                return tx.courseClassAssignment.create({
-                    data: Object.assign(Object.assign({}, dto), { classId }),
-                });
-            }));
-        });
-    }
-    getAssignmentById(assignmentId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeReadAssignment.bind(this.authorization));
-                return yield tx.courseClassAssignment.findUnique({
+            if (id.resourceId) {
+                const theClass = yield this.db.courseClass.findFirst({
                     where: {
-                        id: assignmentId,
+                        id: id.classId,
+                        course: {
+                            id: id.resourceId.courseId,
+                        },
                     },
+                    select: {},
                 });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+                if (theClass === null) {
+                    throw new RecordNotFoundException_1.default();
+                }
+            }
+            return this.db.courseClassAssignment.create({
+                data: Object.assign(Object.assign({}, data), { classId: id.classId }),
+            });
         });
     }
-    getAssignmentByIdOrThrow(assignmentId, resourceId, error) {
+    getAssignments(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const assignment = yield this.getAssignmentById(assignmentId, resourceId);
+            return this.db.courseClassAssignment.findMany({
+                where: this.getWhereObjectForFirstLevelOperation(id),
+            });
+        });
+    }
+    getAssignmentById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.courseClassAssignment.findUnique({
+                where: this.getWhereObjectForSecondLevelOperation(id),
+            });
+        });
+    }
+    getAssignmentByIdOrThrow(id, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const assignment = yield this.getAssignmentById(id);
             if (!assignment) {
                 throw error || new RecordNotFoundException_1.default();
             }
             return assignment;
         });
     }
-    getAssignments(resourceId) {
+    updateAssignment(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeReadAssignment.bind(this.authorization));
-                const { classId } = resourceId;
-                return yield tx.courseClassAssignment.findMany({
-                    where: {
-                        classId,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForRead);
+            return this.db.courseClassAssignment.update({
+                where: this.getWhereObjectForSecondLevelOperation(id),
+                data,
+            });
         });
     }
-    updateAssignment(assignmentId, resourceId, dto) {
+    deleteAssignment(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeUpdateAssignment.bind(this.authorization));
-                return yield tx.courseClassAssignment.update({
-                    where: {
-                        id: assignmentId,
-                    },
-                    data: dto,
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
+            return this.db.courseClassAssignment.delete({
+                where: this.getWhereObjectForSecondLevelOperation(id),
+                select: {},
+            });
         });
     }
-    deleteAssignment(assignmentId, resourceId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            yield this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                yield this.authorize(tx, resourceId, this.authorization.authorizeDeleteAssignment.bind(this.authorization));
-                yield tx.courseClassAssignment.delete({
-                    where: {
-                        id: assignmentId,
-                    },
-                });
-            }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
-            return {};
-        });
+    getWhereObjectForFirstLevelOperation(id) {
+        if (id.resourceId) {
+            return {
+                id: id.classId,
+                course: {
+                    id: id.resourceId.courseId,
+                },
+            };
+        }
+        return {
+            id: id.classId,
+        };
+    }
+    getWhereObjectForSecondLevelOperation(id) {
+        const { assignmentId, resourceId } = id;
+        if (resourceId) {
+            return {
+                id: assignmentId,
+                class: {
+                    id: resourceId.classId,
+                    course: { id: resourceId.courseId },
+                },
+            };
+        }
+        return { id: assignmentId };
     }
 };
-__decorate([
-    (0, inversify_1.inject)(assignment_type_1.CourseClassAssignmentDITypes.AUTHORIZATION),
-    __metadata("design:type", Object)
-], CourseClassAssignmentRepository.prototype, "authorization", void 0);
 CourseClassAssignmentRepository = __decorate([
-    (0, inversify_1.injectable)()
+    (0, inversify_1.injectable)(),
+    __metadata("design:paramtypes", [])
 ], CourseClassAssignmentRepository);
 exports.default = CourseClassAssignmentRepository;

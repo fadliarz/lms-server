@@ -21,39 +21,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CourseLessonVideoController = void 0;
 const inversify_1 = require("inversify");
 const video_type_1 = require("../video.type");
 const statusCode_1 = require("../../../common/constants/statusCode");
 const isNaNArray_1 = __importDefault(require("../../../common/functions/isNaNArray"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
-const video_joi_1 = require("./video.joi");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
-const removeNullFields_1 = __importDefault(require("../../../common/functions/removeNullFields"));
+const video_joi_1 = require("./video.joi");
 let CourseLessonVideoController = class CourseLessonVideoController {
     createVideo(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield (0, validateJoi_1.default)({ body: video_joi_1.CreateCourseLessonVideoJoi })(req, res, next);
-                const resourceId = this.validateResourceId(req);
-                const newVideo = yield this.service.createVideo(resourceId, req.body);
-                return res
-                    .status(statusCode_1.StatusCode.RESOURCE_CREATED)
-                    .json({ data: (0, removeNullFields_1.default)(newVideo) });
-            }
-            catch (error) {
-                next(error);
-            }
-        });
-    }
-    getVideoById(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const videoId = this.validateVideoId(req);
-                const resourceId = this.validateResourceId(req);
-                const video = yield this.service.getVideoById(videoId, resourceId);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: (0, removeNullFields_1.default)(video) });
+                yield (0, validateJoi_1.default)({ body: video_joi_1.CreateCourseLessonVideoDtoJoi })(req, res, next);
+                const newVideo = yield this.service.createVideo((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) }, req.body);
+                return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({ data: newVideo });
             }
             catch (error) {
                 next(error);
@@ -63,24 +45,36 @@ let CourseLessonVideoController = class CourseLessonVideoController {
     getVideos(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const resourceId = this.validateResourceId(req);
-                const videos = yield this.service.getVideos(resourceId);
-                return res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: videos.map((video) => (0, removeNullFields_1.default)(video)) });
+                const videos = yield this.service.getVideos((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: videos });
             }
             catch (error) {
                 next(error);
             }
         });
     }
-    updateBasicVideo(req, res, next) {
+    getVideoById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield (0, validateJoi_1.default)({ body: video_joi_1.UpdateBasicCourseLessonVideoJoi })(req, res, next);
-                const videoId = this.validateVideoId(req);
-                const resourceId = this.validateResourceId(req);
-                const updatedVideo = yield this.service.updateBasicVideo(videoId, resourceId, req.body);
+                const video = yield this.service.getVideoById((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    videoId: this.validateVideoId(req),
+                    resourceId: this.validateResourceId(req),
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: video });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateVideo(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: video_joi_1.UpdateCourseLessonVideoDtoJoi })(req, res, next);
+                const updatedVideo = yield this.service.updateVideo((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    videoId: this.validateVideoId(req),
+                    resourceId: this.validateResourceId(req),
+                }, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedVideo });
             }
             catch (error) {
@@ -91,10 +85,11 @@ let CourseLessonVideoController = class CourseLessonVideoController {
     updateVideoSource(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield (0, validateJoi_1.default)({ body: video_joi_1.UpdateCourseLessonVideoSourceJoi })(req, res, next);
-                const videoId = this.validateVideoId(req);
-                const resourceId = this.validateResourceId(req);
-                const updatedVideo = yield this.service.updateVideoSource(videoId, resourceId, req.body);
+                yield (0, validateJoi_1.default)({ body: video_joi_1.UpdateCourseLessonVideoSourceDtoJoi })(req, res, next);
+                const updatedVideo = yield this.service.updateVideoSource((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    videoId: this.validateVideoId(req),
+                    resourceId: this.validateResourceId(req),
+                }, req.body);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedVideo });
             }
             catch (error) {
@@ -105,9 +100,10 @@ let CourseLessonVideoController = class CourseLessonVideoController {
     deleteVideo(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const videoId = this.validateVideoId(req);
-                const resourceId = this.validateResourceId(req);
-                yield this.service.deleteVideo(videoId, resourceId);
+                yield this.service.deleteVideo((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    videoId: this.validateVideoId(req),
+                    resourceId: this.validateResourceId(req),
+                });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: {} });
             }
             catch (error) {
@@ -116,17 +112,12 @@ let CourseLessonVideoController = class CourseLessonVideoController {
         });
     }
     validateResourceId(req) {
-        const { id: userId, role } = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
         const courseId = Number(req.params.courseId);
         const lessonId = Number(req.params.lessonId);
         if ((0, isNaNArray_1.default)([courseId, lessonId])) {
             throw new NaNException_1.default("courseId || lessonId");
         }
         return {
-            user: {
-                id: userId,
-                role,
-            },
             courseId,
             lessonId,
         };
@@ -139,11 +130,11 @@ let CourseLessonVideoController = class CourseLessonVideoController {
         return videoId;
     }
 };
-exports.CourseLessonVideoController = CourseLessonVideoController;
 __decorate([
     (0, inversify_1.inject)(video_type_1.CourseLessonVideoDITypes.SERVICE),
     __metadata("design:type", Object)
 ], CourseLessonVideoController.prototype, "service", void 0);
-exports.CourseLessonVideoController = CourseLessonVideoController = __decorate([
+CourseLessonVideoController = __decorate([
     (0, inversify_1.injectable)()
 ], CourseLessonVideoController);
+exports.default = CourseLessonVideoController;

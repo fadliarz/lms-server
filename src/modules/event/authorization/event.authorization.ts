@@ -27,24 +27,6 @@ export default class EventAuthorization
     }
   }
 
-  public authorizeReadEvent(user: UserModel): void {
-    const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
-
-    let isAuthorized = false;
-    if (isStudent || isInstructor || isAdmin) {
-      true;
-    }
-
-    if (!isAuthorized) {
-      throw new AuthorizationException();
-    }
-  }
-
-  public authorizeReadEvents(user: UserModel): void {
-    this.authorizeReadEvent(user);
-  }
-
   public authorizeUpdateEvent(user: UserModel): void {
     this.authorizeCreateEvent(user);
   }
