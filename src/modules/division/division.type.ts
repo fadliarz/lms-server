@@ -96,8 +96,6 @@ export type DepartmentDivisionModel = {
   title: string;
   description: string | null;
   totalMembers: number;
-  totalPrograms: number;
-  totalProgramEnrollments: number;
   createdAt: Date;
   updatedAt: Date;
   departmentId: number;
