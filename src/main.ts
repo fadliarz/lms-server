@@ -23,7 +23,6 @@ import PersonalAssignmentRouter from "./modules/personal-assignment/router/assig
 import DepartmentDivisionProgramEnrollmentRouter from "./modules/program-enrollment/router/enrollment.router";
 import EventRouter from "./modules/event/router/event.router";
 import ReportRouter from "./modules/report/router/report.router";
-import { Prisma } from "@prisma/client";
 import CourseClassAssignmentCompletionRouter from "./modules/assignment-completion/router/completion.router";
 
 /**
@@ -170,9 +169,3 @@ prisma
 
     console.error("error: ", error);
   });
-
-prisma.$on("query" as unknown as never, (e: Prisma.QueryEvent) => {
-  console.log("Query: " + e.query);
-  console.log("Params: " + e.params);
-  console.log("Duration: " + e.duration + "ms");
-});

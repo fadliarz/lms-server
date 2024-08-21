@@ -108,11 +108,6 @@ export default class UserRepository
             },
           },
         },
-        assignmentCompletions: {
-          some: {
-            userId: id.userId,
-          },
-        },
       },
       include: {
         courseClass: {
@@ -127,7 +122,11 @@ export default class UserRepository
             },
           },
         },
-        assignmentCompletions: true,
+        assignmentCompletions: {
+          where: {
+            userId: id.userId,
+          },
+        },
       },
     });
 
@@ -142,7 +141,7 @@ export default class UserRepository
       assignments.push({
         type: "course",
         assignment: {
-          ...theAssignment,
+          ...assignment,
           class: theClass,
           course: theCourse,
           completion: theCompletions.length > 0 ? theCompletions[0] : null,

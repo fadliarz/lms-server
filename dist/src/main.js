@@ -171,8 +171,3 @@ prisma
     console.log("Failed establishing a database connection!");
     console.error("error: ", error);
 });
-prisma.$on("query", (e) => {
-    console.log("Query: " + e.query);
-    console.log("Params: " + e.params);
-    console.log("Duration: " + e.duration + "ms");
-});

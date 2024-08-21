@@ -113,11 +113,6 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                             },
                         },
                     },
-                    assignmentCompletions: {
-                        some: {
-                            userId: id.userId,
-                        },
-                    },
                 },
                 include: {
                     courseClass: {
@@ -132,7 +127,11 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                             },
                         },
                     },
-                    assignmentCompletions: true,
+                    assignmentCompletions: {
+                        where: {
+                            userId: id.userId,
+                        },
+                    },
                 },
             });
             const assignments = [];
@@ -141,7 +140,7 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                 const { course: theCourse } = theCourseClass, theClass = __rest(theCourseClass, ["course"]);
                 assignments.push({
                     type: "course",
-                    assignment: Object.assign(Object.assign({}, theAssignment), { class: theClass, course: theCourse, completion: theCompletions.length > 0 ? theCompletions[0] : null }),
+                    assignment: Object.assign(Object.assign({}, assignment), { class: theClass, course: theCourse, completion: theCompletions.length > 0 ? theCompletions[0] : null }),
                 });
             }
             const personalAssignments = yield this.db.personalAssignment.findMany({
