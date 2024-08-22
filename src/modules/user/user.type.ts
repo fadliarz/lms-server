@@ -54,6 +54,38 @@ export namespace $UserAPI {
     export type Response = { data: PublicUserModel };
   }
 
+  export namespace GetUserPermissions {
+    export const endpoint = user + "/permissions";
+    export const generateUrl = (userId: number) =>
+      `/users/${userId}/permissions`;
+    export type Response = {
+      data: {
+        programEnrollment: {
+          manage: boolean;
+        };
+        event: {
+          manage: boolean;
+        };
+        category: {
+          manage: boolean;
+        };
+        course: {
+          manage_the_course: boolean;
+          manage_course_content: boolean;
+        };
+        competition: {
+          manage: boolean;
+        };
+        scholarship: {
+          manage: boolean;
+        };
+        report: {
+          manage: boolean;
+        };
+      };
+    };
+  }
+
   export namespace GetUserAssignments {
     export const endpoint = user + "/assignments";
     export const generateUrl = (userId: number) =>
@@ -262,6 +294,7 @@ export const PrivilegeModel = {
   COMPETITION: "COMPETITION",
   REPORT: "REPORT",
   COURSE: "COURSE",
+  EVENT: "EVENT",
 } as const;
 
 export type PrivilegeModel =

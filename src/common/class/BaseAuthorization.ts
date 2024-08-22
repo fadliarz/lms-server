@@ -1,11 +1,6 @@
 import "reflect-metadata";
 import getRoleStatus from "../functions/getRoleStatus";
-import isEqualOrIncludeCourseEnrollmentRole from "../functions/isEqualOrIncludeCourseEnrollmentRole";
-import {
-  CourseEnrollmentRoleModel,
-  CourseModel,
-  UserRoleModel,
-} from "../../modules/course/course.type";
+import { CourseModel, UserRoleModel } from "../../modules/course/course.type";
 import InternalServerException from "./exceptions/InternalServerException";
 import { PrivilegeModel, UserModel } from "../../modules/user/user.type";
 import { CourseEnrollmentModel } from "../../modules/enrollment/enrollment.type";
@@ -41,18 +36,6 @@ export default class BaseAuthorization {
     );
   }
 
-  protected async isAuthor(userId: number, courseId: number): Promise<boolean> {
-    const author =
-      await this.globalRepository.course.getCourseAuthorByIdOrThrow(
-        {
-          courseId,
-        },
-        { minimalist: true },
-      );
-
-    return !!(author && author.id === userId);
-  }
-
   public async authorizeUserRole(
     tx: PrismaTransaction,
     resourceId: {
@@ -72,8 +55,8 @@ export default class BaseAuthorization {
       new AuthenticationException(),
     );
 
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
-    if (!isStudent && !isInstructor && !isAdmin) {
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
+    if (!isStudent && !isAdmin) {
       throw new InternalServerException();
     }
 
@@ -124,8 +107,8 @@ export default class BaseAuthorization {
         },
       );
 
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
-    if (!isStudent && !isInstructor && !isAdmin) {
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
+    if (!isStudent && !isAdmin) {
       throw new InternalServerException();
     }
 
@@ -136,41 +119,5 @@ export default class BaseAuthorization {
       course,
       enrollment,
     };
-  }
-
-  public validateUnexpectedScenarios(
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel | null,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isAuthor = userId === authorId;
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(userRole);
-
-    if (!isStudent && !isInstructor && !isAdmin) {
-      throw new InternalServerException();
-    }
-
-    /**
-     * Some unexpected scenarios:
-     *
-     * 1. isStudent but enrolled as Instructor
-     * 2. isStudent but also isAuthor
-     * 3. isAuthor but also enrolled
-     *
-     */
-    if (
-      (isStudent &&
-        enrollment &&
-        isEqualOrIncludeCourseEnrollmentRole(
-          enrollment.role,
-          CourseEnrollmentRoleModel.INSTRUCTOR,
-        )) ||
-      (isStudent && isAuthor) ||
-      (isAuthor && enrollment)
-    ) {
-      throw new InternalServerException();
-    }
   }
 }

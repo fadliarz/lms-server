@@ -24,12 +24,10 @@ const AuthorizationException_1 = __importDefault(require("../../../common/class/
 const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseAuthorization"));
 let PersonalAssignmentAuthorization = class PersonalAssignmentAuthorization extends BaseAuthorization_1.default {
     authorizeCreateAssignment(user, targetUserId) {
-        const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+        const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
         let isAuthorized = false;
-        if (isStudent || isInstructor) {
-            if (user.id === targetUserId) {
-                isAuthorized = true;
-            }
+        if (isStudent && user.id === targetUserId) {
+            isAuthorized = true;
         }
         if (isAdmin) {
             isAuthorized = true;
@@ -40,9 +38,9 @@ let PersonalAssignmentAuthorization = class PersonalAssignmentAuthorization exte
     }
     authorizeUpdateAssignment(user, assignmentId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 const assignment = yield this.globalRepository.personalAssignment.getAssignmentByIdOrThrow({
                     assignmentId,
                 });

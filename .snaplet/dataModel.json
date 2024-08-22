@@ -564,20 +564,6 @@
           "maxLength": null
         },
         {
-          "id": "public.course.author_id",
-          "name": "author_id",
-          "columnName": "author_id",
-          "type": "int4",
-          "isRequired": false,
-          "kind": "scalar",
-          "isList": false,
-          "isGenerated": false,
-          "sequence": false,
-          "hasDefaultValue": false,
-          "isId": false,
-          "maxLength": null
-        },
-        {
           "id": "public.course.category_id",
           "name": "category_id",
           "columnName": "category_id",
@@ -613,24 +599,6 @@
           "relationName": "courseTocourse_category",
           "relationFromFields": [
             "category_id"
-          ],
-          "relationToFields": [
-            "id"
-          ],
-          "isList": false,
-          "isId": false,
-          "isGenerated": false,
-          "sequence": false,
-          "hasDefaultValue": false
-        },
-        {
-          "name": "user",
-          "type": "user",
-          "isRequired": false,
-          "kind": "object",
-          "relationName": "courseTouser",
-          "relationFromFields": [
-            "author_id"
           ],
           "relationToFields": [
             "id"
@@ -3917,20 +3885,6 @@
           "hasDefaultValue": false
         },
         {
-          "name": "course",
-          "type": "course",
-          "isRequired": false,
-          "kind": "object",
-          "relationName": "courseTouser",
-          "relationFromFields": [],
-          "relationToFields": [],
-          "isList": true,
-          "isId": false,
-          "isGenerated": false,
-          "sequence": false,
-          "hasDefaultValue": false
-        },
-        {
           "name": "course_enrollment",
           "type": "course_enrollment",
           "isRequired": false,
@@ -4149,6 +4103,9 @@
           "name": "DIVISION"
         },
         {
+          "name": "EVENT"
+        },
+        {
           "name": "PROGRAM"
         },
         {
@@ -4163,10 +4120,7 @@
       "schemaName": "public",
       "values": [
         {
-          "name": "INSTRUCTOR"
-        },
-        {
-          "name": "OWNER"
+          "name": "ADMIN"
         },
         {
           "name": "STUDENT"

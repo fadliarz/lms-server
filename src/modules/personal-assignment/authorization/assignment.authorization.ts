@@ -14,13 +14,11 @@ export default class PersonalAssignmentAuthorization
     user: UserModel,
     targetUserId: number,
   ): void {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
-      if (user.id === targetUserId) {
-        isAuthorized = true;
-      }
+    if (isStudent && user.id === targetUserId) {
+      isAuthorized = true;
     }
 
     if (isAdmin) {
@@ -36,10 +34,10 @@ export default class PersonalAssignmentAuthorization
     user: UserModel,
     assignmentId: number,
   ): Promise<void> {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       const assignment =
         await this.globalRepository.personalAssignment.getAssignmentByIdOrThrow(
           {

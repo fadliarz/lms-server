@@ -32,6 +32,7 @@ function UserRouter(authenticationMiddleware) {
      */
     router.get(user_type_1.$UserAPI.GetUserById.endpoint, authenticationMiddleware, controller.getUserById.bind(controller));
     router.get(user_type_1.$UserAPI.GetMe.endpoint, authenticationMiddleware, controller.getMe.bind(controller));
+    router.get(user_type_1.$UserAPI.GetUserPermissions.endpoint, authenticationMiddleware, controller.getUserPermissions.bind(controller));
     router.get(user_type_1.$UserAPI.GetUserAssignments.endpoint, authenticationMiddleware, controller.getUserAssignments.bind(controller));
     router.get(user_type_1.$UserAPI.GetUserEnrolledAsStudentCourses.endpoint, authenticationMiddleware, controller.getUserEnrolledAsStudentCourses.bind(controller));
     router.get(user_type_1.$UserAPI.GetUserManagedCourses.endpoint, authenticationMiddleware, controller.getUserManagedCourses.bind(controller));

@@ -1,6 +1,5 @@
-import { PublicUserModel, UserModel } from "../user/user.type";
+import { UserModel } from "../user/user.type";
 import { CourseLessonModel } from "../lesson/lesson.type";
-import { CourseCategoryModel } from "../category/category.type";
 import { CourseLessonVideoModel } from "../video/video.type";
 import { CourseCategory } from "@prisma/client";
 
@@ -29,14 +28,12 @@ export namespace $CourseAPI {
     export const endpoint = root;
     export const generateUrl = () => endpoint;
     export type Query = {
-      include_author?: boolean;
       include_category?: boolean;
       pageNumber?: number;
       pageSize?: number;
     };
     export type Response = {
       data: (CourseModel & {
-        author?: Pick<UserModel, "id" | "avatar" | "name" | "NIM"> | null;
         category?: Pick<CourseCategory, "id" | "title"> | null;
       })[];
     };
@@ -46,14 +43,12 @@ export namespace $CourseAPI {
     export const endpoint = course;
     export const generateUrl = (courseId: number) => `/courses/${courseId}`;
     export type Query = {
-      include_author?: boolean;
       include_category?: boolean;
       include_lessons?: boolean;
       include_public_videos?: boolean;
     };
     export type Response = {
       data: CourseModel & {
-        author?: Pick<UserModel, "id" | "avatar" | "name" | "NIM"> | null;
         category?: Pick<CourseCategory, "id" | "title"> | null;
         lessons?: (Pick<
           CourseLessonModel,
@@ -159,8 +154,7 @@ export const CourseDITypes = {
 } as const;
 
 export const UserRoleModel = {
-  OWNER: "OWNER",
-  INSTRUCTOR: "INSTRUCTOR",
+  ADMIN: "ADMIN",
   STUDENT: "STUDENT",
 } as const;
 
@@ -182,7 +176,6 @@ export type CourseModel = {
   totalLikes: number;
   createdAt: Date;
   updatedAt: Date;
-  authorId: number | null;
   categoryId: number | null;
 };
 
@@ -208,23 +201,6 @@ export const CourseEnrollmentRoleModel = {
 export type CourseEnrollmentRoleModel =
   (typeof CourseEnrollmentRoleModel)[keyof typeof CourseEnrollmentRoleModel];
 
-export type EnrolledCourseModel = {
-  role: CourseEnrollmentRoleModel;
-  course: CourseModel;
-};
-
-export type BasicCourseLessonModel = Pick<
-  CourseLessonModel,
-  "id" | "title" | "totalVideos" | "totalDurations"
->;
-export type BasicCourseLessonVideoModel = Pick<
-  CourseLessonVideoModel,
-  "id" | "name" | "totalDurations"
->;
-export type BasicCourseLessonExtension = BasicCourseLessonModel & {
-  videos: BasicCourseLessonVideoModel[];
-};
-
 /**
  *
  *
@@ -241,11 +217,3 @@ export type CourseLikeResourceId = {
   user: UserModel;
   params: { courseId: number };
 };
-
-export type GetEnrolledCoursesData = Array<{
-  role: CourseEnrollmentRoleModel;
-  course: CourseModel & {
-    author?: PublicUserModel;
-    category?: CourseCategoryModel | null;
-  };
-}>;

@@ -14,7 +14,7 @@ export default class CourseAuthorization
   implements ICourseAuthorization
 {
   public async authorizeCreateCourse(user: UserModel): Promise<void> {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
     if (isStudent) {
@@ -24,7 +24,7 @@ export default class CourseAuthorization
       );
     }
 
-    if (isInstructor || isAdmin) {
+    if (isAdmin) {
       isAuthorized = true;
     }
 
@@ -37,23 +37,16 @@ export default class CourseAuthorization
     user: UserModel,
     courseId: number,
   ): Promise<void> {
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-    const isAuthor = await this.isAuthor(user.id, courseId);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
-      if (isAuthor) {
-        isAuthorized = true;
-      }
+    if (isStudent) {
+      isAuthorized = await this.authorizeFromDepartmentDivision(
+        user.id,
+        PrivilegeModel.COURSE,
+      );
 
       if (!isAuthorized) {
-        isAuthorized = await this.authorizeFromDepartmentDivision(
-          user.id,
-          PrivilegeModel.COURSE,
-        );
-      }
-
-      if (!isAuthorized && isInstructor) {
         const enrollment =
           await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
             {
@@ -93,10 +86,10 @@ export default class CourseAuthorization
     user: UserModel,
     courseId: number,
   ): Promise<void> {
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor || isAdmin) {
+    if (isStudent || isAdmin) {
       const enrollment =
         await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
           {
@@ -125,10 +118,10 @@ export default class CourseAuthorization
     courseId: number,
     likeId: number,
   ): Promise<void> {
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor || isAdmin) {
+    if (isStudent || isAdmin) {
       const like = await this.globalRepository.course.getLikeByIdOrThrow({
         likeId,
         resourceId: { courseId },

@@ -25,9 +25,9 @@ const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseA
 let DepartmentProgramAuthorization = class DepartmentProgramAuthorization extends BaseAuthorization_1.default {
     authorizeCreateProgram(user, departmentId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 const department = yield this.globalRepository.department.getDepartmentByIdOrThrow(departmentId);
                 if (department.leaderId === user.id ||
                     department.coLeaderId === user.id) {

@@ -22,6 +22,11 @@ var $UserAPI;
         GetMe.endpoint = root + "/me";
         GetMe.generateUrl = () => GetMe.endpoint;
     })(GetMe = $UserAPI.GetMe || ($UserAPI.GetMe = {}));
+    let GetUserPermissions;
+    (function (GetUserPermissions) {
+        GetUserPermissions.endpoint = user + "/permissions";
+        GetUserPermissions.generateUrl = (userId) => `/users/${userId}/permissions`;
+    })(GetUserPermissions = $UserAPI.GetUserPermissions || ($UserAPI.GetUserPermissions = {}));
     let GetUserAssignments;
     (function (GetUserAssignments) {
         GetUserAssignments.endpoint = user + "/assignments";
@@ -125,4 +130,5 @@ exports.PrivilegeModel = {
     COMPETITION: "COMPETITION",
     REPORT: "REPORT",
     COURSE: "COURSE",
+    EVENT: "EVENT",
 };

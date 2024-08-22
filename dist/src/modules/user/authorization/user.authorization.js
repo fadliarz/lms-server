@@ -25,11 +25,23 @@ const user_type_1 = require("../user.type");
 const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
 const AuthorizationException_1 = __importDefault(require("../../../common/class/exceptions/AuthorizationException"));
 let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.default {
-    authorizeGetUserAssignments(user, targetUserId) {
-        const { id: userId, role: userRole } = user;
-        const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
+    authorizeGetUserPermissions(user, targetUserId) {
+        const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
         let isAuthorized = false;
-        if ((isStudent || isInstructor) && userId === targetUserId) {
+        if (isStudent && user.id == targetUserId) {
+            isAuthorized = true;
+        }
+        if (isAdmin) {
+            isAuthorized = true;
+        }
+        if (!isAuthorized) {
+            throw new AuthorizationException_1.default();
+        }
+    }
+    authorizeGetUserAssignments(user, targetUserId) {
+        const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
+        let isAuthorized = false;
+        if (isStudent && user.id == targetUserId) {
             isAuthorized = true;
         }
         if (isAdmin) {
@@ -44,17 +56,10 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
     }
     authorizeGetUserManagedCourses(user, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id: userId, role: userRole } = user;
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if ((isStudent || isInstructor) && user.id === targetUserId) {
-                if (isInstructor) {
-                    isAuthorized = true;
-                }
-                if (!isAuthorized) {
-                    const isAcademicDivision = yield this.globalRepository.user.getUserAuthorizationStatusFromPrivilege({ userId: user.id }, user_type_1.PrivilegeModel.COURSE);
-                    isAuthorized = isAcademicDivision;
-                }
+            if (isStudent && user.id === targetUserId) {
+                isAuthorized = true;
             }
             if (isAdmin) {
                 isAuthorized = true;
@@ -70,9 +75,9 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
     authorizeGetUserEnrolledDepartmentPrograms(user, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id: userId, role: userRole } = user;
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(userRole);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 if (userId === targetUserId) {
                     isAuthorized = true;
                 }
@@ -91,9 +96,9 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
     }
     authorizeGetUserManagedDepartments(user, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if ((isStudent || isInstructor) && user.id === targetUserId) {
+            if (isStudent && user.id === targetUserId) {
                 isAuthorized = true;
             }
             if (isAdmin) {
@@ -112,9 +117,9 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
     authorizeGetUserReport(user, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id: userId, role: userRole } = user;
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(userRole);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 if (userId === targetUserId) {
                     isAuthorized = true;
                 }
@@ -133,9 +138,9 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
     }
     authorizeUpdateUser(user, targetUserId) {
         const { id: userId, role: userRole } = user;
-        const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
+        const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(userRole);
         let isAuthorized = false;
-        if ((isStudent || isInstructor) && userId === targetUserId) {
+        if (isStudent && userId === targetUserId) {
             isAuthorized = true;
         }
         if (isAdmin) {

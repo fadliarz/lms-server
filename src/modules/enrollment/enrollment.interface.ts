@@ -1,27 +1,19 @@
 import { UserModel } from "../user/user.type";
-import { CourseModel } from "../course/course.type";
 import {
   $CourseEnrollmentAPI,
   CourseEnrollmentModel,
   CourseEnrollmentResourceId,
 } from "./enrollment.type";
-import { CourseEnrollment } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 
 export interface ICourseEnrollmentAuthorization {
   authorizeCreateEnrollment: (
     user: UserModel,
-    course: CourseModel,
     dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
   ) => void;
-  authorizeUpdateEnrollmentRole: (
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollment,
-  ) => void;
+  authorizeUpdateEnrollmentRole: (user: UserModel) => void;
   authorizeDeleteEnrollment: (
     user: UserModel,
-    course: CourseModel,
     enrollment: CourseEnrollmentModel,
   ) => void;
 }

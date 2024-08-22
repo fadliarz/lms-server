@@ -33,9 +33,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
+const user_type_1 = require("../user.type");
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+const course_type_1 = require("../../course/course.type");
 let UserRepository = class UserRepository extends BaseRepository_1.default {
     constructor() {
         super();
@@ -98,6 +100,39 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                     },
                 },
             });
+        });
+    }
+    getUserPermissions(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const permissions = {
+                programEnrollment: {
+                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.PROGRAM),
+                },
+                event: {
+                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.PROGRAM),
+                },
+                category: {
+                    manage: false,
+                },
+                course: {
+                    manage_the_course: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.COURSE),
+                    manage_course_content: false,
+                },
+                competition: {
+                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.COMPETITION),
+                },
+                scholarship: {
+                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.SCHOLARSHIP),
+                },
+                report: {
+                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.REPORT),
+                },
+            };
+            permissions.category.manage = permissions.course.manage_the_course;
+            permissions.course.manage_course_content = !((yield this.getUserOneCourseEnrollmentId(id, {
+                role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
+            })) === null);
+            return permissions;
         });
     }
     getUserAssignments(id) {
@@ -170,7 +205,6 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                                     },
                                 },
                             },
-                            { authorId: id.userId },
                         ],
                     },
                 },
@@ -193,6 +227,14 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                 courses.push(enrollment.course);
             }
             return courses;
+        });
+    }
+    getUserOneCourseEnrollmentId(id, where) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.courseEnrollment.findFirst({
+                where: { userId: id.userId, role: where.role },
+                select: { id: true },
+            });
         });
     }
     getUserEnrolledDepartmentPrograms(id) {
@@ -255,6 +297,9 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                         {
                             divisions: {
                                 some: {
+                                    enrollments: {
+                                        some: { userId: id.userId },
+                                    },
                                     privileges: {
                                         privilege,
                                     },
@@ -264,10 +309,7 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                     ],
                 },
             });
-            if (!department) {
-                return false;
-            }
-            return true;
+            return department !== null;
         });
     }
     updateUser(id, data) {

@@ -3,13 +3,10 @@ import {
   CourseEnrollmentModel,
 } from "../enrollment.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
-import isEqualOrIncludeRole from "../../../common/functions/isEqualOrIncludeRole";
-import { CourseModel, UserRoleModel } from "../../course/course.type";
+import { CourseEnrollmentRoleModel } from "../../course/course.type";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
-import { CourseEnrollmentRole } from "@prisma/client";
 import { injectable } from "inversify";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
-import InternalServerException from "../../../common/class/exceptions/InternalServerException";
 import { UserModel } from "../../user/user.type";
 import { ICourseEnrollmentAuthorization } from "../enrollment.interface";
 
@@ -19,34 +16,16 @@ export default class CourseEnrollmentAuthorization
 {
   public authorizeCreateEnrollment(
     user: UserModel,
-    course: CourseModel,
     dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
   ): void {
-    const { id: userId, role: userRole } = user;
-    const { authorId } = course;
-    const isUserIdEqual = userId === dto.userId;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
+
     let isAuthorized = false;
     if (isStudent) {
-      if (isAuthor) {
-        throw new InternalServerException();
-      }
-
       if (
-        isUserIdEqual &&
-        isEqualOrIncludeRole(dto.role, [UserRoleModel.STUDENT])
-      ) {
-        isAuthorized = true;
-      }
-    }
-
-    if (isInstructor) {
-      if (
-        isUserIdEqual &&
-        !isAuthor &&
+        user.id == dto.userId &&
         isEqualOrIncludeCourseEnrollmentRole(dto.role, [
-          CourseEnrollmentRole.STUDENT,
+          CourseEnrollmentRoleModel.STUDENT,
         ])
       ) {
         isAuthorized = true;
@@ -54,9 +33,7 @@ export default class CourseEnrollmentAuthorization
     }
 
     if (isAdmin) {
-      if (!(isUserIdEqual && isAuthor)) {
-        isAuthorized = true;
-      }
+      isAuthorized = true;
     }
 
     if (!isAuthorized) {
@@ -64,39 +41,15 @@ export default class CourseEnrollmentAuthorization
     }
   }
 
-  public authorizeUpdateEnrollmentRole(
-    user: UserModel,
-    course: CourseModel,
-    enrollment: CourseEnrollmentModel,
-  ): void {
-    const { id: userId, role: userRole } = user;
-    const { userId: targetUserId } = enrollment;
-    const { authorId } = course;
-    const isUserIdEqual = userId === targetUserId;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+  public authorizeUpdateEnrollmentRole(user: UserModel): void {
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
+
     let isAuthorized = false;
-
-    if (course.authorId === enrollment.userId) {
-      throw new InternalServerException();
-    }
-
     if (isStudent) {
-      if (isAuthor) {
-        throw new InternalServerException();
-      }
-    }
-
-    if (isInstructor) {
-      if (!isUserIdEqual && isAuthor) {
-        isAuthorized = true;
-      }
     }
 
     if (isAdmin) {
-      if (!(isUserIdEqual && isAuthor)) {
-        isAuthorized = true;
-      }
+      isAuthorized = true;
     }
 
     if (!isAuthorized) {
@@ -106,41 +59,17 @@ export default class CourseEnrollmentAuthorization
 
   public authorizeDeleteEnrollment(
     user: UserModel,
-    course: CourseModel,
     enrollment: CourseEnrollmentModel,
   ): void {
-    const { id: userId, role: userRole } = user;
-    const { userId: targetUserId } = enrollment;
-    const { authorId } = course;
-    const isUserIdEqual = userId === targetUserId;
-    const isAuthor = userId === authorId;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
+
     let isAuthorized = false;
-
-    if (course.authorId === enrollment.userId) {
-      throw new InternalServerException();
-    }
-
-    if (isStudent) {
-      if (isAuthor) {
-        throw new InternalServerException();
-      }
-
-      if (isUserIdEqual) {
-        isAuthorized = true;
-      }
-    }
-
-    if (isInstructor) {
-      if ((isUserIdEqual && !isAuthor) || (!isUserIdEqual && isAuthor)) {
-        isAuthorized = true;
-      }
+    if (isStudent && user.id == enrollment.userId) {
+      isAuthorized = true;
     }
 
     if (isAdmin) {
-      if (!(isUserIdEqual && isAuthor)) {
-        isAuthorized = true;
-      }
+      isAuthorized = true;
     }
 
     if (!isAuthorized) {

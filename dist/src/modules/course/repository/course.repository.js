@@ -45,16 +45,6 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
                         : 0,
                     take: query.pageSize || 0,
                     include: {
-                        author: !!query.include_author
-                            ? {
-                                select: {
-                                    id: true,
-                                    avatar: true,
-                                    name: true,
-                                    NIM: true,
-                                },
-                            }
-                            : false,
                         category: !!query.include_category,
                     },
                 }
@@ -67,16 +57,6 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
                 where: { id: id.courseId },
                 include: query
                     ? {
-                        author: query.include_author
-                            ? {
-                                select: {
-                                    id: true,
-                                    avatar: true,
-                                    name: true,
-                                    NIM: true,
-                                },
-                            }
-                            : false,
                         category: !!query.include_category,
                         lessons: !!query.include_lessons
                             ? !!query.include_public_videos
@@ -173,22 +153,6 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
             return this.db.courseLike.delete({
                 where,
             });
-        });
-    }
-    getCourseAuthorByIdOrThrow(id, options, error) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const course = yield this.db.course.findUnique({
-                where: {
-                    id: id.courseId,
-                },
-                select: {
-                    author: options && options.minimalist ? { select: { id: true } } : true,
-                },
-            });
-            if (!course) {
-                throw error || new RecordNotFoundException_1.default();
-            }
-            return course.author;
         });
     }
 };

@@ -94,6 +94,62 @@ export default class UserRepository
     });
   }
 
+  public async getUserPermissions(id: {
+    userId: number;
+  }): Promise<$UserAPI.GetUserPermissions.Response["data"]> {
+    const permissions: $UserAPI.GetUserPermissions.Response["data"] = {
+      programEnrollment: {
+        manage: await this.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.PROGRAM,
+        ),
+      },
+      event: {
+        manage: await this.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.PROGRAM,
+        ),
+      },
+      category: {
+        manage: false,
+      },
+      course: {
+        manage_the_course: await this.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.COURSE,
+        ),
+        manage_course_content: false,
+      },
+      competition: {
+        manage: await this.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.COMPETITION,
+        ),
+      },
+      scholarship: {
+        manage: await this.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.SCHOLARSHIP,
+        ),
+      },
+      report: {
+        manage: await this.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.REPORT,
+        ),
+      },
+    };
+
+    permissions.category.manage = permissions.course.manage_the_course;
+    permissions.course.manage_course_content = !(
+      (await this.getUserOneCourseEnrollmentId(id, {
+        role: CourseEnrollmentRoleModel.INSTRUCTOR,
+      })) === null
+    );
+
+    return permissions;
+  }
+
   public async getUserAssignments(id: {
     userId: number;
   }): Promise<$UserAPI.GetUserAssignments.Response["data"]> {
@@ -182,7 +238,6 @@ export default class UserRepository
                 },
               },
             },
-            { authorId: id.userId },
           ],
         },
       },
@@ -216,6 +271,20 @@ export default class UserRepository
     }
 
     return courses;
+  }
+
+  public async getUserOneCourseEnrollmentId(
+    id: {
+      userId: number;
+    },
+    where: {
+      role: CourseEnrollmentRoleModel;
+    },
+  ): Promise<{ id: number } | null> {
+    return this.db.courseEnrollment.findFirst({
+      where: { userId: id.userId, role: where.role },
+      select: { id: true },
+    });
   }
 
   public async getUserEnrolledDepartmentPrograms(id: {
@@ -295,6 +364,9 @@ export default class UserRepository
           {
             divisions: {
               some: {
+                enrollments: {
+                  some: { userId: id.userId },
+                },
                 privileges: {
                   privilege,
                 },
@@ -305,11 +377,7 @@ export default class UserRepository
       },
     });
 
-    if (!department) {
-      return false;
-    }
-
-    return true;
+    return department !== null;
   }
 
   public async updateUser(

@@ -15,10 +15,10 @@ export default class DepartmentProgramEnrollmentAuthorization
     user: UserModel,
     targetUserId: number,
   ): Promise<void> {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       if (user.id === targetUserId) {
         isAuthorized = true;
       }
@@ -45,10 +45,10 @@ export default class DepartmentProgramEnrollmentAuthorization
     enrollment: DepartmentProgramEnrollmentModel,
   ): Promise<void> {
     const { id: userId, role } = user;
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(role);
+    const { isStudent, isAdmin } = getRoleStatus(role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       if (user.id === enrollment.userId) {
         isAuthorized = true;
       }

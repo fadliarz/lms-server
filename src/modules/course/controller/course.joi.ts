@@ -16,7 +16,6 @@ export const CreateCourseDtoJoi = Joi.object<$CourseAPI.CreateCourse.Dto>({
 
 export const GetCourseByIdQueryJoi = Joi.object<$CourseAPI.GetCourseById.Query>(
   {
-    include_author: Joi.boolean(),
     include_category: Joi.boolean(),
     include_lessons: Joi.boolean(),
     include_public_videos: Joi.boolean(),
@@ -24,7 +23,6 @@ export const GetCourseByIdQueryJoi = Joi.object<$CourseAPI.GetCourseById.Query>(
 );
 
 export const GetCoursesQueryJoi = Joi.object<$CourseAPI.GetCourses.Query>({
-  include_author: Joi.boolean(),
   include_category: Joi.boolean(),
   pageSize: Joi.number().required().min(1).max(10),
   pageNumber: Joi.number().required().min(1),
@@ -38,7 +36,6 @@ export type GetEnrolledCoursesQuery = {
    * Include
    *
    */
-  include_author: boolean;
   include_category: boolean;
   role: CourseEnrollmentRoleModel[];
   /**
@@ -50,7 +47,6 @@ export type GetEnrolledCoursesQuery = {
 };
 
 export const GetEnrolledCoursesQueryJoi = Joi.object<GetEnrolledCoursesQuery>({
-  include_author: Joi.boolean(),
   include_category: Joi.boolean(),
   role: Joi.array()
     .items(

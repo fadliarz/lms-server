@@ -11,10 +11,10 @@ export default class CompetitionAuthorization
   implements ICompetitionAuthorization
 {
   public async authorizeCreateCompetition(user: UserModel): Promise<void> {
-    const { isStudent, isAdmin, isInstructor } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       isAuthorized = await this.authorizeFromDepartmentDivision(
         user.id,
         PrivilegeModel.COMPETITION,

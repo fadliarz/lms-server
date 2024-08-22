@@ -14,10 +14,10 @@ export default class DepartmentProgramAuthorization
     user: UserModel,
     departmentId: number,
   ): Promise<void> {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       const department =
         await this.globalRepository.department.getDepartmentByIdOrThrow(
           departmentId,

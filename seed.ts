@@ -20,7 +20,6 @@ const main = async () => {
 
   await seed.user((x) =>
     x(5, ({ seed }) => ({
-      role: UserRoleModel.INSTRUCTOR,
       email:
         `${seed.replace(/[^\w\s]/gi, "")}@mahasiswa.itb.ac.id`.toLowerCase(),
       avatar: "https://picsum.photos/250/250?random=1",
@@ -28,14 +27,10 @@ const main = async () => {
     })),
   );
 
-  await seed.course(
-    (x) =>
-      x(instructors.length, {
-        image: "https://picsum.photos/500/250?random=1",
-      }),
-    {
-      connect: { user: instructors },
-    },
+  await seed.course((x) =>
+    x(instructors.length, {
+      image: "https://picsum.photos/500/250?random=1",
+    }),
   );
 
   const courses = getIds(1, instructors.length);

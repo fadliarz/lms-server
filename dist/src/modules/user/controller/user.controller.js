@@ -80,6 +80,19 @@ let UserController = class UserController {
             }
         });
     }
+    getUserPermissions(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const permissions = yield this.service.getUserPermissions((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: permissions,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     getUserAssignments(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

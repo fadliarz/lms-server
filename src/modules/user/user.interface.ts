@@ -9,6 +9,7 @@ export interface IUserAuthorization {
    *
    */
 
+  authorizeGetUserPermissions: (user: UserModel, targetUserId: number) => void;
   authorizeGetUserAssignments: (user: UserModel, targetUserId: number) => void;
   authorizeGetUserEnrolledAsStudentCourses: (
     user: UserModel,
@@ -69,6 +70,11 @@ export interface IUserController {
    *
    */
 
+  getUserPermissions: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
   getUserAssignments: (
     req: Request,
     res: Response,
@@ -188,6 +194,12 @@ export interface IUserService {
    *
    */
 
+  getUserPermissions: (
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ) => Promise<$UserAPI.GetUserPermissions.Response["data"]>;
   getUserAssignments: (
     user: UserModel,
     id: {
@@ -338,6 +350,9 @@ export interface IUserRepository {
    *
    */
 
+  getUserPermissions: (id: {
+    userId: number;
+  }) => Promise<$UserAPI.GetUserPermissions.Response["data"]>;
   getUserAssignments: (id: {
     userId: number;
   }) => Promise<$UserAPI.GetUserAssignments.Response["data"]>;
@@ -349,6 +364,14 @@ export interface IUserRepository {
       role: CourseEnrollmentRoleModel;
     },
   ) => Promise<CourseModel[]>;
+  getUserOneCourseEnrollmentId: (
+    id: {
+      userId: number;
+    },
+    where: {
+      role: CourseEnrollmentRoleModel;
+    },
+  ) => Promise<{ id: number } | null>;
   getUserEventAndCourseSchedules: (id: {
     userId: number;
   }) => Promise<$UserAPI.GetUserEventAndCourseSchedules.Response["data"]>;

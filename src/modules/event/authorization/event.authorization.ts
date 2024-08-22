@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
-import { UserModel } from "../../user/user.type";
+import { PrivilegeModel, UserModel } from "../../user/user.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import { IEventAuthorization } from "../event.interface";
@@ -10,16 +10,19 @@ export default class EventAuthorization
   extends BaseAuthorization
   implements IEventAuthorization
 {
-  public authorizeCreateEvent(user: UserModel): void {
-    const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+  public async authorizeCreateEvent(user: UserModel): Promise<void> {
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
     if (isStudent) {
+      isAuthorized = await this.authorizeFromDepartmentDivision(
+        user.id,
+        PrivilegeModel.EVENT,
+      );
     }
 
-    if (isInstructor || isAdmin) {
-      true;
+    if (isAdmin) {
+      isAuthorized = true;
     }
 
     if (!isAuthorized) {
@@ -27,11 +30,11 @@ export default class EventAuthorization
     }
   }
 
-  public authorizeUpdateEvent(user: UserModel): void {
-    this.authorizeCreateEvent(user);
+  public async authorizeUpdateEvent(user: UserModel): Promise<void> {
+    await this.authorizeCreateEvent(user);
   }
 
-  public authorizeDeleteEvent(user: UserModel): void {
-    this.authorizeCreateEvent(user);
+  public async authorizeDeleteEvent(user: UserModel): Promise<void> {
+    await this.authorizeCreateEvent(user);
   }
 }

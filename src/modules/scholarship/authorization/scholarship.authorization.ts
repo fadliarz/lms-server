@@ -17,10 +17,10 @@ export default class ScholarshipAuthorization
 
   public async authorizeCreateScholarship(user: UserModel): Promise<void> {
     const { id: userId, role } = user;
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(role);
+    const { isStudent, isAdmin } = getRoleStatus(role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       isAuthorized =
         await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
           { userId },

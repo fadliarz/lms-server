@@ -14,10 +14,10 @@ export default class CourseClassAssignmentCompletionAuthorization
     user: UserModel,
     id: { courseId: number; targetUserId: number },
   ): Promise<void> {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       const enrollment =
         await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
           {
@@ -44,10 +44,10 @@ export default class CourseClassAssignmentCompletionAuthorization
     user: UserModel,
     completionId: number,
   ): Promise<void> {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       const completion =
         await this.globalRepository.courseClassAssignmentCompletion.getCompletionById(
           {

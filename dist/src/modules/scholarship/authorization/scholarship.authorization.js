@@ -30,9 +30,9 @@ let ScholarshipAuthorization = class ScholarshipAuthorization {
     authorizeCreateScholarship(user) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id: userId, role } = user;
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 isAuthorized =
                     yield this.globalRepository.user.getUserAuthorizationStatusFromPrivilege({ userId }, user_type_1.PrivilegeModel.SCHOLARSHIP);
             }

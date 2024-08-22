@@ -3,20 +3,25 @@ import getRoleStatus from "../../../common/functions/getRoleStatus";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import { ICourseCategoryAuthorization } from "../category.interface";
 import { injectable } from "inversify";
-import { UserModel } from "../../user/user.type";
+import { PrivilegeModel, UserModel } from "../../user/user.type";
+import BaseAuthorization from "../../../common/class/BaseAuthorization";
 
 @injectable()
 export default class CourseCategoryAuthorization
+  extends BaseAuthorization
   implements ICourseCategoryAuthorization
 {
-  public authorizeCreateCategory(user: UserModel): void {
-    const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+  public async authorizeCreateCategory(user: UserModel): Promise<void> {
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
     let isAuthorized = false;
     if (isStudent) {
+      isAuthorized = await this.authorizeFromDepartmentDivision(
+        user.id,
+        PrivilegeModel.COURSE,
+      );
     }
 
-    if (isInstructor || isAdmin) {
+    if (isAdmin) {
       isAuthorized = true;
     }
 
@@ -25,11 +30,11 @@ export default class CourseCategoryAuthorization
     }
   }
 
-  public authorizeUpdateCategory(user: UserModel): void {
-    this.authorizeCreateCategory(user);
+  public async authorizeUpdateCategory(user: UserModel): Promise<void> {
+    await this.authorizeCreateCategory(user);
   }
 
-  public authorizeDeleteCategory(user: UserModel): void {
-    this.authorizeCreateCategory(user);
+  public async authorizeDeleteCategory(user: UserModel): Promise<void> {
+    await this.authorizeCreateCategory(user);
   }
 }

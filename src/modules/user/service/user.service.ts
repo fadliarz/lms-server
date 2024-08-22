@@ -34,7 +34,6 @@ import {
   RepositoryDITypes,
 } from "../../../common/class/repository/repository.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
-import getRoleStatus from "../../../common/functions/getRoleStatus";
 import BaseService from "../../../common/class/BaseService";
 
 @injectable()
@@ -112,6 +111,21 @@ export default class UserService extends BaseService implements IUserService {
     return this.getPublicUser(user);
   }
 
+  public async getUserPermissions(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserPermissions.Response["data"]> {
+    try {
+      this.authorization.authorizeGetUserPermissions(user, id.userId);
+
+      return await this.repository.getUserPermissions(id);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
   public async getUserAssignments(
     user: UserModel,
     id: {
@@ -166,7 +180,7 @@ export default class UserService extends BaseService implements IUserService {
       }
 
       const targetUser = await this.repository.getUserByIdOrThrow(id);
-      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.OWNER)) {
+      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.ADMIN)) {
         return await this.globalRepository.course.getCourses();
       }
 
@@ -227,7 +241,7 @@ export default class UserService extends BaseService implements IUserService {
       );
 
       const targetUser = await this.repository.getUserByIdOrThrow(id);
-      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.OWNER)) {
+      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.ADMIN)) {
         return await this.globalRepository.department.getDepartments();
       }
 
@@ -252,7 +266,7 @@ export default class UserService extends BaseService implements IUserService {
       );
 
       const targetUser = await this.repository.getUserByIdOrThrow(id);
-      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.OWNER)) {
+      if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.ADMIN)) {
         return await this.globalRepository.departmentDivision.getAllExtendedDivisions();
       }
 
@@ -348,52 +362,14 @@ export default class UserService extends BaseService implements IUserService {
     dto: $UserAPI.UpdateUserRole.Dto,
   ): Promise<$UserAPI.UpdateUserRole.Response["data"]> {
     try {
-      return this.prisma.$transaction(async (tx) => {
-        this.authorization.authorizeUpdateUser(user, id.userId);
+      this.authorization.authorizeUpdateUser(user, id.userId);
 
-        const targetUser = await this.repository.getUserByIdOrThrow(
-          { userId: id.userId },
-          new RecordNotFoundException("user doesn't exist!"),
-        );
+      const updatedUser = await this.repository.updateUser(
+        { userId: id.userId },
+        dto,
+      );
 
-        const currentRole = targetUser.role;
-        const { role: newRole } = dto;
-        if (isEqualOrIncludeRole(currentRole, newRole)) {
-          return targetUser;
-        }
-
-        const { isStudent, isInstructor } = getRoleStatus(currentRole);
-
-        if (
-          (isStudent || isInstructor) &&
-          isEqualOrIncludeRole(newRole, UserRoleModel.STUDENT)
-        ) {
-          await tx.courseEnrollment.deleteMany({
-            where: {
-              userId: id.userId,
-              role: CourseEnrollmentRoleModel.INSTRUCTOR,
-            },
-          });
-
-          await tx.course.updateMany({
-            where: {
-              authorId: id.userId,
-            },
-            data: {
-              authorId: null,
-            },
-          });
-        }
-
-        const updatedUser = await asyncLocalStorage.run(
-          { [LocalStorageKey.TRANSACTION]: tx },
-          async () => {
-            return await this.repository.deleteUser({ userId: id.userId });
-          },
-        );
-
-        return this.getPublicUser(updatedUser);
-      });
+      return this.getPublicUser(updatedUser);
     } catch (error: any) {
       throw handleRepositoryError(error);
     }

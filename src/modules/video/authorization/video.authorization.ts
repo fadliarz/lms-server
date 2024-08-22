@@ -27,12 +27,18 @@ export default class CourseLessonVideoAuthorization
     user: UserModel,
     courseId: number,
   ): Promise<void> {
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-    const isAuthor = await this.isAuthor(user.id, courseId);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
-      if (isAuthor) {
+    if (isStudent) {
+      const enrollment =
+        await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
+          {
+            userId: user.id,
+            courseId: courseId,
+          },
+        );
+      if (enrollment) {
         isAuthorized = true;
       }
 
@@ -41,19 +47,6 @@ export default class CourseLessonVideoAuthorization
           user.id,
           PrivilegeModel.COURSE,
         );
-      }
-
-      if (!isAuthorized) {
-        const enrollment =
-          await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
-            {
-              userId: user.id,
-              courseId: courseId,
-            },
-          );
-        if (enrollment) {
-          isAuthorized = true;
-        }
       }
     }
 

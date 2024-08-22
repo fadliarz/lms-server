@@ -26,11 +26,10 @@ export default class CourseClassAssignmentAuthorization
     user: UserModel,
     courseId: number,
   ): Promise<void> {
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(user.role);
-    const isAuthor = await this.isAuthor(user.id, courseId);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       const enrollment =
         await this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId(
           {
@@ -40,13 +39,6 @@ export default class CourseClassAssignmentAuthorization
         );
       if (enrollment) {
         isAuthorized = true;
-      }
-
-      if (!isAuthorized) {
-        const isAuthor = await this.isAuthor(user.id, courseId);
-        if (isAuthor) {
-          isAuthorized = true;
-        }
       }
 
       if (!isAuthorized) {

@@ -11,15 +11,34 @@ export default class UserAuthorization
   extends BaseAuthorization
   implements IUserAuthorization
 {
+  public authorizeGetUserPermissions(
+    user: UserModel,
+    targetUserId: number,
+  ): void {
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
+
+    let isAuthorized = false;
+    if (isStudent && user.id == targetUserId) {
+      isAuthorized = true;
+    }
+
+    if (isAdmin) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
+
   public authorizeGetUserAssignments(
     user: UserModel,
     targetUserId: number,
   ): void {
-    const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if ((isStudent || isInstructor) && userId === targetUserId) {
+    if (isStudent && user.id == targetUserId) {
       isAuthorized = true;
     }
 
@@ -43,24 +62,11 @@ export default class UserAuthorization
     user: UserModel,
     targetUserId: number,
   ): Promise<void> {
-    const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if ((isStudent || isInstructor) && user.id === targetUserId) {
-      if (isInstructor) {
-        isAuthorized = true;
-      }
-
-      if (!isAuthorized) {
-        const isAcademicDivision =
-          await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
-            { userId: user.id },
-            PrivilegeModel.COURSE,
-          );
-
-        isAuthorized = isAcademicDivision;
-      }
+    if (isStudent && user.id === targetUserId) {
+      isAuthorized = true;
     }
 
     if (isAdmin) {
@@ -84,10 +90,10 @@ export default class UserAuthorization
     targetUserId: number,
   ): Promise<void> {
     const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(userRole);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       if (userId === targetUserId) {
         isAuthorized = true;
       }
@@ -114,10 +120,10 @@ export default class UserAuthorization
     user: UserModel,
     targetUserId: number,
   ): Promise<void> {
-    const { isStudent, isInstructor, isAdmin } = getRoleStatus(user.role);
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if ((isStudent || isInstructor) && user.id === targetUserId) {
+    if (isStudent && user.id === targetUserId) {
       isAuthorized = true;
     }
 
@@ -142,10 +148,10 @@ export default class UserAuthorization
     targetUserId: number,
   ): Promise<void> {
     const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(userRole);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       if (userId === targetUserId) {
         isAuthorized = true;
       }
@@ -170,10 +176,10 @@ export default class UserAuthorization
 
   public authorizeUpdateUser(user: UserModel, targetUserId: number): void {
     const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(userRole);
 
     let isAuthorized = false;
-    if ((isStudent || isInstructor) && userId === targetUserId) {
+    if (isStudent && userId === targetUserId) {
       isAuthorized = true;
     }
 

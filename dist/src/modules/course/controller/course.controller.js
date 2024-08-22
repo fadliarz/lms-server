@@ -50,7 +50,6 @@ let CourseController = class CourseController {
                 yield (0, validateJoi_1.default)({ query: course_joi_1.GetCoursesQueryJoi })(req, res, next);
                 const reqQuery = req.query;
                 const query = {
-                    include_author: (0, convertStringToBoolean_1.default)(reqQuery.include_author),
                     include_category: (0, convertStringToBoolean_1.default)(reqQuery.include_category),
                     pageSize: !isNaN(reqQuery.pageSize)
                         ? Number(reqQuery.pageSize)
@@ -74,7 +73,6 @@ let CourseController = class CourseController {
                 const courseId = this.validateCourseId(req);
                 const reqQuery = req.query;
                 const query = {
-                    include_author: (0, convertStringToBoolean_1.default)(reqQuery.include_author),
                     include_category: (0, convertStringToBoolean_1.default)(reqQuery.include_category),
                     include_lessons: (0, convertStringToBoolean_1.default)(reqQuery.include_lessons),
                     include_public_videos: (0, convertStringToBoolean_1.default)(reqQuery.include_public_videos),

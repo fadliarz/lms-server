@@ -27,9 +27,9 @@ let ReportAuthorization = class ReportAuthorization extends BaseAuthorization_1.
     authorizeGetReports(user) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id: userId, role: userRole } = user;
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(userRole);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 isAuthorized =
                     yield this.globalRepository.user.getUserAuthorizationStatusFromPrivilege({ userId }, user_type_1.PrivilegeModel.REPORT);
             }
@@ -43,16 +43,14 @@ let ReportAuthorization = class ReportAuthorization extends BaseAuthorization_1.
     }
     authorizeGetReportById(user, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { id: userId, role: userRole } = user;
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(userRole);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
-                if (userId === targetUserId) {
+            if (isStudent) {
+                if (user.id === targetUserId) {
                     isAuthorized = true;
                 }
                 if (!isAuthorized) {
-                    isAuthorized =
-                        yield this.globalRepository.user.getUserAuthorizationStatusFromPrivilege({ userId }, user_type_1.PrivilegeModel.REPORT);
+                    isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.REPORT);
                 }
             }
             if (isAdmin) {

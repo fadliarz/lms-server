@@ -3,9 +3,9 @@ import { $EventAPI, EventModel } from "./event.type";
 import { NextFunction, Request, Response } from "express";
 
 export interface IEventAuthorization {
-  authorizeCreateEvent: (user: UserModel) => void;
-  authorizeUpdateEvent: (user: UserModel) => void;
-  authorizeDeleteEvent: (user: UserModel) => void;
+  authorizeCreateEvent: (user: UserModel) => Promise<void>;
+  authorizeUpdateEvent: (user: UserModel) => Promise<void>;
+  authorizeDeleteEvent: (user: UserModel) => Promise<void>;
 }
 
 export interface IEventController {

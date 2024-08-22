@@ -28,16 +28,13 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield seed.$resetDatabase();
     const instructors = getIds(1, 5);
     yield seed.user((x) => x(5, ({ seed }) => ({
-        role: course_type_1.UserRoleModel.INSTRUCTOR,
         email: `${seed.replace(/[^\w\s]/gi, "")}@mahasiswa.itb.ac.id`.toLowerCase(),
         avatar: "https://picsum.photos/250/250?random=1",
         password: (0, encrypt_1.default)("password"),
     })));
     yield seed.course((x) => x(instructors.length, {
         image: "https://picsum.photos/500/250?random=1",
-    }), {
-        connect: { user: instructors },
-    });
+    }));
     const courses = getIds(1, instructors.length);
     yield seed.courseLesson((x) => x(5 * courses.length), {
         connect: {

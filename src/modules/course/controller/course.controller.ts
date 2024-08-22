@@ -62,7 +62,6 @@ export default class CourseController implements ICourseController {
         any
       >;
       const query: $CourseAPI.GetCourses.Query = {
-        include_author: convertStringToBoolean(reqQuery.include_author),
         include_category: convertStringToBoolean(reqQuery.include_category),
         pageSize: !isNaN(reqQuery.pageSize)
           ? Number(reqQuery.pageSize)
@@ -93,7 +92,6 @@ export default class CourseController implements ICourseController {
         [K in keyof $CourseAPI.GetCourseById.Query]: string | undefined;
       };
       const query: $CourseAPI.GetCourseById.Query = {
-        include_author: convertStringToBoolean(reqQuery.include_author),
         include_category: convertStringToBoolean(reqQuery.include_category),
         include_lessons: convertStringToBoolean(reqQuery.include_lessons),
         include_public_videos: convertStringToBoolean(

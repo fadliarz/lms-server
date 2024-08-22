@@ -148,13 +148,6 @@ export interface ICourseRepository {
     query?: Partial<$CourseAPI.GetCourseById.Query>,
     error?: Error,
   ) => Promise<$CourseAPI.GetCourseById.Response["data"]>;
-  getCourseAuthorByIdOrThrow: (
-    id: {
-      courseId: number;
-    },
-    options?: { minimalist?: boolean },
-    error?: Error,
-  ) => Promise<UserModel | { id: number } | null>;
   updateCourse: (
     id: { courseId: number },
     data: Partial<CourseModel>,

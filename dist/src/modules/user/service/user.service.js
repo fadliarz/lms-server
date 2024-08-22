@@ -50,7 +50,6 @@ const course_type_1 = require("../../course/course.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 const repository_type_1 = require("../../../common/class/repository/repository.type");
 const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
-const getRoleStatus_1 = __importDefault(require("../../../common/functions/getRoleStatus"));
 const BaseService_1 = __importDefault(require("../../../common/class/BaseService"));
 let UserService = class UserService extends BaseService_1.default {
     constructor() {
@@ -102,6 +101,17 @@ let UserService = class UserService extends BaseService_1.default {
             return this.getPublicUser(user);
         });
     }
+    getUserPermissions(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                this.authorization.authorizeGetUserPermissions(user, id.userId);
+                return yield this.repository.getUserPermissions(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
     getUserAssignments(user, id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -135,7 +145,7 @@ let UserService = class UserService extends BaseService_1.default {
                     return yield this.globalRepository.course.getCourses();
                 }
                 const targetUser = yield this.repository.getUserByIdOrThrow(id);
-                if ((0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.OWNER)) {
+                if ((0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.ADMIN)) {
                     return yield this.globalRepository.course.getCourses();
                 }
                 return yield this.repository.getUserEnrolledCourses(id, {
@@ -174,7 +184,7 @@ let UserService = class UserService extends BaseService_1.default {
             try {
                 yield this.authorization.authorizeGetUserManagedDepartments(user, id.userId);
                 const targetUser = yield this.repository.getUserByIdOrThrow(id);
-                if ((0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.OWNER)) {
+                if ((0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.ADMIN)) {
                     return yield this.globalRepository.department.getDepartments();
                 }
                 return yield this.repository.getUserLedDepartments({
@@ -191,7 +201,7 @@ let UserService = class UserService extends BaseService_1.default {
             try {
                 yield this.authorization.authorizeGetUserManagedDepartmentDivisions(user, id.userId);
                 const targetUser = yield this.repository.getUserByIdOrThrow(id);
-                if ((0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.OWNER)) {
+                if ((0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.ADMIN)) {
                     return yield this.globalRepository.departmentDivision.getAllExtendedDivisions();
                 }
                 return yield this.repository.getUserLedDepartmentDivisions({
@@ -254,37 +264,9 @@ let UserService = class UserService extends BaseService_1.default {
     updateUserRole(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                    this.authorization.authorizeUpdateUser(user, id.userId);
-                    const targetUser = yield this.repository.getUserByIdOrThrow({ userId: id.userId }, new RecordNotFoundException_1.default("user doesn't exist!"));
-                    const currentRole = targetUser.role;
-                    const { role: newRole } = dto;
-                    if ((0, isEqualOrIncludeRole_1.default)(currentRole, newRole)) {
-                        return targetUser;
-                    }
-                    const { isStudent, isInstructor } = (0, getRoleStatus_1.default)(currentRole);
-                    if ((isStudent || isInstructor) &&
-                        (0, isEqualOrIncludeRole_1.default)(newRole, course_type_1.UserRoleModel.STUDENT)) {
-                        yield tx.courseEnrollment.deleteMany({
-                            where: {
-                                userId: id.userId,
-                                role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
-                            },
-                        });
-                        yield tx.course.updateMany({
-                            where: {
-                                authorId: id.userId,
-                            },
-                            data: {
-                                authorId: null,
-                            },
-                        });
-                    }
-                    const updatedUser = yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
-                        return yield this.repository.deleteUser({ userId: id.userId });
-                    }));
-                    return this.getPublicUser(updatedUser);
-                }));
+                this.authorization.authorizeUpdateUser(user, id.userId);
+                const updatedUser = yield this.repository.updateUser({ userId: id.userId }, dto);
+                return this.getPublicUser(updatedUser);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

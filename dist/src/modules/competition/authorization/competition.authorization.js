@@ -26,9 +26,9 @@ const AuthorizationException_1 = __importDefault(require("../../../common/class/
 let CompetitionAuthorization = class CompetitionAuthorization extends BaseAuthorization_1.default {
     authorizeCreateCompetition(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isAdmin, isInstructor } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.COMPETITION);
             }
             if (isAdmin) {

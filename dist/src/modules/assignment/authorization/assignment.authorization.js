@@ -35,22 +35,15 @@ let CourseClassAssignmentAuthorization = class CourseClassAssignmentAuthorizatio
     }
     authorizeReadAssignment(user, courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(user.role);
-            const isAuthor = yield this.isAuthor(user.id, courseId);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 const enrollment = yield this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId({
                     userId: user.id,
                     courseId: courseId,
                 });
                 if (enrollment) {
                     isAuthorized = true;
-                }
-                if (!isAuthorized) {
-                    const isAuthor = yield this.isAuthor(user.id, courseId);
-                    if (isAuthor) {
-                        isAuthorized = true;
-                    }
                 }
                 if (!isAuthorized) {
                     isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.COURSE);

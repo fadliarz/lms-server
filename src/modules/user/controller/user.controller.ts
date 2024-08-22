@@ -86,6 +86,25 @@ export default class UserController implements IUserController {
     }
   }
 
+  public async getUserPermissions(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const permissions = await this.service.getUserPermissions(
+        getRequestUserOrThrowAuthenticationException(req),
+        { userId: this.validateUserId(req) },
+      );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: permissions,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public async getUserAssignments(
     req: Request,
     res: Response,

@@ -12,10 +12,10 @@ export default class ReportAuthorization
 {
   public async authorizeGetReports(user: UserModel): Promise<void> {
     const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(userRole);
 
     let isAuthorized = false;
-    if (isStudent || isInstructor) {
+    if (isStudent) {
       isAuthorized =
         await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
           { userId },
@@ -36,22 +36,20 @@ export default class ReportAuthorization
     user: UserModel,
     targetUserId: number,
   ): Promise<void> {
-    const { id: userId, role: userRole } = user;
-    const { isAdmin, isInstructor, isStudent } = getRoleStatus(userRole);
+    const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
 
-    if (isStudent || isInstructor) {
-      if (userId === targetUserId) {
+    if (isStudent) {
+      if (user.id === targetUserId) {
         isAuthorized = true;
       }
 
       if (!isAuthorized) {
-        isAuthorized =
-          await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
-            { userId },
-            PrivilegeModel.REPORT,
-          );
+        isAuthorized = await this.authorizeFromDepartmentDivision(
+          user.id,
+          PrivilegeModel.REPORT,
+        );
       }
     }
 

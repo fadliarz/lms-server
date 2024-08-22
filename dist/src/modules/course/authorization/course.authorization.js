@@ -29,12 +29,12 @@ const isEqualOrIncludeCourseEnrollmentRole_1 = __importDefault(require("../../..
 let CourseAuthorization = class CourseAuthorization extends BaseAuthorization_1.default {
     authorizeCreateCourse(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
             if (isStudent) {
                 isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.COURSE);
             }
-            if (isInstructor || isAdmin) {
+            if (isAdmin) {
                 isAuthorized = true;
             }
             if (!isAuthorized) {
@@ -44,17 +44,11 @@ let CourseAuthorization = class CourseAuthorization extends BaseAuthorization_1.
     }
     authorizeUpdateCourse(user, courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(user.role);
-            const isAuthor = yield this.isAuthor(user.id, courseId);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
-                if (isAuthor) {
-                    isAuthorized = true;
-                }
+            if (isStudent) {
+                isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.COURSE);
                 if (!isAuthorized) {
-                    isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.COURSE);
-                }
-                if (!isAuthorized && isInstructor) {
                     const enrollment = yield this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId({
                         userId: user.id,
                         courseId: courseId,
@@ -80,9 +74,9 @@ let CourseAuthorization = class CourseAuthorization extends BaseAuthorization_1.
     }
     authorizeCreateLike(user, courseId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(user.role);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor || isAdmin) {
+            if (isStudent || isAdmin) {
                 const enrollment = yield this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId({
                     userId: user.id,
                     courseId: courseId,
@@ -99,9 +93,9 @@ let CourseAuthorization = class CourseAuthorization extends BaseAuthorization_1.
     }
     authorizeDeleteLike(user, courseId, likeId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isAdmin, isInstructor, isStudent } = (0, getRoleStatus_1.default)(user.role);
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor || isAdmin) {
+            if (isStudent || isAdmin) {
                 const like = yield this.globalRepository.course.getLikeByIdOrThrow({
                     likeId,
                     resourceId: { courseId },

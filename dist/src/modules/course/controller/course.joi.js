@@ -15,19 +15,16 @@ exports.CreateCourseDtoJoi = joi_1.default.object({
     material: joi_1.default.string(),
 });
 exports.GetCourseByIdQueryJoi = joi_1.default.object({
-    include_author: joi_1.default.boolean(),
     include_category: joi_1.default.boolean(),
     include_lessons: joi_1.default.boolean(),
     include_public_videos: joi_1.default.boolean(),
 });
 exports.GetCoursesQueryJoi = joi_1.default.object({
-    include_author: joi_1.default.boolean(),
     include_category: joi_1.default.boolean(),
     pageSize: joi_1.default.number().required().min(1).max(10),
     pageNumber: joi_1.default.number().required().min(1),
 });
 exports.GetEnrolledCoursesQueryJoi = joi_1.default.object({
-    include_author: joi_1.default.boolean(),
     include_category: joi_1.default.boolean(),
     role: joi_1.default.array()
         .items(course_type_1.CourseEnrollmentRoleModel.STUDENT, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR)

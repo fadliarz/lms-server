@@ -25,9 +25,9 @@ const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseA
 let DepartmentDivisionEnrollmentAuthorization = class DepartmentDivisionEnrollmentAuthorization extends BaseAuthorization_1.default {
     authorizeCreateEnrollment(user, divisionId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 const division = yield this.globalRepository.departmentDivision.getDivisionByIdOrThrow(divisionId);
                 if (division.leaderId === user.id || division.coLeaderId === user.id) {
                     isAuthorized = true;

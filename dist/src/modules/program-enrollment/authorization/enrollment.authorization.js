@@ -26,9 +26,9 @@ const BaseAuthorization_1 = __importDefault(require("../../../common/class/BaseA
 let DepartmentProgramEnrollmentAuthorization = class DepartmentProgramEnrollmentAuthorization extends BaseAuthorization_1.default {
     authorizeCreateEnrollment(user, targetUserId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 if (user.id === targetUserId) {
                     isAuthorized = true;
                 }
@@ -47,9 +47,9 @@ let DepartmentProgramEnrollmentAuthorization = class DepartmentProgramEnrollment
     authorizeDeleteEnrollment(user, enrollment) {
         return __awaiter(this, void 0, void 0, function* () {
             const { id: userId, role } = user;
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 if (user.id === enrollment.userId) {
                     isAuthorized = true;
                 }

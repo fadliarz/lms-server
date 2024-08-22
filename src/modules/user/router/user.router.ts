@@ -55,6 +55,12 @@ export default function UserRouter(authenticationMiddleware: any) {
   );
 
   router.get(
+    $UserAPI.GetUserPermissions.endpoint,
+    authenticationMiddleware,
+    controller.getUserPermissions.bind(controller),
+  );
+
+  router.get(
     $UserAPI.GetUserAssignments.endpoint,
     authenticationMiddleware,
     controller.getUserAssignments.bind(controller),

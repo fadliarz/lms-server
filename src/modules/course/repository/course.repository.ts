@@ -9,7 +9,6 @@ import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseRepository } from "../course.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
-import { UserModel } from "../../user/user.type";
 
 @injectable()
 export default class CourseRepository
@@ -40,16 +39,6 @@ export default class CourseRepository
                 : 0,
             take: query.pageSize || 0,
             include: {
-              author: !!query.include_author
-                ? {
-                    select: {
-                      id: true,
-                      avatar: true,
-                      name: true,
-                      NIM: true,
-                    },
-                  }
-                : false,
               category: !!query.include_category,
             },
           }
@@ -67,16 +56,6 @@ export default class CourseRepository
       where: { id: id.courseId },
       include: query
         ? {
-            author: query.include_author
-              ? {
-                  select: {
-                    id: true,
-                    avatar: true,
-                    name: true,
-                    NIM: true,
-                  },
-                }
-              : false,
             category: !!query.include_category,
             lessons: !!query.include_lessons
               ? !!query.include_public_videos
@@ -200,28 +179,5 @@ export default class CourseRepository
     return this.db.courseLike.delete({
       where,
     });
-  }
-
-  public async getCourseAuthorByIdOrThrow(
-    id: {
-      courseId: number;
-    },
-    options?: { minimalist?: boolean },
-    error?: Error,
-  ): Promise<UserModel | { id: number } | null> {
-    const course = await this.db.course.findUnique({
-      where: {
-        id: id.courseId,
-      },
-      select: {
-        author: options && options.minimalist ? { select: { id: true } } : true,
-      },
-    });
-
-    if (!course) {
-      throw error || new RecordNotFoundException();
-    }
-
-    return course.author;
   }
 }

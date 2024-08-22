@@ -1,12 +1,11 @@
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
 import { $CourseCategoryAPI, CourseCategoryModel } from "./category.type";
-import { CourseCategory } from "@prisma/client";
 
 export interface ICourseCategoryAuthorization {
-  authorizeCreateCategory: (user: UserModel) => void;
-  authorizeUpdateCategory: (user: UserModel) => void;
-  authorizeDeleteCategory: (user: UserModel) => void;
+  authorizeCreateCategory: (user: UserModel) => Promise<void>;
+  authorizeUpdateCategory: (user: UserModel) => Promise<void>;
+  authorizeDeleteCategory: (user: UserModel) => Promise<void>;
 }
 
 export interface ICourseCategoryController {
@@ -62,8 +61,8 @@ export interface ICourseCategoryService {
 export interface ICourseCategoryRepository {
   createCategory: (
     data: $CourseCategoryAPI.CreateCategory.Dto,
-  ) => Promise<CourseCategory>;
-  getCategories: () => Promise<CourseCategory[]>;
+  ) => Promise<CourseCategoryModel>;
+  getCategories: () => Promise<CourseCategoryModel[]>;
   getCategoryById: (id: {
     categoryId: number;
   }) => Promise<CourseCategoryModel | null>;
@@ -76,6 +75,6 @@ export interface ICourseCategoryRepository {
       categoryId: number;
     },
     data: $CourseCategoryAPI.UpdateCategory.Dto,
-  ) => Promise<CourseCategory>;
+  ) => Promise<CourseCategoryModel>;
   deleteCategory: (id: { categoryId: number }) => Promise<{}>;
 }

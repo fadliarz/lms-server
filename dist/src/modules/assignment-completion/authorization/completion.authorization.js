@@ -25,9 +25,9 @@ const AuthorizationException_1 = __importDefault(require("../../../common/class/
 let CourseClassAssignmentCompletionAuthorization = class CourseClassAssignmentCompletionAuthorization extends BaseAuthorization_1.default {
     authorizeCreateCompletion(user, id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 const enrollment = yield this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId({
                     userId: id.targetUserId,
                     courseId: id.courseId,
@@ -46,9 +46,9 @@ let CourseClassAssignmentCompletionAuthorization = class CourseClassAssignmentCo
     }
     authorizeDeleteCompletion(user, completionId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { isStudent, isInstructor, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
-            if (isStudent || isInstructor) {
+            if (isStudent) {
                 const completion = yield this.globalRepository.courseClassAssignmentCompletion.getCompletionById({
                     completionId,
                 });

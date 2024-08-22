@@ -63,8 +63,7 @@ exports.CourseDITypes = {
     AUTHORIZATION: Symbol.for("COURSE_AUTHORIZATION"),
 };
 exports.UserRoleModel = {
-    OWNER: "OWNER",
-    INSTRUCTOR: "INSTRUCTOR",
+    ADMIN: "ADMIN",
     STUDENT: "STUDENT",
 };
 exports.CourseStatusModel = {

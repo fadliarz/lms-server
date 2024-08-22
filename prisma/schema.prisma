@@ -34,7 +34,6 @@ model User {
   lineId                           String                            @map("line_id")
   medicalHistories                 String                            @map("medical_histories")
   UKM                              String                            @map("ukm")
-  courses                          Course[]
   courseEnrollments                CourseEnrollment[]
   courseLikes                      CourseLike[]
   departmentCoLeaders              Department?                       @relation("DepartmentCoLeaders")
@@ -96,10 +95,8 @@ model Course {
   totalLikes       Int                @default(0) @map("total_likes")
   createdAt        DateTime           @default(now()) @map("created_at")
   updatedAt        DateTime           @default(now()) @updatedAt @map("updated_at")
-  authorId         Int?               @map("author_id")
   categoryId       Int?               @map("category_id")
   code             String
-  author           User?              @relation(fields: [authorId], references: [id])
   category         CourseCategory?    @relation(fields: [categoryId], references: [id])
   classes          CourseClass[]
   enrollments      CourseEnrollment[]
@@ -107,7 +104,6 @@ model Course {
   likes            CourseLike[]
   schedules        CourseSchedule[]
 
-  @@index([authorId])
   @@index([categoryId])
   @@map("course")
 }
@@ -376,11 +372,11 @@ enum Privilege {
   COMPETITION
   REPORT
   COURSE
+  EVENT
 }
 
 enum Role {
-  OWNER
-  INSTRUCTOR
+  ADMIN
   STUDENT
 }
 
