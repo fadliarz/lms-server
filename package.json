@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon src/main.ts",
     "build": "rimraf dist && tsc",
-    "postinstall": "prisma migrate dev; prisma db push",
+    "postinstall": "prisma migrate dev --accept-data-loss; prisma db push --accept-data-loss",
     "ts.check": "tsc --project tsconfig.json",
     "add-build": "git add dist",
     "dev": "tsc-watch --onSuccess \"node ./dist/src/main.js\"",
