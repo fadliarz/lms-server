@@ -49,7 +49,7 @@ export namespace $UserAPI {
   }
 
   export namespace GetMe {
-    export const endpoint = root + "/me";
+    export const endpoint = "/get-me";
     export const generateUrl = () => endpoint;
     export type Response = { data: PublicUserModel };
   }

@@ -19,7 +19,7 @@ var $UserAPI;
     })(GetUserById = $UserAPI.GetUserById || ($UserAPI.GetUserById = {}));
     let GetMe;
     (function (GetMe) {
-        GetMe.endpoint = root + "/me";
+        GetMe.endpoint = "/get-me";
         GetMe.generateUrl = () => GetMe.endpoint;
     })(GetMe = $UserAPI.GetMe || ($UserAPI.GetMe = {}));
     let GetUserPermissions;

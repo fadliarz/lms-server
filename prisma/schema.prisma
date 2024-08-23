@@ -342,11 +342,10 @@ model DivisionPrivilege {
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
   description String?
-  price       Float
-  size        String[]
+  variants    Json[]
   Order       Order[]
 
   @@map("product")
