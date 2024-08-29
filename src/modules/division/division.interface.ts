@@ -1,11 +1,11 @@
 import { UserModel } from "../user/user.type";
 import {
-  $DepartmentDivisionAPI,
   DepartmentDivisionModel,
   DepartmentDivisionResourceId,
 } from "./division.type";
 import { DepartmentModel } from "../department/department.type";
 import { NextFunction, Request, Response } from "express";
+import { $DepartmentDivisionAPI } from "./division.api";
 
 export interface IDepartmentDivisionAuthorization {
   authorizeCreateDivision: (

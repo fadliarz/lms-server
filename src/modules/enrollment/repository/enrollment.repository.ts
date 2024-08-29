@@ -1,12 +1,12 @@
 import "reflect-metadata";
 import {
-  $CourseEnrollmentAPI,
   CourseEnrollmentModel,
   CourseEnrollmentResourceId,
 } from "../enrollment.type";
 import { injectable } from "inversify";
 import { ICourseEnrollmentRepository } from "../enrollment.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
+import { $CourseEnrollmentAPI } from "../enrollment.api";
 
 @injectable()
 export default class CourseEnrollmentRepository

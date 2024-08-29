@@ -59,6 +59,22 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
             });
         });
     }
+    getPublicUsers(query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const select = { id: true, NIM: true, name: true, avatar: true };
+            if (query && query.pageSize && !query.pageNumber) {
+                return this.db.user.findMany({ take: query.pageSize, select });
+            }
+            if (query && query.pageSize && query.pageNumber) {
+                return this.db.user.findMany({
+                    take: query.pageSize,
+                    skip: (query.pageNumber - 1) * query.pageSize,
+                    select,
+                });
+            }
+            return this.db.user.findMany({ select });
+        });
+    }
     getUserById(id) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.user.findUnique({

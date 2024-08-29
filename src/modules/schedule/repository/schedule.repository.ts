@@ -1,12 +1,12 @@
 import { injectable } from "inversify";
 import BaseRepository from "../../../common/class/BaseRepository";
 import {
-  $CourseScheduleAPI,
   CourseScheduleModel,
   CourseScheduleResourceId,
 } from "../schedule.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseScheduleRepository } from "../schedule.interface";
+import { $CourseScheduleAPI } from "../schedule.api";
 
 @injectable()
 export default class CourseScheduleRepository
@@ -38,7 +38,7 @@ export default class CourseScheduleRepository
     scheduleId: number;
     resourceId?: CourseScheduleResourceId["params"];
   }): Promise<CourseScheduleModel | null> {
-    return this.db.courseSchedule.findUnique({
+    return this.db.courseSchedule.findFirst({
       where: this.getWhereObjectForSecondLevelOperation(id),
     });
   }

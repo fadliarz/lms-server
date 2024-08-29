@@ -1,7 +1,8 @@
 import { injectable } from "inversify";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { ICompetitionRepository } from "../competition.interface";
-import { $CompetitionAPI, CompetitionModel } from "../competition.type";
+import { CompetitionModel } from "../competition.type";
+import { $CompetitionAPI } from "../competition.api";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 
 @injectable()

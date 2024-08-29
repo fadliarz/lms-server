@@ -1,13 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.$ProductAPI = void 0;
-var $ProductAPI;
-(function ($ProductAPI) {
-    const root = "/products";
-    const product = "/:productId";
-    let CreateProduct;
-    (function (CreateProduct) {
-        CreateProduct.endpoint = root;
-        CreateProduct.generateUrl = () => CreateProduct.endpoint;
-    })(CreateProduct = $ProductAPI.CreateProduct || ($ProductAPI.CreateProduct = {}));
-})($ProductAPI || (exports.$ProductAPI = $ProductAPI = {}));
+exports.ProductDITypes = void 0;
+exports.ProductDITypes = {
+    REPOSITORY: Symbol.for("PRODUCT_REPOSITORY"),
+    SERVICE: Symbol.for("PRODUCT_SERVICE"),
+    CONTROLLER: Symbol.for("PRODUCT_CONTROLLER"),
+    AUTHORIZATION: Symbol.for("PRODUCT_AUTHORIZATION"),
+};

@@ -261,10 +261,10 @@ model DepartmentDivision {
 
 model DepartmentDivisionEnrollment {
   id         Int                @id @default(autoincrement())
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int                @map("user_id")
   divisionId Int                @map("division_id")
   division   DepartmentDivision @relation(fields: [divisionId], references: [id], onDelete: Cascade)
-  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, divisionId])
   @@map("department_division_enrollment")
@@ -342,23 +342,48 @@ model DivisionPrivilege {
 }
 
 model Product {
-  id          Int     @id @default(autoincrement())
-  title       String
-  description String?
-  variants    Json[]
-  Order       Order[]
+  id           Int              @id @default(autoincrement())
+  title        String
+  description  String?
+  rating       Float?
+  totalSales   Int              @default(0) @map("total_sales")
+  totalRatings Int              @default(0) @map("total_ratings")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @default(now()) @updatedAt @map("updated_at")
+  variants     ProductVariant[]
 
   @@map("product")
 }
 
+model ProductVariant {
+  id              Int      @id @default(autoincrement())
+  title           String
+  price           Float
+  stock           Int?
+  totalSales      Int      @default(0) @map("total_sales")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+  productId       Int?     @map("product_id")
+  product         Product? @relation(fields: [productId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  productSnapshot Json
+  orders          Order[]
+
+  @@map("product_variant")
+}
+
 model Order {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-  userId    Int
-  productId Int
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          Int            @id @default(autoincrement())
+  description String?
+  receipt     String?
+  rating      Int?
+  isArrived   Boolean        @default(false) @map("is_arrived")
+  arrivedAt   DateTime?      @default(now()) @map("arrived_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at")
+  userId      Int?           @map("user_id")
+  variantId   Int            @map("variant_id")
+  user        User?          @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: SetNull)
+  variant     ProductVariant @relation(fields: [variantId], references: [id], onUpdate: Cascade, onDelete: Restrict)
 
   @@map("order")
 }
@@ -372,6 +397,7 @@ enum Privilege {
   REPORT
   COURSE
   EVENT
+  STORE
 }
 
 enum Role {

@@ -1,11 +1,9 @@
 import { IDepartmentDivisionRepository } from "../division.interface";
-import {
-  $DepartmentDivisionAPI,
-  DepartmentDivisionModel,
-} from "../division.type";
+import { DepartmentDivisionModel } from "../division.type";
 import BaseRepository from "../../../common/class/BaseRepository";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { injectable } from "inversify";
+import { $DepartmentDivisionAPI } from "../division.api";
 
 @injectable()
 export default class DepartmentDivisionRepository

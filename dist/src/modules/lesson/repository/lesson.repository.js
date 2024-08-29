@@ -38,7 +38,7 @@ let CourseLessonRepository = class CourseLessonRepository extends BaseRepository
     }
     getLessonById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.courseLesson.findUnique({
+            return this.db.courseLesson.findFirst({
                 where: this.getWhereObject(id),
             });
         });

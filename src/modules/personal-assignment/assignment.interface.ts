@@ -1,10 +1,10 @@
 import { UserModel } from "../user/user.type";
 import {
-  $PersonalAssignmentAPI,
   PersonalAssignmentModel,
   PersonalAssignmentResourceId,
 } from "./assignment.type";
 import { NextFunction, Request, Response } from "express";
+import { $PersonalAssignmentAPI } from "./assignment.api";
 
 export interface IPersonalAssignmentAuthorization {
   authorizeCreateAssignment: (user: UserModel, targetUserId: number) => void;

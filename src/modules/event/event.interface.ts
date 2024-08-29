@@ -1,6 +1,7 @@
 import { UserModel } from "../user/user.type";
-import { $EventAPI, EventModel } from "./event.type";
+import { EventModel } from "./event.type";
 import { NextFunction, Request, Response } from "express";
+import { $EventAPI } from "./event.api";
 
 export interface IEventAuthorization {
   authorizeCreateEvent: (user: UserModel) => Promise<void>;

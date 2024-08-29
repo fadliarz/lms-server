@@ -1,10 +1,10 @@
 import {
-  $CourseClassAssignmentCompletionAPI,
   CourseClassAssignmentCompletionModel,
   CourseClassAssignmentCompletionResourceId,
 } from "./completion.type";
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
+import { $CourseClassAssignmentCompletionAPI } from "./completion.api";
 
 export interface ICourseClassAssignmentCompletionAuthorization {
   authorizeCreateCompletion: (

@@ -1,10 +1,7 @@
 import { UserModel } from "../user/user.type";
-import {
-  $CourseScheduleAPI,
-  CourseScheduleModel,
-  CourseScheduleResourceId,
-} from "./schedule.type";
+import { CourseScheduleModel, CourseScheduleResourceId } from "./schedule.type";
 import { NextFunction, Request, Response } from "express";
+import { $CourseScheduleAPI } from "./schedule.api";
 
 export interface ICourseScheduleAuthorization {
   authorizeCreateSchedule: (user: UserModel, courseId: number) => Promise<void>;

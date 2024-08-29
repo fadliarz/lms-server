@@ -1,10 +1,10 @@
 import { UserModel } from "../user/user.type";
 import {
-  $CourseEnrollmentAPI,
   CourseEnrollmentModel,
   CourseEnrollmentResourceId,
 } from "./enrollment.type";
 import { NextFunction, Request, Response } from "express";
+import { $CourseEnrollmentAPI } from "./enrollment.api";
 
 export interface ICourseEnrollmentAuthorization {
   authorizeCreateEnrollment: (

@@ -5,7 +5,6 @@ import {
 } from "../department.interface";
 import { inject, injectable } from "inversify";
 import {
-  $DepartmentAPI,
   DepartmentDITypes,
   DepartmentModel,
   DepartmentResourceId,
@@ -16,7 +15,7 @@ import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-
+import { $DepartmentAPI } from "../department.api";
 import ClientException from "../../../common/class/exceptions/ClientException";
 
 @injectable()

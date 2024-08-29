@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $CourseCategoryAPI } from "../category.type";
+import { $CourseCategoryAPI } from "../category.api";
 
 export const CreateCourseCategoryDtoJoi =
   Joi.object<$CourseCategoryAPI.CreateCategory.Dto>({

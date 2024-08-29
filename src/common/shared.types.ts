@@ -20,6 +20,16 @@ export type PickNotNullable<T> = {
   [P in keyof T as null extends T[P] ? never : P]: T[P];
 };
 
+export type ElementTypeOfArray<T extends readonly any[]> =
+  T extends readonly (infer U)[] ? U : never;
+
+export type StrictPropertiesHelper<K extends keyof any> = {
+  [P in K]: never;
+};
+
+export type StrictProperties<T, U extends T = T> = U &
+  StrictPropertiesHelper<Exclude<keyof U, keyof T>>;
+
 export type ModifyFieldWithNullToBeOptionalAndRemoveNull<T> = {
   [K in keyof PickNullable<T>]?: Exclude<T[K], null>;
 } & {

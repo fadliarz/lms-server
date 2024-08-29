@@ -1,10 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { ICourseClassAssignmentCompletionController } from "../completion.interface";
-import {
-  $CourseClassAssignmentCompletionAPI,
-  CourseClassAssignmentCompletionDITypes,
-} from "../completion.type";
+import { CourseClassAssignmentCompletionDITypes } from "../completion.type";
+import { $CourseClassAssignmentCompletionAPI } from "../completion.api";
 
 export default function CourseClassAssignmentCompletionRouter(
   authenticationMiddleware: any,

@@ -1,6 +1,6 @@
 import Joi from "joi";
-import { $CourseEnrollmentAPI } from "../enrollment.type";
 import { CourseEnrollmentRoleModel } from "../../course/course.type";
+import { $CourseEnrollmentAPI } from "../enrollment.api";
 
 export const CreateCourseEnrollmentDtoJoi =
   Joi.object<$CourseEnrollmentAPI.CreateEnrollment.Dto>({

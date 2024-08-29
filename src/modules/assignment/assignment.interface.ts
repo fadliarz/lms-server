@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import { UserModel } from "../user/user.type";
 import {
-  $CourseClassAssignmentAPI,
   CourseClassAssignmentModel,
   CourseClassAssignmentResourceId,
 } from "./assignment.type";
+import { $CourseClassAssignmentAPI } from "./assignment.api";
 
 export interface ICourseClassAssignmentAuthorization {
   authorizeCreateAssignment: (

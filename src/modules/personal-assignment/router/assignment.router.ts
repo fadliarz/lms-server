@@ -1,10 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IPersonalAssignmentController } from "../assignment.interface";
-import {
-  $PersonalAssignmentAPI,
-  PersonalAssignmentDITypes,
-} from "../assignment.type";
+import { PersonalAssignmentDITypes } from "../assignment.type";
+import { $PersonalAssignmentAPI } from "../assignment.api";
 
 export default function PersonalAssignmentRouter(
   authenticationMiddleware: any,

@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $CourseClassAssignmentAPI } from "../assignment.type";
+import { $CourseClassAssignmentAPI } from "../assignment.api";
 
 /**
  * Create

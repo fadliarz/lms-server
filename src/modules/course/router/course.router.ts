@@ -1,8 +1,9 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { $CourseAPI, CourseDITypes } from "../course.type";
+import { CourseDITypes } from "../course.type";
 import { ICourseController } from "../course.interface";
+import { $CourseAPI } from "../course.api";
 
 export default function CourseRouter(authenticationMiddleware: any) {
   const router = express.Router();

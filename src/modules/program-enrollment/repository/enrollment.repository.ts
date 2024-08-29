@@ -1,12 +1,12 @@
 import { IDepartmentProgramEnrollmentRepository } from "../enrollment.interface";
 import {
-  $DepartmentProgramEnrollmentAPI,
   DepartmentProgramEnrollmentModel,
   DepartmentProgramEnrollmentResourceId,
 } from "../enrollment.type";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { $DepartmentProgramEnrollmentAPI } from "../enrollment.api";
 
 @injectable()
 export default class DepartmentProgramEnrollmentRepository

@@ -56,7 +56,7 @@ let CourseLessonVideoRepository = class CourseLessonVideoRepository extends Base
     }
     getVideoById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.courseLessonVideo.findUnique({
+            return this.db.courseLessonVideo.findFirst({
                 where: this.getWhereObjectForSecondLevelOperation(id),
             });
         });

@@ -1,6 +1,7 @@
-import { $ScholarshipAPI, ScholarshipModel } from "./scholarship.type";
+import { ScholarshipModel } from "./scholarship.type";
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
+import { $ScholarshipAPI } from "./scholarship.api";
 
 export interface IScholarshipAuthorization {
   authorizeCreateScholarship: (user: UserModel) => Promise<void>;

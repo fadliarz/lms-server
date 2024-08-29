@@ -44,7 +44,7 @@ let CourseScheduleRepository = class CourseScheduleRepository extends BaseReposi
     }
     getScheduleById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.courseSchedule.findUnique({
+            return this.db.courseSchedule.findFirst({
                 where: this.getWhereObjectForSecondLevelOperation(id),
             });
         });

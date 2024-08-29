@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
-  $CourseAPI,
   CourseDITypes,
   CourseLikeModel,
   CourseLikeResourceId,
@@ -14,6 +13,7 @@ import {
   ICourseRepository,
   ICourseService,
 } from "../course.interface";
+import { $CourseAPI } from "../course.api";
 
 @injectable()
 export default class CourseService implements ICourseService {

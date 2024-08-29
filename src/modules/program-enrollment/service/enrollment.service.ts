@@ -5,13 +5,12 @@ import {
   IDepartmentProgramEnrollmentService,
 } from "../enrollment.interface";
 import {
-  $DepartmentProgramEnrollmentAPI,
   DepartmentProgramEnrollmentDITypes,
   DepartmentProgramEnrollmentResourceId,
 } from "../enrollment.type";
-import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import { UserModel } from "../../user/user.type";
+import { $DepartmentProgramEnrollmentAPI } from "../enrollment.api";
 
 @injectable()
 export default class DepartmentProgramEnrollmentService
@@ -22,8 +21,6 @@ export default class DepartmentProgramEnrollmentService
 
   @inject(DepartmentProgramEnrollmentDITypes.AUTHORIZATION)
   private readonly authorization: IDepartmentProgramEnrollmentAuthorization;
-
-  private readonly prisma = PrismaClientSingleton.getInstance();
 
   public async createEnrollment(
     user: UserModel,

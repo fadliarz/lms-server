@@ -1,10 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IDepartmentDivisionController } from "../division.interface";
-import {
-  $DepartmentDivisionAPI,
-  DepartmentDivisionDITypes,
-} from "../division.type";
+import { DepartmentDivisionDITypes } from "../division.type";
+import { $DepartmentDivisionAPI } from "../division.api";
 
 export default function DepartmentDivisionRouter(
   authenticationMiddleware: any,

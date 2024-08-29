@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify";
 import {
-  $CourseClassAssignmentAPI,
   CourseClassAssignmentDITypes,
   CourseClassAssignmentResourceId,
 } from "../assignment.type";
@@ -11,6 +10,7 @@ import {
 } from "../assignment.interface";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import { UserModel } from "../../user/user.type";
+import { $CourseClassAssignmentAPI } from "../assignment.api";
 
 @injectable()
 export default class CourseClassAssignmentService

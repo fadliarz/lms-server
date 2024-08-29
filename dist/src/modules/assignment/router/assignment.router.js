@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const inversifyConfig_1 = __importDefault(require("../../../inversifyConfig"));
 const assignment_type_1 = require("../assignment.type");
+const assignment_api_1 = require("../assignment.api");
 function CourseClassAssignmentRouter(authenticationMiddleware) {
     const router = express_1.default.Router();
     const controller = inversifyConfig_1.default.get(assignment_type_1.CourseClassAssignmentDITypes.CONTROLLER);
@@ -13,23 +14,23 @@ function CourseClassAssignmentRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post(assignment_type_1.$CourseClassAssignmentAPI.CreateAssignment.endpoint, authenticationMiddleware, controller.createAssignment.bind(controller));
+    router.post(assignment_api_1.$CourseClassAssignmentAPI.CreateAssignment.endpoint, authenticationMiddleware, controller.createAssignment.bind(controller));
     /**
      * Get
      *
      */
-    router.get(assignment_type_1.$CourseClassAssignmentAPI.GetAssignments.endpoint, authenticationMiddleware, controller.getAssignments.bind(controller));
-    router.get(assignment_type_1.$CourseClassAssignmentAPI.GetAssignmentById.endpoint, authenticationMiddleware, controller.getAssignmentById.bind(controller));
+    router.get(assignment_api_1.$CourseClassAssignmentAPI.GetAssignments.endpoint, authenticationMiddleware, controller.getAssignments.bind(controller));
+    router.get(assignment_api_1.$CourseClassAssignmentAPI.GetAssignmentById.endpoint, authenticationMiddleware, controller.getAssignmentById.bind(controller));
     /**
      * Update
      *
      */
-    router.patch(assignment_type_1.$CourseClassAssignmentAPI.UpdateAssignment.endpoint, authenticationMiddleware, controller.updateAssignment.bind(controller));
+    router.patch(assignment_api_1.$CourseClassAssignmentAPI.UpdateAssignment.endpoint, authenticationMiddleware, controller.updateAssignment.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(assignment_type_1.$CourseClassAssignmentAPI.DeleteAssignment.endpoint, authenticationMiddleware, controller.deleteAssignment.bind(controller));
+    router.delete(assignment_api_1.$CourseClassAssignmentAPI.DeleteAssignment.endpoint, authenticationMiddleware, controller.deleteAssignment.bind(controller));
     return router;
 }
 exports.default = CourseClassAssignmentRouter;

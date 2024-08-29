@@ -1,10 +1,11 @@
 import "reflect-metadata";
 import { injectable } from "inversify";
-import { $CourseCategoryAPI, CourseCategoryModel } from "../category.type";
+import { CourseCategoryModel } from "../category.type";
 import { CourseCategory } from "@prisma/client";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseCategoryRepository } from "../category.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
+import { $CourseCategoryAPI } from "../category.api";
 
 @injectable()
 export default class CourseCategoryRepository

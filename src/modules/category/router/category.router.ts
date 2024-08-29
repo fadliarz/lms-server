@@ -1,6 +1,7 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { $CourseCategoryAPI, CourseCategoryDITypes } from "../category.type";
+import { CourseCategoryDITypes } from "../category.type";
+import { $CourseCategoryAPI } from "../category.api";
 import { ICourseCategoryController } from "../category.interface";
 
 export default function CourseCategoryRouter(authenticationMiddleware: any) {

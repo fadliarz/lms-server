@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $ReportAPI } from "../report.type";
+import { $ReportAPI } from "../report.api";
 
 export const UpdateReportDtoJoi = Joi.object<$ReportAPI.UpdateReport.Dto>({
   points: Joi.number(),

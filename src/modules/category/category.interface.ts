@@ -1,6 +1,7 @@
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
-import { $CourseCategoryAPI, CourseCategoryModel } from "./category.type";
+import { CourseCategoryModel } from "./category.type";
+import { $CourseCategoryAPI } from "./category.api";
 
 export interface ICourseCategoryAuthorization {
   authorizeCreateCategory: (user: UserModel) => Promise<void>;

@@ -58,7 +58,7 @@ let CourseClassAssignmentRepository = class CourseClassAssignmentRepository exte
     }
     getAssignmentById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.courseClassAssignment.findUnique({
+            return this.db.courseClassAssignment.findFirst({
                 where: this.getWhereObjectForSecondLevelOperation(id),
             });
         });
@@ -84,7 +84,6 @@ let CourseClassAssignmentRepository = class CourseClassAssignmentRepository exte
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.courseClassAssignment.delete({
                 where: this.getWhereObjectForSecondLevelOperation(id),
-                select: {},
             });
         });
     }
@@ -106,7 +105,7 @@ let CourseClassAssignmentRepository = class CourseClassAssignmentRepository exte
         if (resourceId) {
             return {
                 id: assignmentId,
-                class: {
+                courseClass: {
                     id: resourceId.classId,
                     course: { id: resourceId.courseId },
                 },

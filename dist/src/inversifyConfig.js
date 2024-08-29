@@ -149,6 +149,21 @@ const program_repository_1 = __importDefault(require("./modules/program/reposito
 const program_service_1 = __importDefault(require("./modules/program/service/program.service"));
 const program_controller_1 = __importDefault(require("./modules/program/controller/program.controller"));
 const program_authorization_1 = __importDefault(require("./modules/program/authorization/program.authorization"));
+const product_type_1 = require("./modules/product/product.type");
+const product_repository_1 = __importDefault(require("./modules/product/repository/product.repository"));
+const product_service_1 = __importDefault(require("./modules/product/service/product.service"));
+const product_controller_1 = __importDefault(require("./modules/product/controller/product.controller"));
+const product_authorization_1 = __importDefault(require("./modules/product/authorization/product.authorization"));
+const variant_repository_1 = __importDefault(require("./modules/product-variant/repository/variant.repository"));
+const variant_type_1 = require("./modules/product-variant/variant.type");
+const variant_service_1 = __importDefault(require("./modules/product-variant/service/variant.service"));
+const variant_controller_1 = __importDefault(require("./modules/product-variant/controller/variant.controller"));
+const variant_authorization_1 = __importDefault(require("./modules/product-variant/authorization/variant.authorization"));
+const order_type_1 = require("./modules/order/order.type");
+const order_repository_1 = __importDefault(require("./modules/order/repository/order.repository"));
+const order_service_1 = __importDefault(require("./modules/order/service/order.service"));
+const order_controller_1 = __importDefault(require("./modules/order/controller/order.controller"));
+const order_authorization_1 = __importDefault(require("./modules/order/authorization/order.authorization"));
 const dIContainer = new inversify_1.Container();
 /**
  * Repository
@@ -515,6 +530,46 @@ dIContainer.bind(event_type_1.EventDITypes.CONTROLLER).to(event_controller_1.def
 dIContainer
     .bind(event_type_1.EventDITypes.AUTHORIZATION)
     .to(event_authorization_1.default);
+/**
+ * Product
+ *
+ */
+dIContainer
+    .bind(product_type_1.ProductDITypes.REPOSITORY)
+    .to(product_repository_1.default);
+dIContainer.bind(product_type_1.ProductDITypes.SERVICE).to(product_service_1.default);
+dIContainer
+    .bind(product_type_1.ProductDITypes.CONTROLLER)
+    .to(product_controller_1.default);
+dIContainer
+    .bind(product_type_1.ProductDITypes.AUTHORIZATION)
+    .to(product_authorization_1.default);
+/**
+ * Product Variant
+ *
+ */
+dIContainer
+    .bind(variant_type_1.ProductVariantDITypes.REPOSITORY)
+    .to(variant_repository_1.default);
+dIContainer
+    .bind(variant_type_1.ProductVariantDITypes.SERVICE)
+    .to(variant_service_1.default);
+dIContainer
+    .bind(variant_type_1.ProductVariantDITypes.CONTROLLER)
+    .to(variant_controller_1.default);
+dIContainer
+    .bind(variant_type_1.ProductVariantDITypes.AUTHORIZATION)
+    .to(variant_authorization_1.default);
+/**
+ * Order
+ *
+ */
+dIContainer.bind(order_type_1.OrderDITypes.REPOSITORY).to(order_repository_1.default);
+dIContainer.bind(order_type_1.OrderDITypes.SERVICE).to(order_service_1.default);
+dIContainer.bind(order_type_1.OrderDITypes.CONTROLLER).to(order_controller_1.default);
+dIContainer
+    .bind(order_type_1.OrderDITypes.AUTHORIZATION)
+    .to(order_authorization_1.default);
 /**
  * Common
  *

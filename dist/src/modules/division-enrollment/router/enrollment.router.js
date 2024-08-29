@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const inversifyConfig_1 = __importDefault(require("../../../inversifyConfig"));
 const enrollment_type_1 = require("../enrollment.type");
+const enrollment_api_1 = require("../enrollment.api");
 function DepartmentDivisionEnrollmentRouter(authenticationMiddleware) {
     const router = express_1.default.Router();
     const controller = inversifyConfig_1.default.get(enrollment_type_1.DepartmentDivisionEnrollmentDITypes.CONTROLLER);
@@ -13,17 +14,17 @@ function DepartmentDivisionEnrollmentRouter(authenticationMiddleware) {
      * Create
      *
      */
-    router.post(enrollment_type_1.$DepartmentDivisionEnrollmentAPI.CreateEnrollment.endpoint, authenticationMiddleware, controller.createEnrollment.bind(controller));
+    router.post(enrollment_api_1.$DepartmentDivisionEnrollmentAPI.CreateEnrollment.endpoint, authenticationMiddleware, controller.createEnrollment.bind(controller));
     /**
      * Get
      *
      */
-    router.get(enrollment_type_1.$DepartmentDivisionEnrollmentAPI.GetEnrollments.endpoint, authenticationMiddleware, controller.getEnrollments.bind(controller));
+    router.get(enrollment_api_1.$DepartmentDivisionEnrollmentAPI.GetEnrollments.endpoint, authenticationMiddleware, controller.getEnrollments.bind(controller));
     /**
      * Delete
      *
      */
-    router.delete(enrollment_type_1.$DepartmentDivisionEnrollmentAPI.DeleteEnrollment.endpoint, authenticationMiddleware, controller.deleteEnrollment.bind(controller));
+    router.delete(enrollment_api_1.$DepartmentDivisionEnrollmentAPI.DeleteEnrollment.endpoint, authenticationMiddleware, controller.deleteEnrollment.bind(controller));
     return router;
 }
 exports.default = DepartmentDivisionEnrollmentRouter;

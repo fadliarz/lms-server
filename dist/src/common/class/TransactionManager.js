@@ -17,11 +17,11 @@ class TransactionManager {
     constructor() {
         this.prisma = PrismaClientSingleton_1.default.getInstance();
     }
-    initializeTransaction(callback) {
+    initializeTransaction(callback, config) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.prisma.$transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                 return yield callback(tx);
-            }));
+            }), config);
         });
     }
 }

@@ -1,14 +1,11 @@
 import "reflect-metadata";
-import {
-  $CourseLessonAPI,
-  CourseLessonModel,
-  CourseLessonResourceId,
-} from "../lesson.type";
+import { CourseLessonModel, CourseLessonResourceId } from "../lesson.type";
 import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseLessonRepository } from "../lesson.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { CourseScheduleResourceId } from "../../schedule/schedule.type";
+import { $CourseLessonAPI } from "../lesson.api";
 
 @injectable()
 export default class CourseLessonRepository
@@ -37,7 +34,7 @@ export default class CourseLessonRepository
     lessonId: number;
     resourceId?: CourseLessonResourceId;
   }): Promise<CourseLessonModel | null> {
-    return this.db.courseLesson.findUnique({
+    return this.db.courseLesson.findFirst({
       where: this.getWhereObject(id),
     });
   }

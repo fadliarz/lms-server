@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { $EventAPI, EventDITypes } from "../event.type";
+import { EventDITypes } from "../event.type";
 import {
   IEventAuthorization,
   IEventRepository,
@@ -8,6 +8,7 @@ import {
 import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import { UserModel } from "../../user/user.type";
+import { $EventAPI } from "../event.api";
 
 @injectable()
 export default class EventService

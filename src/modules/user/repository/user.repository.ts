@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import { $UserAPI, PrivilegeModel, UserModel } from "../user.type";
+import { PrivilegeModel, UserModel } from "../user.type";
 import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { IUserRepository } from "../user.interface";
@@ -8,6 +8,7 @@ import {
   CourseEnrollmentRoleModel,
   CourseModel,
 } from "../../course/course.type";
+import { $UserAPI } from "../user.api";
 
 @injectable()
 export default class UserRepository
@@ -45,6 +46,26 @@ export default class UserRepository
         },
       },
     });
+  }
+
+  public async getPublicUsers(
+    query: $UserAPI.GetPublicUsers.Query,
+  ): Promise<$UserAPI.GetPublicUsers.Response["data"]> {
+    const select = { id: true, NIM: true, name: true, avatar: true };
+
+    if (query && query.pageSize && !query.pageNumber) {
+      return this.db.user.findMany({ take: query.pageSize, select });
+    }
+
+    if (query && query.pageSize && query.pageNumber) {
+      return this.db.user.findMany({
+        take: query.pageSize,
+        skip: (query.pageNumber - 1) * query.pageSize,
+        select,
+      });
+    }
+
+    return this.db.user.findMany({ select });
   }
 
   public async getUserById(id: { userId: number }): Promise<UserModel | null> {

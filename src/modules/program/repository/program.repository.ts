@@ -1,12 +1,12 @@
 import { injectable } from "inversify";
 import BaseRepository from "../../../common/class/BaseRepository";
 import {
-  $DepartmentProgramAPI,
   DepartmentProgramModel,
   DepartmentProgramResourceId,
 } from "../program.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { IDepartmentProgramRepository } from "../program.interface";
+import { $DepartmentProgramAPI } from "../program.api";
 
 @injectable()
 export default class DepartmentProgramRepository

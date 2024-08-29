@@ -11,9 +11,14 @@ export default class TransactionManager {
 
   async initializeTransaction<T>(
     callback: (transaction: PrismaTransaction) => Promise<T>,
+    config?: {
+      isolationLevel?: "Serializable";
+      maxWait: number;
+      timeout: number;
+    },
   ): Promise<T> {
     return this.prisma.$transaction(async (tx) => {
       return await callback(tx);
-    });
+    }, config);
   }
 }

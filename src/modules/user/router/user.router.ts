@@ -1,8 +1,9 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { $UserAPI, UserDITypes } from "../user.type";
+import { UserDITypes } from "../user.type";
 import { IUserController } from "../user.interface";
+import { $UserAPI } from "../user.api";
 
 export default function UserRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -41,6 +42,12 @@ export default function UserRouter(authenticationMiddleware: any) {
    * Get
    *
    */
+
+  router.get(
+    $UserAPI.GetPublicUsers.endpoint,
+    authenticationMiddleware,
+    controller.getPublicUsers.bind(controller),
+  );
 
   router.get(
     $UserAPI.GetUserById.endpoint,

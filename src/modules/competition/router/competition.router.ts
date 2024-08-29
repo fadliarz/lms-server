@@ -1,7 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { ICompetitionController } from "../competition.interface";
-import { $CompetitionAPI, CompetitionDITypes } from "../competition.type";
+import { CompetitionDITypes } from "../competition.type";
+import { $CompetitionAPI } from "../competition.api";
 
 export default function CompetitionRouter(authenticationMiddleware: any) {
   const router = express.Router();

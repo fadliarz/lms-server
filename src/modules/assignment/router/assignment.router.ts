@@ -1,10 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import {
-  $CourseClassAssignmentAPI,
-  CourseClassAssignmentDITypes,
-} from "../assignment.type";
+import { CourseClassAssignmentDITypes } from "../assignment.type";
 import { ICourseClassAssignmentController } from "../assignment.interface";
+import { $CourseClassAssignmentAPI } from "../assignment.api";
 
 export default function CourseClassAssignmentRouter(
   authenticationMiddleware: any,

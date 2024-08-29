@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
-import { $CourseCategoryAPI, CourseCategoryDITypes } from "../category.type";
+import { CourseCategoryDITypes } from "../category.type";
 import {
   ICourseCategoryAuthorization,
   ICourseCategoryRepository,
@@ -8,6 +8,7 @@ import {
 } from "../category.interface";
 import { UserModel } from "../../user/user.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
+import { $CourseCategoryAPI } from "../category.api";
 
 @injectable()
 export default class CourseCategoryService implements ICourseCategoryService {

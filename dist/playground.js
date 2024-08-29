@@ -12,20 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-// @ts-nocheck
 const PrismaClientSingleton_1 = __importDefault(require("./src/common/class/PrismaClientSingleton"));
 const prisma = PrismaClientSingleton_1.default.getInstance();
 function main() {
-    return __awaiter(this, void 0, void 0, function* () {
-        yield prisma.event.update({
-            where: {
-                id: 1,
-            },
-            data: {
-                title: "hi",
-            },
-        });
-    });
+    return __awaiter(this, void 0, void 0, function* () { });
 }
 main()
     .then((res) => {

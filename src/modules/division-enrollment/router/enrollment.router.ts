@@ -1,10 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IDepartmentDivisionEnrollmentController } from "../enrollment.interface";
-import {
-  $DepartmentDivisionEnrollmentAPI,
-  DepartmentDivisionEnrollmentDITypes,
-} from "../enrollment.type";
+import { DepartmentDivisionEnrollmentDITypes } from "../enrollment.type";
+import { $DepartmentDivisionEnrollmentAPI } from "../enrollment.api";
 
 export default function DepartmentDivisionEnrollmentRouter(
   authenticationMiddleware: any,

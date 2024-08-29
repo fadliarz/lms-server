@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify";
 import {
-  $CourseLessonAPI,
   CourseLessonDITypes,
   CourseLessonModel,
   CourseLessonResourceId,
@@ -13,6 +12,7 @@ import {
 } from "../lesson.interface";
 import { UnauthenticatedResourceId } from "../../../common/types";
 import { UserModel } from "../../user/user.type";
+import { $CourseLessonAPI } from "../lesson.api";
 
 @injectable()
 export default class CourseLessonService implements ICourseLessonService {

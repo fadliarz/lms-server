@@ -1,10 +1,10 @@
 import {
-  $DepartmentProgramEnrollmentAPI,
   DepartmentProgramEnrollmentModel,
   DepartmentProgramEnrollmentResourceId,
 } from "./enrollment.type";
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
+import { $DepartmentProgramEnrollmentAPI } from "./enrollment.api";
 
 export interface IDepartmentProgramEnrollmentAuthorization {
   authorizeCreateEnrollment: (

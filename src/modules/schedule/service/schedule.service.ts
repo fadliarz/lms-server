@@ -5,12 +5,12 @@ import {
   ICourseScheduleService,
 } from "../schedule.interface";
 import {
-  $CourseScheduleAPI,
   CourseScheduleDITypes,
   CourseScheduleModel,
   CourseScheduleResourceId,
 } from "../schedule.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
+import { $CourseScheduleAPI } from "../schedule.api";
 
 @injectable()
 export default class CourseScheduleService implements ICourseScheduleService {

@@ -5,8 +5,9 @@ import { StatusCode } from "../../../common/constants/statusCode";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import { IReportController, IReportService } from "../report.interface";
-import { $ReportAPI, ReportDITypes, ReportResourceId } from "../report.type";
+import { ReportDITypes, ReportResourceId } from "../report.type";
 import { UpdateReportDtoJoi } from "./report.joi";
+import { $ReportAPI } from "../report.api";
 
 @injectable()
 export default class ReportController implements IReportController {

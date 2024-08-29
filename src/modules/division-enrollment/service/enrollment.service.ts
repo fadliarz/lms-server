@@ -5,7 +5,6 @@ import {
   IDepartmentDivisionEnrollmentService,
 } from "../enrollment.interface";
 import {
-  $DepartmentDivisionEnrollmentAPI,
   DepartmentDivisionEnrollmentDITypes,
   DepartmentDivisionEnrollmentResourceId,
 } from "../enrollment.type";
@@ -15,6 +14,7 @@ import {
 } from "../../../common/class/repository/repository.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import { UserModel } from "../../user/user.type";
+import { $DepartmentDivisionEnrollmentAPI } from "../enrollment.api";
 
 @injectable()
 export default class DepartmentDivisionEnrollmentService

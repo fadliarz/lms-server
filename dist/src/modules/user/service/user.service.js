@@ -48,7 +48,6 @@ const LocalStorageKey_1 = require("../../../common/constants/LocalStorageKey");
 const isEqualOrIncludeRole_1 = __importDefault(require("../../../common/functions/isEqualOrIncludeRole"));
 const course_type_1 = require("../../course/course.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
-const repository_type_1 = require("../../../common/class/repository/repository.type");
 const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
 const BaseService_1 = __importDefault(require("../../../common/class/BaseService"));
 let UserService = class UserService extends BaseService_1.default {
@@ -87,13 +86,28 @@ let UserService = class UserService extends BaseService_1.default {
             }
         });
     }
+    getPublicUsers(query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.repository.getPublicUsers(query);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
     getUserById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            const targetUser = yield this.repository.getUserById(id);
-            if (!targetUser) {
-                throw new RecordNotFoundException_1.default();
+            try {
+                const targetUser = yield this.repository.getUserById(id);
+                if (!targetUser) {
+                    throw new RecordNotFoundException_1.default();
+                }
+                return yield this.getPublicUser(targetUser);
             }
-            return this.getPublicUser(targetUser);
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
     getMe(user) {
@@ -409,10 +423,6 @@ __decorate([
     (0, inversify_1.inject)(user_type_1.UserDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], UserService.prototype, "repository", void 0);
-__decorate([
-    (0, inversify_1.inject)(repository_type_1.RepositoryDITypes.FACADE),
-    __metadata("design:type", repository_type_1.IRepository)
-], UserService.prototype, "globalRepository", void 0);
 __decorate([
     (0, inversify_1.inject)(user_type_1.UserDITypes.AUTHORIZATION),
     __metadata("design:type", Object)

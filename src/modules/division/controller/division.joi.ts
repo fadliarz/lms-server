@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $DepartmentDivisionAPI } from "../division.type";
+import { $DepartmentDivisionAPI } from "../division.api";
 
 export const CreateDepartmentDivisionDtoJoi =
   Joi.object<$DepartmentDivisionAPI.CreateDivision.Dto>({

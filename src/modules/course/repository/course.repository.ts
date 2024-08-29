@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import {
-  $CourseAPI,
   CourseLikeModel,
   CourseLikeResourceId,
   CourseModel,
@@ -9,6 +8,7 @@ import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseRepository } from "../course.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
+import { $CourseAPI } from "../course.api";
 
 @injectable()
 export default class CourseRepository

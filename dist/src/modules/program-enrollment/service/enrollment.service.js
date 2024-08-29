@@ -23,12 +23,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const enrollment_type_1 = require("../enrollment.type");
-const PrismaClientSingleton_1 = __importDefault(require("../../../common/class/PrismaClientSingleton"));
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let DepartmentProgramEnrollmentService = class DepartmentProgramEnrollmentService {
-    constructor() {
-        this.prisma = PrismaClientSingleton_1.default.getInstance();
-    }
     createEnrollment(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

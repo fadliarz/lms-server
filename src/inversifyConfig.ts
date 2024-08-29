@@ -269,6 +269,39 @@ import DepartmentProgramRepository from "./modules/program/repository/program.re
 import DepartmentProgramService from "./modules/program/service/program.service";
 import DepartmentProgramController from "./modules/program/controller/program.controller";
 import DepartmentProgramAuthorization from "./modules/program/authorization/program.authorization";
+import { ProductDITypes } from "./modules/product/product.type";
+import {
+  IProductAuthorization,
+  IProductController,
+  IProductRepository,
+  IProductService,
+} from "./modules/product/product.interface";
+import ProductRepository from "./modules/product/repository/product.repository";
+import ProductService from "./modules/product/service/product.service";
+import ProductController from "./modules/product/controller/product.controller";
+import ProductAuthorization from "./modules/product/authorization/product.authorization";
+import {
+  IProductVariantAuthorization,
+  IProductVariantController,
+  IProductVariantRepository,
+  IProductVariantService,
+} from "./modules/product-variant/variant.interface";
+import ProductVariantRepository from "./modules/product-variant/repository/variant.repository";
+import { ProductVariantDITypes } from "./modules/product-variant/variant.type";
+import ProductVariantService from "./modules/product-variant/service/variant.service";
+import ProductVariantController from "./modules/product-variant/controller/variant.controller";
+import ProductVariantAuthorization from "./modules/product-variant/authorization/variant.authorization";
+import {
+  IOrderAuthorization,
+  IOrderController,
+  IOrderRepository,
+  IOrderService,
+} from "./modules/order/order.interface";
+import { OrderDITypes } from "./modules/order/order.type";
+import OrderRepository from "./modules/order/repository/order.repository";
+import OrderService from "./modules/order/service/order.service";
+import OrderController from "./modules/order/controller/order.controller";
+import OrderAuthorization from "./modules/order/authorization/order.authorization";
 
 const dIContainer = new Container();
 
@@ -698,6 +731,49 @@ dIContainer.bind<IEventController>(EventDITypes.CONTROLLER).to(EventController);
 dIContainer
   .bind<IEventAuthorization>(EventDITypes.AUTHORIZATION)
   .to(EventAuthorization);
+
+/**
+ * Product
+ *
+ */
+dIContainer
+  .bind<IProductRepository>(ProductDITypes.REPOSITORY)
+  .to(ProductRepository);
+dIContainer.bind<IProductService>(ProductDITypes.SERVICE).to(ProductService);
+dIContainer
+  .bind<IProductController>(ProductDITypes.CONTROLLER)
+  .to(ProductController);
+dIContainer
+  .bind<IProductAuthorization>(ProductDITypes.AUTHORIZATION)
+  .to(ProductAuthorization);
+
+/**
+ * Product Variant
+ *
+ */
+dIContainer
+  .bind<IProductVariantRepository>(ProductVariantDITypes.REPOSITORY)
+  .to(ProductVariantRepository);
+dIContainer
+  .bind<IProductVariantService>(ProductVariantDITypes.SERVICE)
+  .to(ProductVariantService);
+dIContainer
+  .bind<IProductVariantController>(ProductVariantDITypes.CONTROLLER)
+  .to(ProductVariantController);
+dIContainer
+  .bind<IProductVariantAuthorization>(ProductVariantDITypes.AUTHORIZATION)
+  .to(ProductVariantAuthorization);
+
+/**
+ * Order
+ *
+ */
+dIContainer.bind<IOrderRepository>(OrderDITypes.REPOSITORY).to(OrderRepository);
+dIContainer.bind<IOrderService>(OrderDITypes.SERVICE).to(OrderService);
+dIContainer.bind<IOrderController>(OrderDITypes.CONTROLLER).to(OrderController);
+dIContainer
+  .bind<IOrderAuthorization>(OrderDITypes.AUTHORIZATION)
+  .to(OrderAuthorization);
 
 /**
  * Common

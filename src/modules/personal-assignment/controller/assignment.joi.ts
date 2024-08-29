@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $PersonalAssignmentAPI } from "../assignment.type";
+import { $PersonalAssignmentAPI } from "../assignment.api";
 
 export const CreatePersonalAssignmentDtoJoi =
   Joi.object<$PersonalAssignmentAPI.CreateAssignment.Dto>({

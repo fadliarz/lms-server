@@ -4,9 +4,10 @@ import {
   ICompetitionRepository,
   ICompetitionService,
 } from "../competition.interface";
-import { $CompetitionAPI, CompetitionDITypes } from "../competition.type";
+import { CompetitionDITypes } from "../competition.type";
 import { UserModel } from "../../user/user.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
+import { $CompetitionAPI } from "../competition.api";
 
 @injectable()
 export default class CompetitionService implements ICompetitionService {

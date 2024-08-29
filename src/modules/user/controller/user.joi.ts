@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $UserAPI } from "../user.type";
+import { $UserAPI } from "../user.api";
 import getUserRoleArray from "../../../common/functions/getUserRoleArray";
 
 export const CreateUserDtoJoi = Joi.object<$UserAPI.CreateUser.Dto>({
@@ -28,6 +28,13 @@ export const CreateUserDtoJoi = Joi.object<$UserAPI.CreateUser.Dto>({
   avatar: Joi.string(),
   about: Joi.string(),
 });
+
+export const GetPublicUsersQueryJoi = Joi.object<$UserAPI.GetPublicUsers.Query>(
+  {
+    pageSize: Joi.number(),
+    pageNumber: Joi.number(),
+  },
+);
 
 export const UpdateBasicUserDtoJoi = Joi.object<$UserAPI.UpdateBasicUser.Dto>({
   name: Joi.string(),

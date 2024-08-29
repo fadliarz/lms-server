@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $CompetitionAPI } from "../competition.type";
+import { $CompetitionAPI } from "../competition.api";
 
 export const CreateCompetitionDtoJoi =
   Joi.object<$CompetitionAPI.CreateCompetition.Dto>({

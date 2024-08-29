@@ -1,9 +1,6 @@
 import Joi from "joi";
-import {
-  $CourseAPI,
-  CourseEnrollmentRoleModel,
-  CourseStatusModel,
-} from "../course.type";
+import { CourseEnrollmentRoleModel, CourseStatusModel } from "../course.type";
+import { $CourseAPI } from "../course.api";
 
 export const CreateCourseDtoJoi = Joi.object<$CourseAPI.CreateCourse.Dto>({
   code: Joi.string().required(),

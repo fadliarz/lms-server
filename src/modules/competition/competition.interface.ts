@@ -1,6 +1,7 @@
 import { UserModel } from "../user/user.type";
-import { $CompetitionAPI, CompetitionModel } from "./competition.type";
+import { CompetitionModel } from "./competition.type";
 import { NextFunction, Request, Response } from "express";
+import { $CompetitionAPI } from "./competition.api";
 
 export interface ICompetitionAuthorization {
   authorizeCreateCompetition: (user: UserModel) => Promise<void>;

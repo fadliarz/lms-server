@@ -1,9 +1,5 @@
 import { inject, injectable } from "inversify";
-import {
-  $CourseClassAPI,
-  CourseClassDITypes,
-  CourseClassResourceId,
-} from "../class.type";
+import { CourseClassDITypes, CourseClassResourceId } from "../class.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
 import {
   ICourseClassAuthorization,
@@ -11,6 +7,7 @@ import {
   ICourseClassService,
 } from "../class.interface";
 import { UserModel } from "../../user/user.type";
+import { $CourseClassAPI } from "../class.api";
 
 @injectable()
 export default class CourseClassService implements ICourseClassService {

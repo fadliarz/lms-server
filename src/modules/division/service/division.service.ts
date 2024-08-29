@@ -5,7 +5,6 @@ import {
   IDepartmentDivisionService,
 } from "../division.interface";
 import {
-  $DepartmentDivisionAPI,
   DepartmentDivisionDITypes,
   DepartmentDivisionModel,
   DepartmentDivisionResourceId,
@@ -18,6 +17,7 @@ import BaseAuthorization from "../../../common/class/BaseAuthorization";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { UnauthenticatedResourceId } from "../../../common/types";
 import ClientException from "../../../common/class/exceptions/ClientException";
+import { $DepartmentDivisionAPI } from "../division.api";
 
 @injectable()
 export default class DepartmentDivisionService

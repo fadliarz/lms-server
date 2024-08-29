@@ -1,7 +1,8 @@
-import { $UserAPI, PrivilegeModel, UserModel } from "./user.type";
+import { PrivilegeModel, UserModel } from "./user.type";
 import { NextFunction, Request, Response } from "express";
 import { Cookie } from "../../common/constants/Cookie";
 import { CourseEnrollmentRoleModel, CourseModel } from "../course/course.type";
+import { $UserAPI } from "./user.api";
 
 export interface IUserAuthorization {
   /**
@@ -50,6 +51,11 @@ export interface IUserAuthorization {
 
 export interface IUserController {
   createUser: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  getPublicUsers: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -184,6 +190,9 @@ export interface IUserService {
    *
    */
 
+  getPublicUsers: (
+    query: $UserAPI.GetPublicUsers.Query,
+  ) => Promise<$UserAPI.GetPublicUsers.Response["data"]>;
   getUserById: (id: {
     userId: number;
   }) => Promise<$UserAPI.GetUserById.Response["data"]>;
@@ -336,6 +345,9 @@ export interface IUserRepository {
    *
    */
 
+  getPublicUsers: (
+    query: $UserAPI.GetPublicUsers.Query,
+  ) => Promise<$UserAPI.GetPublicUsers.Response["data"]>;
   getUserById: (id: { userId: number }) => Promise<UserModel | null>;
   getUserByIdOrThrow: (
     id: { userId: number },

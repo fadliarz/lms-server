@@ -56,6 +56,24 @@ let UserController = class UserController {
             }
         });
     }
+    getPublicUsers(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ query: user_joi_1.GetPublicUsersQueryJoi })(req, res, next);
+                const query = {
+                    pageSize: req.query.pageSize ? Number(req.query.pageSize) : undefined,
+                    pageNumber: req.query.pageNumber
+                        ? Number(req.query.pageNumber)
+                        : undefined,
+                };
+                const users = yield this.service.getPublicUsers(query);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: users });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     getUserById(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

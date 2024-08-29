@@ -2,11 +2,11 @@ import BaseRepository from "../../../common/class/BaseRepository";
 import { IPersonalAssignmentRepository } from "../assignment.interface";
 import { injectable } from "inversify";
 import {
-  $PersonalAssignmentAPI,
   PersonalAssignmentModel,
   PersonalAssignmentResourceId,
 } from "../assignment.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { $PersonalAssignmentAPI } from "../assignment.api";
 
 @injectable()
 export default class PersonalAssignmentRepository
@@ -42,7 +42,7 @@ export default class PersonalAssignmentRepository
     assignmentId: number;
     resourceId?: PersonalAssignmentResourceId;
   }): Promise<PersonalAssignmentModel | null> {
-    return this.db.personalAssignment.findUnique({
+    return this.db.personalAssignment.findFirst({
       where: this.getWhereObject(id),
     });
   }

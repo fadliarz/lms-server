@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SignIn = exports.UpdateUserPhoneNumberDtoJoi = exports.UpdateUserRoleDtoJoi = exports.UpdateUserPasswordDtoJoi = exports.UpdateUserEmailDtoJoi = exports.UpdateBasicUserDtoJoi = exports.CreateUserDtoJoi = void 0;
+exports.SignIn = exports.UpdateUserPhoneNumberDtoJoi = exports.UpdateUserRoleDtoJoi = exports.UpdateUserPasswordDtoJoi = exports.UpdateUserEmailDtoJoi = exports.UpdateBasicUserDtoJoi = exports.GetPublicUsersQueryJoi = exports.CreateUserDtoJoi = void 0;
 const joi_1 = __importDefault(require("joi"));
 const getUserRoleArray_1 = __importDefault(require("../../../common/functions/getUserRoleArray"));
 exports.CreateUserDtoJoi = joi_1.default.object({
@@ -31,6 +31,10 @@ exports.CreateUserDtoJoi = joi_1.default.object({
      */
     avatar: joi_1.default.string(),
     about: joi_1.default.string(),
+});
+exports.GetPublicUsersQueryJoi = joi_1.default.object({
+    pageSize: joi_1.default.number(),
+    pageNumber: joi_1.default.number(),
 });
 exports.UpdateBasicUserDtoJoi = joi_1.default.object({
     name: joi_1.default.string(),

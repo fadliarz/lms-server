@@ -1,7 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { ICourseScheduleController } from "../schedule.interface";
-import { $CourseScheduleAPI, CourseScheduleDITypes } from "../schedule.type";
+import { CourseScheduleDITypes } from "../schedule.type";
+import { $CourseScheduleAPI } from "../schedule.api";
 
 export default function CourseScheduleRouter(authenticationMiddleware: any) {
   const router = express.Router();

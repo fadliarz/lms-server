@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $DepartmentAPI } from "../department.type";
+import { $DepartmentAPI } from "../department.api";
 
 export const CreateDepartmentDtoJoi =
   Joi.object<$DepartmentAPI.CreateDepartment.Dto>({

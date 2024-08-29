@@ -8,11 +8,12 @@ import {
   IScholarshipController,
   IScholarshipService,
 } from "../scholarship.interface";
-import { $ScholarshipAPI, ScholarshipDITypes } from "../scholarship.type";
+import { ScholarshipDITypes } from "../scholarship.type";
 import {
   CreateScholarshipDtoJoi,
   UpdateScholarshipDtoJoi,
 } from "./scholarship.joi";
+import { $ScholarshipAPI } from "../scholarship.api";
 
 @injectable()
 export default class ScholarshipController implements IScholarshipController {

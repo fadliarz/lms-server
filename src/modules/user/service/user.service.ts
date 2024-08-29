@@ -3,12 +3,13 @@ import jwt from "jsonwebtoken";
 import { isEqual } from "lodash";
 import sha256Encrypt from "../../../utils/encrypt";
 import {
-  $UserAPI,
   PrivilegeModel,
   PublicUserModel,
   UserDITypes,
   UserModel,
 } from "../user.type";
+import { $UserAPI } from "../user.api";
+
 import { inject, injectable } from "inversify";
 import validateEnv from "../../../common/functions/validateEnv";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
@@ -29,10 +30,6 @@ import {
   IUserRepository,
   IUserService,
 } from "../user.interface";
-import {
-  IRepository,
-  RepositoryDITypes,
-} from "../../../common/class/repository/repository.type";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import BaseService from "../../../common/class/BaseService";
 
@@ -40,9 +37,6 @@ import BaseService from "../../../common/class/BaseService";
 export default class UserService extends BaseService implements IUserService {
   @inject(UserDITypes.REPOSITORY)
   private repository: IUserRepository;
-
-  @inject(RepositoryDITypes.FACADE)
-  private globalRepository: IRepository;
 
   @inject(UserDITypes.AUTHORIZATION)
   private readonly authorization: IUserAuthorization;
@@ -95,16 +89,30 @@ export default class UserService extends BaseService implements IUserService {
     }
   }
 
+  public async getPublicUsers(
+    query: $UserAPI.GetPublicUsers.Query,
+  ): Promise<$UserAPI.GetPublicUsers.Response["data"]> {
+    try {
+      return await this.repository.getPublicUsers(query);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
   public async getUserById(id: {
     userId: number;
   }): Promise<$UserAPI.GetUserById.Response["data"]> {
-    const targetUser = await this.repository.getUserById(id);
+    try {
+      const targetUser = await this.repository.getUserById(id);
 
-    if (!targetUser) {
-      throw new RecordNotFoundException();
+      if (!targetUser) {
+        throw new RecordNotFoundException();
+      }
+
+      return await this.getPublicUser(targetUser);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
     }
-
-    return this.getPublicUser(targetUser);
   }
 
   public async getMe(user: UserModel): Promise<PublicUserModel> {

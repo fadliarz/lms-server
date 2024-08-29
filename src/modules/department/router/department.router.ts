@@ -1,7 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IDepartmentController } from "../department.interface";
-import { $DepartmentAPI, DepartmentDITypes } from "../department.type";
+import { DepartmentDITypes } from "../department.type";
+import { $DepartmentAPI } from "../department.api";
 
 export default function DepartmentRouter(authenticationMiddleware: any) {
   const router = express.Router();

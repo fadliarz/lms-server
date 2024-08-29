@@ -1,8 +1,9 @@
 import { IDepartmentRepository } from "../department.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
-import { $DepartmentAPI, DepartmentModel } from "../department.type";
+import { DepartmentModel } from "../department.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { injectable } from "inversify";
+import { $DepartmentAPI } from "../department.api";
 
 @injectable()
 export default class DepartmentRepository

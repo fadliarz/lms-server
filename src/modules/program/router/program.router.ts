@@ -1,10 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import {
-  $DepartmentProgramAPI,
-  DepartmentProgramDITypes,
-} from "../program.type";
+import { DepartmentProgramDITypes } from "../program.type";
 import { IDepartmentProgramController } from "../program.interface";
+import { $DepartmentProgramAPI } from "../program.api";
 
 export default function DepartmentDivisionProgramRouter(
   authenticationMiddleware: any,

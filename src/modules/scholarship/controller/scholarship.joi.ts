@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $ScholarshipAPI } from "../scholarship.type";
+import { $ScholarshipAPI } from "../scholarship.api";
 
 export const CreateScholarshipDtoJoi =
   Joi.object<$ScholarshipAPI.CreateScholarship.Dto>({

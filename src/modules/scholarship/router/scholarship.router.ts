@@ -1,7 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IScholarshipController } from "../scholarship.interface";
-import { $ScholarshipAPI, ScholarshipDITypes } from "../scholarship.type";
+import { ScholarshipDITypes } from "../scholarship.type";
+import { $ScholarshipAPI } from "../scholarship.api";
 
 export default function ScholarshipRouter(authenticationMiddleware: any) {
   const router = express.Router();
@@ -59,6 +60,6 @@ export default function ScholarshipRouter(authenticationMiddleware: any) {
     authenticationMiddleware,
     controller.deleteScholarship.bind(controller),
   );
-  
+
   return router;
 }

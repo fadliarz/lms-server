@@ -1,6 +1,7 @@
-import { $ReportAPI, ReportModel, ReportResourceId } from "./report.type";
+import { ReportModel, ReportResourceId } from "./report.type";
 import { NextFunction, Request, Response } from "express";
 import { UserModel } from "../user/user.type";
+import { $ReportAPI } from "./report.api";
 
 export interface IReportAuthorization {
   authorizeGetReports: (user: UserModel) => Promise<void>;

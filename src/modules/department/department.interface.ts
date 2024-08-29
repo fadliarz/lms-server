@@ -1,10 +1,7 @@
-import {
-  $DepartmentAPI,
-  DepartmentModel,
-  DepartmentResourceId,
-} from "./department.type";
+import { DepartmentModel, DepartmentResourceId } from "./department.type";
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
+import { $DepartmentAPI } from "./department.api";
 
 export interface IDepartmentAuthorization {
   authorizeCreateDepartment: (user: UserModel) => void;

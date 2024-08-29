@@ -1,10 +1,10 @@
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
 import {
-  $CourseLessonVideoAPI,
   CourseLessonVideoModel,
   CourseLessonVideoResourceId,
 } from "./video.type";
+import { $CourseLessonVideoAPI } from "./video.api";
 
 export interface ICourseLessonVideoAuthorization {
   authorizeCreateVideo: (user: UserModel, courseId: number) => Promise<void>;

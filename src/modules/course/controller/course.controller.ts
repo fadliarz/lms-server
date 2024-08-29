@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import { inject, injectable } from "inversify";
 import {
-  $CourseAPI,
   CourseDITypes,
   CourseLikeResourceId,
   CourseResourceId,
@@ -23,6 +22,7 @@ import {
 import NaNException from "../../../common/class/exceptions/NaNException";
 import { ICourseController, ICourseService } from "../course.interface";
 import convertStringToBoolean from "../../../common/functions/convertStringToBoolean";
+import { $CourseAPI } from "../course.api";
 
 @injectable()
 export default class CourseController implements ICourseController {

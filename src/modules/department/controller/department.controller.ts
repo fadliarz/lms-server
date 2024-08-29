@@ -8,17 +8,14 @@ import {
   IDepartmentController,
   IDepartmentService,
 } from "../department.interface";
-import {
-  $DepartmentAPI,
-  DepartmentDITypes,
-  DepartmentResourceId,
-} from "../department.type";
+import { DepartmentDITypes, DepartmentResourceId } from "../department.type";
 import {
   CreateDepartmentDtoJoi,
   UpdateDepartmentCoLeaderIdDtoJoi,
   UpdateDepartmentDtoJoi,
   UpdateDepartmentLeaderIdDtoJoi,
 } from "./department.joi";
+import { $DepartmentAPI } from "../department.api";
 
 @injectable()
 export default class DepartmentController implements IDepartmentController {

@@ -2,11 +2,11 @@ import { injectable } from "inversify";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { ICourseClassAssignmentCompletionRepository } from "../completion.interface";
 import {
-  $CourseClassAssignmentCompletionAPI,
   CourseClassAssignmentCompletionModel,
   CourseClassAssignmentCompletionResourceId,
 } from "../completion.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { $CourseClassAssignmentCompletionAPI } from "../completion.api";
 
 @injectable()
 export default class CourseClassAssigmentCompletionRepository

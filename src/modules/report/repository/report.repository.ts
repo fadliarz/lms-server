@@ -1,7 +1,8 @@
 import { injectable } from "inversify";
 import { IReportRepository } from "../report.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
-import { $ReportAPI, ReportModel } from "../report.type";
+import { ReportModel } from "../report.type";
+import { $ReportAPI } from "../report.api";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 
 @injectable()

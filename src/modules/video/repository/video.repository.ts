@@ -1,13 +1,13 @@
 import "reflect-metadata";
 import { injectable } from "inversify";
 import {
-  $CourseLessonVideoAPI,
   CourseLessonVideoModel,
   CourseLessonVideoResourceId,
 } from "../video.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseLessonVideoRepository } from "../video.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
+import { $CourseLessonVideoAPI } from "../video.api";
 
 @injectable()
 export default class CourseLessonVideoRepository
@@ -59,7 +59,7 @@ export default class CourseLessonVideoRepository
     videoId: number;
     resourceId?: CourseLessonVideoResourceId;
   }): Promise<CourseLessonVideoModel | null> {
-    return this.db.courseLessonVideo.findUnique({
+    return this.db.courseLessonVideo.findFirst({
       where: this.getWhereObjectForSecondLevelOperation(id),
     });
   }

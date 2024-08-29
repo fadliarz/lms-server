@@ -12,6 +12,9 @@ import { IPersonalAssignmentRepository } from "../../../modules/personal-assignm
 import { IReportRepository } from "../../../modules/report/report.interface";
 import { ICourseClassAssignmentCompletionRepository } from "../../../modules/assignment-completion/completion.interface";
 import { IDepartmentProgramRepository } from "../../../modules/program/program.interface";
+import { IProductRepository } from "../../../modules/product/product.interface";
+import { IProductVariantRepository } from "../../../modules/product-variant/variant.interface";
+import { IOrderRepository } from "../../../modules/order/order.interface";
 
 export const RepositoryDITypes = {
   FACADE: Symbol.for("FACADE_REPOSITORY"),
@@ -32,4 +35,7 @@ export class IRepository {
   department: IDepartmentRepository;
   departmentProgram: IDepartmentProgramRepository;
   departmentDivision: IDepartmentDivisionRepository;
+  product: IProductRepository;
+  productVariant: IProductVariantRepository;
+  order: IOrderRepository;
 }

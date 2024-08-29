@@ -3,15 +3,11 @@ import {
   IReportRepository,
   IReportService,
 } from "../report.interface";
-import {
-  $ReportAPI,
-  ReportDITypes,
-  ReportModel,
-  ReportResourceId,
-} from "../report.type";
+import { ReportDITypes, ReportModel, ReportResourceId } from "../report.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import PrismaClientSingleton from "../../../common/class/PrismaClientSingleton";
 import { inject, injectable } from "inversify";
+import { $ReportAPI } from "../report.api";
 
 @injectable()
 export default class ReportService implements IReportService {

@@ -25,6 +25,9 @@ const assignment_type_2 = require("../../../modules/personal-assignment/assignme
 const report_type_1 = require("../../../modules/report/report.type");
 const completion_type_1 = require("../../../modules/assignment-completion/completion.type");
 const program_type_1 = require("../../../modules/program/program.type");
+const product_type_1 = require("../../../modules/product/product.type");
+const variant_type_1 = require("../../../modules/product-variant/variant.type");
+const order_type_1 = require("../../../modules/order/order.type");
 let Repository = class Repository {
 };
 __decorate([
@@ -83,6 +86,18 @@ __decorate([
     (0, inversify_1.inject)(division_type_1.DepartmentDivisionDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], Repository.prototype, "departmentDivision", void 0);
+__decorate([
+    (0, inversify_1.inject)(product_type_1.ProductDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "product", void 0);
+__decorate([
+    (0, inversify_1.inject)(variant_type_1.ProductVariantDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "productVariant", void 0);
+__decorate([
+    (0, inversify_1.inject)(order_type_1.OrderDITypes.REPOSITORY),
+    __metadata("design:type", Object)
+], Repository.prototype, "order", void 0);
 Repository = __decorate([
     (0, inversify_1.injectable)()
 ], Repository);

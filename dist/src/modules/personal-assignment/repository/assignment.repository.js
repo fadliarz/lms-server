@@ -46,7 +46,7 @@ let PersonalAssignmentRepository = class PersonalAssignmentRepository extends Ba
     }
     getAssignmentById(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.personalAssignment.findUnique({
+            return this.db.personalAssignment.findFirst({
                 where: this.getWhereObject(id),
             });
         });

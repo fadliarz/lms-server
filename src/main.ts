@@ -24,6 +24,9 @@ import DepartmentDivisionProgramEnrollmentRouter from "./modules/program-enrollm
 import EventRouter from "./modules/event/router/event.router";
 import ReportRouter from "./modules/report/router/report.router";
 import CourseClassAssignmentCompletionRouter from "./modules/assignment-completion/router/completion.router";
+import ProductRouter from "./modules/product/router/product.router";
+import ProductVariantRouter from "./modules/product-variant/router/variant.router";
+import OrderRouter from "./modules/order/router/order.router";
 
 /**
  * Validate environment variables
@@ -118,6 +121,18 @@ const competitionApi = {
   router: CompetitionRouter(getAuthMiddleWare()),
   path: "/api/v1",
 };
+const productApi = {
+  router: ProductRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const productVariantApi = {
+  router: ProductVariantRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const orderApi = {
+  router: OrderRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
 
 const routers: Api[] = [
   userApi,
@@ -140,6 +155,9 @@ const routers: Api[] = [
   event,
   scholarshipApi,
   competitionApi,
+  productApi,
+  productVariantApi,
+  orderApi,
 ];
 const port = Number(process.env.PORT) || 5000;
 

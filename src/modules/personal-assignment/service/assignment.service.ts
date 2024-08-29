@@ -5,12 +5,12 @@ import {
   IPersonalAssignmentService,
 } from "../assignment.interface";
 import {
-  $PersonalAssignmentAPI,
   PersonalAssignmentDITypes,
   PersonalAssignmentResourceId,
 } from "../assignment.type";
 import { UserModel } from "../../user/user.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
+import { $PersonalAssignmentAPI } from "../assignment.api";
 
 @injectable()
 export default class PersonalAssignmentService

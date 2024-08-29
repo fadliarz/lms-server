@@ -10,7 +10,6 @@ import getRequestUserOrThrowAuthenticationException from "../../../common/functi
 import isNaNArray from "../../../common/functions/isNaNArray";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import {
-  $DepartmentDivisionAPI,
   DepartmentDivisionDITypes,
   DepartmentDivisionResourceId,
 } from "../division.type";
@@ -20,6 +19,7 @@ import {
   UpdateDepartmentDivisionDtoJoi,
   UpdateDepartmentDivisionLeaderIdDtoJoi,
 } from "./division.joi";
+import { $DepartmentDivisionAPI } from "../division.api";
 
 @injectable()
 export default class DepartmentDivisionController

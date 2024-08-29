@@ -1,7 +1,4 @@
-import {
-  $CourseEnrollmentAPI,
-  CourseEnrollmentModel,
-} from "../enrollment.type";
+import { CourseEnrollmentModel } from "../enrollment.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import { CourseEnrollmentRoleModel } from "../../course/course.type";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
@@ -9,6 +6,7 @@ import { injectable } from "inversify";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
 import { UserModel } from "../../user/user.type";
 import { ICourseEnrollmentAuthorization } from "../enrollment.interface";
+import { $CourseEnrollmentAPI } from "../enrollment.api";
 
 @injectable()
 export default class CourseEnrollmentAuthorization

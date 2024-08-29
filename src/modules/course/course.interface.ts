@@ -1,12 +1,12 @@
 import { UserModel } from "../user/user.type";
 import {
-  $CourseAPI,
   CourseLikeModel,
   CourseLikeResourceId,
   CourseModel,
   CourseResourceId,
 } from "./course.type";
 import { NextFunction, Request, Response } from "express-serve-static-core";
+import { $CourseAPI } from "./course.api";
 
 export interface ICourseAuthorization {
   authorizeCreateCourse: (user: UserModel) => Promise<void>;

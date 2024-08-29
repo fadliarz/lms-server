@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $CourseScheduleAPI } from "../schedule.type";
+import { $CourseScheduleAPI } from "../schedule.api";
 
 export const CreateCourseScheduleDtoJoi =
   Joi.object<$CourseScheduleAPI.CreateSchedule.Dto>({

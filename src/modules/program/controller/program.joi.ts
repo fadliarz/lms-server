@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $DepartmentProgramAPI } from "../program.type";
+import { $DepartmentProgramAPI } from "../program.api";
 
 export const CreateDepartmentProgramDtoJoi =
   Joi.object<$DepartmentProgramAPI.CreateProgram.Dto>({

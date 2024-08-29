@@ -4,12 +4,9 @@ import {
   IScholarshipService,
 } from "../scholarship.interface";
 import { inject, injectable } from "inversify";
-import {
-  $ScholarshipAPI,
-  ScholarshipDITypes,
-  ScholarshipModel,
-} from "../scholarship.type";
+import { ScholarshipDITypes, ScholarshipModel } from "../scholarship.type";
 import { UserModel } from "../../user/user.type";
+import { $ScholarshipAPI } from "../scholarship.api";
 
 @injectable()
 export default class ScholarshipService implements IScholarshipService {

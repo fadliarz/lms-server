@@ -29,6 +29,12 @@ import { CourseClassAssignmentCompletionDITypes } from "../../../modules/assignm
 import { ICourseClassAssignmentCompletionRepository } from "../../../modules/assignment-completion/completion.interface";
 import { DepartmentProgramDITypes } from "../../../modules/program/program.type";
 import { IDepartmentProgramRepository } from "../../../modules/program/program.interface";
+import { ProductDITypes } from "../../../modules/product/product.type";
+import { IProductRepository } from "../../../modules/product/product.interface";
+import { ProductVariantDITypes } from "../../../modules/product-variant/variant.type";
+import { IProductVariantRepository } from "../../../modules/product-variant/variant.interface";
+import { OrderDITypes } from "../../../modules/order/order.type";
+import { IOrderRepository } from "../../../modules/order/order.interface";
 
 @injectable()
 export default class Repository implements IRepository {
@@ -73,4 +79,13 @@ export default class Repository implements IRepository {
 
   @inject(DepartmentDivisionDITypes.REPOSITORY)
   public readonly departmentDivision: IDepartmentDivisionRepository;
+
+  @inject(ProductDITypes.REPOSITORY)
+  public readonly product: IProductRepository;
+
+  @inject(ProductVariantDITypes.REPOSITORY)
+  public readonly productVariant: IProductVariantRepository;
+
+  @inject(OrderDITypes.REPOSITORY)
+  public readonly order: IOrderRepository;
 }

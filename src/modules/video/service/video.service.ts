@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify";
 import {
-  $CourseLessonVideoAPI,
   CourseLessonVideoDITypes,
   CourseLessonVideoResourceId,
 } from "../video.type";
@@ -11,6 +10,7 @@ import {
   ICourseLessonVideoService,
 } from "../video.interface";
 import { UserModel } from "../../user/user.type";
+import { $CourseLessonVideoAPI } from "../video.api";
 
 @injectable()
 export default class CourseLessonVideoService

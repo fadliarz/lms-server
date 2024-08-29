@@ -6,12 +6,12 @@ import {
   ICourseClassAssignmentCompletionService,
 } from "../completion.interface";
 import {
-  $CourseClassAssignmentCompletionAPI,
   CourseClassAssignmentCompletionDITypes,
   CourseClassAssignmentCompletionResourceId,
 } from "../completion.type";
 import { UserModel } from "../../user/user.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
+import { $CourseClassAssignmentCompletionAPI } from "../completion.api";
 
 @injectable()
 export default class CourseClassAssignmentCompletionService

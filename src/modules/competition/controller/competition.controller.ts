@@ -1,5 +1,5 @@
 import { inject, injectable } from "inversify";
-import { $CompetitionAPI, CompetitionDITypes } from "../competition.type";
+import { CompetitionDITypes } from "../competition.type";
 import {
   ICompetitionController,
   ICompetitionService,
@@ -13,6 +13,7 @@ import {
   CreateCompetitionDtoJoi,
   UpdateCompetitionDtoJoi,
 } from "./competition.joi";
+import { $CompetitionAPI } from "../competition.api";
 
 @injectable()
 export default class CompetitionController implements ICompetitionController {

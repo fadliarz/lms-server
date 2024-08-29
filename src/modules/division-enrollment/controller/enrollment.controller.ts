@@ -10,11 +10,11 @@ import {
   IDepartmentDivisionEnrollmentService,
 } from "../enrollment.interface";
 import {
-  $DepartmentDivisionEnrollmentAPI,
   DepartmentDivisionEnrollmentDITypes,
   DepartmentDivisionEnrollmentResourceId,
 } from "../enrollment.type";
 import { CreateDepartmentDivisionEnrollmentDtoJoi } from "./enrollment.joi";
+import { $DepartmentDivisionEnrollmentAPI } from "../enrollment.api";
 
 @injectable()
 export default class DepartmentDivisionEnrollmentController

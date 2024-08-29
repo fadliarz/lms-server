@@ -1,11 +1,12 @@
 import { StatusCode } from "../../../common/constants/statusCode";
 import { NextFunction, Request, Response } from "express";
 import { inject, injectable } from "inversify";
-import { $UserAPI, UserDITypes } from "../user.type";
+import { UserDITypes } from "../user.type";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateUserDtoJoi,
+  GetPublicUsersQueryJoi,
   SignIn,
   UpdateBasicUserDtoJoi,
   UpdateUserEmailDtoJoi,
@@ -17,6 +18,7 @@ import { Cookie } from "../../../common/constants/Cookie";
 import AuthenticationException from "../../../common/class/exceptions/AuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import { IUserController, IUserService } from "../user.interface";
+import { $UserAPI } from "../user.api";
 
 @injectable()
 export default class UserController implements IUserController {
@@ -49,6 +51,29 @@ export default class UserController implements IUserController {
         })
         .status(StatusCode.RESOURCE_CREATED)
         .json({ data: newUser });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getPublicUsers(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ query: GetPublicUsersQueryJoi })(req, res, next);
+
+      const query: $UserAPI.GetPublicUsers.Query = {
+        pageSize: req.query.pageSize ? Number(req.query.pageSize) : undefined,
+        pageNumber: req.query.pageNumber
+          ? Number(req.query.pageNumber)
+          : undefined,
+      };
+
+      const users = await this.service.getPublicUsers(query);
+
+      return res.status(StatusCode.SUCCESS).json({ data: users });
     } catch (error) {
       next(error);
     }

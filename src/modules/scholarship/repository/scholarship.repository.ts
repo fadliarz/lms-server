@@ -1,8 +1,9 @@
 import BaseRepository from "../../../common/class/BaseRepository";
 import { IScholarshipRepository } from "../scholarship.interface";
 import { injectable } from "inversify";
-import { $ScholarshipAPI, ScholarshipModel } from "../scholarship.type";
+import { ScholarshipModel } from "../scholarship.type";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
+import { $ScholarshipAPI } from "../scholarship.api";
 
 @injectable()
 export default class ScholarshipRepository

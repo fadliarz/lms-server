@@ -2,7 +2,8 @@ import { injectable } from "inversify";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { IEventRepository } from "../event.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
-import { $EventAPI, EventModel } from "../event.type";
+import { EventModel } from "../event.type";
+import { $EventAPI } from "../event.api";
 
 @injectable()
 export default class EventRepository

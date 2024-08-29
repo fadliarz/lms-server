@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { $EventAPI } from "../event.type";
+import { $EventAPI } from "../event.api";
 
 export const CreateEventDtoJoi = Joi.object<$EventAPI.CreateEvent.Dto>({
   title: Joi.string().required(),

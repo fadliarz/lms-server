@@ -1,10 +1,10 @@
 import { UserModel } from "../user/user.type";
 import {
-  $DepartmentProgramAPI,
   DepartmentProgramModel,
   DepartmentProgramResourceId,
 } from "./program.type";
 import { NextFunction, Request, Response } from "express";
+import { $DepartmentProgramAPI } from "./program.api";
 
 export interface IDepartmentProgramAuthorization {
   authorizeCreateProgram: (

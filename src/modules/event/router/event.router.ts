@@ -1,7 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { $EventAPI, EventDITypes } from "../event.type";
+import { EventDITypes } from "../event.type";
 import { IEventController } from "../event.interface";
+import { $EventAPI } from "../event.api";
 
 export default function EventRouter(authenticationMiddleware: any) {
   const router = express.Router();

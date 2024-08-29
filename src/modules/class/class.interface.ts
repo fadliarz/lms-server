@@ -1,10 +1,7 @@
 import { UserModel } from "../user/user.type";
 import { NextFunction, Request, Response } from "express";
-import {
-  $CourseClassAPI,
-  CourseClassModel,
-  CourseClassResourceId,
-} from "./class.type";
+import { CourseClassModel, CourseClassResourceId } from "./class.type";
+import { $CourseClassAPI } from "./class.api";
 
 export interface ICourseClassAuthorization {
   authorizeCreateClass: (user: UserModel, courseId: number) => Promise<void>;

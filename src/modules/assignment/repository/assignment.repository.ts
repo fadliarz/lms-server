@@ -1,12 +1,12 @@
 import { injectable } from "inversify";
 import {
-  $CourseClassAssignmentAPI,
   CourseClassAssignmentModel,
   CourseClassAssignmentResourceId,
 } from "../assignment.type";
 import { ICourseClassAssignmentRepository } from "../assignment.interface";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import BaseRepository from "../../../common/class/BaseRepository";
+import { $CourseClassAssignmentAPI } from "../assignment.api";
 
 @injectable()
 export default class CourseClassAssignmentRepository
@@ -58,7 +58,7 @@ export default class CourseClassAssignmentRepository
     assignmentId: number;
     resourceId?: CourseClassAssignmentResourceId;
   }): Promise<CourseClassAssignmentModel | null> {
-    return this.db.courseClassAssignment.findUnique({
+    return this.db.courseClassAssignment.findFirst({
       where: this.getWhereObjectForSecondLevelOperation(id),
     });
   }
@@ -98,7 +98,6 @@ export default class CourseClassAssignmentRepository
   }): Promise<{}> {
     return this.db.courseClassAssignment.delete({
       where: this.getWhereObjectForSecondLevelOperation(id),
-      select: {},
     });
   }
 
@@ -134,13 +133,13 @@ export default class CourseClassAssignmentRepository
     resourceId?: CourseClassAssignmentResourceId;
   }):
     | { id: number }
-    | { id: number; class: { id: number; course: { id: number } } } {
+    | { id: number; courseClass: { id: number; course: { id: number } } } {
     const { assignmentId, resourceId } = id;
 
     if (resourceId) {
       return {
         id: assignmentId,
-        class: {
+        courseClass: {
           id: resourceId.classId,
           course: { id: resourceId.courseId },
         },

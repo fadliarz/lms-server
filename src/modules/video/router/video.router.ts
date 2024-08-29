@@ -1,8 +1,9 @@
 import "reflect-metadata";
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
-import { $CourseLessonVideoAPI, CourseLessonVideoDITypes } from "../video.type";
+import { CourseLessonVideoDITypes } from "../video.type";
 import { ICourseLessonVideoController } from "../video.interface";
+import { $CourseLessonVideoAPI } from "../video.api";
 
 export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
   const router = express.Router();

@@ -37,6 +37,9 @@ const enrollment_router_3 = __importDefault(require("./modules/program-enrollmen
 const event_router_1 = __importDefault(require("./modules/event/router/event.router"));
 const report_router_1 = __importDefault(require("./modules/report/router/report.router"));
 const completion_router_1 = __importDefault(require("./modules/assignment-completion/router/completion.router"));
+const product_router_1 = __importDefault(require("./modules/product/router/product.router"));
+const variant_router_1 = __importDefault(require("./modules/product-variant/router/variant.router"));
+const order_router_1 = __importDefault(require("./modules/order/router/order.router"));
 /**
  * Validate environment variables
  *
@@ -126,6 +129,18 @@ const competitionApi = {
     router: (0, competition_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
     path: "/api/v1",
 };
+const productApi = {
+    router: (0, product_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const productVariantApi = {
+    router: (0, variant_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const orderApi = {
+    router: (0, order_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
 const routers = [
     userApi,
     personalAssignmentApi,
@@ -147,6 +162,9 @@ const routers = [
     event,
     scholarshipApi,
     competitionApi,
+    productApi,
+    productVariantApi,
+    orderApi,
 ];
 const port = Number(process.env.PORT) || 5000;
 /**

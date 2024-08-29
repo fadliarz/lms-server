@@ -1,7 +1,8 @@
 import express from "express";
 import dIContainer from "../../../inversifyConfig";
 import { IReportController } from "../report.interface";
-import { $ReportAPI, ReportDITypes } from "../report.type";
+import { ReportDITypes } from "../report.type";
+import { $ReportAPI } from "../report.api";
 
 export default function ReportRouter(authenticationMiddleware: any) {
   const router = express.Router();

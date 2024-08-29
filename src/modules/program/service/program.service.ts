@@ -1,6 +1,5 @@
 import { inject, injectable } from "inversify";
 import {
-  $DepartmentProgramAPI,
   DepartmentProgramDITypes,
   DepartmentProgramModel,
   DepartmentProgramResourceId,
@@ -13,6 +12,7 @@ import {
   IDepartmentProgramRepository,
   IDepartmentProgramService,
 } from "../program.interface";
+import { $DepartmentProgramAPI } from "../program.api";
 
 @injectable()
 export default class DepartmentProgramService
