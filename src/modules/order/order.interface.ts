@@ -11,6 +11,14 @@ export interface IOrderAuthorization {
     order: Pick<OrderModel, "userId">,
   ) => Promise<void>;
   authorizeUpdateOrderArrivedStatus: (user: UserModel) => Promise<void>;
+  authorizeUpdateOrderReceipt: (
+    user: UserModel,
+    order: OrderModel | null,
+  ) => Promise<void>;
+  authorizeUpdateOrderRating: (
+    user: UserModel,
+    order: OrderModel | null,
+  ) => Promise<void>;
   authorizeDeleteOrder: (
     user: UserModel,
     order: OrderModel | null,
@@ -34,6 +42,16 @@ export interface IOrderController {
     next: NextFunction,
   ) => Promise<Response | void>;
   updateOrderArrivedStatus: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateOrderReceipt: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateOrderRating: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -76,6 +94,22 @@ export interface IOrderService {
     },
     dto: $OrderAPI.UpdateOrderArrivedStatus.Dto,
   ) => Promise<$OrderAPI.UpdateOrderArrivedStatus.Response["data"]>;
+  updateOrderReceipt: (
+    user: UserModel,
+    id: {
+      orderId: number;
+      resourceId: OrderResourceId;
+    },
+    dto: $OrderAPI.UpdateOrderReceipt.Dto,
+  ) => Promise<$OrderAPI.UpdateOrderReceipt.Response["data"]>;
+  updateOrderRating: (
+    user: UserModel,
+    id: {
+      orderId: number;
+      resourceId: OrderResourceId;
+    },
+    dto: $OrderAPI.UpdateOrderRating.Dto,
+  ) => Promise<$OrderAPI.UpdateOrderRating.Response["data"]>;
   deleteOrder: (
     user: UserModel,
     id: {
@@ -91,7 +125,9 @@ export interface IOrderRepository {
       variantId: number;
       resourceId?: Omit<OrderResourceId, "variantId">;
     },
-    data: $OrderAPI.CreateOrder.Dto,
+    data: {
+      variantSnapshot: $OrderAPI.BaseModel["variantSnapshot"];
+    } & $OrderAPI.CreateOrder.Dto,
   ) => Promise<OrderModel>;
   getOrders: (id: {
     variantId: number;
@@ -110,7 +146,9 @@ export interface IOrderRepository {
   ) => Promise<OrderModel>;
   updateOrder: (
     id: { orderId: number; resourceId?: OrderResourceId },
-    data: Partial<OrderModel>,
+    data: Omit<Partial<OrderModel>, "variantSnapshot"> & {
+      variantSnapshot?: $OrderAPI.BaseModel["variantSnapshot"];
+    },
   ) => Promise<OrderModel>;
   deleteOrder: (id: {
     orderId: number;

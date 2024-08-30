@@ -24,12 +24,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const variant_type_1 = require("../variant.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
-let ProductVariantService = class ProductVariantService {
+const BaseService_1 = __importDefault(require("../../../common/class/BaseService"));
+const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
+const asyncLocalStorage_1 = __importDefault(require("../../../common/asyncLocalStorage"));
+const LocalStorageKey_1 = require("../../../common/constants/LocalStorageKey");
+let ProductVariantService = class ProductVariantService extends BaseService_1.default {
     createVariant(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.authorization.authorizeCreateVariant(user);
-                return yield this.repository.createVariant({ productId: id.resourceId.productId }, dto);
+                const productSnapshot = yield this.globalRepository.product.getProductByIdOrThrow({
+                    productId: id.resourceId.productId,
+                });
+                return yield this.repository.createVariant({ productId: id.resourceId.productId }, Object.assign(Object.assign({}, dto), { productSnapshot }));
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);
@@ -63,6 +70,21 @@ let ProductVariantService = class ProductVariantService {
             try {
                 yield this.authorization.authorizeUpdateVariant(user);
                 return yield this.repository.updateVariant(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateVariantStockWithIncrement(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateVariant(user);
+                return yield this.transactionManager.initializeTransaction((tx) => __awaiter(this, void 0, void 0, function* () {
+                    return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                        return this.repository.updateVariantStockWithIncrement(id, dto);
+                    }));
+                }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

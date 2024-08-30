@@ -17,23 +17,14 @@ export default class ProductVariantRepository
 
   public async createVariant(
     id: { productId: number },
-    data: $ProductVariantAPI.CreateVariant.Dto,
+    data: {
+      productSnapshot: ProductModel;
+    } & $ProductVariantAPI.CreateVariant.Dto,
   ): Promise<ProductVariantModel> {
-    const productSnapshot = await this.db.product.findUnique({
-      where: {
-        id: id.productId,
-      },
-    });
-
-    if (!productSnapshot) {
-      throw new RecordNotFoundException();
-    }
-
     return this.db.productVariant.create({
       data: {
         ...data,
         productId: id.productId,
-        productSnapshot,
       },
     });
   }
@@ -90,9 +81,26 @@ export default class ProductVariantRepository
     variantId: number;
     resourceId?: ProductVariantResourceId;
   }): Promise<{}> {
-    return this.db.productVariant.delete({
+    await this.db.productVariant.delete({
       where: this.getWhereObject(id),
-      select: {},
+      select: { id: true },
+    });
+
+    return {};
+  }
+
+  public async updateVariantStockWithIncrement(
+    id: {
+      variantId: number;
+      resourceId?: ProductVariantResourceId;
+    },
+    data: $ProductVariantAPI.UpdateVariantStockWithIncrement.Dto,
+  ): Promise<ProductVariantModel> {
+    return this.db.productVariant.update({
+      where: this.getWhereObject(id),
+      data: {
+        stock: data,
+      },
     });
   }
 

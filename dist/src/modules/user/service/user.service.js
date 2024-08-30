@@ -240,6 +240,30 @@ let UserService = class UserService extends BaseService_1.default {
             }
         });
     }
+    getUserOrders(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeGetUserOrders(user, id.userId);
+                return yield this.repository.getUserOrders({
+                    userId: id.userId,
+                });
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    getDepartmentProgramsWithEnrollmentInformation(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeGetDepartmentProgramsWithEnrollmentInformation(user, id.userId);
+                return yield this.repository.getDepartmentProgramsWithEnrollmentInformation(id);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
     updateBasicUser(user, id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

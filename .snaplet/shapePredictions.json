@@ -335,6 +335,28 @@
   },
   {
     "schemaName": "public",
+    "tableName": "order",
+    "predictions": [
+      {
+        "input": "public order description",
+        "column": "description",
+        "shape": "COMMERCE_PRODUCT_DESCRIPTION",
+        "confidence": 0.8607426881790161,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      },
+      {
+        "input": "public order receipt",
+        "column": "receipt",
+        "shape": "SYSTEM_FILE_NAME",
+        "confidence": 0.8581069111824036,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
     "tableName": "personal_assignment",
     "predictions": [
       {
@@ -368,18 +390,24 @@
         "confidenceContext": 0
       },
       {
-        "input": "public product size",
-        "column": "size",
-        "shape": "SEARCH_VECTOR",
-        "confidence": 0.15096814930439,
-        "context": "GENERAL",
-        "confidenceContext": 0
-      },
-      {
         "input": "public product title",
         "column": "title",
         "shape": "COMMERCE_PRODUCT_NAME",
         "confidence": 0.9157878756523132,
+        "context": "GENERAL",
+        "confidenceContext": 0
+      }
+    ]
+  },
+  {
+    "schemaName": "public",
+    "tableName": "product_variant",
+    "predictions": [
+      {
+        "input": "public product_variant title",
+        "column": "title",
+        "shape": "COMMERCE_PRODUCT_NAME",
+        "confidence": 0.915579617023468,
         "context": "GENERAL",
         "confidenceContext": 0
       }

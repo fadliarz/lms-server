@@ -159,6 +159,12 @@ export default class UserRepository
           PrivilegeModel.REPORT,
         ),
       },
+      store: {
+        manage: await this.getUserAuthorizationStatusFromPrivilege(
+          id,
+          PrivilegeModel.STORE,
+        ),
+      },
     };
 
     permissions.category.manage = permissions.course.manage_the_course;
@@ -369,6 +375,47 @@ export default class UserRepository
     }
 
     return report;
+  }
+
+  public async getUserOrders(id: {
+    userId: number;
+  }): Promise<$UserAPI.GetUserOrders.Response["data"]> {
+    return this.db.order.findMany({
+      where: id,
+      include: {
+        variant: true,
+      },
+    });
+  }
+
+  public async getDepartmentProgramsWithEnrollmentInformation(id: {
+    userId: number;
+    departmentId: number;
+  }): Promise<
+    $UserAPI.GetDepartmentProgramsWithEnrollmentInformation.Response["data"]
+  > {
+    const programs = await this.db.departmentProgram.findMany({
+      where: {
+        departmentId: id.departmentId,
+      },
+      include: {
+        WorkProgramEnrollment: {
+          where: {
+            userId: id.userId,
+          },
+          take: 1,
+        },
+      },
+    });
+
+    return programs.map((program) => {
+      const { WorkProgramEnrollment, ...restProgram } = program;
+
+      return {
+        ...restProgram,
+        isEnrolled: WorkProgramEnrollment.length > 0,
+      };
+    });
   }
 
   public async getUserAuthorizationStatusFromPrivilege(

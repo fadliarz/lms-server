@@ -5,6 +5,13 @@ var $OrderAPI;
 (function ($OrderAPI) {
     const root = "/products/:productId/variants/:variantId/orders";
     const order = root + "/:orderId";
+    function transformObject(order) {
+        if (Array.isArray(order)) {
+            return order;
+        }
+        return order;
+    }
+    $OrderAPI.transformObject = transformObject;
     let CreateOrder;
     (function (CreateOrder) {
         CreateOrder.endpoint = root;
@@ -26,6 +33,18 @@ var $OrderAPI;
         UpdateOrderArrivedStatus.endpoint = `${order}/${attribute}`;
         UpdateOrderArrivedStatus.generateUrl = (productId, variantId, orderId) => `/products/${productId}/variants/${variantId}/orders/${orderId}/${attribute}`;
     })(UpdateOrderArrivedStatus = $OrderAPI.UpdateOrderArrivedStatus || ($OrderAPI.UpdateOrderArrivedStatus = {}));
+    let UpdateOrderReceipt;
+    (function (UpdateOrderReceipt) {
+        const attribute = "receipt";
+        UpdateOrderReceipt.endpoint = `${order}/${attribute}`;
+        UpdateOrderReceipt.generateUrl = (productId, variantId, orderId) => `/products/${productId}/variants/${variantId}/orders/${orderId}/${attribute}`;
+    })(UpdateOrderReceipt = $OrderAPI.UpdateOrderReceipt || ($OrderAPI.UpdateOrderReceipt = {}));
+    let UpdateOrderRating;
+    (function (UpdateOrderRating) {
+        const attribute = "rating";
+        UpdateOrderRating.endpoint = `${order}/${attribute}`;
+        UpdateOrderRating.generateUrl = (productId, variantId, orderId) => `/products/${productId}/variants/${variantId}/orders/${orderId}/${attribute}`;
+    })(UpdateOrderRating = $OrderAPI.UpdateOrderRating || ($OrderAPI.UpdateOrderRating = {}));
     let DeleteOrder;
     (function (DeleteOrder) {
         DeleteOrder.endpoint = order;

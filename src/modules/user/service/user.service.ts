@@ -303,6 +303,46 @@ export default class UserService extends BaseService implements IUserService {
     }
   }
 
+  public async getUserOrders(
+    user: UserModel,
+    id: {
+      userId: number;
+    },
+  ): Promise<$UserAPI.GetUserOrders.Response["data"]> {
+    try {
+      await this.authorization.authorizeGetUserOrders(user, id.userId);
+
+      return await this.repository.getUserOrders({
+        userId: id.userId,
+      });
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getDepartmentProgramsWithEnrollmentInformation(
+    user: UserModel,
+    id: {
+      userId: number;
+      departmentId: number;
+    },
+  ): Promise<
+    $UserAPI.GetDepartmentProgramsWithEnrollmentInformation.Response["data"]
+  > {
+    try {
+      await this.authorization.authorizeGetDepartmentProgramsWithEnrollmentInformation(
+        user,
+        id.userId,
+      );
+
+      return await this.repository.getDepartmentProgramsWithEnrollmentInformation(
+        id,
+      );
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
   public async updateBasicUser(
     user: UserModel,
     id: {

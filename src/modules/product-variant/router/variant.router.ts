@@ -51,6 +51,12 @@ export default function ProductVariantRouter(authenticationMiddleware: any) {
     controller.updateVariant.bind(controller),
   );
 
+  router.patch(
+    $ProductVariantAPI.UpdateVariantStockWithIncrement.endpoint,
+    authenticationMiddleware,
+    controller.updateVariantStockWithIncrement.bind(controller),
+  );
+
   /**
    * Delete
    *

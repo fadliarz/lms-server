@@ -48,6 +48,19 @@ export namespace $ProductVariantAPI {
     };
   }
 
+  export namespace UpdateVariantStockWithIncrement {
+    const attribute = "stock-increment";
+    export const endpoint = `${variant}/${attribute}`;
+    export const generateUrl = (productId: number, variantId: number) =>
+      `/products/${productId}/variants/${variantId}/${attribute}`;
+    export type Dto = {
+      increment: number;
+    };
+    export type Response = {
+      data: ProductVariantModel;
+    };
+  }
+
   export namespace DeleteVariant {
     export const endpoint = variant;
     export const generateUrl = (productId: number, variantId: number) =>

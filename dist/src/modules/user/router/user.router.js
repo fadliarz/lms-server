@@ -43,6 +43,8 @@ function UserRouter(authenticationMiddleware) {
     router.get(user_api_1.$UserAPI.GetUserManagedDepartments.endpoint, authenticationMiddleware, controller.getUserManagedDepartments.bind(controller));
     router.get(user_api_1.$UserAPI.GetUserManagedDepartmentDivisions.endpoint, authenticationMiddleware, controller.getUserManagedDepartmentDivisions.bind(controller));
     router.get(user_api_1.$UserAPI.GetUserReport.endpoint, authenticationMiddleware, controller.getUserReport.bind(controller));
+    router.get(user_api_1.$UserAPI.GetUserOrders.endpoint, authenticationMiddleware, controller.getUserOrders.bind(controller));
+    router.get(user_api_1.$UserAPI.GetDepartmentProgramsWithEnrollmentInformation.endpoint, authenticationMiddleware, controller.getDepartmentProgramsWithEnrollmentInformation.bind(controller));
     /**
      * Update
      *

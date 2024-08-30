@@ -25,6 +25,12 @@ var $ProductVariantAPI;
         UpdateVariant.endpoint = variant;
         UpdateVariant.generateUrl = (productId, variantId) => `/products/${productId}/variants/${variantId}`;
     })(UpdateVariant = $ProductVariantAPI.UpdateVariant || ($ProductVariantAPI.UpdateVariant = {}));
+    let UpdateVariantStockWithIncrement;
+    (function (UpdateVariantStockWithIncrement) {
+        const attribute = "stock-increment";
+        UpdateVariantStockWithIncrement.endpoint = `${variant}/${attribute}`;
+        UpdateVariantStockWithIncrement.generateUrl = (productId, variantId) => `/products/${productId}/variants/${variantId}/${attribute}`;
+    })(UpdateVariantStockWithIncrement = $ProductVariantAPI.UpdateVariantStockWithIncrement || ($ProductVariantAPI.UpdateVariantStockWithIncrement = {}));
     let DeleteVariant;
     (function (DeleteVariant) {
         DeleteVariant.endpoint = variant;

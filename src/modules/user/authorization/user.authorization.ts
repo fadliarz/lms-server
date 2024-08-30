@@ -174,6 +174,68 @@ export default class UserAuthorization
     }
   }
 
+  public async authorizeGetUserOrders(
+    user: UserModel,
+    targetUserId: number,
+  ): Promise<void> {
+    const { id: userId, role: userRole } = user;
+    const { isAdmin, isStudent } = getRoleStatus(userRole);
+
+    let isAuthorized = false;
+    if (isStudent) {
+      if (userId === targetUserId) {
+        isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        isAuthorized =
+          await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
+            { userId: user.id },
+            PrivilegeModel.STORE,
+          );
+      }
+    }
+
+    if (isAdmin) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
+
+  public async authorizeGetDepartmentProgramsWithEnrollmentInformation(
+    user: UserModel,
+    targetUserId: number,
+  ): Promise<void> {
+    const { id: userId, role: userRole } = user;
+    const { isAdmin, isStudent } = getRoleStatus(userRole);
+
+    let isAuthorized = false;
+    if (isStudent) {
+      if (userId === targetUserId) {
+        isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        isAuthorized =
+          await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
+            { userId: user.id },
+            PrivilegeModel.PROGRAM,
+          );
+      }
+    }
+
+    if (isAdmin) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
+
   public authorizeUpdateUser(user: UserModel, targetUserId: number): void {
     const { id: userId, role: userRole } = user;
     const { isAdmin, isStudent } = getRoleStatus(userRole);

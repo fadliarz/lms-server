@@ -23,8 +23,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const seed_1 = require("@snaplet/seed");
 const course_type_1 = require("./src/modules/course/course.type");
 const encrypt_1 = __importDefault(require("./src/utils/encrypt"));
+const client_1 = require("@prisma/client");
+const seed_config_1 = require("./seed.config");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const seed = yield (0, seed_1.createSeedClient)();
+    const prisma = new client_1.PrismaClient({
+        datasources: {
+            db: { url: seed_config_1.url.dev },
+        },
+    });
     yield seed.$resetDatabase();
     const instructors = getIds(1, 5);
     yield seed.user((x) => x(5, ({ seed }) => ({
@@ -127,6 +134,47 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield seed.departmentProgramEnrollment((x) => x(750), {
         connect: { departmentProgram: getIds(1, 50), user: getIds(1, 150) },
     });
+    /**
+     * Product
+     *
+     */
+    yield seed.product((x) => x(5));
+    yield seed.productVariant((x) => x(25), {
+        connect: { product: getIds(1, 5) },
+    });
+    yield seed.order((x) => x(155 * 2, ({ seed }) => ({
+        isArrived: Math.random() < 0.5,
+        rating: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
+        variant_snapshot: { id: 1 },
+    })), {
+        connect: { user: getIds(1, 155), productVariant: getIds(25) },
+    });
+    const orders = yield prisma.order.findMany({
+        select: {
+            id: true,
+            variant: {
+                select: {
+                    id: true,
+                    title: true,
+                    price: true,
+                    stock: true,
+                    product: {
+                        select: {
+                            id: true,
+                            title: true,
+                            description: true,
+                        },
+                    },
+                },
+            },
+        },
+    });
+    for (const order of orders) {
+        yield prisma.order.update({
+            where: { id: order.id },
+            data: { variantSnapshot: order.variant },
+        });
+    }
     console.log("Database seeded successfully!");
     process.exit();
 });

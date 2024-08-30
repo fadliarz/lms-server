@@ -19,7 +19,9 @@ export default class OrderRepository
       variantId: number;
       resourceId?: Omit<OrderResourceId, "variantId">;
     },
-    data: $OrderAPI.CreateOrder.Dto,
+    data: {
+      variantSnapshot: $OrderAPI.BaseModel["variantSnapshot"];
+    } & $OrderAPI.CreateOrder.Dto,
   ): Promise<OrderModel> {
     if (id.resourceId) {
       const variant = await this.db.productVariant.findFirst({
@@ -43,6 +45,7 @@ export default class OrderRepository
   }): Promise<OrderModel[]> {
     return this.db.order.findMany({
       where: this.getWhereObjectForFirstLevelOperation(id),
+      include: { variant: true },
     });
   }
 
@@ -73,7 +76,9 @@ export default class OrderRepository
 
   public async updateOrder(
     id: { orderId: number; resourceId?: OrderResourceId },
-    data: Partial<OrderModel>,
+    data: Omit<Partial<OrderModel>, "variantSnapshot"> & {
+      variantSnapshot?: $OrderAPI.BaseModel["variantSnapshot"];
+    },
   ): Promise<OrderModel> {
     return this.db.order.update({
       where: this.getWhereObjectForSecondLevelOperation(id),
@@ -87,7 +92,7 @@ export default class OrderRepository
   }): Promise<{}> {
     await this.db.order.delete({
       where: this.getWhereObjectForSecondLevelOperation(id),
-      select: {},
+      select: { id: true },
     });
 
     return {};

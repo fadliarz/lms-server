@@ -1,3 +1,5 @@
+import { JsonValue } from "../../common/shared.types";
+
 export const OrderDITypes = {
   REPOSITORY: Symbol.for("ORDER_REPOSITORY"),
   SERVICE: Symbol.for("ORDER_SERVICE"),
@@ -14,6 +16,7 @@ export type OrderModel = {
   arrivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  variantSnapshot: JsonValue;
   userId: number | null;
   variantId: number;
 };

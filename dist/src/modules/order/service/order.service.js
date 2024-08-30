@@ -23,6 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const order_type_1 = require("../order.type");
+const order_api_1 = require("../order.api");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 const BaseService_1 = __importDefault(require("../../../common/class/BaseService"));
 const prismaDefaultConfig_1 = require("../../../common/constants/prismaDefaultConfig");
@@ -38,9 +39,28 @@ let OrderService = class OrderService extends BaseService_1.default {
                     targetUserId: dto.userId,
                 });
                 return yield this.transactionManager.initializeTransaction((tx) => __awaiter(this, void 0, void 0, function* () {
-                    const variant = yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
-                        return this.globalRepository.productVariant.getVariantByIdOrThrow(id);
-                    }));
+                    const variant = yield tx.productVariant.findFirst({
+                        where: {
+                            id: id.variantId,
+                            productId: id.resourceId.productId,
+                        },
+                        select: {
+                            id: true,
+                            title: true,
+                            price: true,
+                            stock: true,
+                            product: {
+                                select: {
+                                    id: true,
+                                    title: true,
+                                    description: true,
+                                },
+                            },
+                        },
+                    });
+                    if (!variant) {
+                        throw new RecordNotFoundException_1.default();
+                    }
                     if (variant.stock != null && variant.stock < 1) {
                         throw new ClientException_1.default(order_type_1.OrderErrorMessage.OUT_OF_STOCK);
                     }
@@ -51,9 +71,9 @@ let OrderService = class OrderService extends BaseService_1.default {
                             });
                         }));
                     }
-                    return yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
-                        return this.repository.createOrder(id, dto);
-                    }));
+                    return order_api_1.$OrderAPI.transformObject(yield asyncLocalStorage_1.default.run({ [LocalStorageKey_1.LocalStorageKey.TRANSACTION]: tx }, () => __awaiter(this, void 0, void 0, function* () {
+                        return this.repository.createOrder(id, Object.assign(Object.assign({}, dto), { variantSnapshot: variant }));
+                    })));
                 }), prismaDefaultConfig_1.PrismaDefaultTransactionConfigForWrite);
             }
             catch (error) {
@@ -65,7 +85,7 @@ let OrderService = class OrderService extends BaseService_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.authorization.authorizeGetOrders(user);
-                return yield this.repository.getOrders(id);
+                return order_api_1.$OrderAPI.transformObject(yield this.repository.getOrders(id));
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);
@@ -82,7 +102,7 @@ let OrderService = class OrderService extends BaseService_1.default {
                 if (!order) {
                     throw new RecordNotFoundException_1.default();
                 }
-                return order;
+                return order_api_1.$OrderAPI.transformObject(order);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);
@@ -94,15 +114,39 @@ let OrderService = class OrderService extends BaseService_1.default {
             try {
                 yield this.authorization.authorizeUpdateOrderArrivedStatus(user);
                 if (dto.isArrived) {
-                    return yield this.repository.updateOrder(id, {
+                    return order_api_1.$OrderAPI.transformObject(yield this.repository.updateOrder(id, {
                         isArrived: true,
                         arrivedAt: new Date(),
-                    });
+                    }));
                 }
-                return yield this.repository.updateOrder(id, {
+                return order_api_1.$OrderAPI.transformObject(yield this.repository.updateOrder(id, {
                     isArrived: false,
                     arrivedAt: null,
-                });
+                }));
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateOrderReceipt(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const order = yield this.repository.getOrderById(id);
+                yield this.authorization.authorizeUpdateOrderReceipt(user, order);
+                return order_api_1.$OrderAPI.transformObject(yield this.repository.updateOrder({ orderId: id.orderId }, dto));
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    updateOrderRating(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const order = yield this.repository.getOrderById(id);
+                yield this.authorization.authorizeUpdateOrderRating(user, order);
+                return order_api_1.$OrderAPI.transformObject(yield this.repository.updateOrder({ orderId: id.orderId }, dto));
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

@@ -10,9 +10,17 @@ import { createSeedClient } from "@snaplet/seed";
 import { SeedClient } from "@snaplet/seed/dist/assets";
 import { CourseEnrollmentRoleModel, UserRoleModel } from "./src/modules/course/course.type";
 import sha256Encrypt from "./src/utils/encrypt";
+import { PrismaClient } from "@prisma/client";
+import { url } from "./seed.config";
 
 const main = async () => {
   const seed: SeedClient = await createSeedClient();
+
+  const prisma = new PrismaClient({
+    datasources: {
+      db: { url: url.dev },
+    },
+  });
 
   await seed.$resetDatabase();
 
@@ -174,6 +182,57 @@ const main = async () => {
   await seed.departmentProgramEnrollment((x) => x(750), {
     connect: { departmentProgram: getIds(1, 50), user: getIds(1, 150) },
   });
+
+  /**
+   * Product
+   *
+   */
+
+  await seed.product((x) => x(5));
+
+  await seed.productVariant((x) => x(25), {
+    connect: { product: getIds(1, 5) },
+  });
+
+  await seed.order(
+    (x) =>
+      x(155 * 2, ({ seed }) => ({
+        isArrived: Math.random() < 0.5,
+        rating: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
+        variant_snapshot: { id: 1 },
+      })),
+    {
+      connect: { user: getIds(1, 155), productVariant: getIds(25) },
+    },
+  );
+
+  const orders = await prisma.order.findMany({
+    select: {
+      id: true,
+      variant: {
+        select: {
+          id: true,
+          title: true,
+          price: true,
+          stock: true,
+          product: {
+            select: {
+              id: true,
+              title: true,
+              description: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  for (const order of orders) {
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { variantSnapshot: order.variant },
+    });
+  }
 
   console.log("Database seeded successfully!");
 

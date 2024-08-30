@@ -40,6 +40,14 @@ export interface IUserAuthorization {
     user: UserModel,
     targetUserId: number,
   ) => Promise<void>;
+  authorizeGetUserOrders: (
+    user: UserModel,
+    targetUserId: number,
+  ) => Promise<void>;
+  authorizeGetDepartmentProgramsWithEnrollmentInformation: (
+    user: UserModel,
+    targetUserId: number,
+  ) => Promise<void>;
 
   /**
    * Update
@@ -117,6 +125,16 @@ export interface IUserController {
     next: NextFunction,
   ) => Promise<Response | void>;
   getUserReport: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  getUserOrders: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  getDepartmentProgramsWithEnrollmentInformation: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -255,6 +273,19 @@ export interface IUserService {
     user: UserModel,
     id: { userId: number },
   ) => Promise<$UserAPI.GetUserReport.Response["data"]>;
+  getUserOrders: (
+    user: UserModel,
+    id: { userId: number },
+  ) => Promise<$UserAPI.GetUserOrders.Response["data"]>;
+  getDepartmentProgramsWithEnrollmentInformation: (
+    user: UserModel,
+    id: {
+      userId: number;
+      departmentId: number;
+    },
+  ) => Promise<
+    $UserAPI.GetDepartmentProgramsWithEnrollmentInformation.Response["data"]
+  >;
 
   /**
    * Update
@@ -402,6 +433,15 @@ export interface IUserRepository {
     },
     error?: Error,
   ) => Promise<$UserAPI.GetUserReport.Response["data"]>;
+  getUserOrders: (id: {
+    userId: number;
+  }) => Promise<$UserAPI.GetUserOrders.Response["data"]>;
+  getDepartmentProgramsWithEnrollmentInformation: (id: {
+    userId: number;
+    departmentId: number;
+  }) => Promise<
+    $UserAPI.GetDepartmentProgramsWithEnrollmentInformation.Response["data"]
+  >;
 
   /**
    * Others

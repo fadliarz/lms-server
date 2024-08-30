@@ -48,6 +48,7 @@ let OrderRepository = class OrderRepository extends BaseRepository_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.order.findMany({
                 where: this.getWhereObjectForFirstLevelOperation(id),
+                include: { variant: true },
             });
         });
     }
@@ -79,7 +80,7 @@ let OrderRepository = class OrderRepository extends BaseRepository_1.default {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.db.order.delete({
                 where: this.getWhereObjectForSecondLevelOperation(id),
-                select: {},
+                select: { id: true },
             });
             return {};
         });

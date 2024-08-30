@@ -71,6 +71,62 @@ let OrderAuthorization = class OrderAuthorization extends BaseAuthorization_1.de
             yield this.authorizeGetOrders(user);
         });
     }
+    authorizeUpdateOrderReceipt(user, order) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let isAuthorized = false;
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            if (isStudent) {
+                if (order === null) {
+                    const isManager = yield this.authorizeFromPrivilege(user);
+                    throw isManager
+                        ? new RecordNotFoundException_1.default()
+                        : new AuthorizationException_1.default();
+                }
+                if (user.id === order.userId && !order.isArrived) {
+                    isAuthorized = true;
+                }
+                if (!isAuthorized) {
+                    isAuthorized = yield this.authorizeFromPrivilege(user);
+                }
+            }
+            if (isAdmin) {
+                if (order === null)
+                    throw new RecordNotFoundException_1.default();
+                isAuthorized = true;
+            }
+            if (!isAuthorized) {
+                throw new AuthorizationException_1.default();
+            }
+        });
+    }
+    authorizeUpdateOrderRating(user, order) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let isAuthorized = false;
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            if (isStudent) {
+                if (order === null) {
+                    const isManager = yield this.authorizeFromPrivilege(user);
+                    throw isManager
+                        ? new RecordNotFoundException_1.default()
+                        : new AuthorizationException_1.default();
+                }
+                if (user.id === order.userId && order.isArrived) {
+                    isAuthorized = true;
+                }
+                if (!isAuthorized) {
+                    isAuthorized = yield this.authorizeFromPrivilege(user);
+                }
+            }
+            if (isAdmin) {
+                if (order === null)
+                    throw new RecordNotFoundException_1.default();
+                isAuthorized = true;
+            }
+            if (!isAuthorized) {
+                throw new AuthorizationException_1.default();
+            }
+        });
+    }
     authorizeDeleteOrder(user, order) {
         return __awaiter(this, void 0, void 0, function* () {
             let isAuthorized = false;

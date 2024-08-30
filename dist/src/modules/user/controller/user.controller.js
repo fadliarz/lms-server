@@ -215,6 +215,35 @@ let UserController = class UserController {
             }
         });
     }
+    getUserOrders(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const orders = yield this.service.getUserOrders((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: orders,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getDepartmentProgramsWithEnrollmentInformation(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const departments = yield this.service.getDepartmentProgramsWithEnrollmentInformation((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    userId: this.validateUserId(req),
+                    departmentId: this.validateDepartmentId(req),
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: departments,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     updateBasicUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -362,6 +391,13 @@ let UserController = class UserController {
             throw error || new NaNException_1.default("userId");
         }
         return userId;
+    }
+    validateDepartmentId(req, error) {
+        const departmentId = Number(req.params.departmentId);
+        if (isNaN(departmentId)) {
+            throw error || new NaNException_1.default("departmentId");
+        }
+        return departmentId;
     }
 };
 __decorate([

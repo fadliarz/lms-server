@@ -31,6 +31,11 @@ export interface IProductVariantController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
+  updateVariantStockWithIncrement: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
   deleteVariant: (
     req: Request,
     res: Response,
@@ -61,6 +66,16 @@ export interface IProductVariantService {
     },
     dto: $ProductVariantAPI.UpdateVariant.Dto,
   ) => Promise<$ProductVariantAPI.UpdateVariant.Response["data"]>;
+  updateVariantStockWithIncrement: (
+    user: UserModel,
+    id: {
+      variantId: number;
+      resourceId: ProductVariantResourceId;
+    },
+    dto: $ProductVariantAPI.UpdateVariantStockWithIncrement.Dto,
+  ) => Promise<
+    $ProductVariantAPI.UpdateVariantStockWithIncrement.Response["data"]
+  >;
   deleteVariant: (
     user: UserModel,
     id: {
@@ -73,7 +88,9 @@ export interface IProductVariantService {
 export interface IProductVariantRepository {
   createVariant: (
     id: { productId: number },
-    data: $ProductVariantAPI.CreateVariant.Dto,
+    data: {
+      productSnapshot: ProductModel;
+    } & $ProductVariantAPI.CreateVariant.Dto,
   ) => Promise<ProductVariantModel>;
   getVariants: (id: { productId: number }) => Promise<ProductVariantModel[]>;
   getVariantById: (id: {
@@ -95,6 +112,13 @@ export interface IProductVariantRepository {
     data: Partial<Omit<ProductVariantModel, "productSnapshot">> & {
       productSnapshot?: ProductModel;
     },
+  ) => Promise<ProductVariantModel>;
+  updateVariantStockWithIncrement: (
+    id: {
+      variantId: number;
+      resourceId?: ProductVariantResourceId;
+    },
+    data: $ProductVariantAPI.UpdateVariantStockWithIncrement.Dto,
   ) => Promise<ProductVariantModel>;
   deleteVariant: (id: {
     variantId: number;

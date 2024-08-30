@@ -26,6 +26,8 @@ function OrderRouter(authenticationMiddleware) {
      *
      */
     router.patch(order_api_1.$OrderAPI.UpdateOrderArrivedStatus.endpoint, authenticationMiddleware, controller.updateOrderArrivedStatus.bind(controller));
+    router.patch(order_api_1.$OrderAPI.UpdateOrderReceipt.endpoint, authenticationMiddleware, controller.updateOrderReceipt.bind(controller));
+    router.patch(order_api_1.$OrderAPI.UpdateOrderRating.endpoint, authenticationMiddleware, controller.updateOrderRating.bind(controller));
     /**
      * Delete
      *

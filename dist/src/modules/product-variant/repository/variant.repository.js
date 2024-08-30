@@ -30,16 +30,8 @@ let ProductVariantRepository = class ProductVariantRepository extends BaseReposi
     }
     createVariant(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            const productSnapshot = yield this.db.product.findUnique({
-                where: {
-                    id: id.productId,
-                },
-            });
-            if (!productSnapshot) {
-                throw new RecordNotFoundException_1.default();
-            }
             return this.db.productVariant.create({
-                data: Object.assign(Object.assign({}, data), { productId: id.productId, productSnapshot }),
+                data: Object.assign(Object.assign({}, data), { productId: id.productId }),
             });
         });
     }
@@ -76,9 +68,20 @@ let ProductVariantRepository = class ProductVariantRepository extends BaseReposi
     }
     deleteVariant(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.productVariant.delete({
+            yield this.db.productVariant.delete({
                 where: this.getWhereObject(id),
-                select: {},
+                select: { id: true },
+            });
+            return {};
+        });
+    }
+    updateVariantStockWithIncrement(id, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.productVariant.update({
+                where: this.getWhereObject(id),
+                data: {
+                    stock: data,
+                },
             });
         });
     }

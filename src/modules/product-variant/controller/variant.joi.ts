@@ -12,3 +12,8 @@ export const UpdateProductVariantDtoJoi =
     title: Joi.string(),
     price: Joi.number(),
   });
+
+export const UpdateVariantStockWithIncrementDtoJoi =
+  Joi.object<$ProductVariantAPI.UpdateVariantStockWithIncrement.Dto>({
+    increment: Joi.number().required(),
+  });

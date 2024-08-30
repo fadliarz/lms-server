@@ -76,6 +76,17 @@ var $UserAPI;
         GetUserReport.endpoint = `${user}/${attribute}`;
         GetUserReport.generateUrl = (userId) => `/users/${userId}/${attribute}`;
     })(GetUserReport = $UserAPI.GetUserReport || ($UserAPI.GetUserReport = {}));
+    let GetUserOrders;
+    (function (GetUserOrders) {
+        const attribute = "orders";
+        GetUserOrders.endpoint = `${user}/${attribute}`;
+        GetUserOrders.generateUrl = (userId) => `/users/${userId}/${attribute}`;
+    })(GetUserOrders = $UserAPI.GetUserOrders || ($UserAPI.GetUserOrders = {}));
+    let GetDepartmentProgramsWithEnrollmentInformation;
+    (function (GetDepartmentProgramsWithEnrollmentInformation) {
+        GetDepartmentProgramsWithEnrollmentInformation.endpoint = `${user}/departments/:departmentId/programs`;
+        GetDepartmentProgramsWithEnrollmentInformation.generateUrl = (userId, departmentId) => `/users/${userId}/departments/${departmentId}/programs`;
+    })(GetDepartmentProgramsWithEnrollmentInformation = $UserAPI.GetDepartmentProgramsWithEnrollmentInformation || ($UserAPI.GetDepartmentProgramsWithEnrollmentInformation = {}));
     let UpdateBasicUser;
     (function (UpdateBasicUser) {
         UpdateBasicUser.endpoint = user + "/basic";

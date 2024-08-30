@@ -136,6 +136,50 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
             }
         });
     }
+    authorizeGetUserOrders(user, targetUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id: userId, role: userRole } = user;
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(userRole);
+            let isAuthorized = false;
+            if (isStudent) {
+                if (userId === targetUserId) {
+                    isAuthorized = true;
+                }
+                if (!isAuthorized) {
+                    isAuthorized =
+                        yield this.globalRepository.user.getUserAuthorizationStatusFromPrivilege({ userId: user.id }, user_type_1.PrivilegeModel.STORE);
+                }
+            }
+            if (isAdmin) {
+                isAuthorized = true;
+            }
+            if (!isAuthorized) {
+                throw new AuthorizationException_1.default();
+            }
+        });
+    }
+    authorizeGetDepartmentProgramsWithEnrollmentInformation(user, targetUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { id: userId, role: userRole } = user;
+            const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(userRole);
+            let isAuthorized = false;
+            if (isStudent) {
+                if (userId === targetUserId) {
+                    isAuthorized = true;
+                }
+                if (!isAuthorized) {
+                    isAuthorized =
+                        yield this.globalRepository.user.getUserAuthorizationStatusFromPrivilege({ userId: user.id }, user_type_1.PrivilegeModel.PROGRAM);
+                }
+            }
+            if (isAdmin) {
+                isAuthorized = true;
+            }
+            if (!isAuthorized) {
+                throw new AuthorizationException_1.default();
+            }
+        });
+    }
     authorizeUpdateUser(user, targetUserId) {
         const { id: userId, role: userRole } = user;
         const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(userRole);

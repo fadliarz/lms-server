@@ -1,4 +1,4 @@
-import { JsonValue } from "@prisma/client/runtime/library";
+import { ProductModel } from "../product/product.type";
 
 export const ProductVariantDITypes = {
   REPOSITORY: Symbol.for("PRODUCT_VARIANT_REPOSITORY"),
@@ -15,10 +15,11 @@ export type ProductVariantModel = {
   totalSales: number;
   createdAt: Date;
   updatedAt: Date;
-  productId: number | null;
-  productSnapshot: JsonValue;
+  productId: number;
 };
 
 export type ProductVariantResourceId = {
   productId: number;
 };
+
+export type ProductSnapshot = Omit<ProductModel, "createdAt" | "updatedAt">;

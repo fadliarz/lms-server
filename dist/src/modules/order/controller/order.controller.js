@@ -83,6 +83,34 @@ let OrderController = class OrderController {
             }
         });
     }
+    updateOrderReceipt(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: order_joi_1.UpdateOrderReceiptDtoJoi })(req, res, next);
+                const updatedOrder = yield this.service.updateOrderReceipt((0, getRequestUserOrThrowAuthenticationException_1.default)(req), this.validateResourceId(req), req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedOrder,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    updateOrderRating(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: order_joi_1.UpdateOrderRatingDtoJoi })(req, res, next);
+                const updatedOrder = yield this.service.updateOrderRating((0, getRequestUserOrThrowAuthenticationException_1.default)(req), this.validateResourceId(req), req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedOrder,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     deleteOrder(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

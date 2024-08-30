@@ -14,6 +14,7 @@ import { StatusCode } from "../../../common/constants/statusCode";
 import {
   CreateProductVariantDtoJoi,
   UpdateProductVariantDtoJoi,
+  UpdateVariantStockWithIncrementDtoJoi,
 } from "./variant.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
 
@@ -92,6 +93,35 @@ export default class ProductVariantController
       await validateJoi({ body: UpdateProductVariantDtoJoi })(req, res, next);
 
       const updatedVariant = await this.service.updateVariant(
+        getRequestUserOrThrowAuthenticationException(req),
+        {
+          variantId: this.validateVariantId(req),
+          resourceId: this.validateResourceId(req),
+        },
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: updatedVariant,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateVariantStockWithIncrement(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateVariantStockWithIncrementDtoJoi })(
+        req,
+        res,
+        next,
+      );
+
+      const updatedVariant = await this.service.updateVariantStockWithIncrement(
         getRequestUserOrThrowAuthenticationException(req),
         {
           variantId: this.validateVariantId(req),

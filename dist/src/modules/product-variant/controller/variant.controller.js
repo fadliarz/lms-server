@@ -91,6 +91,23 @@ let ProductVariantController = class ProductVariantController {
             }
         });
     }
+    updateVariantStockWithIncrement(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: variant_joi_1.UpdateVariantStockWithIncrementDtoJoi })(req, res, next);
+                const updatedVariant = yield this.service.updateVariantStockWithIncrement((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    variantId: this.validateVariantId(req),
+                    resourceId: this.validateResourceId(req),
+                }, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedVariant,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     deleteVariant(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

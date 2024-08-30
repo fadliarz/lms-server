@@ -48,6 +48,18 @@ export default function OrderRouter(authenticationMiddleware: any) {
     controller.updateOrderArrivedStatus.bind(controller),
   );
 
+  router.patch(
+    $OrderAPI.UpdateOrderReceipt.endpoint,
+    authenticationMiddleware,
+    controller.updateOrderReceipt.bind(controller),
+  );
+
+  router.patch(
+    $OrderAPI.UpdateOrderRating.endpoint,
+    authenticationMiddleware,
+    controller.updateOrderRating.bind(controller),
+  );
+
   /**
    * Delete
    *

@@ -27,6 +27,7 @@ function ProductVariantRouter(authenticationMiddleware) {
      *
      */
     router.patch(variant_api_1.$ProductVariantAPI.UpdateVariant.endpoint, authenticationMiddleware, controller.updateVariant.bind(controller));
+    router.patch(variant_api_1.$ProductVariantAPI.UpdateVariantStockWithIncrement.endpoint, authenticationMiddleware, controller.updateVariantStockWithIncrement.bind(controller));
     /**
      * Delete
      *

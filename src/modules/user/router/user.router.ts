@@ -115,6 +115,18 @@ export default function UserRouter(authenticationMiddleware: any) {
     controller.getUserReport.bind(controller),
   );
 
+  router.get(
+    $UserAPI.GetUserOrders.endpoint,
+    authenticationMiddleware,
+    controller.getUserOrders.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetDepartmentProgramsWithEnrollmentInformation.endpoint,
+    authenticationMiddleware,
+    controller.getDepartmentProgramsWithEnrollmentInformation.bind(controller),
+  );
+
   /**
    * Update
    *

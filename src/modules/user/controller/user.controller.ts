@@ -282,6 +282,48 @@ export default class UserController implements IUserController {
     }
   }
 
+  public async getUserOrders(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const orders = await this.service.getUserOrders(
+        getRequestUserOrThrowAuthenticationException(req),
+        { userId: this.validateUserId(req) },
+      );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: orders,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getDepartmentProgramsWithEnrollmentInformation(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const departments =
+        await this.service.getDepartmentProgramsWithEnrollmentInformation(
+          getRequestUserOrThrowAuthenticationException(req),
+          {
+            userId: this.validateUserId(req),
+            departmentId: this.validateDepartmentId(req),
+          },
+        );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: departments,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public async updateBasicUser(
     req: Request,
     res: Response,
@@ -481,5 +523,14 @@ export default class UserController implements IUserController {
     }
 
     return userId;
+  }
+
+  private validateDepartmentId(req: Request, error?: Error): number {
+    const departmentId = Number(req.params.departmentId);
+    if (isNaN(departmentId)) {
+      throw error || new NaNException("departmentId");
+    }
+
+    return departmentId;
   }
 }

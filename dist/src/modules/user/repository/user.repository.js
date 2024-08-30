@@ -143,6 +143,9 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                 report: {
                     manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.REPORT),
                 },
+                store: {
+                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.STORE),
+                },
             };
             permissions.category.manage = permissions.course.manage_the_course;
             permissions.course.manage_course_content = !((yield this.getUserOneCourseEnrollmentId(id, {
@@ -301,6 +304,37 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
                 throw error || new RecordNotFoundException_1.default();
             }
             return report;
+        });
+    }
+    getUserOrders(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.order.findMany({
+                where: id,
+                include: {
+                    variant: true,
+                },
+            });
+        });
+    }
+    getDepartmentProgramsWithEnrollmentInformation(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const programs = yield this.db.departmentProgram.findMany({
+                where: {
+                    departmentId: id.departmentId,
+                },
+                include: {
+                    WorkProgramEnrollment: {
+                        where: {
+                            userId: id.userId,
+                        },
+                        take: 1,
+                    },
+                },
+            });
+            return programs.map((program) => {
+                const { WorkProgramEnrollment } = program, restProgram = __rest(program, ["WorkProgramEnrollment"]);
+                return Object.assign(Object.assign({}, restProgram), { isEnrolled: WorkProgramEnrollment.length > 0 });
+            });
         });
     }
     getUserAuthorizationStatusFromPrivilege(id, privilege) {

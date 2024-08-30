@@ -5,7 +5,12 @@ import { NextFunction, Request, Response } from "express";
 import validateJoi from "../../../common/functions/validateJoi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import { StatusCode } from "../../../common/constants/statusCode";
-import { CreateOrderDtoJoi, UpdateOrderArrivedStatusDtoJoi } from "./order.joi";
+import {
+  CreateOrderDtoJoi,
+  UpdateOrderArrivedStatusDtoJoi,
+  UpdateOrderRatingDtoJoi,
+  UpdateOrderReceiptDtoJoi,
+} from "./order.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
 
 @injectable()
@@ -86,6 +91,50 @@ export default class OrderController implements IOrderController {
       );
 
       const updatedOrder = await this.service.updateOrderArrivedStatus(
+        getRequestUserOrThrowAuthenticationException(req),
+        this.validateResourceId(req),
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: updatedOrder,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateOrderReceipt(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateOrderReceiptDtoJoi })(req, res, next);
+
+      const updatedOrder = await this.service.updateOrderReceipt(
+        getRequestUserOrThrowAuthenticationException(req),
+        this.validateResourceId(req),
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: updatedOrder,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateOrderRating(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateOrderRatingDtoJoi })(req, res, next);
+
+      const updatedOrder = await this.service.updateOrderRating(
         getRequestUserOrThrowAuthenticationException(req),
         this.validateResourceId(req),
         req.body,

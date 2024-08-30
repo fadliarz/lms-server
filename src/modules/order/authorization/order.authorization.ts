@@ -72,6 +72,78 @@ export default class OrderAuthorization
     await this.authorizeGetOrders(user);
   }
 
+  public async authorizeUpdateOrderReceipt(
+    user: UserModel,
+    order: OrderModel | null,
+  ): Promise<void> {
+    let isAuthorized = false;
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
+
+    if (isStudent) {
+      if (order === null) {
+        const isManager = await this.authorizeFromPrivilege(user);
+
+        throw isManager
+          ? new RecordNotFoundException()
+          : new AuthorizationException();
+      }
+
+      if (user.id === order.userId && !order.isArrived) {
+        isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        isAuthorized = await this.authorizeFromPrivilege(user);
+      }
+    }
+
+    if (isAdmin) {
+      if (order === null) throw new RecordNotFoundException();
+
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
+
+  public async authorizeUpdateOrderRating(
+    user: UserModel,
+    order: OrderModel | null,
+  ): Promise<void> {
+    let isAuthorized = false;
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
+
+    if (isStudent) {
+      if (order === null) {
+        const isManager = await this.authorizeFromPrivilege(user);
+
+        throw isManager
+          ? new RecordNotFoundException()
+          : new AuthorizationException();
+      }
+
+      if (user.id === order.userId && order.isArrived) {
+        isAuthorized = true;
+      }
+
+      if (!isAuthorized) {
+        isAuthorized = await this.authorizeFromPrivilege(user);
+      }
+    }
+
+    if (isAdmin) {
+      if (order === null) throw new RecordNotFoundException();
+
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
+
   public async authorizeDeleteOrder(
     user: UserModel,
     order: OrderModel | null,

@@ -9,6 +9,8 @@ import { DepartmentModel } from "../department/department.type";
 import { DepartmentDivisionModel } from "../division/division.type";
 import { ReportModel } from "../report/report.type";
 import { PublicUserModel, UserModel } from "./user.type";
+import { OrderModel } from "../order/order.type";
+import { ProductVariantModel } from "../product-variant/variant.type";
 
 export namespace $UserAPI {
   const root = "/users";
@@ -93,6 +95,9 @@ export namespace $UserAPI {
           manage: boolean;
         };
         report: {
+          manage: boolean;
+        };
+        store: {
           manage: boolean;
         };
       };
@@ -184,6 +189,25 @@ export namespace $UserAPI {
       `/users/${userId}/${attribute}`;
     export type Response = {
       data: ReportModel;
+    };
+  }
+
+  export namespace GetUserOrders {
+    const attribute = "orders";
+    export const endpoint = `${user}/${attribute}`;
+    export const generateUrl = (userId: string) =>
+      `/users/${userId}/${attribute}`;
+    export type Response = {
+      data: (OrderModel & { variant: ProductVariantModel })[];
+    };
+  }
+
+  export namespace GetDepartmentProgramsWithEnrollmentInformation {
+    export const endpoint = `${user}/departments/:departmentId/programs`;
+    export const generateUrl = (userId: string, departmentId: number) =>
+      `/users/${userId}/departments/${departmentId}/programs`;
+    export type Response = {
+      data: (DepartmentProgramModel & { isEnrolled: boolean })[];
     };
   }
 
