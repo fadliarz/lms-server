@@ -9,6 +9,7 @@ import {
   CourseModel,
 } from "../../course/course.type";
 import { $UserAPI } from "../user.api";
+import { $OrderAPI } from "../../order/order.api";
 
 @injectable()
 export default class UserRepository
@@ -380,12 +381,11 @@ export default class UserRepository
   public async getUserOrders(id: {
     userId: number;
   }): Promise<$UserAPI.GetUserOrders.Response["data"]> {
-    return this.db.order.findMany({
-      where: id,
-      include: {
-        variant: true,
-      },
-    });
+    return $OrderAPI.transformObject(
+      await this.db.order.findMany({
+        where: id,
+      }),
+    );
   }
 
   public async getDepartmentProgramsWithEnrollmentInformation(id: {

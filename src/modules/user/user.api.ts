@@ -9,8 +9,7 @@ import { DepartmentModel } from "../department/department.type";
 import { DepartmentDivisionModel } from "../division/division.type";
 import { ReportModel } from "../report/report.type";
 import { PublicUserModel, UserModel } from "./user.type";
-import { OrderModel } from "../order/order.type";
-import { ProductVariantModel } from "../product-variant/variant.type";
+import { $OrderAPI } from "../order/order.api";
 
 export namespace $UserAPI {
   const root = "/users";
@@ -198,7 +197,7 @@ export namespace $UserAPI {
     export const generateUrl = (userId: string) =>
       `/users/${userId}/${attribute}`;
     export type Response = {
-      data: (OrderModel & { variant: ProductVariantModel })[];
+      data: $OrderAPI.BaseModel[];
     };
   }
 

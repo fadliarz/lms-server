@@ -11,16 +11,11 @@ import { SeedClient } from "@snaplet/seed/dist/assets";
 import { CourseEnrollmentRoleModel, UserRoleModel } from "./src/modules/course/course.type";
 import sha256Encrypt from "./src/utils/encrypt";
 import { PrismaClient } from "@prisma/client";
-import { url } from "./seed.config";
 
 const main = async () => {
   const seed: SeedClient = await createSeedClient();
 
-  const prisma = new PrismaClient({
-    datasources: {
-      db: { url: url.dev },
-    },
-  });
+  const prisma = new PrismaClient();
 
   await seed.$resetDatabase();
 
@@ -202,7 +197,7 @@ const main = async () => {
         variant_snapshot: { id: 1 },
       })),
     {
-      connect: { user: getIds(1, 155), productVariant: getIds(25) },
+      connect: { user: getIds(1, 155), productVariant: getIds(1, 25) },
     },
   );
 
@@ -232,6 +227,8 @@ const main = async () => {
       where: { id: order.id },
       data: { variantSnapshot: order.variant },
     });
+
+    console.log("order updated!");
   }
 
   console.log("Database seeded successfully!");

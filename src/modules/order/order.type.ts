@@ -18,7 +18,7 @@ export type OrderModel = {
   updatedAt: Date;
   variantSnapshot: JsonValue;
   userId: number | null;
-  variantId: number;
+  variantId: number | null;
 };
 
 export type OrderResourceId = {

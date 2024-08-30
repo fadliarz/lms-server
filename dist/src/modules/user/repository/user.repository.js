@@ -38,6 +38,7 @@ const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
 const course_type_1 = require("../../course/course.type");
+const order_api_1 = require("../../order/order.api");
 let UserRepository = class UserRepository extends BaseRepository_1.default {
     constructor() {
         super();
@@ -308,12 +309,9 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
     }
     getUserOrders(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.order.findMany({
+            return order_api_1.$OrderAPI.transformObject(yield this.db.order.findMany({
                 where: id,
-                include: {
-                    variant: true,
-                },
-            });
+            }));
         });
     }
     getDepartmentProgramsWithEnrollmentInformation(id) {

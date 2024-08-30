@@ -2996,7 +2996,7 @@
           "name": "variant_id",
           "columnName": "variant_id",
           "type": "int4",
-          "isRequired": true,
+          "isRequired": false,
           "kind": "scalar",
           "isList": false,
           "isGenerated": false,
@@ -3022,7 +3022,7 @@
         {
           "name": "product_variant",
           "type": "product_variant",
-          "isRequired": true,
+          "isRequired": false,
           "kind": "object",
           "relationName": "orderToproduct_variant",
           "relationFromFields": [
