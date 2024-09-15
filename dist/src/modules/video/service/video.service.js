@@ -48,7 +48,7 @@ let CourseLessonVideoService = class CourseLessonVideoService {
             }
         });
     }
-    getVideos(user, id) {
+    getVideos(user, id, query) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.authorization.authorizeReadVideo(user, id.resourceId.courseId);
@@ -56,7 +56,7 @@ let CourseLessonVideoService = class CourseLessonVideoService {
                 return yield this.repository.getVideos({
                     lessonId,
                     resourceId: theResourceId,
-                });
+                }, query);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

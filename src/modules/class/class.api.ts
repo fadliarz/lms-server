@@ -1,4 +1,5 @@
 import { CourseClassModel } from "./class.type";
+import { PagingQuery } from "../../common/shared.types";
 
 export namespace $CourseClassAPI {
   const root = "/courses/:courseId/classes";
@@ -20,6 +21,7 @@ export namespace $CourseClassAPI {
     export const endpoint = root;
     export const generateUrl = (courseId: number) =>
       `/courses/${courseId}/classes`;
+    export type Query = PagingQuery;
     export type Response = {
       data: CourseClassModel[];
     };

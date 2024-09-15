@@ -283,11 +283,11 @@ export default class UserRepository
       userId: number;
     },
     where: {
-      role: CourseEnrollmentRoleModel;
+      role: CourseEnrollmentRoleModel[];
     },
   ): Promise<CourseModel[]> {
     const enrollments = await this.db.courseEnrollment.findMany({
-      where: { userId: id.userId, role: where.role },
+      where: { userId: id.userId, role: { in: where.role } },
       select: {
         course: true,
       },

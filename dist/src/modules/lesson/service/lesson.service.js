@@ -46,11 +46,16 @@ let CourseLessonService = class CourseLessonService {
             }
         });
     }
-    getLessons(id) {
+    getLessons(id, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.repository.getLessons({
-                courseId: id.resourceId.courseId,
-            });
+            try {
+                return yield this.repository.getLessons({
+                    courseId: id.resourceId.courseId,
+                }, query);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
         });
     }
     updateLesson(user, id, dto) {

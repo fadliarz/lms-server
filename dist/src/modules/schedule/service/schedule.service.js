@@ -38,12 +38,12 @@ let CourseScheduleService = class CourseScheduleService {
             }
         });
     }
-    getSchedules(resourceId) {
+    getSchedules(resourceId, query) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { user, params: { courseId }, } = resourceId;
                 yield this.authorization.authorizeReadSchedule(user, courseId);
-                return this.repository.getSchedules({ courseId });
+                return this.repository.getSchedules({ courseId }, query);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

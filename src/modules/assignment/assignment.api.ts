@@ -1,4 +1,5 @@
 import { CourseClassAssignmentModel } from "./assignment.type";
+import { PagingQuery } from "../../common/shared.types";
 
 export namespace $CourseClassAssignmentAPI {
   const root = "/courses/:courseId/classes/:classId/assignments";
@@ -22,6 +23,7 @@ export namespace $CourseClassAssignmentAPI {
     export const endpoint = root;
     export const generateUrl = (courseId: number, classId: number) =>
       `/courses/${courseId}/classes/${classId}/assignments`;
+    export type Query = PagingQuery;
     export type Response = {
       data: CourseClassAssignmentModel[];
     };

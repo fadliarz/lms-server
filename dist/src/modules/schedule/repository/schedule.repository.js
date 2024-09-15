@@ -24,6 +24,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const inversify_1 = require("inversify");
 const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
+const getQueryExtendObject_1 = __importDefault(require("../../../common/functions/getQueryExtendObject"));
 let CourseScheduleRepository = class CourseScheduleRepository extends BaseRepository_1.default {
     constructor() {
         super();
@@ -35,11 +36,9 @@ let CourseScheduleRepository = class CourseScheduleRepository extends BaseReposi
             });
         });
     }
-    getSchedules(id) {
+    getSchedules(id, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.courseSchedule.findMany({
-                where: this.getWhereObjectForFirstLevelOperation(id),
-            });
+            return this.db.courseSchedule.findMany(Object.assign({ where: this.getWhereObjectForFirstLevelOperation(id) }, (0, getQueryExtendObject_1.default)(query)));
         });
     }
     getScheduleById(id) {

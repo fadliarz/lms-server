@@ -1,21 +1,22 @@
-import { CourseEnrollmentModel } from "../enrollment.type";
 import getRoleStatus from "../../../common/functions/getRoleStatus";
 import { CourseEnrollmentRoleModel } from "../../course/course.type";
 import AuthorizationException from "../../../common/class/exceptions/AuthorizationException";
 import { injectable } from "inversify";
 import isEqualOrIncludeCourseEnrollmentRole from "../../../common/functions/isEqualOrIncludeCourseEnrollmentRole";
-import { UserModel } from "../../user/user.type";
+import { PrivilegeModel, UserModel } from "../../user/user.type";
 import { ICourseEnrollmentAuthorization } from "../enrollment.interface";
 import { $CourseEnrollmentAPI } from "../enrollment.api";
+import BaseAuthorization from "../../../common/class/BaseAuthorization";
 
 @injectable()
 export default class CourseEnrollmentAuthorization
+  extends BaseAuthorization
   implements ICourseEnrollmentAuthorization
 {
-  public authorizeCreateEnrollment(
+  public async authorizeCreateEnrollment(
     user: UserModel,
     dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
-  ): void {
+  ): Promise<void> {
     const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
@@ -28,6 +29,14 @@ export default class CourseEnrollmentAuthorization
       ) {
         isAuthorized = true;
       }
+
+      if (!isAuthorized) {
+        isAuthorized =
+          await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
+            { userId: user.id },
+            PrivilegeModel.COURSE,
+          );
+      }
     }
 
     if (isAdmin) {
@@ -39,11 +48,16 @@ export default class CourseEnrollmentAuthorization
     }
   }
 
-  public authorizeUpdateEnrollmentRole(user: UserModel): void {
+  public async authorizeUpdateEnrollmentRole(user: UserModel): Promise<void> {
     const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
     if (isStudent) {
+      isAuthorized =
+        await this.globalRepository.user.getUserAuthorizationStatusFromPrivilege(
+          { userId: user.id },
+          PrivilegeModel.COURSE,
+        );
     }
 
     if (isAdmin) {
@@ -55,15 +69,22 @@ export default class CourseEnrollmentAuthorization
     }
   }
 
-  public authorizeDeleteEnrollment(
+  public async authorizeDeleteEnrollment(
     user: UserModel,
-    enrollment: CourseEnrollmentModel,
-  ): void {
+    enrollmentId: number,
+  ): Promise<void> {
     const { isAdmin, isStudent } = getRoleStatus(user.role);
 
     let isAuthorized = false;
-    if (isStudent && user.id == enrollment.userId) {
-      isAuthorized = true;
+    if (isStudent) {
+      const enrollment =
+        await this.globalRepository.courseEnrollment.getEnrollmentById(
+          enrollmentId,
+        );
+
+      if (enrollment?.userId == user.id) {
+        isAuthorized = true;
+      }
     }
 
     if (isAdmin) {

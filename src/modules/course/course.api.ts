@@ -2,6 +2,9 @@ import { CourseLessonModel } from "../lesson/lesson.type";
 import { CourseLessonVideoModel } from "../video/video.type";
 import { CourseLikeModel, CourseModel, CourseStatusModel } from "./course.type";
 import { CourseCategoryModel } from "../category/category.type";
+import { PagingQuery } from "../../common/shared.types";
+import { UserModel } from "../user/user.type";
+import { CourseEnrollmentModel } from "../enrollment/enrollment.type";
 
 export namespace $CourseAPI {
   const root = "/courses";
@@ -24,14 +27,24 @@ export namespace $CourseAPI {
     };
   }
 
+  export namespace CreateCourseInstructor {
+    export const endpoint = course + "/instructors";
+    export const generateUrl = (courseId: number) =>
+      `/courses/${courseId}/instructors`;
+    export type Dto = {
+      userId: number;
+    };
+    export type Response = {
+      data: CourseEnrollmentModel;
+    };
+  }
+
   export namespace GetCourses {
     export const endpoint = root;
     export const generateUrl = () => endpoint;
     export type Query = {
       include_category?: boolean;
-      pageNumber?: number;
-      pageSize?: number;
-    };
+    } & PagingQuery;
     export type Response = {
       data: (CourseModel & {
         category?: Pick<CourseCategoryModel, "id" | "title"> | null;
@@ -65,6 +78,16 @@ export namespace $CourseAPI {
           >[];
         })[];
       };
+    };
+  }
+
+  export namespace GetCourseInstructors {
+    export const endpoint = course + "/instructors";
+    export const generateUrl = (courseId: number) =>
+      `/courses/${courseId}/instructors`;
+    export type Query = PagingQuery;
+    export type Response = {
+      data: Pick<UserModel, "id" | "name" | "NIM">[];
     };
   }
 

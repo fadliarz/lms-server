@@ -142,7 +142,10 @@ let UserService = class UserService extends BaseService_1.default {
             try {
                 this.authorization.authorizeGetUserEnrolledAsStudentCourses(user, id.userId);
                 return yield this.repository.getUserEnrolledCourses(id, {
-                    role: course_type_1.CourseEnrollmentRoleModel.STUDENT,
+                    role: [
+                        course_type_1.CourseEnrollmentRoleModel.STUDENT,
+                        course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
+                    ],
                 });
             }
             catch (error) {
@@ -163,7 +166,7 @@ let UserService = class UserService extends BaseService_1.default {
                     return yield this.globalRepository.course.getCourses();
                 }
                 return yield this.repository.getUserEnrolledCourses(id, {
-                    role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
+                    role: [course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR],
                 });
             }
             catch (error) {

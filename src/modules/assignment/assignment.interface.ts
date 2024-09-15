@@ -61,6 +61,7 @@ export interface ICourseClassAssignmentService {
     id: {
       resourceId: CourseClassAssignmentResourceId;
     },
+    query: $CourseClassAssignmentAPI.GetAssignments.Query,
   ) => Promise<$CourseClassAssignmentAPI.GetAssignments.Response["data"]>;
   getAssignmentById: (
     user: UserModel,
@@ -94,10 +95,13 @@ export interface ICourseClassAssignmentRepository {
     },
     data: $CourseClassAssignmentAPI.CreateAssignment.Dto,
   ) => Promise<CourseClassAssignmentModel>;
-  getAssignments: (id: {
-    classId: number;
-    resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
-  }) => Promise<CourseClassAssignmentModel[]>;
+  getAssignments: (
+    id: {
+      classId: number;
+      resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
+    },
+    query?: $CourseClassAssignmentAPI.GetAssignments.Query,
+  ) => Promise<CourseClassAssignmentModel[]>;
   getAssignmentById: (id: {
     assignmentId: number;
     resourceId?: CourseClassAssignmentResourceId;

@@ -31,6 +31,14 @@ export default class CourseEnrollmentRepository
     });
   }
 
+  public async getEnrollmentById(
+    id: number,
+  ): Promise<CourseEnrollmentModel | null> {
+    return this.db.courseEnrollment.findUnique({
+      where: { id },
+    });
+  }
+
   public async getEnrollmentByUserIdAndCourseId(id: {
     userId: number;
     courseId: number;
@@ -63,12 +71,6 @@ export default class CourseEnrollmentRepository
       where: this.getWhereObjectForSecondLevelOperation(id),
       select: {},
     });
-  }
-
-  private getWhereObjectForFirstLevelOperation(id: { courseId: number }): {
-    courseId: number;
-  } {
-    return id;
   }
 
   private getWhereObjectForSecondLevelOperation(id: {

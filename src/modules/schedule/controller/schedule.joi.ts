@@ -8,6 +8,12 @@ export const CreateCourseScheduleDtoJoi =
     date: Joi.date().required(),
   });
 
+export const GetCourseSchedulesQuery =
+  Joi.object<$CourseScheduleAPI.GetSchedules.Query>({
+    pageSize: Joi.number(),
+    pageNumber: Joi.number(),
+  });
+
 export const UpdateCourseScheduleDtoJoi =
   Joi.object<$CourseScheduleAPI.CreateSchedule.Dto>({
     title: Joi.string(),

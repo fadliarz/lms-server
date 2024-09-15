@@ -59,6 +59,7 @@ export interface ICourseLessonVideoService {
     id: {
       resourceId: CourseLessonVideoResourceId;
     },
+    query: $CourseLessonVideoAPI.GetVideos.Query,
   ) => Promise<$CourseLessonVideoAPI.GetVideos.Response["data"]>;
   getVideoById: (
     user: UserModel,
@@ -100,10 +101,13 @@ export interface ICourseLessonVideoRepository {
     },
     data: $CourseLessonVideoAPI.CreateVideo.Dto,
   ) => Promise<CourseLessonVideoModel>;
-  getVideos: (id: {
-    lessonId: number;
-    resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
-  }) => Promise<CourseLessonVideoModel[]>;
+  getVideos: (
+    id: {
+      lessonId: number;
+      resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
+    },
+    query?: $CourseLessonVideoAPI.GetVideos.Query,
+  ) => Promise<CourseLessonVideoModel[]>;
   getVideoById: (id: {
     videoId: number;
     resourceId?: CourseLessonVideoResourceId;

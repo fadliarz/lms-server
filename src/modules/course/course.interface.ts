@@ -10,6 +10,8 @@ import { $CourseAPI } from "./course.api";
 
 export interface ICourseAuthorization {
   authorizeCreateCourse: (user: UserModel) => Promise<void>;
+  authorizeCreateCourseInstructor: (user: UserModel) => Promise<void>;
+  authorizeGetCourseInstructors: (user: UserModel) => Promise<void>;
   authorizeUpdateCourse: (user: UserModel, courseId: number) => Promise<void>;
   authorizeDeleteCourse: (user: UserModel, courseId: number) => Promise<void>;
   authorizeCreateLike: (user: UserModel, courseId: number) => Promise<void>;
@@ -26,12 +28,22 @@ export interface ICourseController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
+  createCourseInstructor: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
   getCourseById: (
     req: Request,
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
   getCourses: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  getCourseInstructors: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -78,6 +90,13 @@ export interface ICourseService {
     id: { resourceId: CourseResourceId },
     dto: $CourseAPI.CreateCourse.Dto,
   ) => Promise<CourseModel>;
+  createCourseInstructor: (
+    user: UserModel,
+    id: {
+      courseId: number;
+    },
+    dto: $CourseAPI.CreateCourseInstructor.Dto,
+  ) => Promise<$CourseAPI.CreateCourseInstructor.Response["data"]>;
   getCourses: (
     query: $CourseAPI.GetCourses.Query,
   ) => Promise<$CourseAPI.GetCourses.Response["data"]>;
@@ -87,6 +106,13 @@ export interface ICourseService {
     },
     query: $CourseAPI.GetCourseById.Query,
   ) => Promise<$CourseAPI.GetCourseById.Response["data"]>;
+  getCourseInstructors: (
+    user: UserModel,
+    id: {
+      courseId: number;
+    },
+    query: $CourseAPI.GetCourseInstructors.Query,
+  ) => Promise<$CourseAPI.GetCourseInstructors.Response["data"]>;
   updateCourse: (
     id: {
       courseId: number;
@@ -135,6 +161,12 @@ export interface ICourseRepository {
   getCourses: (
     query?: Partial<$CourseAPI.GetCourses.Query>,
   ) => Promise<$CourseAPI.GetCourses.Response["data"]>;
+  getCourseInstructors: (
+    id: {
+      courseId: number;
+    },
+    query?: $CourseAPI.GetCourseInstructors.Query,
+  ) => Promise<$CourseAPI.GetCourseInstructors.Response["data"]>;
   getCourseById: (
     id: {
       courseId: number;

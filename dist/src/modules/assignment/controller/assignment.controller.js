@@ -29,6 +29,7 @@ const isNaNArray_1 = __importDefault(require("../../../common/functions/isNaNArr
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const assignment_joi_1 = require("./assignment.joi");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
+const getPagingQuery_1 = __importDefault(require("../../../common/functions/getPagingQuery"));
 let CourseClassAssignmentController = class CourseClassAssignmentController {
     createAssignment(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -47,7 +48,8 @@ let CourseClassAssignmentController = class CourseClassAssignmentController {
     getAssignments(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const assignments = yield this.service.getAssignments((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) });
+                yield (0, validateJoi_1.default)({ query: assignment_joi_1.GetCourseClassAssignmentsQueryJoi })(req, res, next);
+                const assignments = yield this.service.getAssignments((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) }, (0, getPagingQuery_1.default)(req.query));
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: assignments,
                 });

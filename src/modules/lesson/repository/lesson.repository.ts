@@ -6,6 +6,7 @@ import { ICourseLessonRepository } from "../lesson.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { CourseScheduleResourceId } from "../../schedule/schedule.type";
 import { $CourseLessonAPI } from "../lesson.api";
+import getQueryExtendsObject from "../../../common/functions/getQueryExtendObject";
 
 @injectable()
 export default class CourseLessonRepository
@@ -55,13 +56,15 @@ export default class CourseLessonRepository
     return lesson;
   }
 
-  public async getLessons(id: {
-    courseId: number;
-  }): Promise<CourseLessonModel[]> {
+  public async getLessons(
+    id: {
+      courseId: number;
+    },
+    query?: $CourseLessonAPI.GetLessons.Query,
+  ): Promise<CourseLessonModel[]> {
     return this.db.courseLesson.findMany({
-      where: {
-        id: id.courseId,
-      },
+      where: { courseId: id.courseId },
+      ...getQueryExtendsObject(query),
     });
   }
 

@@ -22,9 +22,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
+const course_type_1 = require("../course.type");
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+const getQueryExtendObject_1 = __importDefault(require("../../../common/functions/getQueryExtendObject"));
 let CourseRepository = class CourseRepository extends BaseRepository_1.default {
     constructor() {
         super();
@@ -99,6 +101,23 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
                 throw error || new RecordNotFoundException_1.default();
             }
             return course;
+        });
+    }
+    getCourseInstructors(id, query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const enrollments = yield this.db.courseEnrollment.findMany(Object.assign({ where: {
+                    courseId: id.courseId,
+                    role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
+                }, select: {
+                    user: {
+                        select: {
+                            id: true,
+                            NIM: true,
+                            name: true,
+                        },
+                    },
+                } }, (0, getQueryExtendObject_1.default)(query)));
+            return enrollments.map((enrollment) => enrollment.user);
         });
     }
     updateCourse(id, data) {

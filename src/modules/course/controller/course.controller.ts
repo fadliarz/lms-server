@@ -11,8 +11,10 @@ import getRequestUserOrThrowAuthenticationException from "../../../common/functi
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseDtoJoi,
+  CreateCourseInstructorDtoJoi,
   CreateCourseLikeDtoJoi,
   GetCourseByIdQueryJoi,
+  GetCourseInstructorsQueryJoi,
   GetCoursesQueryJoi,
   UpdateCourseCategoryIdDtoJoi,
   UpdateCourseCodeDtoJoi,
@@ -23,6 +25,7 @@ import NaNException from "../../../common/class/exceptions/NaNException";
 import { ICourseController, ICourseService } from "../course.interface";
 import convertStringToBoolean from "../../../common/functions/convertStringToBoolean";
 import { $CourseAPI } from "../course.api";
+import getPagingQuery from "../../../common/functions/getPagingQuery";
 
 @injectable()
 export default class CourseController implements ICourseController {
@@ -49,6 +52,27 @@ export default class CourseController implements ICourseController {
     }
   }
 
+  public async createCourseInstructor(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: CreateCourseInstructorDtoJoi })(req, res, next);
+
+      const resourceId = this.validateResourceId(req);
+      const newCourse = await this.service.createCourseInstructor(
+        getRequestUserOrThrowAuthenticationException(req),
+        { courseId: this.validateCourseId(req) },
+        req.body,
+      );
+
+      return res.status(StatusCode.RESOURCE_CREATED).json({ data: newCourse });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public async getCourses(
     req: Request,
     res: Response,
@@ -57,18 +81,11 @@ export default class CourseController implements ICourseController {
     try {
       await validateJoi({ query: GetCoursesQueryJoi })(req, res, next);
 
-      const reqQuery = req.query as Record<
-        keyof $CourseAPI.GetCourses.Query,
-        any
-      >;
       const query: $CourseAPI.GetCourses.Query = {
-        include_category: convertStringToBoolean(reqQuery.include_category),
-        pageSize: !isNaN(reqQuery.pageSize)
-          ? Number(reqQuery.pageSize)
-          : undefined,
-        pageNumber: !isNaN(reqQuery.pageNumber)
-          ? Number(reqQuery.pageNumber)
-          : undefined,
+        include_category: convertStringToBoolean(
+          req.query.include_category as string,
+        ),
+        ...getPagingQuery(req.query),
       };
 
       const courses = await this.service.getCourses(query);
@@ -104,6 +121,30 @@ export default class CourseController implements ICourseController {
       res.status(StatusCode.SUCCESS).json({
         data: course,
       });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getCourseInstructors(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ query: GetCourseInstructorsQueryJoi })(
+        req,
+        res,
+        next,
+      );
+
+      const courses = await this.service.getCourseInstructors(
+        getRequestUserOrThrowAuthenticationException(req),
+        { courseId: this.validateCourseId(req) },
+        getPagingQuery(req.query),
+      );
+
+      return res.status(StatusCode.SUCCESS).json({ data: courses });
     } catch (error) {
       next(error);
     }

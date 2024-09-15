@@ -11,11 +11,13 @@ import {
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseScheduleDtoJoi,
+  GetCourseSchedulesQuery,
   UpdateCourseScheduleDtoJoi,
 } from "./schedule.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import { StatusCode } from "../../../common/constants/statusCode";
+import getPagingQuery from "../../../common/functions/getPagingQuery";
 
 @injectable()
 export default class CourseScheduleController
@@ -51,8 +53,11 @@ export default class CourseScheduleController
     next: NextFunction,
   ): Promise<Response | void> {
     try {
+      await validateJoi({ query: GetCourseSchedulesQuery })(req, res, next);
+
       const schedules = await this.service.getSchedules(
         this.validateResourceId(req),
+        getPagingQuery(req.query),
       );
 
       return res.status(StatusCode.SUCCESS).json({

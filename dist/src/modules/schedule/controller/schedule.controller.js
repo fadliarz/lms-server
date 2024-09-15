@@ -28,6 +28,7 @@ const schedule_joi_1 = require("./schedule.joi");
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const statusCode_1 = require("../../../common/constants/statusCode");
+const getPagingQuery_1 = __importDefault(require("../../../common/functions/getPagingQuery"));
 let CourseScheduleController = class CourseScheduleController {
     createSchedule(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -46,7 +47,8 @@ let CourseScheduleController = class CourseScheduleController {
     getSchedules(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const schedules = yield this.service.getSchedules(this.validateResourceId(req));
+                yield (0, validateJoi_1.default)({ query: schedule_joi_1.GetCourseSchedulesQuery })(req, res, next);
+                const schedules = yield this.service.getSchedules(this.validateResourceId(req), (0, getPagingQuery_1.default)(req.query));
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: schedules,
                 });

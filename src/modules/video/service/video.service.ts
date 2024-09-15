@@ -51,16 +51,20 @@ export default class CourseLessonVideoService
     id: {
       resourceId: CourseLessonVideoResourceId;
     },
+    query: $CourseLessonVideoAPI.GetVideos.Query,
   ): Promise<$CourseLessonVideoAPI.GetVideos.Response["data"]> {
     try {
       await this.authorization.authorizeReadVideo(user, id.resourceId.courseId);
 
       const { lessonId, ...theResourceId } = id.resourceId;
 
-      return await this.repository.getVideos({
-        lessonId,
-        resourceId: theResourceId,
-      });
+      return await this.repository.getVideos(
+        {
+          lessonId,
+          resourceId: theResourceId,
+        },
+        query,
+      );
     } catch (error: any) {
       throw handleRepositoryError(error);
     }

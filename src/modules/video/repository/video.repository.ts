@@ -8,6 +8,7 @@ import RecordNotFoundException from "../../../common/class/exceptions/RecordNotF
 import { ICourseLessonVideoRepository } from "../video.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { $CourseLessonVideoAPI } from "../video.api";
+import getQueryExtendsObject from "../../../common/functions/getQueryExtendObject";
 
 @injectable()
 export default class CourseLessonVideoRepository
@@ -46,12 +47,16 @@ export default class CourseLessonVideoRepository
     });
   }
 
-  public async getVideos(id: {
-    lessonId: number;
-    resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
-  }): Promise<CourseLessonVideoModel[]> {
+  public async getVideos(
+    id: {
+      lessonId: number;
+      resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
+    },
+    query?: $CourseLessonVideoAPI.GetVideos.Query,
+  ): Promise<CourseLessonVideoModel[]> {
     return this.db.courseLessonVideo.findMany({
       where: this.getWhereObjectForFirstLevelOperation(id),
+      ...getQueryExtendsObject(query),
     });
   }
 
@@ -108,25 +113,24 @@ export default class CourseLessonVideoRepository
     resourceId?: Omit<CourseLessonVideoResourceId, "lessonId">;
   }):
     | {
-        id: number;
+        lesson: { id: number };
       }
     | {
-        id: number;
-        course: {
-          id: number;
-        };
+        lesson: { id: number; course: { id: number } };
       } {
     if (id.resourceId) {
       return {
-        id: id.lessonId,
-        course: {
-          id: id.resourceId.courseId,
+        lesson: {
+          id: id.lessonId,
+          course: {
+            id: id.resourceId.courseId,
+          },
         },
       };
     }
 
     return {
-      id: id.lessonId,
+      lesson: { id: id.lessonId },
     };
   }
 

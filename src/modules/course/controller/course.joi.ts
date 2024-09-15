@@ -11,6 +11,11 @@ export const CreateCourseDtoJoi = Joi.object<$CourseAPI.CreateCourse.Dto>({
   material: Joi.string(),
 });
 
+export const CreateCourseInstructorDtoJoi =
+  Joi.object<$CourseAPI.CreateCourseInstructor.Dto>({
+    userId: Joi.number().required(),
+  });
+
 export const GetCourseByIdQueryJoi = Joi.object<$CourseAPI.GetCourseById.Query>(
   {
     include_category: Joi.boolean(),
@@ -21,9 +26,15 @@ export const GetCourseByIdQueryJoi = Joi.object<$CourseAPI.GetCourseById.Query>(
 
 export const GetCoursesQueryJoi = Joi.object<$CourseAPI.GetCourses.Query>({
   include_category: Joi.boolean(),
-  pageSize: Joi.number().required().min(1).max(10),
-  pageNumber: Joi.number().required().min(1),
+  pageSize: Joi.number(),
+  pageNumber: Joi.number(),
 });
+
+export const GetCourseInstructorsQueryJoi =
+  Joi.object<$CourseAPI.GetCourseInstructors.Query>({
+    pageSize: Joi.number(),
+    pageNumber: Joi.number(),
+  });
 
 /**
  *

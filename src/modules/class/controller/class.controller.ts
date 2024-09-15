@@ -4,12 +4,17 @@ import { NextFunction, Request, Response } from "express";
 import validateJoi from "../../../common/functions/validateJoi";
 import { StatusCode } from "../../../common/constants/statusCode";
 import NaNException from "../../../common/class/exceptions/NaNException";
-import { CreateCourseClassDtoJoi, UpdateCourseClassDtoJoi } from "./class.joi";
+import {
+  CreateCourseClassDtoJoi,
+  GetCourseClassesQueryJoi,
+  UpdateCourseClassDtoJoi,
+} from "./class.joi";
 import {
   ICourseClassController,
   ICourseClassService,
 } from "../class.interface";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import getPagingQuery from "../../../common/functions/getPagingQuery";
 
 @injectable()
 export default class CourseClassController implements ICourseClassController {
@@ -44,9 +49,14 @@ export default class CourseClassController implements ICourseClassController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const classes = await this.service.getClasses({
-        resourceId: this.validateResourceId(req),
-      });
+      await validateJoi({ query: GetCourseClassesQueryJoi })(req, res, next);
+
+      const classes = await this.service.getClasses(
+        {
+          resourceId: this.validateResourceId(req),
+        },
+        getPagingQuery(req.query),
+      );
 
       return res.status(StatusCode.SUCCESS).json({
         data: classes,

@@ -37,13 +37,19 @@ export default class CourseClassService implements ICourseClassService {
     }
   }
 
-  public async getClasses(id: {
-    resourceId: CourseClassResourceId;
-  }): Promise<$CourseClassAPI.GetClasses.Response["data"]> {
+  public async getClasses(
+    id: {
+      resourceId: CourseClassResourceId;
+    },
+    query: $CourseClassAPI.GetClasses.Query,
+  ): Promise<$CourseClassAPI.GetClasses.Response["data"]> {
     try {
-      return await this.repository.getClasses({
-        courseId: id.resourceId.courseId,
-      });
+      return await this.repository.getClasses(
+        {
+          courseId: id.resourceId.courseId,
+        },
+        query,
+      );
     } catch (error: any) {
       throw handleRepositoryError(error);
     }

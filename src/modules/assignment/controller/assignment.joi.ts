@@ -1,10 +1,6 @@
 import Joi from "joi";
 import { $CourseClassAssignmentAPI } from "../assignment.api";
 
-/**
- * Create
- *
- */
 export const CreateCourseClassAssignmentDtoJoi =
   Joi.object<$CourseClassAssignmentAPI.CreateAssignment.Dto>({
     title: Joi.string().required(),
@@ -12,10 +8,12 @@ export const CreateCourseClassAssignmentDtoJoi =
     deadline: Joi.date().required(),
   });
 
-/**
- * Update
- *
- */
+export const GetCourseClassAssignmentsQueryJoi =
+  Joi.object<$CourseClassAssignmentAPI.GetAssignments.Query>({
+    pageSize: Joi.number(),
+    pageNumber: Joi.number(),
+  });
+
 export const UpdateCourseClassAssignmentDtoJoi =
   Joi.object<$CourseClassAssignmentAPI.UpdateAssignment.Dto>({
     title: Joi.string(),

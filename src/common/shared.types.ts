@@ -2,6 +2,11 @@ export interface GenericObject<K> {
   [key: string]: K;
 }
 
+export type PagingQuery = {
+  pageSize?: number;
+  pageNumber?: number;
+};
+
 export type MakePropertiesOptional<T extends object, K extends keyof T> = Omit<
   T,
   K

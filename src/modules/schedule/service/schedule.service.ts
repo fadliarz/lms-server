@@ -38,6 +38,7 @@ export default class CourseScheduleService implements ICourseScheduleService {
 
   public async getSchedules(
     resourceId: CourseScheduleResourceId,
+    query: $CourseScheduleAPI.GetSchedules.Query,
   ): Promise<$CourseScheduleAPI.GetSchedules.Response["data"]> {
     try {
       const {
@@ -47,7 +48,7 @@ export default class CourseScheduleService implements ICourseScheduleService {
 
       await this.authorization.authorizeReadSchedule(user, courseId);
 
-      return this.repository.getSchedules({ courseId });
+      return this.repository.getSchedules({ courseId }, query);
     } catch (error: any) {
       throw handleRepositoryError(error);
     }

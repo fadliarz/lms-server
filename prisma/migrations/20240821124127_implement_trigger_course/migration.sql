@@ -1,274 +1,276 @@
 --> CourseEnrollment
 CREATE OR REPLACE FUNCTION courseEnrollment_onOperation()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            IF (TG_OP = 'INSERT') THEN
-                UPDATE "user"
-                SET total_courses = total_courses + 1,
-                    total_lessons = total_lessons + (SELECT total_lessons
-                                                     FROM course
-                                                     WHERE id = NEW.course_id)
-                WHERE id = NEW.user_id;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    IF (TG_OP = 'INSERT') THEN
+        UPDATE "user"
+        SET total_courses = total_courses + 1,
+            total_lessons = total_lessons + (SELECT total_lessons
+                                             FROM course
+                                             WHERE id = NEW.course_id)
+        WHERE id = NEW.user_id;
 
-                IF (NEW.role = 'STUDENT') THEN
-                    UPDATE course
-                    SET total_students = total_students + 1
-                    WHERE id = NEW.course_id;
-                ELSIF (NEW.role = 'INSTRUCTOR') THEN
-                    UPDATE course
-                    SET total_instructors = total_instructors + 1
-                    WHERE id = NEW.course_id;
-                END IF;
+        IF (NEW.role = 'STUDENT') THEN
+            UPDATE course
+            SET total_students = total_students + 1
+            WHERE id = NEW.course_id;
+        ELSIF (NEW.role = 'INSTRUCTOR') THEN
+            UPDATE course
+            SET total_instructors = total_instructors + 1
+            WHERE id = NEW.course_id;
+        END IF;
 
-            ELSIF (TG_OP = 'UPDATE') THEN
-                IF (NEW.role == OLD.role) THEN
-                ELSIF (NEW.role = 'STUDENT') THEN
-                    UPDATE course
-                    SET total_students = total_students + 1,
-                        total_instructors = total_instructors - 1
-                    WHERE id = NEW.course_id;
-                ELSIF (NEW.role = 'INSTRUCTOR') THEN
-                    UPDATE course
-                    SET total_instructors = total_instructors + 1,
-                        total_students = total_students - 1
-                    WHERE id = NEW.course_id;
-                END IF;
+    ELSIF (TG_OP = 'UPDATE') THEN
+        IF (NEW.role = OLD.role) THEN
+        ELSIF (NEW.role = 'STUDENT') THEN
+            UPDATE course
+            SET total_students    = total_students + 1,
+                total_instructors = total_instructors - 1
+            WHERE id = NEW.course_id;
+        ELSIF (NEW.role = 'INSTRUCTOR') THEN
+            UPDATE course
+            SET total_instructors = total_instructors + 1,
+                total_students    = total_students - 1
+            WHERE id = NEW.course_id;
+        END IF;
 
-            ELSIF (TG_OP = 'DELETE') THEN
-                IF EXISTS (SELECT 1 FROM course WHERE id = OLD.course_id) THEN
-                    UPDATE "user"
-                        SET total_courses = total_courses - 1,
-                            total_lessons = total_lessons - (SELECT total_lessons
-                                                             FROM course
-                                                             WHERE id = OLD.course_id)
-                        WHERE id = OLD.user_id;
+    ELSIF (TG_OP = 'DELETE') THEN
+        IF EXISTS (SELECT 1 FROM course WHERE id = OLD.course_id) THEN
+            UPDATE "user"
+            SET total_courses = total_courses - 1,
+                total_lessons = total_lessons - (SELECT total_lessons
+                                                 FROM course
+                                                 WHERE id = OLD.course_id)
+            WHERE id = OLD.user_id;
 
-                        IF (OLD.role = 'STUDENT') THEN
-                            UPDATE course
-                                SET total_students = total_students - 1
-                                WHERE id = OLD.course_id;
-                        ELSIF (OLD.role = 'INSTRUCTOR') THEN
-                            UPDATE course
-                                SET total_instructors = total_instructors - 1
-                                WHERE id = OLD.course_id;
-                        END IF;
-                END IF;
+            IF (OLD.role = 'STUDENT') THEN
+                UPDATE course
+                SET total_students = total_students - 1
+                WHERE id = OLD.course_id;
+            ELSIF (OLD.role = 'INSTRUCTOR') THEN
+                UPDATE course
+                SET total_instructors = total_instructors - 1
+                WHERE id = OLD.course_id;
             END IF;
-            RETURN NULL;
-        END;
+        END IF;
+    END IF;
+    RETURN NULL;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER courseEnrollment_onInsert
-    AFTER INSERT ON course_enrollment
+    AFTER INSERT
+    ON course_enrollment
     FOR EACH ROW
-    EXECUTE PROCEDURE courseEnrollment_onOperation();
+EXECUTE PROCEDURE courseEnrollment_onOperation();
 
 CREATE TRIGGER courseEnrollment_onUpdate
-    AFTER UPDATE ON course_enrollment
+    AFTER UPDATE
+    ON course_enrollment
     FOR EACH ROW
-    EXECUTE PROCEDURE courseEnrollment_onOperation();
+EXECUTE PROCEDURE courseEnrollment_onOperation();
 
 CREATE TRIGGER courseEnrollment_onDelete
-    AFTER DELETE ON course_enrollment
+    AFTER DELETE
+    ON course_enrollment
     FOR EACH ROW
-    EXECUTE PROCEDURE courseEnrollment_onOperation();
+EXECUTE PROCEDURE courseEnrollment_onOperation();
 
 
 -- CourseLike
 CREATE OR REPLACE FUNCTION like_onInsert()
-       RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course
-            SET
-                total_likes = total_likes + 1
-            WHERE
-                id = NEW.course_id;
-            RETURN
-                NEW;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course
+    SET total_likes = total_likes + 1
+    WHERE id = NEW.course_id;
+    RETURN
+        NEW;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION like_onUpdate()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course
-            SET
-                total_likes = total_likes - 1
-            WHERE
-                id = OLD.course_id;
-            RETURN OLD;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course
+    SET total_likes = total_likes - 1
+    WHERE id = OLD.course_id;
+    RETURN OLD;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER like_onInsert
-    AFTER INSERT ON course_like
+    AFTER INSERT
+    ON course_like
     FOR EACH ROW
-    EXECUTE FUNCTION like_onInsert();
+EXECUTE FUNCTION like_onInsert();
 
 CREATE TRIGGER like_onUpdate
-    AFTER DELETE ON course_like
+    AFTER DELETE
+    ON course_like
     FOR EACH ROW
-    EXECUTE FUNCTION like_onUpdate();
+EXECUTE FUNCTION like_onUpdate();
 
 --> Course
 CREATE OR REPLACE FUNCTION course_onUpdate()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                "user"
-            SET
-                total_lessons = total_lessons + NEW.total_lessons - OLD.total_lessons
-            WHERE id IN (
-                SELECT user_id
-                FROM course_enrollment
-                WHERE course_id = NEW.id
-            );
-            RETURN NEW;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        "user"
+    SET total_lessons = total_lessons + NEW.total_lessons - OLD.total_lessons
+    WHERE id IN (SELECT user_id
+                 FROM course_enrollment
+                 WHERE course_id = NEW.id);
+    RETURN NEW;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION course_onDelete()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                "user"
-            SET
-                total_courses = total_courses - 1,
-                total_lessons = total_lessons - OLD.total_lessons
-            WHERE id IN (
-                SELECT user_id
-                FROM course_enrollment
-                WHERE course_id = OLD.id
-            );
-            RETURN OLD;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        "user"
+    SET total_courses = total_courses - 1,
+        total_lessons = total_lessons - OLD.total_lessons
+    WHERE id IN (SELECT user_id
+                 FROM course_enrollment
+                 WHERE course_id = OLD.id);
+    RETURN OLD;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER course_onUpdate
-    AFTER UPDATE OF total_lessons ON course
+    AFTER UPDATE OF total_lessons
+    ON course
     FOR EACH ROW
-    EXECUTE FUNCTION course_onUpdate();
+EXECUTE FUNCTION course_onUpdate();
 
 CREATE TRIGGER course_onDelete
-    BEFORE DELETE ON course
+    BEFORE DELETE
+    ON course
     FOR EACH ROW
-    EXECUTE FUNCTION course_onDelete();
+EXECUTE FUNCTION course_onDelete();
 
 
 --> CourseLesson
 CREATE OR REPLACE FUNCTION lesson_onInsert()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course
-            SET
-                total_lessons = total_lessons + 1
-            WHERE
-                 id = NEW.course_id;
-            RETURN NEW;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course
+    SET total_lessons = total_lessons + 1
+    WHERE id = NEW.course_id;
+    RETURN NEW;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION lesson_onUpdate()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course
-            SET
-                total_videos = total_videos + NEW.total_videos - OLD.total_videos,
-                total_durations = total_durations + NEW.total_durations - OLD.total_durations
-            WHERE
-                id = OLD.course_id;
-            RETURN NEW;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course
+    SET total_videos    = total_videos + NEW.total_videos - OLD.total_videos,
+        total_durations = total_durations + NEW.total_durations - OLD.total_durations
+    WHERE id = OLD.course_id;
+    RETURN NEW;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION lesson_onDelete()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course
-            SET
-                total_lessons = total_lessons - 1,
-                total_videos = total_videos - OLD.total_videos,
-                total_durations = total_durations - OLD.total_durations
-            WHERE
-                id = OLD.course_id;
-            RETURN OLD;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course
+    SET total_lessons   = total_lessons - 1,
+        total_videos    = total_videos - OLD.total_videos,
+        total_durations = total_durations - OLD.total_durations
+    WHERE id = OLD.course_id;
+    RETURN OLD;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER lesson_onInsert
-    AFTER INSERT ON course_lesson
+    AFTER INSERT
+    ON course_lesson
     FOR EACH ROW
-    EXECUTE FUNCTION lesson_onInsert();
+EXECUTE FUNCTION lesson_onInsert();
 
 CREATE TRIGGER lesson_onUpdate
-    AFTER UPDATE OF total_videos, total_durations ON course_lesson
+    AFTER UPDATE OF total_videos, total_durations
+    ON course_lesson
     FOR EACH ROW
-    EXECUTE FUNCTION lesson_onUpdate();
+EXECUTE FUNCTION lesson_onUpdate();
 
 CREATE TRIGGER lesson_onDelete
-    AFTER DELETE ON course_lesson
+    AFTER DELETE
+    ON course_lesson
     FOR EACH ROW
-    EXECUTE FUNCTION lesson_onDelete();
+EXECUTE FUNCTION lesson_onDelete();
 
 --> CourseLessonVideo
 CREATE OR REPLACE FUNCTION video_onInsert()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course_lesson
-            SET
-                total_videos = total_videos + 1,
-                total_durations = total_durations + NEW.total_durations
-            WHERE
-                id = NEW.lesson_id;
-            RETURN NEW;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course_lesson
+    SET total_videos    = total_videos + 1,
+        total_durations = total_durations + NEW.total_durations
+    WHERE id = NEW.lesson_id;
+    RETURN NEW;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION video_onUpdate()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course_lesson
-            SET
-                total_durations = total_durations + NEW.total_durations - OLD.total_durations
-            WHERE
-                id = NEW.lesson_id;
-            RETURN NEW;
-        END;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course_lesson
+    SET total_durations = total_durations + NEW.total_durations - OLD.total_durations
+    WHERE id = NEW.lesson_id;
+    RETURN NEW;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION video_onDelete()
-    RETURNS TRIGGER AS $$
-        BEGIN
-            UPDATE
-                course_lesson
-            SET
-                total_videos = total_videos - 1,
-                total_durations = total_durations - OLD.total_durations
-            WHERE
-                id = OLD.lesson_id;
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    UPDATE
+        course_lesson
+    SET total_videos    = total_videos - 1,
+        total_durations = total_durations - OLD.total_durations
+    WHERE id = OLD.lesson_id;
 
-            RETURN OLD;
-        END;
+    RETURN OLD;
+END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER video_onInsert
-    AFTER INSERT ON course_video
+    AFTER INSERT
+    ON course_video
     FOR EACH ROW
-    EXECUTE FUNCTION video_onInsert();
+EXECUTE FUNCTION video_onInsert();
 
 CREATE TRIGGER video_onUpdate
-    AFTER UPDATE OF total_durations ON course_video
+    AFTER UPDATE OF total_durations
+    ON course_video
     FOR EACH ROW
-    EXECUTE FUNCTION video_onUpdate();
+EXECUTE FUNCTION video_onUpdate();
 
 CREATE TRIGGER video_onDelete
-    AFTER DELETE ON course_video
+    AFTER DELETE
+    ON course_video
     FOR EACH ROW
-    EXECUTE FUNCTION video_onDelete();
+EXECUTE FUNCTION video_onDelete();

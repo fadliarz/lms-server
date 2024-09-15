@@ -5,6 +5,7 @@ import { StatusCode } from "../../../common/constants/statusCode";
 import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateCourseLessonDtoJoi,
+  GetCourseLessonsQueryDtoJoi,
   UpdateBasicCourseLessonDtoJoi,
 } from "./lesson.joi";
 import NaNException from "../../../common/class/exceptions/NaNException";
@@ -13,6 +14,7 @@ import {
   ICourseLessonService,
 } from "../lesson.interface";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import getPagingQuery from "../../../common/functions/getPagingQuery";
 
 @injectable()
 export default class CourseLessonController implements ICourseLessonController {
@@ -66,9 +68,14 @@ export default class CourseLessonController implements ICourseLessonController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const lessons = await this.service.getLessons({
-        resourceId: this.validateResourceId(req),
-      });
+      await validateJoi({ query: GetCourseLessonsQueryDtoJoi })(req, res, next);
+
+      const lessons = await this.service.getLessons(
+        {
+          resourceId: this.validateResourceId(req),
+        },
+        getPagingQuery(req.query),
+      );
 
       return res.status(StatusCode.SUCCESS).json({
         data: lessons,

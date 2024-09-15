@@ -36,6 +36,13 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository extends BaseRe
             });
         });
     }
+    getEnrollmentById(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.courseEnrollment.findUnique({
+                where: { id },
+            });
+        });
+    }
     getEnrollmentByUserIdAndCourseId(id) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.courseEnrollment.findUnique({
@@ -60,9 +67,6 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository extends BaseRe
                 select: {},
             });
         });
-    }
-    getWhereObjectForFirstLevelOperation(id) {
-        return id;
     }
     getWhereObjectForSecondLevelOperation(id) {
         const { enrollmentId, resourceId } = id;

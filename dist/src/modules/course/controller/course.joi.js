@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateCourseLikeDtoJoi = exports.UpdateCourseCodeDtoJoi = exports.UpdateCourseCategoryIdDtoJoi = exports.UpdateCourseStatusDtoJoi = exports.UpdateCourseDtoJoi = exports.GetEnrolledCoursesQueryJoi = exports.GetCoursesQueryJoi = exports.GetCourseByIdQueryJoi = exports.CreateCourseDtoJoi = void 0;
+exports.CreateCourseLikeDtoJoi = exports.UpdateCourseCodeDtoJoi = exports.UpdateCourseCategoryIdDtoJoi = exports.UpdateCourseStatusDtoJoi = exports.UpdateCourseDtoJoi = exports.GetEnrolledCoursesQueryJoi = exports.GetCourseInstructorsQueryJoi = exports.GetCoursesQueryJoi = exports.GetCourseByIdQueryJoi = exports.CreateCourseInstructorDtoJoi = exports.CreateCourseDtoJoi = void 0;
 const joi_1 = __importDefault(require("joi"));
 const course_type_1 = require("../course.type");
 exports.CreateCourseDtoJoi = joi_1.default.object({
@@ -14,6 +14,9 @@ exports.CreateCourseDtoJoi = joi_1.default.object({
     description: joi_1.default.string(),
     material: joi_1.default.string(),
 });
+exports.CreateCourseInstructorDtoJoi = joi_1.default.object({
+    userId: joi_1.default.number().required(),
+});
 exports.GetCourseByIdQueryJoi = joi_1.default.object({
     include_category: joi_1.default.boolean(),
     include_lessons: joi_1.default.boolean(),
@@ -21,8 +24,12 @@ exports.GetCourseByIdQueryJoi = joi_1.default.object({
 });
 exports.GetCoursesQueryJoi = joi_1.default.object({
     include_category: joi_1.default.boolean(),
-    pageSize: joi_1.default.number().required().min(1).max(10),
-    pageNumber: joi_1.default.number().required().min(1),
+    pageSize: joi_1.default.number(),
+    pageNumber: joi_1.default.number(),
+});
+exports.GetCourseInstructorsQueryJoi = joi_1.default.object({
+    pageSize: joi_1.default.number(),
+    pageNumber: joi_1.default.number(),
 });
 exports.GetEnrolledCoursesQueryJoi = joi_1.default.object({
     include_category: joi_1.default.boolean(),

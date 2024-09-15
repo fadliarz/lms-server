@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import {
+  CourseEnrollmentRoleModel,
   CourseLikeModel,
   CourseLikeResourceId,
   CourseModel,
@@ -9,6 +10,7 @@ import RecordNotFoundException from "../../../common/class/exceptions/RecordNotF
 import { ICourseRepository } from "../course.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { $CourseAPI } from "../course.api";
+import getQueryExtendsObject from "../../../common/functions/getQueryExtendObject";
 
 @injectable()
 export default class CourseRepository
@@ -105,6 +107,32 @@ export default class CourseRepository
     }
 
     return course;
+  }
+
+  public async getCourseInstructors(
+    id: {
+      courseId: number;
+    },
+    query?: $CourseAPI.GetCourseInstructors.Query,
+  ): Promise<$CourseAPI.GetCourseInstructors.Response["data"]> {
+    const enrollments = await this.db.courseEnrollment.findMany({
+      where: {
+        courseId: id.courseId,
+        role: CourseEnrollmentRoleModel.INSTRUCTOR,
+      },
+      select: {
+        user: {
+          select: {
+            id: true,
+            NIM: true,
+            name: true,
+          },
+        },
+      },
+      ...getQueryExtendsObject(query),
+    });
+
+    return enrollments.map((enrollment) => enrollment.user);
   }
 
   public async updateCourse(

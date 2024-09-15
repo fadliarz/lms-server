@@ -1,4 +1,5 @@
 import { CourseScheduleModel } from "./schedule.type";
+import { PagingQuery } from "../../common/shared.types";
 
 export namespace $CourseScheduleAPI {
   const root = "/courses/:courseId/schedules";
@@ -22,11 +23,7 @@ export namespace $CourseScheduleAPI {
     export const endpoint = root;
     export const generateUrl = (courseId: number) =>
       `/courses/${courseId}/schedules`;
-    export type Dto = {
-      title: string;
-      description?: string;
-      date: Date;
-    };
+    export type Query = PagingQuery;
     export type Response = {
       data: CourseScheduleModel[];
     };

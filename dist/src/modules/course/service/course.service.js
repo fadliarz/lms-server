@@ -25,12 +25,38 @@ require("reflect-metadata");
 const inversify_1 = require("inversify");
 const course_type_1 = require("../course.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
+const repository_type_1 = require("../../../common/class/repository/repository.type");
+const isEqualOrIncludeCourseEnrollmentRole_1 = __importDefault(require("../../../common/functions/isEqualOrIncludeCourseEnrollmentRole"));
 let CourseService = class CourseService {
     createCourse(id, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.authorization.authorizeCreateCourse(id.resourceId.user);
                 return yield this.repository.createCourse(Object.assign(Object.assign({}, dto), { authorId: id.resourceId.user.id }));
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    createCourseInstructor(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeCreateCourseInstructor(user);
+                const enrollment = yield this.globalRepository.courseEnrollment.getEnrollmentByUserIdAndCourseId({
+                    userId: dto.userId,
+                    courseId: id.courseId,
+                });
+                if (enrollment) {
+                    if ((0, isEqualOrIncludeCourseEnrollmentRole_1.default)(enrollment.role, course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR)) {
+                        return enrollment;
+                    }
+                    return yield this.globalRepository.courseEnrollment.updateEnrollment({ enrollmentId: enrollment.id }, { role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR });
+                }
+                return yield this.globalRepository.courseEnrollment.createEnrollment({ courseId: id.courseId }, {
+                    userId: dto.userId,
+                    role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
+                });
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);
@@ -51,6 +77,17 @@ let CourseService = class CourseService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 return yield this.repository.getCourseByIdOrThrow(id, query);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    getCourseInstructors(user, id, query) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeGetCourseInstructors(user);
+                return yield this.repository.getCourseInstructors(id, query);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);
@@ -145,6 +182,10 @@ __decorate([
     (0, inversify_1.inject)(course_type_1.CourseDITypes.REPOSITORY),
     __metadata("design:type", Object)
 ], CourseService.prototype, "repository", void 0);
+__decorate([
+    (0, inversify_1.inject)(repository_type_1.RepositoryDITypes.FACADE),
+    __metadata("design:type", repository_type_1.IRepository)
+], CourseService.prototype, "globalRepository", void 0);
 __decorate([
     (0, inversify_1.inject)(course_type_1.CourseDITypes.AUTHORIZATION),
     __metadata("design:type", Object)

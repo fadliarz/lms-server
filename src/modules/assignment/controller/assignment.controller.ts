@@ -14,9 +14,11 @@ import isNaNArray from "../../../common/functions/isNaNArray";
 import NaNException from "../../../common/class/exceptions/NaNException";
 import {
   CreateCourseClassAssignmentDtoJoi,
+  GetCourseClassAssignmentsQueryJoi,
   UpdateCourseClassAssignmentDtoJoi,
 } from "./assignment.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
+import getPagingQuery from "../../../common/functions/getPagingQuery";
 
 @injectable()
 export default class CourseClassAssignmentController
@@ -57,9 +59,16 @@ export default class CourseClassAssignmentController
     next: NextFunction,
   ): Promise<Response | void> {
     try {
+      await validateJoi({ query: GetCourseClassAssignmentsQueryJoi })(
+        req,
+        res,
+        next,
+      );
+
       const assignments = await this.service.getAssignments(
         getRequestUserOrThrowAuthenticationException(req),
         { resourceId: this.validateResourceId(req) },
+        getPagingQuery(req.query),
       );
 
       return res.status(StatusCode.SUCCESS).json({

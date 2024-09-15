@@ -25,6 +25,7 @@ require("reflect-metadata");
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+const getQueryExtendObject_1 = __importDefault(require("../../../common/functions/getQueryExtendObject"));
 let CourseLessonRepository = class CourseLessonRepository extends BaseRepository_1.default {
     constructor() {
         super();
@@ -52,13 +53,9 @@ let CourseLessonRepository = class CourseLessonRepository extends BaseRepository
             return lesson;
         });
     }
-    getLessons(id) {
+    getLessons(id, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.courseLesson.findMany({
-                where: {
-                    id: id.courseId,
-                },
-            });
+            return this.db.courseLesson.findMany(Object.assign({ where: { courseId: id.courseId } }, (0, getQueryExtendObject_1.default)(query)));
         });
     }
     updateLesson(id, data) {

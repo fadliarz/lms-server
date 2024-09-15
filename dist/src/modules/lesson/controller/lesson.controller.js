@@ -28,6 +28,7 @@ const validateJoi_1 = __importDefault(require("../../../common/functions/validat
 const lesson_joi_1 = require("./lesson.joi");
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
+const getPagingQuery_1 = __importDefault(require("../../../common/functions/getPagingQuery"));
 let CourseLessonController = class CourseLessonController {
     createLesson(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -62,9 +63,10 @@ let CourseLessonController = class CourseLessonController {
     getLessons(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                yield (0, validateJoi_1.default)({ query: lesson_joi_1.GetCourseLessonsQueryDtoJoi })(req, res, next);
                 const lessons = yield this.service.getLessons({
                     resourceId: this.validateResourceId(req),
-                });
+                }, (0, getPagingQuery_1.default)(req.query));
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: lessons,
                 });

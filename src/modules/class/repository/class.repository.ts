@@ -4,6 +4,7 @@ import RecordNotFoundException from "../../../common/class/exceptions/RecordNotF
 import { ICourseClassRepository } from "../class.interface";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { $CourseClassAPI } from "../class.api";
+import getQueryExtendsObject from "../../../common/functions/getQueryExtendObject";
 
 @injectable()
 export default class CourseClassRepository
@@ -28,11 +29,15 @@ export default class CourseClassRepository
     });
   }
 
-  public async getClasses(id: {
-    courseId: number;
-  }): Promise<CourseClassModel[]> {
+  public async getClasses(
+    id: {
+      courseId: number;
+    },
+    query?: $CourseClassAPI.GetClasses.Query,
+  ): Promise<CourseClassModel[]> {
     return this.db.courseClass.findMany({
       where: this.getWhereObjectForFirstLevelOperation(id),
+      ...getQueryExtendsObject(query),
     });
   }
 

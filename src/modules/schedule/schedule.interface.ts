@@ -45,6 +45,7 @@ export interface ICourseScheduleService {
   ) => Promise<$CourseScheduleAPI.CreateSchedule.Response["data"]>;
   getSchedules: (
     resourceId: CourseScheduleResourceId,
+    query: $CourseScheduleAPI.GetSchedules.Query,
   ) => Promise<$CourseScheduleAPI.GetSchedules.Response["data"]>;
   getScheduleById: (
     scheduleId: number,
@@ -68,6 +69,7 @@ export interface ICourseScheduleRepository {
   ) => Promise<CourseScheduleModel>;
   getSchedules: (
     id: CourseScheduleResourceId["params"],
+    query?: $CourseScheduleAPI.GetSchedules.Query,
   ) => Promise<CourseScheduleModel[]>;
   getScheduleById: (id: {
     scheduleId: number;

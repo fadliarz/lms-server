@@ -29,6 +29,7 @@ const NaNException_1 = __importDefault(require("../../../common/class/exceptions
 const validateJoi_1 = __importDefault(require("../../../common/functions/validateJoi"));
 const getRequestUserOrThrowAuthenticationException_1 = __importDefault(require("../../../common/functions/getRequestUserOrThrowAuthenticationException"));
 const video_joi_1 = require("./video.joi");
+const getPagingQuery_1 = __importDefault(require("../../../common/functions/getPagingQuery"));
 let CourseLessonVideoController = class CourseLessonVideoController {
     createVideo(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -45,7 +46,8 @@ let CourseLessonVideoController = class CourseLessonVideoController {
     getVideos(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const videos = yield this.service.getVideos((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) });
+                yield (0, validateJoi_1.default)({ query: video_joi_1.GetCourseLessonVideosQueryJoi })(req, res, next);
+                const videos = yield this.service.getVideos((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { resourceId: this.validateResourceId(req) }, (0, getPagingQuery_1.default)(req.query));
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: videos });
             }
             catch (error) {

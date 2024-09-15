@@ -24,12 +24,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
 const inversify_1 = require("inversify");
 const enrollment_type_1 = require("../enrollment.type");
-const course_type_1 = require("../../course/course.type");
 const handleRepositoryError_1 = __importDefault(require("../../../common/functions/handleRepositoryError"));
 let CourseEnrollmentService = class CourseEnrollmentService {
     createEnrollment(resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                this.authorization.authorizeCreateEnrollment(resourceId.user, dto);
                 return yield this.repository.createEnrollment(resourceId.params, dto);
             }
             catch (error) {
@@ -40,6 +40,7 @@ let CourseEnrollmentService = class CourseEnrollmentService {
     updateEnrollment(enrollmentId, resourceId, dto) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                this.authorization.authorizeUpdateEnrollmentRole(resourceId.user);
                 return yield this.repository.updateEnrollment({ enrollmentId, resourceId: resourceId.params }, dto);
             }
             catch (error) {
@@ -50,6 +51,7 @@ let CourseEnrollmentService = class CourseEnrollmentService {
     deleteEnrollment(enrollmentId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                yield this.authorization.authorizeDeleteEnrollment(resourceId.user, enrollmentId);
                 return yield this.repository.deleteEnrollment({
                     enrollmentId,
                     resourceId: resourceId.params,
@@ -66,9 +68,9 @@ __decorate([
     __metadata("design:type", Object)
 ], CourseEnrollmentService.prototype, "repository", void 0);
 __decorate([
-    (0, inversify_1.inject)(course_type_1.CourseDITypes.REPOSITORY),
+    (0, inversify_1.inject)(enrollment_type_1.CourseEnrollmentDITypes.AUTHORIZATION),
     __metadata("design:type", Object)
-], CourseEnrollmentService.prototype, "courseRepository", void 0);
+], CourseEnrollmentService.prototype, "authorization", void 0);
 CourseEnrollmentService = __decorate([
     (0, inversify_1.injectable)()
 ], CourseEnrollmentService);

@@ -39,14 +39,14 @@ let CourseClassAssignmentService = class CourseClassAssignmentService {
             }
         });
     }
-    getAssignments(user, id) {
+    getAssignments(user, id, query) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.authorization.authorizeReadAssignment(user, id.resourceId.courseId);
                 return yield this.repository.getAssignments({
                     classId: id.resourceId.classId,
                     resourceId: id.resourceId,
-                });
+                }, query);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

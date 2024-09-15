@@ -50,6 +50,7 @@ export default class CourseClassAssignmentService
     id: {
       resourceId: CourseClassAssignmentResourceId;
     },
+    query: $CourseClassAssignmentAPI.GetAssignments.Query,
   ): Promise<$CourseClassAssignmentAPI.GetAssignments.Response["data"]> {
     try {
       await this.authorization.authorizeReadAssignment(
@@ -57,10 +58,13 @@ export default class CourseClassAssignmentService
         id.resourceId.courseId,
       );
 
-      return await this.repository.getAssignments({
-        classId: id.resourceId.classId,
-        resourceId: id.resourceId,
-      });
+      return await this.repository.getAssignments(
+        {
+          classId: id.resourceId.classId,
+          resourceId: id.resourceId,
+        },
+        query,
+      );
     } catch (error: any) {
       throw handleRepositoryError(error);
     }

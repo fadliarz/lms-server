@@ -9,6 +9,12 @@ export const CreateCourseLessonVideoDtoJoi =
     youtubeLink: Joi.string().required(),
   });
 
+export const GetCourseLessonVideosQueryJoi =
+  Joi.object<$CourseLessonVideoAPI.GetVideos.Query>({
+    pageNumber: Joi.number(),
+    pageSize: Joi.number(),
+  });
+
 export const UpdateCourseLessonVideoDtoJoi =
   Joi.object<$CourseLessonVideoAPI.UpdateVideo.Dto>({
     name: Joi.string(),

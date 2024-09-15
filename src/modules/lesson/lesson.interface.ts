@@ -47,9 +47,12 @@ export interface ICourseLessonService {
     lessonId: number;
     resourceId: CourseLessonResourceId;
   }) => Promise<$CourseLessonAPI.GetLessonById.Response["data"]>;
-  getLessons: (id: {
-    resourceId: CourseLessonResourceId;
-  }) => Promise<$CourseLessonAPI.GetLessons.Response["data"]>;
+  getLessons: (
+    id: {
+      resourceId: CourseLessonResourceId;
+    },
+    query: $CourseLessonAPI.GetLessons.Query,
+  ) => Promise<$CourseLessonAPI.GetLessons.Response["data"]>;
   updateLesson: (
     user: UserModel,
     id: {
@@ -85,7 +88,10 @@ export interface ICourseLessonRepository<> {
     },
     error?: Error,
   ) => Promise<CourseLessonModel>;
-  getLessons: (id: { courseId: number }) => Promise<CourseLessonModel[]>;
+  getLessons: (
+    id: { courseId: number },
+    query?: $CourseLessonAPI.GetLessons.Query,
+  ) => Promise<CourseLessonModel[]>;
   updateLesson: (
     id: {
       lessonId: number;

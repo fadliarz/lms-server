@@ -404,7 +404,7 @@ export interface IUserRepository {
       userId: number;
     },
     where: {
-      role: CourseEnrollmentRoleModel;
+      role: CourseEnrollmentRoleModel[];
     },
   ) => Promise<CourseModel[]>;
   getUserOneCourseEnrollmentId: (

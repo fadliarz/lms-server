@@ -10,12 +10,12 @@ export interface ICourseEnrollmentAuthorization {
   authorizeCreateEnrollment: (
     user: UserModel,
     dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
-  ) => void;
-  authorizeUpdateEnrollmentRole: (user: UserModel) => void;
+  ) => Promise<void>;
+  authorizeUpdateEnrollmentRole: (user: UserModel) => Promise<void>;
   authorizeDeleteEnrollment: (
     user: UserModel,
-    enrollment: CourseEnrollmentModel,
-  ) => void;
+    enrollmentId: number,
+  ) => Promise<void>;
 }
 
 export interface ICourseEnrollmentController {
@@ -57,6 +57,7 @@ export interface ICourseEnrollmentRepository {
     id: CourseEnrollmentResourceId["params"],
     data: $CourseEnrollmentAPI.CreateEnrollment.Dto,
   ) => Promise<CourseEnrollmentModel>;
+  getEnrollmentById: (id: number) => Promise<CourseEnrollmentModel | null>;
   getEnrollmentByUserIdAndCourseId: (id: {
     userId: number;
     courseId: number;

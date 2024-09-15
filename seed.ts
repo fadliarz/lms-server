@@ -182,56 +182,56 @@ const main = async () => {
    * Product
    *
    */
-
-  await seed.product((x) => x(5));
-
-  await seed.productVariant((x) => x(25), {
-    connect: { product: getIds(1, 5) },
-  });
-
-  await seed.order(
-    (x) =>
-      x(155 * 2, ({ seed }) => ({
-        isArrived: Math.random() < 0.5,
-        rating: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
-        variant_snapshot: { id: 1 },
-      })),
-    {
-      connect: { user: getIds(1, 155), productVariant: getIds(1, 25) },
-    },
-  );
-
-  const orders = await prisma.order.findMany({
-    select: {
-      id: true,
-      variant: {
-        select: {
-          id: true,
-          title: true,
-          price: true,
-          stock: true,
-          product: {
-            select: {
-              id: true,
-              title: true,
-              description: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  for (const order of orders) {
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { variantSnapshot: order.variant },
-    });
-
-    console.log("order updated!");
-  }
-
-  console.log("Database seeded successfully!");
+  //
+  // await seed.product((x) => x(5));
+  //
+  // await seed.productVariant((x) => x(25), {
+  //   connect: { product: getIds(1, 5) },
+  // });
+  //
+  // await seed.order(
+  //   (x) =>
+  //     x(155 * 2, ({ seed }) => ({
+  //       isArrived: Math.random() < 0.5,
+  //       rating: Math.floor(Math.random() * (5 - 1 + 1)) + 1,
+  //       variant_snapshot: { id: 1 },
+  //     })),
+  //   {
+  //     connect: { user: getIds(1, 155), productVariant: getIds(1, 25) },
+  //   },
+  // );
+  //
+  // const orders = await prisma.order.findMany({
+  //   select: {
+  //     id: true,
+  //     variant: {
+  //       select: {
+  //         id: true,
+  //         title: true,
+  //         price: true,
+  //         stock: true,
+  //         product: {
+  //           select: {
+  //             id: true,
+  //             title: true,
+  //             description: true,
+  //           },
+  //         },
+  //       },
+  //     },
+  //   },
+  // });
+  //
+  // for (const order of orders) {
+  //   await prisma.order.update({
+  //     where: { id: order.id },
+  //     data: { variantSnapshot: order.variant },
+  //   });
+  //
+  //   console.log("order updated!");
+  // }
+  //
+  // console.log("Database seeded successfully!");
 
   process.exit();
 };

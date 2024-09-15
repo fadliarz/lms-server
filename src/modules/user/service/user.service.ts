@@ -162,7 +162,10 @@ export default class UserService extends BaseService implements IUserService {
       );
 
       return await this.repository.getUserEnrolledCourses(id, {
-        role: CourseEnrollmentRoleModel.STUDENT,
+        role: [
+          CourseEnrollmentRoleModel.STUDENT,
+          CourseEnrollmentRoleModel.INSTRUCTOR,
+        ],
       });
     } catch (error: any) {
       throw handleRepositoryError(error);
@@ -193,7 +196,7 @@ export default class UserService extends BaseService implements IUserService {
       }
 
       return await this.repository.getUserEnrolledCourses(id, {
-        role: CourseEnrollmentRoleModel.INSTRUCTOR,
+        role: [CourseEnrollmentRoleModel.INSTRUCTOR],
       });
     } catch (error: any) {
       throw handleRepositoryError(error);

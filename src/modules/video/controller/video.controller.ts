@@ -15,9 +15,11 @@ import {
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import {
   CreateCourseLessonVideoDtoJoi,
+  GetCourseLessonVideosQueryJoi,
   UpdateCourseLessonVideoDtoJoi,
   UpdateCourseLessonVideoSourceDtoJoi,
 } from "./video.joi";
+import getPagingQuery from "../../../common/functions/getPagingQuery";
 
 @injectable()
 export default class CourseLessonVideoController
@@ -56,9 +58,16 @@ export default class CourseLessonVideoController
     next: NextFunction,
   ): Promise<Response | void> {
     try {
+      await validateJoi({ query: GetCourseLessonVideosQueryJoi })(
+        req,
+        res,
+        next,
+      );
+
       const videos = await this.service.getVideos(
         getRequestUserOrThrowAuthenticationException(req),
         { resourceId: this.validateResourceId(req) },
+        getPagingQuery(req.query),
       );
 
       return res.status(StatusCode.SUCCESS).json({ data: videos });

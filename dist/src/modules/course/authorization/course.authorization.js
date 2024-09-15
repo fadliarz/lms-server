@@ -42,6 +42,36 @@ let CourseAuthorization = class CourseAuthorization extends BaseAuthorization_1.
             }
         });
     }
+    authorizeCreateCourseInstructor(user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            let isAuthorized = false;
+            if (isStudent) {
+                isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.COURSE);
+            }
+            if (isAdmin) {
+                isAuthorized = true;
+            }
+            if (!isAuthorized) {
+                throw new AuthorizationException_1.default();
+            }
+        });
+    }
+    authorizeGetCourseInstructors(user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
+            let isAuthorized = false;
+            if (isStudent) {
+                isAuthorized = yield this.authorizeFromDepartmentDivision(user.id, user_type_1.PrivilegeModel.COURSE);
+            }
+            if (isAdmin) {
+                isAuthorized = true;
+            }
+            if (!isAuthorized) {
+                throw new AuthorizationException_1.default();
+            }
+        });
+    }
     authorizeUpdateCourse(user, courseId) {
         return __awaiter(this, void 0, void 0, function* () {
             const { isAdmin, isStudent } = (0, getRoleStatus_1.default)(user.role);

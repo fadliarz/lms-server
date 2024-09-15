@@ -7,6 +7,7 @@ import {
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import { ICourseScheduleRepository } from "../schedule.interface";
 import { $CourseScheduleAPI } from "../schedule.api";
+import getQueryExtendsObject from "../../../common/functions/getQueryExtendObject";
 
 @injectable()
 export default class CourseScheduleRepository
@@ -28,9 +29,11 @@ export default class CourseScheduleRepository
 
   public async getSchedules(
     id: CourseScheduleResourceId["params"],
+    query?: $CourseScheduleAPI.GetSchedules.Query,
   ): Promise<CourseScheduleModel[]> {
     return this.db.courseSchedule.findMany({
       where: this.getWhereObjectForFirstLevelOperation(id),
+      ...getQueryExtendsObject(query),
     });
   }
 

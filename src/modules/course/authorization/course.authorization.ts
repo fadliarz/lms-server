@@ -33,6 +33,46 @@ export default class CourseAuthorization
     }
   }
 
+  public async authorizeCreateCourseInstructor(user: UserModel): Promise<void> {
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
+
+    let isAuthorized = false;
+    if (isStudent) {
+      isAuthorized = await this.authorizeFromDepartmentDivision(
+        user.id,
+        PrivilegeModel.COURSE,
+      );
+    }
+
+    if (isAdmin) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
+
+  public async authorizeGetCourseInstructors(user: UserModel): Promise<void> {
+    const { isStudent, isAdmin } = getRoleStatus(user.role);
+
+    let isAuthorized = false;
+    if (isStudent) {
+      isAuthorized = await this.authorizeFromDepartmentDivision(
+        user.id,
+        PrivilegeModel.COURSE,
+      );
+    }
+
+    if (isAdmin) {
+      isAuthorized = true;
+    }
+
+    if (!isAuthorized) {
+      throw new AuthorizationException();
+    }
+  }
+
   public async authorizeUpdateCourse(
     user: UserModel,
     courseId: number,

@@ -7,6 +7,7 @@ import { ICourseClassAssignmentRepository } from "../assignment.interface";
 import RecordNotFoundException from "../../../common/class/exceptions/RecordNotFoundException";
 import BaseRepository from "../../../common/class/BaseRepository";
 import { $CourseClassAssignmentAPI } from "../assignment.api";
+import getQueryExtendsObject from "../../../common/functions/getQueryExtendObject";
 
 @injectable()
 export default class CourseClassAssignmentRepository
@@ -45,12 +46,16 @@ export default class CourseClassAssignmentRepository
     });
   }
 
-  public async getAssignments(id: {
-    classId: number;
-    resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
-  }): Promise<CourseClassAssignmentModel[]> {
+  public async getAssignments(
+    id: {
+      classId: number;
+      resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
+    },
+    query?: $CourseClassAssignmentAPI.GetAssignments.Query,
+  ): Promise<CourseClassAssignmentModel[]> {
     return this.db.courseClassAssignment.findMany({
       where: this.getWhereObjectForFirstLevelOperation(id),
+      ...getQueryExtendsObject(query),
     });
   }
 
@@ -106,25 +111,24 @@ export default class CourseClassAssignmentRepository
     resourceId?: Omit<CourseClassAssignmentResourceId, "classId">;
   }):
     | {
-        id: number;
+        courseClass: { id: number };
       }
     | {
-        id: number;
-        course: {
-          id: number;
-        };
+        courseClass: { id: number; course: { id: number } };
       } {
     if (id.resourceId) {
       return {
-        id: id.classId,
-        course: {
-          id: id.resourceId.courseId,
+        courseClass: {
+          id: id.classId,
+          course: {
+            id: id.resourceId.courseId,
+          },
         },
       };
     }
 
     return {
-      id: id.classId,
+      courseClass: { id: id.classId },
     };
   }
 

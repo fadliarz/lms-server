@@ -6,6 +6,12 @@ export const CreateCourseClassDtoJoi =
     title: Joi.string().required(),
   });
 
+export const GetCourseClassesQueryJoi =
+  Joi.object<$CourseClassAPI.GetClasses.Query>({
+    pageSize: Joi.number(),
+    pageNumber: Joi.number(),
+  });
+
 export const UpdateCourseClassDtoJoi =
   Joi.object<$CourseClassAPI.UpdateClass.Dto>({
     title: Joi.string(),

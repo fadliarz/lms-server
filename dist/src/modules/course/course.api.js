@@ -10,6 +10,11 @@ var $CourseAPI;
         CreateCourse.endpoint = root;
         CreateCourse.generateUrl = () => CreateCourse.endpoint;
     })(CreateCourse = $CourseAPI.CreateCourse || ($CourseAPI.CreateCourse = {}));
+    let CreateCourseInstructor;
+    (function (CreateCourseInstructor) {
+        CreateCourseInstructor.endpoint = course + "/instructors";
+        CreateCourseInstructor.generateUrl = (courseId) => `/courses/${courseId}/instructors`;
+    })(CreateCourseInstructor = $CourseAPI.CreateCourseInstructor || ($CourseAPI.CreateCourseInstructor = {}));
     let GetCourses;
     (function (GetCourses) {
         GetCourses.endpoint = root;
@@ -20,6 +25,11 @@ var $CourseAPI;
         GetCourseById.endpoint = course;
         GetCourseById.generateUrl = (courseId) => `/courses/${courseId}`;
     })(GetCourseById = $CourseAPI.GetCourseById || ($CourseAPI.GetCourseById = {}));
+    let GetCourseInstructors;
+    (function (GetCourseInstructors) {
+        GetCourseInstructors.endpoint = course + "/instructors";
+        GetCourseInstructors.generateUrl = (courseId) => `/courses/${courseId}/instructors`;
+    })(GetCourseInstructors = $CourseAPI.GetCourseInstructors || ($CourseAPI.GetCourseInstructors = {}));
     let UpdateCourse;
     (function (UpdateCourse) {
         UpdateCourse.endpoint = course;

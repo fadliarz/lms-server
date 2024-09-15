@@ -30,6 +30,7 @@ const validateJoi_1 = __importDefault(require("../../../common/functions/validat
 const course_joi_1 = require("./course.joi");
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
 const convertStringToBoolean_1 = __importDefault(require("../../../common/functions/convertStringToBoolean"));
+const getPagingQuery_1 = __importDefault(require("../../../common/functions/getPagingQuery"));
 let CourseController = class CourseController {
     createCourse(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -44,20 +45,24 @@ let CourseController = class CourseController {
             }
         });
     }
+    createCourseInstructor(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: course_joi_1.CreateCourseInstructorDtoJoi })(req, res, next);
+                const resourceId = this.validateResourceId(req);
+                const newCourse = yield this.service.createCourseInstructor((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { courseId: this.validateCourseId(req) }, req.body);
+                return res.status(statusCode_1.StatusCode.RESOURCE_CREATED).json({ data: newCourse });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     getCourses(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield (0, validateJoi_1.default)({ query: course_joi_1.GetCoursesQueryJoi })(req, res, next);
-                const reqQuery = req.query;
-                const query = {
-                    include_category: (0, convertStringToBoolean_1.default)(reqQuery.include_category),
-                    pageSize: !isNaN(reqQuery.pageSize)
-                        ? Number(reqQuery.pageSize)
-                        : undefined,
-                    pageNumber: !isNaN(reqQuery.pageNumber)
-                        ? Number(reqQuery.pageNumber)
-                        : undefined,
-                };
+                const query = Object.assign({ include_category: (0, convertStringToBoolean_1.default)(req.query.include_category) }, (0, getPagingQuery_1.default)(req.query));
                 const courses = yield this.service.getCourses(query);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: courses });
             }
@@ -81,6 +86,18 @@ let CourseController = class CourseController {
                 res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: course,
                 });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getCourseInstructors(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ query: course_joi_1.GetCourseInstructorsQueryJoi })(req, res, next);
+                const courses = yield this.service.getCourseInstructors((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { courseId: this.validateCourseId(req) }, (0, getPagingQuery_1.default)(req.query));
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: courses });
             }
             catch (error) {
                 next(error);

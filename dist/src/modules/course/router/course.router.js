@@ -16,12 +16,14 @@ function CourseRouter(authenticationMiddleware) {
      *
      */
     router.post(course_api_1.$CourseAPI.CreateCourse.endpoint, authenticationMiddleware, controller.createCourse.bind(controller));
+    router.post(course_api_1.$CourseAPI.CreateCourseInstructor.endpoint, authenticationMiddleware, controller.createCourseInstructor.bind(controller));
     router.post(course_api_1.$CourseAPI.CreateLike.endpoint, authenticationMiddleware, controller.createLike.bind(controller));
     /**
      * Get
      *
      */
     router.get(course_api_1.$CourseAPI.GetCourses.endpoint, controller.getCourses.bind(controller));
+    router.get(course_api_1.$CourseAPI.GetCourseInstructors.endpoint, authenticationMiddleware, controller.getCourseInstructors.bind(controller));
     router.get(course_api_1.$CourseAPI.GetCourseById.endpoint, controller.getCourseById.bind(controller));
     /**
      * Update

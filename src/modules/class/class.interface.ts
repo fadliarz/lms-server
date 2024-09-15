@@ -43,9 +43,12 @@ export interface ICourseClassService {
     id: { resourceId: CourseClassResourceId },
     dto: $CourseClassAPI.CreateClass.Dto,
   ) => Promise<$CourseClassAPI.CreateClass.Response["data"]>;
-  getClasses: (id: {
-    resourceId: CourseClassResourceId;
-  }) => Promise<$CourseClassAPI.GetClasses.Response["data"]>;
+  getClasses: (
+    id: {
+      resourceId: CourseClassResourceId;
+    },
+    query: $CourseClassAPI.GetClasses.Query,
+  ) => Promise<$CourseClassAPI.GetClasses.Response["data"]>;
   getClassById: (id: {
     classId: number;
     resourceId: CourseClassResourceId;
@@ -74,7 +77,10 @@ export interface ICourseClassRepository {
     },
     data: $CourseClassAPI.CreateClass.Dto,
   ) => Promise<CourseClassModel>;
-  getClasses: (id: { courseId: number }) => Promise<CourseClassModel[]>;
+  getClasses: (
+    id: { courseId: number },
+    query?: $CourseClassAPI.GetClasses.Query,
+  ) => Promise<CourseClassModel[]>;
   getClassById: (id: {
     classId: number;
     resourceId?: CourseClassResourceId;

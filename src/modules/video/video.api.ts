@@ -1,4 +1,5 @@
 import { CourseLessonVideoModel } from "./video.type";
+import { PagingQuery } from "../../common/shared.types";
 
 export namespace $CourseLessonVideoAPI {
   const root = "/courses/:courseId/lessons/:lessonId/videos";
@@ -23,6 +24,7 @@ export namespace $CourseLessonVideoAPI {
     export const endpoint = root;
     export const generateUrl = (courseId: number, lessonId: number) =>
       `/courses/${courseId}/lessons/${lessonId}/videos`;
+    export type Query = PagingQuery;
     export type Response = {
       data: CourseLessonVideoModel[];
     };

@@ -25,6 +25,7 @@ require("reflect-metadata");
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
+const getQueryExtendObject_1 = __importDefault(require("../../../common/functions/getQueryExtendObject"));
 let CourseLessonVideoRepository = class CourseLessonVideoRepository extends BaseRepository_1.default {
     constructor() {
         super();
@@ -47,11 +48,9 @@ let CourseLessonVideoRepository = class CourseLessonVideoRepository extends Base
             });
         });
     }
-    getVideos(id) {
+    getVideos(id, query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.courseLessonVideo.findMany({
-                where: this.getWhereObjectForFirstLevelOperation(id),
-            });
+            return this.db.courseLessonVideo.findMany(Object.assign({ where: this.getWhereObjectForFirstLevelOperation(id) }, (0, getQueryExtendObject_1.default)(query)));
         });
     }
     getVideoById(id) {
@@ -89,14 +88,16 @@ let CourseLessonVideoRepository = class CourseLessonVideoRepository extends Base
     getWhereObjectForFirstLevelOperation(id) {
         if (id.resourceId) {
             return {
-                id: id.lessonId,
-                course: {
-                    id: id.resourceId.courseId,
+                lesson: {
+                    id: id.lessonId,
+                    course: {
+                        id: id.resourceId.courseId,
+                    },
                 },
             };
         }
         return {
-            id: id.lessonId,
+            lesson: { id: id.lessonId },
         };
     }
     getWhereObjectForSecondLevelOperation(id) {

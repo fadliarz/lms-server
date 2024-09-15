@@ -24,6 +24,12 @@ export default function CourseRouter(authenticationMiddleware: any) {
   );
 
   router.post(
+    $CourseAPI.CreateCourseInstructor.endpoint,
+    authenticationMiddleware,
+    controller.createCourseInstructor.bind(controller),
+  );
+
+  router.post(
     $CourseAPI.CreateLike.endpoint,
     authenticationMiddleware,
     controller.createLike.bind(controller),
@@ -37,6 +43,12 @@ export default function CourseRouter(authenticationMiddleware: any) {
   router.get(
     $CourseAPI.GetCourses.endpoint,
     controller.getCourses.bind(controller),
+  );
+
+  router.get(
+    $CourseAPI.GetCourseInstructors.endpoint,
+    authenticationMiddleware,
+    controller.getCourseInstructors.bind(controller),
   );
 
   router.get(

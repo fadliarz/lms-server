@@ -4,10 +4,9 @@ import {
   CourseEnrollmentDITypes,
   CourseEnrollmentResourceId,
 } from "../enrollment.type";
-import { CourseDITypes } from "../../course/course.type";
 import handleRepositoryError from "../../../common/functions/handleRepositoryError";
-import { ICourseRepository } from "../../course/course.interface";
 import {
+  ICourseEnrollmentAuthorization,
   ICourseEnrollmentRepository,
   ICourseEnrollmentService,
 } from "../enrollment.interface";
@@ -20,14 +19,16 @@ export default class CourseEnrollmentService
   @inject(CourseEnrollmentDITypes.REPOSITORY)
   repository: ICourseEnrollmentRepository;
 
-  @inject(CourseDITypes.REPOSITORY)
-  courseRepository: ICourseRepository;
+  @inject(CourseEnrollmentDITypes.AUTHORIZATION)
+  authorization: ICourseEnrollmentAuthorization;
 
   public async createEnrollment(
     resourceId: CourseEnrollmentResourceId,
     dto: $CourseEnrollmentAPI.CreateEnrollment.Dto,
   ): Promise<$CourseEnrollmentAPI.CreateEnrollment.Response["data"]> {
     try {
+      this.authorization.authorizeCreateEnrollment(resourceId.user, dto);
+
       return await this.repository.createEnrollment(resourceId.params, dto);
     } catch (error: any) {
       throw handleRepositoryError(error);
@@ -40,6 +41,8 @@ export default class CourseEnrollmentService
     dto: $CourseEnrollmentAPI.UpdateEnrollment.Dto,
   ): Promise<$CourseEnrollmentAPI.UpdateEnrollment.Response["data"]> {
     try {
+      this.authorization.authorizeUpdateEnrollmentRole(resourceId.user);
+
       return await this.repository.updateEnrollment(
         { enrollmentId, resourceId: resourceId.params },
         dto,
@@ -54,6 +57,11 @@ export default class CourseEnrollmentService
     resourceId: CourseEnrollmentResourceId,
   ): Promise<{}> {
     try {
+      await this.authorization.authorizeDeleteEnrollment(
+        resourceId.user,
+        enrollmentId,
+      );
+
       return await this.repository.deleteEnrollment({
         enrollmentId,
         resourceId: resourceId.params,

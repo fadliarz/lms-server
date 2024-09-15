@@ -237,7 +237,7 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
     getUserEnrolledCourses(id, where) {
         return __awaiter(this, void 0, void 0, function* () {
             const enrollments = yield this.db.courseEnrollment.findMany({
-                where: { userId: id.userId, role: where.role },
+                where: { userId: id.userId, role: { in: where.role } },
                 select: {
                     course: true,
                 },

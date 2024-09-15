@@ -53,12 +53,22 @@ export default class CourseLessonService implements ICourseLessonService {
     }
   }
 
-  public async getLessons(id: {
-    resourceId: CourseLessonResourceId;
-  }): Promise<CourseLessonModel[]> {
-    return await this.repository.getLessons({
-      courseId: id.resourceId.courseId,
-    });
+  public async getLessons(
+    id: {
+      resourceId: CourseLessonResourceId;
+    },
+    query: $CourseLessonAPI.GetLessons.Query,
+  ): Promise<CourseLessonModel[]> {
+    try {
+      return await this.repository.getLessons(
+        {
+          courseId: id.resourceId.courseId,
+        },
+        query,
+      );
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
   }
 
   public async updateLesson(
