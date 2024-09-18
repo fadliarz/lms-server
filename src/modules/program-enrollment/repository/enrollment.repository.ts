@@ -30,7 +30,7 @@ export default class DepartmentProgramEnrollmentRepository
           id: id.programId,
           departmentId: id.resourceId.departmentId,
         },
-        select: {},
+        select: { id: true },
       });
 
       if (program === null) {
@@ -71,10 +71,10 @@ export default class DepartmentProgramEnrollmentRepository
   public async deleteEnrollment(id: {
     enrollmentId: number;
     resourceId?: DepartmentProgramEnrollmentResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.departmentProgramEnrollment.delete({
       where: this.getWhereObject(id),
-      select: {},
+      select: { id: true },
     });
   }
 

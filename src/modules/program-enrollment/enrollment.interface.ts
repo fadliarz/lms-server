@@ -71,5 +71,5 @@ export interface IDepartmentProgramEnrollmentRepository {
   deleteEnrollment: (id: {
     enrollmentId: number;
     resourceId?: DepartmentProgramEnrollmentResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

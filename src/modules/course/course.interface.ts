@@ -144,14 +144,14 @@ export interface ICourseService {
   deleteCourse: (id: {
     courseId: number;
     resourceId: CourseResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
   createLike: (id: {
     resourceId: CourseLikeResourceId;
   }) => Promise<CourseLikeModel>;
   deleteLike: (id: {
     likeId: number;
     resourceId: CourseLikeResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }
 
 export interface ICourseRepository {
@@ -184,7 +184,7 @@ export interface ICourseRepository {
     id: { courseId: number },
     data: Partial<CourseModel>,
   ) => Promise<CourseModel>;
-  deleteCourse: (id: { courseId: number }) => Promise<{}>;
+  deleteCourse: (id: { courseId: number }) => Promise<{ id: number }>;
   createLike: (
     id: {
       courseId: number;
@@ -203,5 +203,5 @@ export interface ICourseRepository {
   deleteLike: (id: {
     likeId: number;
     resourceId?: CourseLikeResourceId["params"];
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

@@ -80,7 +80,7 @@ let DepartmentDivisionEnrollmentRepository = class DepartmentDivisionEnrollmentR
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.departmentDivisionEnrollment.delete({
                 where: this.getWhereObject(id),
-                select: {},
+                select: { id: true },
             });
         });
     }

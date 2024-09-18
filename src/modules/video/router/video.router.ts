@@ -47,12 +47,6 @@ export default function CourseLessonVideoRouter(authenticationMiddleware: any) {
     controller.updateVideo.bind(controller),
   );
 
-  router.patch(
-    $CourseLessonVideoAPI.UpdateVideoSource.endpoint,
-    authenticationMiddleware,
-    controller.updateVideoSource.bind(controller),
-  );
-
   /**
    * Delete
    *

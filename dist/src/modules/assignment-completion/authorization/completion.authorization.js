@@ -44,7 +44,7 @@ let CourseClassAssignmentCompletionAuthorization = class CourseClassAssignmentCo
             }
         });
     }
-    authorizeDeleteCompletion(user, completionId) {
+    authorizeUpdateCompletion(user, completionId) {
         return __awaiter(this, void 0, void 0, function* () {
             const { isStudent, isAdmin } = (0, getRoleStatus_1.default)(user.role);
             let isAuthorized = false;
@@ -62,6 +62,11 @@ let CourseClassAssignmentCompletionAuthorization = class CourseClassAssignmentCo
             if (!isAuthorized) {
                 throw new AuthorizationException_1.default();
             }
+        });
+    }
+    authorizeDeleteCompletion(user, completionId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.authorizeUpdateCompletion(user, completionId);
         });
     }
 };

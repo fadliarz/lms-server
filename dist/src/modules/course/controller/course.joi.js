@@ -12,7 +12,6 @@ exports.CreateCourseDtoJoi = joi_1.default.object({
     categoryId: joi_1.default.number().required(),
     image: joi_1.default.string(),
     description: joi_1.default.string(),
-    material: joi_1.default.string(),
 });
 exports.CreateCourseInstructorDtoJoi = joi_1.default.object({
     userId: joi_1.default.number().required(),
@@ -23,6 +22,7 @@ exports.GetCourseByIdQueryJoi = joi_1.default.object({
     include_public_videos: joi_1.default.boolean(),
 });
 exports.GetCoursesQueryJoi = joi_1.default.object({
+    category_id: joi_1.default.array().items(joi_1.default.number()),
     include_category: joi_1.default.boolean(),
     pageSize: joi_1.default.number(),
     pageNumber: joi_1.default.number(),
@@ -46,7 +46,6 @@ exports.UpdateCourseDtoJoi = joi_1.default.object({
     description: joi_1.default.string(),
     image: joi_1.default.string(),
     title: joi_1.default.string(),
-    material: joi_1.default.string(),
 });
 exports.UpdateCourseStatusDtoJoi = joi_1.default.object({
     status: joi_1.default.required().valid(course_type_1.CourseStatusModel.DRAFT, course_type_1.CourseStatusModel.PUBLISHED),

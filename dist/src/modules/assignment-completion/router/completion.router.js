@@ -16,6 +16,11 @@ function CourseClassAssignmentCompletionRouter(authenticationMiddleware) {
      */
     router.post(completion_api_1.$CourseClassAssignmentCompletionAPI.CreateCompletion.endpoint, authenticationMiddleware, controller.createCompletion.bind(controller));
     /**
+     * Update
+     *
+     */
+    router.patch(completion_api_1.$CourseClassAssignmentCompletionAPI.UpdateCompletion.endpoint, authenticationMiddleware, controller.updateCompletion);
+    /**
      * Delete
      *
      */

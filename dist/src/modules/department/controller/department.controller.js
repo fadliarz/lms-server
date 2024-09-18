@@ -124,10 +124,10 @@ let DepartmentController = class DepartmentController {
             try {
                 const departmentId = this.validateDepartmentId(req);
                 const resourceId = this.validateResourceId(req);
-                yield this.service.deleteDepartment(departmentId, resourceId);
-                res
-                    .status(statusCode_1.StatusCode.SUCCESS)
-                    .json({ data: {} });
+                const result = yield this.service.deleteDepartment(departmentId, resourceId);
+                res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: result,
+                });
             }
             catch (error) {
                 next(error);

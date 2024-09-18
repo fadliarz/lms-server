@@ -7,11 +7,12 @@ import validateJoi from "../../../common/functions/validateJoi";
 import {
   CreateUserDtoJoi,
   GetPublicUsersQueryJoi,
+  GetUserEnrolledCoursesQueryJoi,
+  GetUserManagedCoursesQueryJoi,
   SignIn,
   UpdateBasicUserDtoJoi,
   UpdateUserEmailDtoJoi,
   UpdateUserPasswordDtoJoi,
-  UpdateUserPhoneNumberDtoJoi,
   UpdateUserRoleDtoJoi,
 } from "./user.joi";
 import { Cookie } from "../../../common/constants/Cookie";
@@ -19,6 +20,7 @@ import AuthenticationException from "../../../common/class/exceptions/Authentica
 import NaNException from "../../../common/class/exceptions/NaNException";
 import { IUserController, IUserService } from "../user.interface";
 import { $UserAPI } from "../user.api";
+import getPagingQuery from "../../../common/functions/getPagingQuery";
 
 @injectable()
 export default class UserController implements IUserController {
@@ -149,15 +151,25 @@ export default class UserController implements IUserController {
     }
   }
 
-  public async getUserEnrolledAsStudentCourses(
+  public async getUserEnrolledCourses(
     req: Request,
     res: Response,
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      const courses = await this.service.getUserEnrolledAsStudentCourses(
+      await validateJoi({ query: GetUserEnrolledCoursesQueryJoi })(
+        req,
+        res,
+        next,
+      );
+
+      const courses = await this.service.getUserEnrolledCourses(
         getRequestUserOrThrowAuthenticationException(req),
         { userId: this.validateUserId(req) },
+        {
+          ...getPagingQuery(req.query),
+          category_id: req.query.category_id as unknown as number[],
+        },
       );
 
       return res.status(StatusCode.SUCCESS).json({
@@ -174,13 +186,46 @@ export default class UserController implements IUserController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
+      await validateJoi({ query: GetUserManagedCoursesQueryJoi })(
+        req,
+        res,
+        next,
+      );
+
       const courses = await this.service.getUserManagedCourses(
         getRequestUserOrThrowAuthenticationException(req),
         { userId: this.validateUserId(req) },
+        {
+          ...getPagingQuery(req.query),
+          category_id: req.query.category_id as unknown as number[],
+        },
       );
 
       return res.status(StatusCode.SUCCESS).json({
         data: courses,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getUserCourseEnrollmentStatusByCourseId(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      const enrollmentStatus =
+        await this.service.getUserCourseEnrollmentStatusByCourseId(
+          getRequestUserOrThrowAuthenticationException(req),
+          {
+            userId: this.validateUserId(req),
+            courseId: this.validateCourseId(req),
+          },
+        );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: enrollmentStatus,
       });
     } catch (error) {
       next(error);
@@ -432,28 +477,6 @@ export default class UserController implements IUserController {
     }
   }
 
-  public async updateUserPhoneNumber(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      await validateJoi({ body: UpdateUserPhoneNumberDtoJoi })(req, res, next);
-
-      const updatedUser = await this.service.updateUserPhoneNumber(
-        getRequestUserOrThrowAuthenticationException(req),
-        { userId: this.validateUserId(req) },
-        req.body,
-      );
-
-      return res.status(StatusCode.SUCCESS).json({
-        data: updatedUser,
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   public async deleteUser(req: Request, res: Response, next: NextFunction) {
     try {
       await this.service.deleteUser(
@@ -523,6 +546,15 @@ export default class UserController implements IUserController {
     }
 
     return userId;
+  }
+
+  private validateCourseId(req: Request, error?: Error): number {
+    const courseId = Number(req.params.userId);
+    if (isNaN(courseId)) {
+      throw error || new NaNException("courseId");
+    }
+
+    return courseId;
   }
 
   private validateDepartmentId(req: Request, error?: Error): number {

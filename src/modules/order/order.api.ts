@@ -119,7 +119,7 @@ export namespace $OrderAPI {
       orderId: number,
     ) => `/products/${productId}/variants/${variantId}/orders/${orderId}}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

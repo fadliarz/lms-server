@@ -92,5 +92,5 @@ export interface IPersonalAssignmentRepository {
   deleteAssignment: (id: {
     assignmentId: number;
     resourceId?: PersonalAssignmentResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

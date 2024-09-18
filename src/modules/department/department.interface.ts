@@ -102,5 +102,5 @@ export interface IDepartmentRepository {
     departmentId: number,
     dto: Partial<DepartmentModel>,
   ) => Promise<DepartmentModel>;
-  deleteDepartment: (departmentId: number) => Promise<{}>;
+  deleteDepartment: (departmentId: number) => Promise<{ id: number }>;
 }

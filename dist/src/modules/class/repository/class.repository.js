@@ -69,7 +69,7 @@ let CourseClassRepository = class CourseClassRepository extends BaseRepository_1
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.courseClass.delete({
                 where: this.getWhereObjectForSecondLevelOperation(id),
-                select: {},
+                select: { id: true },
             });
         });
     }

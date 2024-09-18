@@ -51,7 +51,7 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
             throw new AuthorizationException_1.default();
         }
     }
-    authorizeGetUserEnrolledAsStudentCourses(user, targetUserId) {
+    authorizeGetUserEnrolledCourses(user, targetUserId) {
         this.authorizeGetUserAssignments(user, targetUserId);
     }
     authorizeGetUserManagedCourses(user, targetUserId) {
@@ -67,6 +67,11 @@ let UserAuthorization = class UserAuthorization extends BaseAuthorization_1.defa
             if (!isAuthorized) {
                 throw new AuthorizationException_1.default();
             }
+        });
+    }
+    authorizeGetUserCourseEnrollmentStatusByCourseId(user, targetUserId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.authorizeGetUserManagedCourses(user, targetUserId);
         });
     }
     authorizeGetUserEventAndCourseSchedules(user, targetUserId) {

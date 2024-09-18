@@ -102,5 +102,5 @@ export interface ICourseLessonRepository<> {
   deleteLesson: (id: {
     lessonId: number;
     resourceId: CourseLessonResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

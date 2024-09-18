@@ -77,5 +77,5 @@ export interface IProductRepository {
     id: { productId: number },
     data: Partial<ProductModel>,
   ) => Promise<ProductModel>;
-  deleteProduct: (id: { productId: number }) => Promise<{}>;
+  deleteProduct: (id: { productId: number }) => Promise<{ id: number }>;
 }

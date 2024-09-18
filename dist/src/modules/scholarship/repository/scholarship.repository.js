@@ -78,7 +78,7 @@ let ScholarshipRepository = class ScholarshipRepository extends BaseRepository_1
                 where: {
                     id: scholarshipId,
                 },
-                select: {},
+                select: { id: true },
             });
         });
     }

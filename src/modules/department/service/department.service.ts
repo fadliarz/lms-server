@@ -233,7 +233,7 @@ export default class DepartmentService
   public async deleteDepartment(
     departmentId: number,
     resourceId: DepartmentResourceId,
-  ): Promise<{}> {
+  ): Promise<{ id: number }> {
     try {
       return this.prisma.$transaction(async (tx) => {
         const {

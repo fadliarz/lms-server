@@ -11,7 +11,7 @@ export type CourseLessonModel = {
   description: string | null;
   totalVideos: number;
   totalDurations: number;
-  totalMaterials: number;
+  totalAttachments: number;
   createdAt: Date;
   updatedAt: Date;
   courseId: number;

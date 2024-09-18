@@ -40,6 +40,7 @@ const completion_router_1 = __importDefault(require("./modules/assignment-comple
 const product_router_1 = __importDefault(require("./modules/product/router/product.router"));
 const variant_router_1 = __importDefault(require("./modules/product-variant/router/variant.router"));
 const order_router_1 = __importDefault(require("./modules/order/router/order.router"));
+const attachment_router_1 = __importDefault(require("./modules/attachment/router/attachment.router"));
 /**
  * Validate environment variables
  *
@@ -83,6 +84,10 @@ const courseEnrollmentApi = {
 };
 const courseLessonVideoApi = {
     router: (0, video_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
+    path: "/api/v1",
+};
+const courseLessonAttachmentApi = {
+    router: (0, attachment_router_1.default)((0, getAuthMiddleware_1.getAuthMiddleWare)()),
     path: "/api/v1",
 };
 const courseClassApi = {
@@ -151,6 +156,7 @@ const routers = [
     courseEnrollmentApi,
     courseLessonApi,
     courseLessonVideoApi,
+    courseLessonAttachmentApi,
     courseClassApi,
     courseClassAssignmentApi,
     courseClassAssignmentCompletionApi,

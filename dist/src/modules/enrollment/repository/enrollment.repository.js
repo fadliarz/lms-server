@@ -64,7 +64,7 @@ let CourseEnrollmentRepository = class CourseEnrollmentRepository extends BaseRe
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.courseEnrollment.delete({
                 where: this.getWhereObjectForSecondLevelOperation(id),
-                select: {},
+                select: { id: true },
             });
         });
     }

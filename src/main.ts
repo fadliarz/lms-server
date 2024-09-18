@@ -27,6 +27,7 @@ import CourseClassAssignmentCompletionRouter from "./modules/assignment-completi
 import ProductRouter from "./modules/product/router/product.router";
 import ProductVariantRouter from "./modules/product-variant/router/variant.router";
 import OrderRouter from "./modules/order/router/order.router";
+import CourseLessonAttachmentRouter from "./modules/attachment/router/attachment.router";
 
 /**
  * Validate environment variables
@@ -73,6 +74,10 @@ const courseEnrollmentApi = {
 };
 const courseLessonVideoApi = {
   router: CourseLessonVideoRouter(getAuthMiddleWare()),
+  path: "/api/v1",
+};
+const courseLessonAttachmentApi = {
+  router: CourseLessonAttachmentRouter(getAuthMiddleWare()),
   path: "/api/v1",
 };
 const courseClassApi = {
@@ -144,6 +149,7 @@ const routers: Api[] = [
   courseEnrollmentApi,
   courseLessonApi,
   courseLessonVideoApi,
+  courseLessonAttachmentApi,
   courseClassApi,
   courseClassAssignmentApi,
   courseClassAssignmentCompletionApi,

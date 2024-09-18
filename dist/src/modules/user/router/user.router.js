@@ -36,8 +36,9 @@ function UserRouter(authenticationMiddleware) {
     router.get(user_api_1.$UserAPI.GetMe.endpoint, authenticationMiddleware, controller.getMe.bind(controller));
     router.get(user_api_1.$UserAPI.GetUserPermissions.endpoint, authenticationMiddleware, controller.getUserPermissions.bind(controller));
     router.get(user_api_1.$UserAPI.GetUserAssignments.endpoint, authenticationMiddleware, controller.getUserAssignments.bind(controller));
-    router.get(user_api_1.$UserAPI.GetUserEnrolledAsStudentCourses.endpoint, authenticationMiddleware, controller.getUserEnrolledAsStudentCourses.bind(controller));
+    router.get(user_api_1.$UserAPI.GetUserEnrolledCourses.endpoint, authenticationMiddleware, controller.getUserEnrolledCourses.bind(controller));
     router.get(user_api_1.$UserAPI.GetUserManagedCourses.endpoint, authenticationMiddleware, controller.getUserManagedCourses.bind(controller));
+    router.get(user_api_1.$UserAPI.GetUserCourseEnrollmentStatusByCourseId.endpoint, authenticationMiddleware, controller.getUserCourseEnrollmentStatusByCourseId);
     router.get(user_api_1.$UserAPI.GetUserEventAndCourseSchedules.endpoint, authenticationMiddleware, controller.getUserEventAndCourseSchedules.bind(controller));
     router.get(user_api_1.$UserAPI.GetUserEnrolledDepartmentPrograms.endpoint, authenticationMiddleware, controller.getUserEnrolledDepartmentPrograms.bind(controller));
     router.get(user_api_1.$UserAPI.GetUserManagedDepartments.endpoint, authenticationMiddleware, controller.getUserManagedDepartments.bind(controller));
@@ -53,7 +54,6 @@ function UserRouter(authenticationMiddleware) {
     router.patch(user_api_1.$UserAPI.UpdateUserEmail.endpoint, authenticationMiddleware, controller.updateUserEmail.bind(controller));
     router.patch(user_api_1.$UserAPI.UpdateUserPassword.endpoint, authenticationMiddleware, controller.updateUserPassword.bind(controller));
     router.patch(user_api_1.$UserAPI.UpdateUserRole.endpoint, authenticationMiddleware, controller.updateUserRole.bind(controller));
-    router.patch(user_api_1.$UserAPI.UpdateUserPhoneNumber.endpoint, authenticationMiddleware, controller.updateUserPhoneNumber.bind(controller));
     /**
      * Delete
      *

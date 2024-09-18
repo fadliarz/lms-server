@@ -25,7 +25,7 @@ export namespace $DepartmentProgramEnrollmentAPI {
       programId: number,
     ) => `/departments/${departmentId}/programs/${programId}/enrollments`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

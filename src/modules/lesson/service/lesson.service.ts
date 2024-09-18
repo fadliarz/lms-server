@@ -97,7 +97,7 @@ export default class CourseLessonService implements ICourseLessonService {
       lessonId: number;
       resourceId: CourseLessonResourceId;
     },
-  ): Promise<{}> {
+  ): Promise<{ id: number }> {
     try {
       await this.authorization.authorizeDeleteLesson(
         user,

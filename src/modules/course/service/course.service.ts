@@ -210,7 +210,7 @@ export default class CourseService implements ICourseService {
   public async deleteCourse(id: {
     courseId: number;
     resourceId: CourseResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     try {
       await this.authorization.authorizeDeleteCourse(
         id.resourceId.user,
@@ -248,7 +248,7 @@ export default class CourseService implements ICourseService {
   public async deleteLike(id: {
     likeId: number;
     resourceId: CourseLikeResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     try {
       await this.authorization.authorizeDeleteLike(
         id.resourceId.user,

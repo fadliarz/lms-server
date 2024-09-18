@@ -49,7 +49,10 @@ export interface IScholarshipService {
     user: UserModel,
     dto: $ScholarshipAPI.UpdateScholarship.Dto,
   ) => Promise<ScholarshipModel>;
-  deleteScholarship: (scholarshipId: number, user: UserModel) => Promise<{}>;
+  deleteScholarship: (
+    scholarshipId: number,
+    user: UserModel,
+  ) => Promise<{ id: number }>;
 }
 
 export interface IScholarshipRepository {
@@ -68,5 +71,5 @@ export interface IScholarshipRepository {
     scholarshipId: number,
     data: Partial<ScholarshipModel>,
   ) => Promise<ScholarshipModel>;
-  deleteScholarship: (scholarshipId: number) => Promise<{}>;
+  deleteScholarship: (scholarshipId: number) => Promise<{ id: number }>;
 }

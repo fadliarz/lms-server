@@ -37,7 +37,6 @@ const user_type_1 = require("../user.type");
 const inversify_1 = require("inversify");
 const RecordNotFoundException_1 = __importDefault(require("../../../common/class/exceptions/RecordNotFoundException"));
 const BaseRepository_1 = __importDefault(require("../../../common/class/BaseRepository"));
-const course_type_1 = require("../../course/course.type");
 const order_api_1 = require("../../order/order.api");
 let UserRepository = class UserRepository extends BaseRepository_1.default {
     constructor() {
@@ -122,36 +121,14 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
     getUserPermissions(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const permissions = {
-                programEnrollment: {
-                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.PROGRAM),
-                },
-                event: {
-                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.PROGRAM),
-                },
-                category: {
-                    manage: false,
-                },
-                course: {
-                    manage_the_course: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.COURSE),
-                    manage_course_content: false,
-                },
-                competition: {
-                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.COMPETITION),
-                },
-                scholarship: {
-                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.SCHOLARSHIP),
-                },
-                report: {
-                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.REPORT),
-                },
-                store: {
-                    manage: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.STORE),
-                },
+                course: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.COURSE),
+                scholarship: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.SCHOLARSHIP),
+                program: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.PROGRAM),
+                event: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.PROGRAM),
+                competition: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.COMPETITION),
+                report: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.REPORT),
+                store: yield this.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.STORE),
             };
-            permissions.category.manage = permissions.course.manage_the_course;
-            permissions.course.manage_course_content = !((yield this.getUserOneCourseEnrollmentId(id, {
-                role: course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
-            })) === null);
             return permissions;
         });
     }
@@ -234,19 +211,39 @@ let UserRepository = class UserRepository extends BaseRepository_1.default {
             return allUpcoming;
         });
     }
-    getUserEnrolledCourses(id, where) {
+    getUserEnrolledCourses(id, where, query) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const enrollments = yield this.db.courseEnrollment.findMany({
-                where: { userId: id.userId, role: { in: where.role } },
-                select: {
+            const enrollments = yield this.db.courseEnrollment.findMany(Object.assign({ where: Object.assign({ userId: id.userId, role: { in: where.role } }, (((_a = query === null || query === void 0 ? void 0 : query.category_id) === null || _a === void 0 ? void 0 : _a.length) > 0
+                    ? { course: { category: { id: { in: query === null || query === void 0 ? void 0 : query.category_id } } } }
+                    : {})), select: {
+                    id: true,
                     course: true,
-                },
-            });
+                } }, (query
+                ? Object.assign({}, (query.pageNumber && query.pageSize
+                    ? {
+                        take: query.pageSize,
+                        skip: (query.pageNumber - 1) * query.pageSize,
+                    }
+                    : {})) : {})));
             const courses = [];
             for (const enrollment of enrollments) {
-                courses.push(enrollment.course);
+                courses.push(Object.assign({ enrollment: { id: enrollment.id } }, enrollment.course));
             }
             return courses;
+        });
+    }
+    getUserCourseEnrollmentStatusByCourseId(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const enrollment = yield this.db.courseEnrollment.findUnique({
+                where: {
+                    userId_courseId: id,
+                },
+                select: { id: true },
+            });
+            return {
+                isEnrolled: !!enrollment,
+            };
         });
     }
     getUserOneCourseEnrollmentId(id, where) {

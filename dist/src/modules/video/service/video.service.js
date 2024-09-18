@@ -85,17 +85,6 @@ let CourseLessonVideoService = class CourseLessonVideoService {
             }
         });
     }
-    updateVideoSource(user, id, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield this.authorization.authorizeUpdateVideo(user, id.resourceId.courseId);
-                return yield this.repository.updateVideo(id, dto);
-            }
-            catch (error) {
-                throw (0, handleRepositoryError_1.default)(error);
-            }
-        });
-    }
     deleteVideo(user, id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

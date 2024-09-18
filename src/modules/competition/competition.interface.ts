@@ -79,5 +79,5 @@ export interface ICompetitionRepository {
     id: { competitionId: number },
     data: Partial<CompetitionModel>,
   ) => Promise<CompetitionModel>;
-  deleteCompetition: (id: { competitionId: number }) => Partial<{}>;
+  deleteCompetition: (id: { competitionId: number }) => Promise<{ id: number }>;
 }

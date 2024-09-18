@@ -57,10 +57,10 @@ export default class CompetitionRepository
 
   public async deleteCompetition(id: {
     competitionId: number;
-  }): Promise<Partial<{}>> {
+  }): Promise<{ id: number }> {
     return this.db.competition.delete({
       where: { id: id.competitionId },
-      select: {},
+      select: { id: true },
     });
   }
 }

@@ -81,7 +81,7 @@ let CourseLessonVideoRepository = class CourseLessonVideoRepository extends Base
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.courseLessonVideo.delete({
                 where: this.getWhereObjectForSecondLevelOperation(id),
-                select: {},
+                select: { id: true },
             });
         });
     }

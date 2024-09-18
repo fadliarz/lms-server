@@ -64,7 +64,10 @@ let ProductRepository = class ProductRepository extends BaseRepository_1.default
     }
     deleteProduct(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.product.delete({ where: { id: id.productId }, select: {} });
+            return this.db.product.delete({
+                where: { id: id.productId },
+                select: { id: true },
+            });
         });
     }
 };

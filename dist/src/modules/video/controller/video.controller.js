@@ -84,21 +84,6 @@ let CourseLessonVideoController = class CourseLessonVideoController {
             }
         });
     }
-    updateVideoSource(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield (0, validateJoi_1.default)({ body: video_joi_1.UpdateCourseLessonVideoSourceDtoJoi })(req, res, next);
-                const updatedVideo = yield this.service.updateVideoSource((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
-                    videoId: this.validateVideoId(req),
-                    resourceId: this.validateResourceId(req),
-                }, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({ data: updatedVideo });
-            }
-            catch (error) {
-                next(error);
-            }
-        });
-    }
     deleteVideo(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

@@ -77,5 +77,5 @@ export interface ICourseCategoryRepository {
     },
     data: $CourseCategoryAPI.UpdateCategory.Dto,
   ) => Promise<CourseCategoryModel>;
-  deleteCategory: (id: { categoryId: number }) => Promise<{}>;
+  deleteCategory: (id: { categoryId: number }) => Promise<{ id: number }>;
 }

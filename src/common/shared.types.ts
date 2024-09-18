@@ -62,3 +62,28 @@ export type JsonObject = {
 };
 
 export interface JsonArray extends Array<JsonValue> {}
+
+export const AssignmentCompletionStatusModel = {
+  NOT_STARTED: "NOT_STARTED",
+  IN_PROGRESS: "IN_PROGRESS",
+  DONE: "DONE",
+} as const;
+
+export type AssignmentCompletionStatusModel =
+  (typeof AssignmentCompletionStatusModel)[keyof typeof AssignmentCompletionStatusModel];
+
+export const AssignmentTaskTypeModel = {
+  PERSONAL_TASK: "PERSONAL_TASK",
+  GROUP_TASK: "GROUP_TASK",
+} as const;
+
+export type AssignmentTaskTypeModel =
+  (typeof AssignmentTaskTypeModel)[keyof typeof AssignmentTaskTypeModel];
+
+export const ScholarshipFundingModel = {
+  PARTIALLY_FUNDED: "PARTIALLY_FUNDED",
+  FULLY_FUNDED: "FULLY_FUNDED",
+} as const;
+
+export type ScholarshipFundingModel =
+  (typeof ScholarshipFundingModel)[keyof typeof ScholarshipFundingModel];

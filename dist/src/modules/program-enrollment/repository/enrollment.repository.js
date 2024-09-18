@@ -36,7 +36,7 @@ let DepartmentProgramEnrollmentRepository = class DepartmentProgramEnrollmentRep
                         id: id.programId,
                         departmentId: id.resourceId.departmentId,
                     },
-                    select: {},
+                    select: { id: true },
                 });
                 if (program === null) {
                     throw new RecordNotFoundException_1.default();
@@ -67,7 +67,7 @@ let DepartmentProgramEnrollmentRepository = class DepartmentProgramEnrollmentRep
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.departmentProgramEnrollment.delete({
                 where: this.getWhereObject(id),
-                select: {},
+                select: { id: true },
             });
         });
     }

@@ -164,6 +164,11 @@ const order_repository_1 = __importDefault(require("./modules/order/repository/o
 const order_service_1 = __importDefault(require("./modules/order/service/order.service"));
 const order_controller_1 = __importDefault(require("./modules/order/controller/order.controller"));
 const order_authorization_1 = __importDefault(require("./modules/order/authorization/order.authorization"));
+const attachment_type_1 = require("./modules/attachment/attachment.type");
+const attachment_repository_1 = __importDefault(require("./modules/attachment/repository/attachment.repository"));
+const attachment_service_1 = __importDefault(require("./modules/attachment/service/attachment.service"));
+const attachment_controller_1 = __importDefault(require("./modules/attachment/controller/attachment.controller"));
+const attachment_authorization_1 = __importDefault(require("./modules/attachment/authorization/attachment.authorization"));
 const dIContainer = new inversify_1.Container();
 /**
  * Repository
@@ -330,6 +335,22 @@ dIContainer
 dIContainer
     .bind(video_type_1.CourseLessonVideoDITypes.AUTHORIZATION)
     .to(video_authorization_1.default);
+/**
+ * Course Lesson Attachment
+ *
+ */
+dIContainer
+    .bind(attachment_type_1.CourseLessonAttachmentDITypes.REPOSITORY)
+    .to(attachment_repository_1.default);
+dIContainer
+    .bind(attachment_type_1.CourseLessonAttachmentDITypes.SERVICE)
+    .to(attachment_service_1.default);
+dIContainer
+    .bind(attachment_type_1.CourseLessonAttachmentDITypes.CONTROLLER)
+    .to(attachment_controller_1.default);
+dIContainer
+    .bind(attachment_type_1.CourseLessonAttachmentDITypes.AUTHORIZATION)
+    .to(attachment_authorization_1.default);
 /**
  * Course Class
  *

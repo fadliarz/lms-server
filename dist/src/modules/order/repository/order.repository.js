@@ -78,11 +78,10 @@ let OrderRepository = class OrderRepository extends BaseRepository_1.default {
     }
     deleteOrder(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.db.order.delete({
+            return this.db.order.delete({
                 where: this.getWhereObjectForSecondLevelOperation(id),
                 select: { id: true },
             });
-            return {};
         });
     }
     getWhereObjectForFirstLevelOperation(id) {

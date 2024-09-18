@@ -19,8 +19,6 @@ model User {
   avatar                           String                            @default("https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg")
   about                            String?
   totalCourses                     Int                               @default(0) @map("total_courses")
-  totalLessons                     Int                               @default(0) @map("total_lessons")
-  totalUnreadMessages              Int                               @default(0) @map("total_unread_messages")
   createdAt                        DateTime                          @default(now()) @map("created_at")
   updatedAt                        DateTime                          @updatedAt @map("updated_at")
   role                             Role                              @default(STUDENT)
@@ -29,11 +27,10 @@ model User {
   bloodType                        String                            @map("blood_type")
   dateOfBirth                      DateTime                          @map("date_of_birth")
   emergencyNumber                  String                            @map("emergency_number")
-  HMM                              String                            @map("hmm")
-  hobbies                          String
+  hobbies                          String[]
   lineId                           String                            @map("line_id")
-  medicalHistories                 String                            @map("medical_histories")
-  UKM                              String                            @map("ukm")
+  medicalHistories                 String[]                          @map("medical_histories")
+  UKM                              String[]                          @map("ukm")
   courseEnrollments                CourseEnrollment[]
   courseLikes                      CourseLike[]
   departmentCoLeaders              Department?                       @relation("DepartmentCoLeaders")
@@ -51,16 +48,20 @@ model User {
 }
 
 model PersonalAssignment {
-  id         Int      @id @default(autoincrement())
-  title      String
-  submission String
-  deadline   DateTime
-  isDone     Boolean  @default(false)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
-  userId     Int      @map("user_id")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               Int                        @id @default(autoincrement())
+  title            String
+  course           String
+  submission       String
+  description      String?
+  deadline         DateTime
+  taskType         AssignmentTaskType         @map("task_type")
+  completionStatus AssignmentCompletionStatus @default(NOT_STARTED) @map("completion_status")
+  createdAt        DateTime                   @default(now()) @map("created_at")
+  updatedAt        DateTime                   @default(now()) @updatedAt @map("updated_at")
+  userId           Int                        @map("user_id")
+  user             User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("personal_assignment")
 }
 
@@ -76,7 +77,7 @@ model CourseEnrollment {
   course    Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([courseId, userId], name: "userId_courseId")
+  @@unique([userId, courseId], name: "userId_courseId")
   @@map("course_enrollment")
 }
 
@@ -86,11 +87,11 @@ model Course {
   image            String             @default("https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg")
   title            String
   description      String?
-  material         String?
   totalStudents    Int                @default(0) @map("total_students")
   totalInstructors Int                @default(0) @map("total_instructors")
   totalLessons     Int                @default(0) @map("total_lessons")
   totalVideos      Int                @default(0) @map("total_videos")
+  totalAttachments Int                @default(0) @map("total_attachments")
   totalDurations   Float              @default(0) @map("total_durations")
   totalLikes       Int                @default(0) @map("total_likes")
   createdAt        DateTime           @default(now()) @map("created_at")
@@ -109,17 +110,19 @@ model Course {
 }
 
 model CourseLesson {
-  id             Int                 @id @default(autoincrement())
-  title          String
-  description    String?
-  totalVideos    Int                 @default(0) @map("total_videos")
-  totalDurations Float               @default(0) @map("total_durations")
-  totalMaterials Int                 @default(0) @map("total_materials")
-  createdAt      DateTime            @default(now()) @map("created_at")
-  updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at")
-  courseId       Int                 @map("course_id")
-  course         Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  videos         CourseLessonVideo[]
+  id                     Int                      @id @default(autoincrement())
+  title                  String
+  description            String?
+  references             String[]
+  totalVideos            Int                      @default(0) @map("total_videos")
+  totalDurations         Float                    @default(0) @map("total_durations")
+  totalAttachments       Int                      @default(0) @map("total_attachments")
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @default(now()) @updatedAt @map("updated_at")
+  courseId               Int                      @map("course_id")
+  course                 Course                   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  videos                 CourseLessonVideo[]
+  CourseLessonAttachment CourseLessonAttachment[]
 
   @@map("course_lesson")
 }
@@ -133,11 +136,24 @@ model CourseLessonVideo {
   createdAt      DateTime     @default(now()) @map("created_at")
   updatedAt      DateTime     @default(now()) @updatedAt @map("updated_at")
   lessonId       Int          @map("lesson_id")
-  attachment     String?
   lesson         CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@index([lessonId])
-  @@map("course_video")
+  @@map("course_lesson_video")
+}
+
+model CourseLessonAttachment {
+  id          Int          @id @default(autoincrement())
+  name        String
+  description String?
+  file        String
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @default(now()) @updatedAt @map("updated_at")
+  lessonId    Int          @map("lesson_id")
+  lesson      CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@map("course_lesson_attachment")
 }
 
 model CourseLike {
@@ -179,8 +195,10 @@ model CourseClassAssignment {
   title                 String
   submission            String
   deadline              DateTime
+  description           String?
   createdAt             DateTime                          @default(now()) @map("created_at")
   updatedAt             DateTime                          @default(now()) @updatedAt @map("updated_at")
+  taskType              AssignmentTaskType                @map("task_type")
   classId               Int                               @map("class_id")
   courseClass           CourseClass                       @relation(fields: [classId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   assignmentCompletions CourseClassAssignmentCompletion[]
@@ -189,11 +207,15 @@ model CourseClassAssignment {
 }
 
 model CourseClassAssignmentCompletion {
-  id           Int                   @id @default(autoincrement())
-  userId       Int                   @map("user_id")
-  user         User                  @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  assignmentId Int                   @map("assignment_id")
-  assignment   CourseClassAssignment @relation(fields: [assignmentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id               Int                        @id @default(autoincrement())
+  completionStatus AssignmentCompletionStatus @map("completion_status")
+  userId           Int                        @map("user_id")
+  user             User                       @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  assignmentId     Int                        @map("assignment_id")
+  assignment       CourseClassAssignment      @relation(fields: [assignmentId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+
+  @@index([userId])
+  @@map("course_class_assignment_completion")
 }
 
 model Event {
@@ -306,14 +328,16 @@ model Report {
 }
 
 model Scholarship {
-  id          Int      @id @default(autoincrement())
+  id          Int                @id @default(autoincrement())
   title       String
   description String?
   provider    String
   deadline    DateTime
   reference   String
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  funding     ScholarshipFunding
+  scope       String
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @default(now()) @updatedAt @map("updated_at")
 
   @@map("scholarship")
 }
@@ -388,6 +412,11 @@ model Order {
   @@map("order")
 }
 
+enum ScholarshipFunding {
+  PARTIALLY_FUNDED
+  FULLY_FUNDED
+}
+
 enum Privilege {
   DEPARTMENT
   DIVISION
@@ -403,6 +432,17 @@ enum Privilege {
 enum Role {
   ADMIN
   STUDENT
+}
+
+enum AssignmentCompletionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  DONE
+}
+
+enum AssignmentTaskType {
+  PERSONAL_TASK
+  GROUP_TASK
 }
 
 enum CourseEnrollmentRole {

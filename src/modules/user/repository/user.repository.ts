@@ -120,60 +120,35 @@ export default class UserRepository
     userId: number;
   }): Promise<$UserAPI.GetUserPermissions.Response["data"]> {
     const permissions: $UserAPI.GetUserPermissions.Response["data"] = {
-      programEnrollment: {
-        manage: await this.getUserAuthorizationStatusFromPrivilege(
-          id,
-          PrivilegeModel.PROGRAM,
-        ),
-      },
-      event: {
-        manage: await this.getUserAuthorizationStatusFromPrivilege(
-          id,
-          PrivilegeModel.PROGRAM,
-        ),
-      },
-      category: {
-        manage: false,
-      },
-      course: {
-        manage_the_course: await this.getUserAuthorizationStatusFromPrivilege(
-          id,
-          PrivilegeModel.COURSE,
-        ),
-        manage_course_content: false,
-      },
-      competition: {
-        manage: await this.getUserAuthorizationStatusFromPrivilege(
-          id,
-          PrivilegeModel.COMPETITION,
-        ),
-      },
-      scholarship: {
-        manage: await this.getUserAuthorizationStatusFromPrivilege(
-          id,
-          PrivilegeModel.SCHOLARSHIP,
-        ),
-      },
-      report: {
-        manage: await this.getUserAuthorizationStatusFromPrivilege(
-          id,
-          PrivilegeModel.REPORT,
-        ),
-      },
-      store: {
-        manage: await this.getUserAuthorizationStatusFromPrivilege(
-          id,
-          PrivilegeModel.STORE,
-        ),
-      },
+      course: await this.getUserAuthorizationStatusFromPrivilege(
+        id,
+        PrivilegeModel.COURSE,
+      ),
+      scholarship: await this.getUserAuthorizationStatusFromPrivilege(
+        id,
+        PrivilegeModel.SCHOLARSHIP,
+      ),
+      program: await this.getUserAuthorizationStatusFromPrivilege(
+        id,
+        PrivilegeModel.PROGRAM,
+      ),
+      event: await this.getUserAuthorizationStatusFromPrivilege(
+        id,
+        PrivilegeModel.PROGRAM,
+      ),
+      competition: await this.getUserAuthorizationStatusFromPrivilege(
+        id,
+        PrivilegeModel.COMPETITION,
+      ),
+      report: await this.getUserAuthorizationStatusFromPrivilege(
+        id,
+        PrivilegeModel.REPORT,
+      ),
+      store: await this.getUserAuthorizationStatusFromPrivilege(
+        id,
+        PrivilegeModel.STORE,
+      ),
     };
-
-    permissions.category.manage = permissions.course.manage_the_course;
-    permissions.course.manage_course_content = !(
-      (await this.getUserOneCourseEnrollmentId(id, {
-        role: CourseEnrollmentRoleModel.INSTRUCTOR,
-      })) === null
-    );
 
     return permissions;
   }
@@ -285,20 +260,56 @@ export default class UserRepository
     where: {
       role: CourseEnrollmentRoleModel[];
     },
-  ): Promise<CourseModel[]> {
+    query?: $UserAPI.GetUserEnrolledCourses.Query,
+  ): Promise<$UserAPI.GetUserEnrolledCourses.Response["data"]> {
     const enrollments = await this.db.courseEnrollment.findMany({
-      where: { userId: id.userId, role: { in: where.role } },
+      where: {
+        userId: id.userId,
+        role: { in: where.role },
+        ...(query?.category_id?.length! > 0
+          ? { course: { category: { id: { in: query?.category_id! } } } }
+          : {}),
+      },
       select: {
+        id: true,
         course: true,
       },
+      ...(query
+        ? {
+            ...(query.pageNumber && query.pageSize
+              ? {
+                  take: query.pageSize,
+                  skip: (query.pageNumber - 1) * query.pageSize,
+                }
+              : {}),
+          }
+        : {}),
     });
 
-    const courses: CourseModel[] = [];
+    const courses: (CourseModel & { enrollment: { id: number } })[] = [];
     for (const enrollment of enrollments) {
-      courses.push(enrollment.course);
+      courses.push({ enrollment: { id: enrollment.id }, ...enrollment.course });
     }
 
     return courses;
+  }
+
+  public async getUserCourseEnrollmentStatusByCourseId(id: {
+    userId: number;
+    courseId: number;
+  }): Promise<
+    $UserAPI.GetUserCourseEnrollmentStatusByCourseId.Response["data"]
+  > {
+    const enrollment = await this.db.courseEnrollment.findUnique({
+      where: {
+        userId_courseId: id,
+      },
+      select: { id: true },
+    });
+
+    return {
+      isEnrolled: !!enrollment,
+    };
   }
 
   public async getUserOneCourseEnrollmentId(

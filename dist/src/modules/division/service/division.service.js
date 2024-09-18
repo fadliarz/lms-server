@@ -158,8 +158,7 @@ let DepartmentDivisionService = class DepartmentDivisionService extends BaseAuth
     deleteDivision(divisionId, resourceId) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.validateRelationBetweenResources(divisionId, resourceId);
-            yield this.repository.deleteDivision(divisionId);
-            return {};
+            return yield this.repository.deleteDivision(divisionId);
         });
     }
     validateRelationBetweenResources(divisionId, resourceId) {

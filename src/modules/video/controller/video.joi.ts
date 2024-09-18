@@ -19,10 +19,6 @@ export const UpdateCourseLessonVideoDtoJoi =
   Joi.object<$CourseLessonVideoAPI.UpdateVideo.Dto>({
     name: Joi.string(),
     description: Joi.string(),
-  });
-
-export const UpdateCourseLessonVideoSourceDtoJoi =
-  Joi.object<$CourseLessonVideoAPI.UpdateVideoSource.Dto>({
-    youtubeLink: Joi.string().required(),
-    totalDurations: Joi.number().required(),
+    youtubeLink: Joi.string(),
+    totalDurations: Joi.number(),
   });

@@ -89,10 +89,10 @@ export default class DepartmentProgramRepository
   public async deleteProgram(id: {
     programId: number;
     resourceId?: DepartmentProgramResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.departmentProgram.delete({
       where: this.getWhereObject(id),
-      select: {},
+      select: { id: true },
     });
   }
 

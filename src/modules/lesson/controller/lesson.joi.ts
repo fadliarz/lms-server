@@ -5,6 +5,7 @@ export const CreateCourseLessonDtoJoi =
   Joi.object<$CourseLessonAPI.CreateLesson.Dto>({
     title: Joi.string().required(),
     description: Joi.string(),
+    references: Joi.array().items(Joi.string()),
   });
 
 export const GetCourseLessonsQueryDtoJoi =
@@ -14,7 +15,8 @@ export const GetCourseLessonsQueryDtoJoi =
   });
 
 export const UpdateBasicCourseLessonDtoJoi =
-  Joi.object<$CourseLessonAPI.CreateLesson.Dto>({
+  Joi.object<$CourseLessonAPI.UpdateLesson.Dto>({
     title: Joi.string(),
     description: Joi.string(),
+    references: Joi.array().items(Joi.string()),
   });

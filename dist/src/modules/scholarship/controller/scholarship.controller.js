@@ -96,9 +96,9 @@ let ScholarshipController = class ScholarshipController {
             try {
                 const user = (0, getRequestUserOrThrowAuthenticationException_1.default)(req);
                 const scholarshipId = this.validateScholarshipId(req);
-                yield this.service.deleteScholarship(scholarshipId, user);
+                const result = yield this.service.deleteScholarship(scholarshipId, user);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: {},
+                    data: result,
                 });
             }
             catch (error) {

@@ -48,6 +48,25 @@ export default class CourseClassAssignmentCompletionService
     }
   }
 
+  public async updateCompletion(
+    user: UserModel,
+    id: {
+      completionId: number;
+      resourceId: CourseClassAssignmentCompletionResourceId;
+    },
+    dto: $CourseClassAssignmentCompletionAPI.UpdateCompletion.Dto,
+  ): Promise<
+    $CourseClassAssignmentCompletionAPI.DeleteCompletion.Response["data"]
+  > {
+    try {
+      await this.authorization.authorizeUpdateCompletion(user, id.completionId);
+
+      return await this.repository.updateCompletion(id, dto);
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
   public async deleteCompletion(
     user: UserModel,
     id: {

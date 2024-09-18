@@ -51,7 +51,7 @@ export default class UserAuthorization
     }
   }
 
-  public authorizeGetUserEnrolledAsStudentCourses(
+  public authorizeGetUserEnrolledCourses(
     user: UserModel,
     targetUserId: number,
   ): void {
@@ -76,6 +76,13 @@ export default class UserAuthorization
     if (!isAuthorized) {
       throw new AuthorizationException();
     }
+  }
+
+  public async authorizeGetUserCourseEnrollmentStatusByCourseId(
+    user: UserModel,
+    targetUserId: number,
+  ): Promise<void> {
+    await this.authorizeGetUserManagedCourses(user, targetUserId);
   }
 
   public authorizeGetUserEventAndCourseSchedules(

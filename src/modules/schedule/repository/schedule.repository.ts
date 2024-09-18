@@ -78,7 +78,7 @@ export default class CourseScheduleRepository
   public async deleteSchedule(id: {
     scheduleId: number;
     resourceId?: CourseScheduleResourceId["params"];
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.courseSchedule.delete({
       where: this.getWhereObjectForSecondLevelOperation(id),
     });

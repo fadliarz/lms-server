@@ -25,11 +25,6 @@ var $CourseLessonVideoAPI;
         UpdateVideo.endpoint = video;
         UpdateVideo.generateUrl = (courseId, lessonId, videoId) => `/courses/${courseId}/lessons/${lessonId}/videos/${videoId}`;
     })(UpdateVideo = $CourseLessonVideoAPI.UpdateVideo || ($CourseLessonVideoAPI.UpdateVideo = {}));
-    let UpdateVideoSource;
-    (function (UpdateVideoSource) {
-        UpdateVideoSource.endpoint = `${video}/basic`;
-        UpdateVideoSource.generateUrl = (courseId, lessonId, videoId) => `/courses/${courseId}/lessons/${lessonId}/videos/${videoId}/basic`;
-    })(UpdateVideoSource = $CourseLessonVideoAPI.UpdateVideoSource || ($CourseLessonVideoAPI.UpdateVideoSource = {}));
     let DeleteVideo;
     (function (DeleteVideo) {
         DeleteVideo.endpoint = video;

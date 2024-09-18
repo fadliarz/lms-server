@@ -30,6 +30,7 @@ const user_joi_1 = require("./user.joi");
 const Cookie_1 = require("../../../common/constants/Cookie");
 const AuthenticationException_1 = __importDefault(require("../../../common/class/exceptions/AuthenticationException"));
 const NaNException_1 = __importDefault(require("../../../common/class/exceptions/NaNException"));
+const getPagingQuery_1 = __importDefault(require("../../../common/functions/getPagingQuery"));
 let UserController = class UserController {
     createUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -124,10 +125,11 @@ let UserController = class UserController {
             }
         });
     }
-    getUserEnrolledAsStudentCourses(req, res, next) {
+    getUserEnrolledCourses(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const courses = yield this.service.getUserEnrolledAsStudentCourses((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                yield (0, validateJoi_1.default)({ query: user_joi_1.GetUserEnrolledCoursesQueryJoi })(req, res, next);
+                const courses = yield this.service.getUserEnrolledCourses((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, Object.assign(Object.assign({}, (0, getPagingQuery_1.default)(req.query)), { category_id: req.query.category_id }));
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: courses,
                 });
@@ -140,9 +142,26 @@ let UserController = class UserController {
     getUserManagedCourses(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const courses = yield this.service.getUserManagedCourses((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) });
+                yield (0, validateJoi_1.default)({ query: user_joi_1.GetUserManagedCoursesQueryJoi })(req, res, next);
+                const courses = yield this.service.getUserManagedCourses((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, Object.assign(Object.assign({}, (0, getPagingQuery_1.default)(req.query)), { category_id: req.query.category_id }));
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
                     data: courses,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    getUserCourseEnrollmentStatusByCourseId(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const enrollmentStatus = yield this.service.getUserCourseEnrollmentStatusByCourseId((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    userId: this.validateUserId(req),
+                    courseId: this.validateCourseId(req),
+                });
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: enrollmentStatus,
                 });
             }
             catch (error) {
@@ -314,20 +333,6 @@ let UserController = class UserController {
             }
         });
     }
-    updateUserPhoneNumber(req, res, next) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield (0, validateJoi_1.default)({ body: user_joi_1.UpdateUserPhoneNumberDtoJoi })(req, res, next);
-                const updatedUser = yield this.service.updateUserPhoneNumber((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { userId: this.validateUserId(req) }, req.body);
-                return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: updatedUser,
-                });
-            }
-            catch (error) {
-                next(error);
-            }
-        });
-    }
     deleteUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -391,6 +396,13 @@ let UserController = class UserController {
             throw error || new NaNException_1.default("userId");
         }
         return userId;
+    }
+    validateCourseId(req, error) {
+        const courseId = Number(req.params.userId);
+        if (isNaN(courseId)) {
+            throw error || new NaNException_1.default("courseId");
+        }
+        return courseId;
     }
     validateDepartmentId(req, error) {
         const departmentId = Number(req.params.departmentId);

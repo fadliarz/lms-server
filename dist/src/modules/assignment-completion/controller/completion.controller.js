@@ -46,6 +46,23 @@ let CourseClassAssignmentCompletionController = class CourseClassAssignmentCompl
             }
         });
     }
+    updateCompletion(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield (0, validateJoi_1.default)({ body: completion_joi_1.UpdateCourseAssignmentCompletionDtoJoi })(req, res, next);
+                const updatedCompletion = yield this.service.updateCompletion((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                    completionId: this.validateCompletionId(req),
+                    resourceId: this.validateResourceId(req),
+                }, req.body);
+                return res.status(statusCode_1.StatusCode.SUCCESS).json({
+                    data: updatedCompletion,
+                });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
     deleteCompletion(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

@@ -79,10 +79,10 @@ export default class PersonalAssignmentRepository
   public async deleteAssignment(id: {
     assignmentId: number;
     resourceId?: PersonalAssignmentResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.personalAssignment.delete({
       where: this.getWhereObject(id),
-      select: {},
+      select: { id: true },
     });
   }
 

@@ -17,7 +17,6 @@ import {
   CreateCourseLessonVideoDtoJoi,
   GetCourseLessonVideosQueryJoi,
   UpdateCourseLessonVideoDtoJoi,
-  UpdateCourseLessonVideoSourceDtoJoi,
 } from "./video.joi";
 import getPagingQuery from "../../../common/functions/getPagingQuery";
 
@@ -109,33 +108,6 @@ export default class CourseLessonVideoController
       );
 
       const updatedVideo = await this.service.updateVideo(
-        getRequestUserOrThrowAuthenticationException(req),
-        {
-          videoId: this.validateVideoId(req),
-          resourceId: this.validateResourceId(req),
-        },
-        req.body,
-      );
-
-      return res.status(StatusCode.SUCCESS).json({ data: updatedVideo });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  public async updateVideoSource(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<Response | void> {
-    try {
-      await validateJoi({ body: UpdateCourseLessonVideoSourceDtoJoi })(
-        req,
-        res,
-        next,
-      );
-
-      const updatedVideo = await this.service.updateVideoSource(
         getRequestUserOrThrowAuthenticationException(req),
         {
           videoId: this.validateVideoId(req),

@@ -12,6 +12,7 @@ export namespace $CourseLessonAPI {
     export type Dto = {
       title: string;
       description?: string;
+      references?: string[];
     };
     export type Response = {
       data: CourseLessonModel;
@@ -40,8 +41,9 @@ export namespace $CourseLessonAPI {
     export const generateUrl = (courseId: number, lessonId: number) =>
       `/courses/${courseId}/lessons/${lessonId}`;
     export type Dto = {
-      title: string;
+      title?: string;
       description?: string;
+      references?: string[];
     };
     export type Response = { data: CourseLessonModel };
   }

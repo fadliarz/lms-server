@@ -82,10 +82,10 @@ export default class CourseClassRepository
   public async deleteClass(id: {
     classId: number;
     resourceId: CourseClassResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.courseClass.delete({
       where: this.getWhereObjectForSecondLevelOperation(id),
-      select: {},
+      select: { id: true },
     });
   }
 

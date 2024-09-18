@@ -106,26 +106,6 @@ export default class CourseLessonVideoService
     }
   }
 
-  public async updateVideoSource(
-    user: UserModel,
-    id: {
-      videoId: number;
-      resourceId: CourseLessonVideoResourceId;
-    },
-    dto: $CourseLessonVideoAPI.UpdateVideo.Dto,
-  ): Promise<$CourseLessonVideoAPI.UpdateVideoSource.Response["data"]> {
-    try {
-      await this.authorization.authorizeUpdateVideo(
-        user,
-        id.resourceId.courseId,
-      );
-
-      return await this.repository.updateVideo(id, dto);
-    } catch (error: any) {
-      throw handleRepositoryError(error);
-    }
-  }
-
   public async deleteVideo(
     user: UserModel,
     id: {

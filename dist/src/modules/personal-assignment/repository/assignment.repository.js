@@ -72,7 +72,7 @@ let PersonalAssignmentRepository = class PersonalAssignmentRepository extends Ba
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.personalAssignment.delete({
                 where: this.getWhereObject(id),
-                select: {},
+                select: { id: true },
             });
         });
     }

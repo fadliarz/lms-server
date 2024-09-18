@@ -74,7 +74,7 @@ let DepartmentRepository = class DepartmentRepository extends BaseRepository_1.d
                 where: {
                     id: departmentId,
                 },
-                select: {},
+                select: { id: true },
             });
         });
     }

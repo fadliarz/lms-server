@@ -112,10 +112,10 @@ export default class ScholarshipController implements IScholarshipController {
     try {
       const user = getRequestUserOrThrowAuthenticationException(req);
       const scholarshipId = this.validateScholarshipId(req);
-      await this.service.deleteScholarship(scholarshipId, user);
+      const result = await this.service.deleteScholarship(scholarshipId, user);
 
       return res.status(StatusCode.SUCCESS).json({
-        data: {},
+        data: result,
       } satisfies $ScholarshipAPI.DeleteScholarship.Response);
     } catch (error) {
       next(error);

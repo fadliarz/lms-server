@@ -49,7 +49,7 @@ export namespace $ProductAPI {
     export const endpoint = product;
     export const generateUrl = (productId: number) => `/products/${productId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

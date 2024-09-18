@@ -43,6 +43,9 @@ export default class CourseRepository
             include: {
               category: !!query.include_category,
             },
+            ...(query.category_id && query.category_id.length > 0
+              ? { where: { category: { id: { in: query.category_id } } } }
+              : {}),
           }
         : undefined,
     );
@@ -67,7 +70,7 @@ export default class CourseRepository
                       title: true,
                       description: true,
                       totalVideos: true,
-                      totalMaterials: true,
+                      totalAttachments: true,
                       videos: {
                         select: {
                           id: true,
@@ -84,7 +87,7 @@ export default class CourseRepository
                       title: true,
                       description: true,
                       totalVideos: true,
-                      totalMaterials: true,
+                      totalAttachments: true,
                     },
                   }
               : false,
@@ -142,7 +145,7 @@ export default class CourseRepository
     return this.db.course.update({ where: { id: id.courseId }, data });
   }
 
-  public async deleteCourse(id: { courseId: number }): Promise<{}> {
+  public async deleteCourse(id: { courseId: number }): Promise<{ id: number }> {
     return this.db.course.delete({
       where: {
         id: id.courseId,
@@ -194,7 +197,7 @@ export default class CourseRepository
   public async deleteLike(id: {
     likeId: number;
     resourceId?: CourseLikeResourceId["params"];
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     const { likeId, resourceId } = id;
 
     const where = resourceId

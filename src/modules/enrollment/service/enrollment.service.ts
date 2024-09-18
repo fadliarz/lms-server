@@ -55,7 +55,7 @@ export default class CourseEnrollmentService
   public async deleteEnrollment(
     enrollmentId: number,
     resourceId: CourseEnrollmentResourceId,
-  ): Promise<{}> {
+  ): Promise<{ id: number }> {
     try {
       await this.authorization.authorizeDeleteEnrollment(
         resourceId.user,

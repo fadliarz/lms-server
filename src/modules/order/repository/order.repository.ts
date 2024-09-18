@@ -89,13 +89,11 @@ export default class OrderRepository
   public async deleteOrder(id: {
     orderId: number;
     resourceId?: OrderResourceId;
-  }): Promise<{}> {
-    await this.db.order.delete({
+  }): Promise<{ id: number }> {
+    return this.db.order.delete({
       where: this.getWhereObjectForSecondLevelOperation(id),
       select: { id: true },
     });
-
-    return {};
   }
 
   private getWhereObjectForFirstLevelOperation(id: {

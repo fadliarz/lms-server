@@ -123,5 +123,5 @@ export interface ICourseClassAssignmentRepository {
   deleteAssignment: (id: {
     assignmentId: number;
     resourceId: CourseClassAssignmentResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

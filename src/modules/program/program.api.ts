@@ -72,7 +72,7 @@ export namespace $DepartmentProgramAPI {
     export const generateUrl = (departmentId: number, programId: number) =>
       `/departments/${departmentId}/programs/${programId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

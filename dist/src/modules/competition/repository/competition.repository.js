@@ -66,7 +66,7 @@ let CompetitionRepository = class CompetitionRepository extends BaseRepository_1
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.competition.delete({
                 where: { id: id.competitionId },
-                select: {},
+                select: { id: true },
             });
         });
     }

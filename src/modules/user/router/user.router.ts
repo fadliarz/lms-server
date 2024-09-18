@@ -74,15 +74,21 @@ export default function UserRouter(authenticationMiddleware: any) {
   );
 
   router.get(
-    $UserAPI.GetUserEnrolledAsStudentCourses.endpoint,
+    $UserAPI.GetUserEnrolledCourses.endpoint,
     authenticationMiddleware,
-    controller.getUserEnrolledAsStudentCourses.bind(controller),
+    controller.getUserEnrolledCourses.bind(controller),
   );
 
   router.get(
     $UserAPI.GetUserManagedCourses.endpoint,
     authenticationMiddleware,
     controller.getUserManagedCourses.bind(controller),
+  );
+
+  router.get(
+    $UserAPI.GetUserCourseEnrollmentStatusByCourseId.endpoint,
+    authenticationMiddleware,
+    controller.getUserCourseEnrollmentStatusByCourseId,
   );
 
   router.get(
@@ -154,12 +160,6 @@ export default function UserRouter(authenticationMiddleware: any) {
     $UserAPI.UpdateUserRole.endpoint,
     authenticationMiddleware,
     controller.updateUserRole.bind(controller),
-  );
-
-  router.patch(
-    $UserAPI.UpdateUserPhoneNumber.endpoint,
-    authenticationMiddleware,
-    controller.updateUserPhoneNumber.bind(controller),
   );
 
   /**

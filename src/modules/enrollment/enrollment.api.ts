@@ -36,7 +36,7 @@ export namespace $CourseEnrollmentAPI {
       `/courses/${courseId}/enrollments/${enrollmentId}`;
 
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

@@ -1,3 +1,5 @@
+import { ScholarshipFundingModel } from "../../common/shared.types";
+
 export const ScholarshipDITypes = {
   REPOSITORY: Symbol.for("SCHOLARSHIP_REPOSITORY"),
   SERVICE: Symbol.for("SCHOLARSHIP_SERVICE"),
@@ -12,6 +14,8 @@ export type ScholarshipModel = {
   provider: string;
   deadline: Date;
   reference: string;
+  funding: ScholarshipFundingModel;
+  scope: string;
   createdAt: Date;
   updatedAt: Date;
 };

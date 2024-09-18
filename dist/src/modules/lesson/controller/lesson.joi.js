@@ -8,6 +8,7 @@ const joi_1 = __importDefault(require("joi"));
 exports.CreateCourseLessonDtoJoi = joi_1.default.object({
     title: joi_1.default.string().required(),
     description: joi_1.default.string(),
+    references: joi_1.default.array().items(joi_1.default.string()),
 });
 exports.GetCourseLessonsQueryDtoJoi = joi_1.default.object({
     pageNumber: joi_1.default.number(),
@@ -16,4 +17,5 @@ exports.GetCourseLessonsQueryDtoJoi = joi_1.default.object({
 exports.UpdateBasicCourseLessonDtoJoi = joi_1.default.object({
     title: joi_1.default.string(),
     description: joi_1.default.string(),
+    references: joi_1.default.array().items(joi_1.default.string()),
 });

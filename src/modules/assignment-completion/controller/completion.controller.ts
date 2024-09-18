@@ -9,7 +9,10 @@ import {
   CourseClassAssignmentCompletionResourceId,
 } from "../completion.type";
 import validateJoi from "../../../common/functions/validateJoi";
-import { CreateCourseAssignmentCompletionDtoJoi } from "./completion.joi";
+import {
+  CreateCourseAssignmentCompletionDtoJoi,
+  UpdateCourseAssignmentCompletionDtoJoi,
+} from "./completion.joi";
 import getRequestUserOrThrowAuthenticationException from "../../../common/functions/getRequestUserOrThrowAuthenticationException";
 import isNaNArray from "../../../common/functions/isNaNArray";
 import NaNException from "../../../common/class/exceptions/NaNException";
@@ -44,6 +47,35 @@ export default class CourseClassAssignmentCompletionController
 
       return res.status(StatusCode.RESOURCE_CREATED).json({
         data: newCompletion,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async updateCompletion(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<Response | void> {
+    try {
+      await validateJoi({ body: UpdateCourseAssignmentCompletionDtoJoi })(
+        req,
+        res,
+        next,
+      );
+
+      const updatedCompletion = await this.service.updateCompletion(
+        getRequestUserOrThrowAuthenticationException(req),
+        {
+          completionId: this.validateCompletionId(req),
+          resourceId: this.validateResourceId(req),
+        },
+        req.body,
+      );
+
+      return res.status(StatusCode.SUCCESS).json({
+        data: updatedCompletion,
       });
     } catch (error) {
       next(error);

@@ -57,7 +57,7 @@ export namespace $CompetitionAPI {
     export const generateUrl = (competitionId: number) =>
       `/competitions/${competitionId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

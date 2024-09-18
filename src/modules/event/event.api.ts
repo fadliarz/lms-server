@@ -50,7 +50,7 @@ export namespace $EventAPI {
     export const endpoint = event;
     export const generateUrl = (eventId: number) => `/events/${eventId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

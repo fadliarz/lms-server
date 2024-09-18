@@ -34,7 +34,7 @@ export namespace $DepartmentDivisionEnrollmentAPI {
     ) =>
       `/departments/${departmentId}/divisions/${divisionId}/enrollments/${enrollmentId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

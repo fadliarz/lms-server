@@ -52,22 +52,8 @@ export namespace $CourseLessonVideoAPI {
     export type Dto = {
       name?: string;
       description?: string;
-    };
-    export type Response = {
-      data: CourseLessonVideoModel;
-    };
-  }
-
-  export namespace UpdateVideoSource {
-    export const endpoint = `${video}/basic`;
-    export const generateUrl = (
-      courseId: number,
-      lessonId: number,
-      videoId: number,
-    ) => `/courses/${courseId}/lessons/${lessonId}/videos/${videoId}/basic`;
-    export type Dto = {
-      youtubeLink: string;
-      totalDurations: number;
+      youtubeLink?: string;
+      totalDurations?: number;
     };
     export type Response = {
       data: CourseLessonVideoModel;
@@ -82,7 +68,7 @@ export namespace $CourseLessonVideoAPI {
       videoId: number,
     ) => `/courses/${courseId}/lessons/${lessonId}/videos/${videoId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

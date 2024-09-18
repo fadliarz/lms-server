@@ -1,5 +1,8 @@
 import { CourseClassAssignmentModel } from "./assignment.type";
-import { PagingQuery } from "../../common/shared.types";
+import {
+  AssignmentTaskTypeModel,
+  PagingQuery,
+} from "../../common/shared.types";
 
 export namespace $CourseClassAssignmentAPI {
   const root = "/courses/:courseId/classes/:classId/assignments";
@@ -13,6 +16,8 @@ export namespace $CourseClassAssignmentAPI {
       title: string;
       submission: string;
       deadline: Date;
+      description?: string;
+      taskType: AssignmentTaskTypeModel;
     };
     export type Response = {
       data: CourseClassAssignmentModel;
@@ -52,6 +57,8 @@ export namespace $CourseClassAssignmentAPI {
       title?: string;
       submission?: string;
       deadline?: Date;
+      description?: string;
+      taskType?: AssignmentTaskTypeModel;
     };
     export type Response = {
       data: CourseClassAssignmentModel;
@@ -66,7 +73,7 @@ export namespace $CourseClassAssignmentAPI {
       assignmentId: number,
     ) => `/courses/${courseId}/classes/${classId}/assignments/${assignmentId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

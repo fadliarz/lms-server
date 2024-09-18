@@ -102,7 +102,7 @@ export default class DepartmentProgramService
       programId: number;
       resourceId: DepartmentProgramResourceId;
     },
-  ): Promise<{}> {
+  ): Promise<{ id: number }> {
     try {
       await this.authorization.authorizeDeleteProgram(
         user,

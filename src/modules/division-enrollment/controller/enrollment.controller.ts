@@ -73,7 +73,7 @@ export default class DepartmentDivisionEnrollmentController
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await this.service.deleteEnrollment(
+      const result = await this.service.deleteEnrollment(
         getRequestUserOrThrowAuthenticationException(req),
         {
           enrollmentId: this.validateEnrollmentId(req),
@@ -82,7 +82,7 @@ export default class DepartmentDivisionEnrollmentController
       );
 
       return res.status(StatusCode.SUCCESS).json({
-        data: {},
+        data: result,
       } satisfies $DepartmentDivisionEnrollmentAPI.DeleteEnrollment.Response);
     } catch (error) {
       next(error);

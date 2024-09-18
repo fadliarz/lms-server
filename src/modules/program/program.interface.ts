@@ -115,5 +115,5 @@ export interface IDepartmentProgramRepository {
   deleteProgram: (id: {
     programId: number;
     resourceId?: DepartmentProgramResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

@@ -48,7 +48,7 @@ export default class ScholarshipService implements IScholarshipService {
   public async deleteScholarship(
     scholarshipId: number,
     user: UserModel,
-  ): Promise<{}> {
+  ): Promise<{ id: number }> {
     await this.authorization.authorizeDeleteScholarship(user);
 
     return this.repository.deleteScholarship(scholarshipId);

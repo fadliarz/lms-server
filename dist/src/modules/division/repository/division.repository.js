@@ -92,7 +92,7 @@ let DepartmentDivisionRepository = class DepartmentDivisionRepository extends Ba
                 where: {
                     id: divisionId,
                 },
-                select: {},
+                select: { id: true },
             });
         });
     }

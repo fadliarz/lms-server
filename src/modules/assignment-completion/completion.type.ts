@@ -1,3 +1,5 @@
+import { AssignmentCompletionStatusModel } from "../../common/shared.types";
+
 export const CourseClassAssignmentCompletionDITypes = {
   REPOSITORY: Symbol.for("COURSE_CLASS_ASSIGNMENT_COMPLETION_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_CLASS_ASSIGNMENT_COMPLETION_SERVICE"),
@@ -7,6 +9,7 @@ export const CourseClassAssignmentCompletionDITypes = {
 
 export type CourseClassAssignmentCompletionModel = {
   id: number;
+  completionStatus: AssignmentCompletionStatusModel;
   userId: number;
   assignmentId: number;
 };

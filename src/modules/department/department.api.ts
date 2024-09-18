@@ -77,7 +77,7 @@ export namespace $DepartmentAPI {
     export const generateUrl = (departmentId: number) =>
       `/departments/${departmentId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

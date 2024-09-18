@@ -49,7 +49,7 @@ export namespace $CourseCategoryAPI {
     export const generateUrl = (categoryId: number) =>
       `/categories/${categoryId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

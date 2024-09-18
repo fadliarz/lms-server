@@ -84,7 +84,7 @@ let DepartmentProgramRepository = class DepartmentProgramRepository extends Base
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.departmentProgram.delete({
                 where: this.getWhereObject(id),
-                select: {},
+                select: { id: true },
             });
         });
     }

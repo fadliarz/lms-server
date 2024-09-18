@@ -79,7 +79,7 @@ export namespace $DepartmentDivisionAPI {
     export const generateUrl = (departmentId: number, divisionId: number) =>
       `/departments/${departmentId}/divisions/${divisionId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

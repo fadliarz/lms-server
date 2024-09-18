@@ -1,4 +1,5 @@
 import { ScholarshipModel } from "./scholarship.type";
+import { ScholarshipFundingModel } from "../../common/shared.types";
 
 export namespace $ScholarshipAPI {
   const root = "/scholarships";
@@ -15,6 +16,8 @@ export namespace $ScholarshipAPI {
       provider: string;
       deadline: Date;
       reference: string;
+      funding: ScholarshipFundingModel;
+      scope: string;
     };
     export type Response = {
       data: ScholarshipModel;
@@ -50,6 +53,8 @@ export namespace $ScholarshipAPI {
       provider?: string;
       deadline?: Date;
       reference?: string;
+      funding?: ScholarshipFundingModel;
+      scope?: string;
     };
     export type Response = {
       data: ScholarshipModel;
@@ -61,7 +66,7 @@ export namespace $ScholarshipAPI {
     export const generateUrl = (scholarshipId: number) =>
       `/scholarships/${scholarshipId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

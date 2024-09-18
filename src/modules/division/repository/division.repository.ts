@@ -84,12 +84,12 @@ export default class DepartmentDivisionRepository
     });
   }
 
-  public async deleteDivision(divisionId: number): Promise<{}> {
+  public async deleteDivision(divisionId: number): Promise<{ id: number }> {
     return this.db.departmentDivision.delete({
       where: {
         id: divisionId,
       },
-      select: {},
+      select: { id: true },
     });
   }
 }

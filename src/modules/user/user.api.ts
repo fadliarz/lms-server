@@ -10,6 +10,7 @@ import { DepartmentDivisionModel } from "../division/division.type";
 import { ReportModel } from "../report/report.type";
 import { PublicUserModel, UserModel } from "./user.type";
 import { $OrderAPI } from "../order/order.api";
+import { PagingQuery } from "../../common/shared.types";
 
 export namespace $UserAPI {
   const root = "/users";
@@ -31,10 +32,9 @@ export namespace $UserAPI {
       dateOfBirth: Date;
       address: string;
       bloodType: string;
-      medicalHistories: string;
-      HMM: string;
-      UKM: string;
-      hobbies: string;
+      medicalHistories?: string[];
+      UKM?: string[];
+      hobbies?: string[];
       lineId: string;
       emergencyNumber: string;
     };
@@ -74,31 +74,13 @@ export namespace $UserAPI {
       `/users/${userId}/permissions`;
     export type Response = {
       data: {
-        programEnrollment: {
-          manage: boolean;
-        };
-        event: {
-          manage: boolean;
-        };
-        category: {
-          manage: boolean;
-        };
-        course: {
-          manage_the_course: boolean;
-          manage_course_content: boolean;
-        };
-        competition: {
-          manage: boolean;
-        };
-        scholarship: {
-          manage: boolean;
-        };
-        report: {
-          manage: boolean;
-        };
-        store: {
-          manage: boolean;
-        };
+        course: boolean;
+        scholarship: boolean;
+        competition: boolean;
+        program: boolean;
+        event: boolean;
+        report: boolean;
+        store: boolean;
       };
     };
   }
@@ -122,12 +104,13 @@ export namespace $UserAPI {
     };
   }
 
-  export namespace GetUserEnrolledAsStudentCourses {
+  export namespace GetUserEnrolledCourses {
     export const endpoint = user + "/enrolled-courses";
     export const generateUrl = (userId: string) =>
       `/users/${userId}/enrolled-courses`;
+    export type Query = PagingQuery & { category_id?: number[] };
     export type Response = {
-      data: CourseModel[];
+      data: (CourseModel & { enrollment: { id: number } })[];
     };
   }
 
@@ -135,8 +118,20 @@ export namespace $UserAPI {
     export const endpoint = user + "/managed-courses";
     export const generateUrl = (userId: string) =>
       `/users/${userId}/managed-courses`;
+    export type Query = PagingQuery & { category_id?: number[] };
     export type Response = {
       data: CourseModel[];
+    };
+  }
+
+  export namespace GetUserCourseEnrollmentStatusByCourseId {
+    export const endpoint = user + "/courses/:courseId/is-enrolled";
+    export const generateUrl = (userId: string, courseId: number) =>
+      `/users/${userId}/courses/${courseId}/is-enrolled`;
+    export type Response = {
+      data: {
+        isEnrolled: boolean;
+      };
     };
   }
 
@@ -215,10 +210,21 @@ export namespace $UserAPI {
     export const generateUrl = (userId: string) => {
       return root.concat("/", userId.toString(), "/basic");
     };
-    export type Dto = Omit<
-      Partial<CreateUser.Dto>,
-      "email" | "password" | "phoneNumber"
-    >;
+    export type Dto = {
+      phoneNumber?: string;
+      name?: string;
+      NIM?: string;
+      avatar?: string;
+      about?: string;
+      dateOfBirth?: Date;
+      address?: string;
+      bloodType?: string;
+      medicalHistories?: string[];
+      UKM?: string[];
+      hobbies?: string[];
+      lineId?: string;
+      emergencyNumber?: string;
+    };
     export type Response = {
       data: PublicUserModel;
     };
@@ -250,14 +256,6 @@ export namespace $UserAPI {
     export const generateUrl = (userId: string) =>
       root.concat("/", userId.toString(), "/role");
     export type Dto = { role: UserRoleModel };
-    export type Response = { data: PublicUserModel };
-  }
-
-  export namespace UpdateUserPhoneNumber {
-    export const endpoint = user + "/phone";
-    export const generateUrl = (userId: string) =>
-      root.concat("/", userId.toString(), "/phone");
-    export type Dto = { phoneNumber: string };
     export type Response = { data: PublicUserModel };
   }
 

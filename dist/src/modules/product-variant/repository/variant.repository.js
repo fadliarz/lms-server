@@ -68,11 +68,10 @@ let ProductVariantRepository = class ProductVariantRepository extends BaseReposi
     }
     deleteVariant(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.db.productVariant.delete({
+            return this.db.productVariant.delete({
                 where: this.getWhereObject(id),
                 select: { id: true },
             });
-            return {};
         });
     }
     updateVariantStockWithIncrement(id, data) {

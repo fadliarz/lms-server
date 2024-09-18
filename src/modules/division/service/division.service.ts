@@ -222,9 +222,7 @@ export default class DepartmentDivisionService
   ): Promise<$DepartmentDivisionAPI.DeleteDivision.Response["data"]> {
     await this.validateRelationBetweenResources(divisionId, resourceId);
 
-    await this.repository.deleteDivision(divisionId);
-
-    return {};
+    return await this.repository.deleteDivision(divisionId);
   }
 
   private async validateRelationBetweenResources(

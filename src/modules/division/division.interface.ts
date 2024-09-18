@@ -125,5 +125,5 @@ export interface IDepartmentDivisionRepository {
     divisionId: number,
     data: Partial<DepartmentDivisionModel>,
   ) => Promise<DepartmentDivisionModel>;
-  deleteDivision: (divisionId: number) => Promise<{}>;
+  deleteDivision: (divisionId: number) => Promise<{ id: number }>;
 }

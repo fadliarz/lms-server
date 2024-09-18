@@ -101,10 +101,10 @@ export default class CourseLessonVideoRepository
   public async deleteVideo(id: {
     videoId: number;
     resourceId: CourseLessonVideoResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.courseLessonVideo.delete({
       where: this.getWhereObjectForSecondLevelOperation(id),
-      select: {},
+      select: { id: true },
     });
   }
 

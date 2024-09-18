@@ -39,9 +39,9 @@ let CourseClassAssignmentRepository = class CourseClassAssignmentRepository exte
                             id: id.resourceId.courseId,
                         },
                     },
-                    select: {},
+                    select: { id: true },
                 });
-                if (theClass === null) {
+                if (!theClass) {
                     throw new RecordNotFoundException_1.default();
                 }
             }

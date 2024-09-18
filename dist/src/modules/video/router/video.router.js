@@ -27,7 +27,6 @@ function CourseLessonVideoRouter(authenticationMiddleware) {
      *
      */
     router.patch(video_api_1.$CourseLessonVideoAPI.UpdateVideo.endpoint, authenticationMiddleware, controller.updateVideo.bind(controller));
-    router.patch(video_api_1.$CourseLessonVideoAPI.UpdateVideoSource.endpoint, authenticationMiddleware, controller.updateVideoSource.bind(controller));
     /**
      * Delete
      *

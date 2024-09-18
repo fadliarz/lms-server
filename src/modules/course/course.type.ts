@@ -21,11 +21,11 @@ export type CourseModel = {
   image: string;
   title: string;
   description: string | null;
-  material: string | null;
   totalStudents: number;
   totalInstructors: number;
   totalLessons: number;
   totalVideos: number;
+  totalAttachments: number;
   totalDurations: number;
   totalLikes: number;
   createdAt: Date;

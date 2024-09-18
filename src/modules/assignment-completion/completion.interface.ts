@@ -11,6 +11,10 @@ export interface ICourseClassAssignmentCompletionAuthorization {
     user: UserModel,
     id: { courseId: number; targetUserId: number },
   ) => Promise<void>;
+  authorizeUpdateCompletion: (
+    user: UserModel,
+    completionId: number,
+  ) => Promise<void>;
   authorizeDeleteCompletion: (
     user: UserModel,
     completionId: number,
@@ -19,6 +23,11 @@ export interface ICourseClassAssignmentCompletionAuthorization {
 
 export interface ICourseClassAssignmentCompletionController {
   createCompletion: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  updateCompletion: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -39,6 +48,16 @@ export interface ICourseClassAssignmentCompletionService {
     dto: $CourseClassAssignmentCompletionAPI.CreateCompletion.Dto,
   ) => Promise<
     $CourseClassAssignmentCompletionAPI.CreateCompletion.Response["data"]
+  >;
+  updateCompletion: (
+    user: UserModel,
+    id: {
+      completionId: number;
+      resourceId: CourseClassAssignmentCompletionResourceId;
+    },
+    dto: $CourseClassAssignmentCompletionAPI.UpdateCompletion.Dto,
+  ) => Promise<
+    $CourseClassAssignmentCompletionAPI.DeleteCompletion.Response["data"]
   >;
   deleteCompletion: (
     user: UserModel,
@@ -66,8 +85,15 @@ export interface ICourseClassAssignmentCompletionRepository {
     completionId: number;
     resourceId?: CourseClassAssignmentCompletionResourceId;
   }) => Promise<CourseClassAssignmentCompletionModel | null>;
+  updateCompletion: (
+    id: {
+      completionId: number;
+      resourceId?: CourseClassAssignmentCompletionResourceId;
+    },
+    dto: Partial<CourseClassAssignmentCompletionModel>,
+  ) => Promise<CourseClassAssignmentCompletionModel>;
   deleteCompletion: (id: {
     completionId: number;
     resourceId?: CourseClassAssignmentCompletionResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

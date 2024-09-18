@@ -105,13 +105,13 @@ export default class CompetitionController implements ICompetitionController {
     next: NextFunction,
   ): Promise<Response | void> {
     try {
-      await this.service.deleteCompetition(
+      const result = await this.service.deleteCompetition(
         getRequestUserOrThrowAuthenticationException(req),
         { competitionId: this.validateCompetitionId(req) },
       );
 
       return res.status(StatusCode.SUCCESS).json({
-        data: {},
+        data: result,
       } satisfies $CompetitionAPI.DeleteCompetition.Response);
     } catch (error) {
       next(error);

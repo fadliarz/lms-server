@@ -90,9 +90,9 @@ let CompetitionController = class CompetitionController {
     deleteCompetition(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.service.deleteCompetition((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { competitionId: this.validateCompetitionId(req) });
+                const result = yield this.service.deleteCompetition((0, getRequestUserOrThrowAuthenticationException_1.default)(req), { competitionId: this.validateCompetitionId(req) });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: {},
+                    data: result,
                 });
             }
             catch (error) {

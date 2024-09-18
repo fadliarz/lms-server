@@ -137,37 +137,48 @@ let UserService = class UserService extends BaseService_1.default {
             }
         });
     }
-    getUserEnrolledAsStudentCourses(user, id) {
+    getUserEnrolledCourses(user, id, query) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                this.authorization.authorizeGetUserEnrolledAsStudentCourses(user, id.userId);
+                this.authorization.authorizeGetUserEnrolledCourses(user, id.userId);
                 return yield this.repository.getUserEnrolledCourses(id, {
                     role: [
                         course_type_1.CourseEnrollmentRoleModel.STUDENT,
                         course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR,
                     ],
-                });
+                }, query);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);
             }
         });
     }
-    getUserManagedCourses(user, id) {
+    getUserManagedCourses(user, id, query) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.authorization.authorizeGetUserManagedCourses(user, id.userId);
                 const isAcademicDivision = yield this.repository.getUserAuthorizationStatusFromPrivilege(id, user_type_1.PrivilegeModel.COURSE);
                 if (isAcademicDivision) {
-                    return yield this.globalRepository.course.getCourses();
+                    return yield this.globalRepository.course.getCourses(query);
                 }
                 const targetUser = yield this.repository.getUserByIdOrThrow(id);
                 if ((0, isEqualOrIncludeRole_1.default)(targetUser.role, course_type_1.UserRoleModel.ADMIN)) {
-                    return yield this.globalRepository.course.getCourses();
+                    return yield this.globalRepository.course.getCourses(query);
                 }
                 return yield this.repository.getUserEnrolledCourses(id, {
                     role: [course_type_1.CourseEnrollmentRoleModel.INSTRUCTOR],
-                });
+                }, query);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
+    getUserCourseEnrollmentStatusByCourseId(user, id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeGetUserCourseEnrollmentStatusByCourseId(user, id.userId);
+                return yield this.repository.getUserCourseEnrollmentStatusByCourseId(id);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);
@@ -308,17 +319,6 @@ let UserService = class UserService extends BaseService_1.default {
                 this.authorization.authorizeUpdateUser(user, id.userId);
                 const updatedUser = yield this.repository.updateUser({ userId: id.userId }, dto);
                 return this.getPublicUser(updatedUser);
-            }
-            catch (error) {
-                throw (0, handleRepositoryError_1.default)(error);
-            }
-        });
-    }
-    updateUserPhoneNumber(user, id, dto) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                this.authorization.authorizeUpdateUser(user, id.userId);
-                return yield this.repository.updateUser(id, dto);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

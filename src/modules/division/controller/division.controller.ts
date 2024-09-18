@@ -162,6 +162,7 @@ export default class DepartmentDivisionController
 
       const divisionId = this.validateDivisionId(req);
       const resourceId = this.validateResourceId(req);
+
       const updatedDivision = await this.service.updateDivisionCoLeaderId(
         divisionId,
         resourceId,
@@ -184,10 +185,11 @@ export default class DepartmentDivisionController
     try {
       const divisionId = this.validateDivisionId(req);
       const resourceId = this.validateResourceId(req);
-      await this.service.deleteDivision(divisionId, resourceId);
+
+      const result = await this.service.deleteDivision(divisionId, resourceId);
 
       return res.status(StatusCode.SUCCESS).json({
-        data: {},
+        data: result,
       } satisfies $DepartmentDivisionAPI.DeleteDivision.Response);
     } catch (error) {
       next(error);

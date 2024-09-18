@@ -26,6 +26,16 @@ export default function CourseClassAssignmentCompletionRouter(
   );
 
   /**
+   * Update
+   *
+   */
+  router.patch(
+    $CourseClassAssignmentCompletionAPI.UpdateCompletion.endpoint,
+    authenticationMiddleware,
+    controller.updateCompletion,
+  );
+
+  /**
    * Delete
    *
    */

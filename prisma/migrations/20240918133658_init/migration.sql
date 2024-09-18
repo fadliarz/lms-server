@@ -1,8 +1,17 @@
 -- CreateEnum
-CREATE TYPE "Privilege" AS ENUM ('DEPARTMENT', 'DIVISION', 'PROGRAM', 'SCHOLARSHIP', 'COMPETITION', 'REPORT', 'COURSE');
+CREATE TYPE "ScholarshipFunding" AS ENUM ('PARTIALLY_FUNDED', 'FULLY_FUNDED');
 
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('OWNER', 'INSTRUCTOR', 'STUDENT');
+CREATE TYPE "Privilege" AS ENUM ('DEPARTMENT', 'DIVISION', 'PROGRAM', 'SCHOLARSHIP', 'COMPETITION', 'REPORT', 'COURSE', 'EVENT', 'STORE');
+
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'STUDENT');
+
+-- CreateEnum
+CREATE TYPE "AssignmentCompletionStatus" AS ENUM ('NOT_STARTED', 'IN_PROGRESS', 'DONE');
+
+-- CreateEnum
+CREATE TYPE "AssignmentTaskType" AS ENUM ('PERSONAL_TASK', 'GROUP_TASK');
 
 -- CreateEnum
 CREATE TYPE "CourseEnrollmentRole" AS ENUM ('INSTRUCTOR', 'STUDENT');
@@ -22,8 +31,6 @@ CREATE TABLE "user" (
     "avatar" TEXT NOT NULL DEFAULT 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg',
     "about" TEXT,
     "total_courses" INTEGER NOT NULL DEFAULT 0,
-    "total_lessons" INTEGER NOT NULL DEFAULT 0,
-    "total_unread_messages" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "role" "Role" NOT NULL DEFAULT 'STUDENT',
@@ -32,11 +39,10 @@ CREATE TABLE "user" (
     "blood_type" TEXT NOT NULL,
     "date_of_birth" TIMESTAMP(3) NOT NULL,
     "emergency_number" TEXT NOT NULL,
-    "hmm" TEXT NOT NULL,
-    "hobbies" TEXT NOT NULL,
+    "hobbies" TEXT[],
     "line_id" TEXT NOT NULL,
-    "medical_histories" TEXT NOT NULL,
-    "ukm" TEXT NOT NULL,
+    "medical_histories" TEXT[],
+    "ukm" TEXT[],
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -45,9 +51,12 @@ CREATE TABLE "user" (
 CREATE TABLE "personal_assignment" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
+    "course" TEXT NOT NULL,
     "submission" TEXT NOT NULL,
+    "description" TEXT,
     "deadline" TIMESTAMP(3) NOT NULL,
-    "isDone" BOOLEAN NOT NULL DEFAULT false,
+    "task_type" "AssignmentTaskType" NOT NULL,
+    "completion_status" "AssignmentCompletionStatus" NOT NULL DEFAULT 'NOT_STARTED',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "user_id" INTEGER NOT NULL,
@@ -75,16 +84,15 @@ CREATE TABLE "course" (
     "image" TEXT NOT NULL DEFAULT 'https://climate.onep.go.th/wp-content/uploads/2020/01/default-image.jpg',
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "material" TEXT,
     "total_students" INTEGER NOT NULL DEFAULT 0,
     "total_instructors" INTEGER NOT NULL DEFAULT 0,
     "total_lessons" INTEGER NOT NULL DEFAULT 0,
     "total_videos" INTEGER NOT NULL DEFAULT 0,
+    "total_attachments" INTEGER NOT NULL DEFAULT 0,
     "total_durations" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "total_likes" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "author_id" INTEGER,
     "category_id" INTEGER,
     "code" TEXT NOT NULL,
 
@@ -96,9 +104,10 @@ CREATE TABLE "course_lesson" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
+    "references" TEXT[],
     "total_videos" INTEGER NOT NULL DEFAULT 0,
     "total_durations" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "total_materials" INTEGER NOT NULL DEFAULT 0,
+    "total_attachments" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "course_id" INTEGER NOT NULL,
@@ -107,7 +116,7 @@ CREATE TABLE "course_lesson" (
 );
 
 -- CreateTable
-CREATE TABLE "course_video" (
+CREATE TABLE "course_lesson_video" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -116,9 +125,21 @@ CREATE TABLE "course_video" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lesson_id" INTEGER NOT NULL,
-    "attachment" TEXT,
 
-    CONSTRAINT "course_video_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "course_lesson_video_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "course_lesson_attachment" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "file" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "lesson_id" INTEGER NOT NULL,
+
+    CONSTRAINT "course_lesson_attachment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -157,20 +178,23 @@ CREATE TABLE "course_class_assignment" (
     "title" TEXT NOT NULL,
     "submission" TEXT NOT NULL,
     "deadline" TIMESTAMP(3) NOT NULL,
+    "description" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "task_type" "AssignmentTaskType" NOT NULL,
     "class_id" INTEGER NOT NULL,
 
     CONSTRAINT "course_class_assignment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "CourseClassAssignmentCompletion" (
+CREATE TABLE "course_class_assignment_completion" (
     "id" SERIAL NOT NULL,
+    "completion_status" "AssignmentCompletionStatus" NOT NULL,
     "user_id" INTEGER NOT NULL,
     "assignment_id" INTEGER NOT NULL,
 
-    CONSTRAINT "CourseClassAssignmentCompletion_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "course_class_assignment_completion_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -245,7 +269,7 @@ CREATE TABLE "department_program" (
     "title" TEXT NOT NULL,
     "description" TEXT,
     "date" TIMESTAMP(3) NOT NULL,
-    "division_id" INTEGER NOT NULL,
+    "department_id" INTEGER NOT NULL,
 
     CONSTRAINT "department_program_pkey" PRIMARY KEY ("id")
 );
@@ -280,6 +304,8 @@ CREATE TABLE "scholarship" (
     "provider" TEXT NOT NULL,
     "deadline" TIMESTAMP(3) NOT NULL,
     "reference" TEXT NOT NULL,
+    "funding" "ScholarshipFunding" NOT NULL,
+    "scope" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -314,19 +340,42 @@ CREATE TABLE "product" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "price" DOUBLE PRECISION NOT NULL,
-    "size" TEXT[],
+    "rating" DOUBLE PRECISION,
+    "total_sales" INTEGER NOT NULL DEFAULT 0,
+    "total_ratings" INTEGER NOT NULL DEFAULT 0,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "product_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "order" (
+CREATE TABLE "product_variant" (
     "id" SERIAL NOT NULL,
+    "title" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "stock" INTEGER,
+    "total_sales" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" INTEGER NOT NULL,
-    "productId" INTEGER NOT NULL,
+    "product_id" INTEGER NOT NULL,
+
+    CONSTRAINT "product_variant_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "order" (
+    "id" SERIAL NOT NULL,
+    "description" TEXT,
+    "receipt" TEXT,
+    "rating" INTEGER,
+    "is_arrived" BOOLEAN NOT NULL DEFAULT false,
+    "arrived_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "variantSnapshot" JSONB NOT NULL,
+    "user_id" INTEGER,
+    "variant_id" INTEGER,
 
     CONSTRAINT "order_pkey" PRIMARY KEY ("id")
 );
@@ -338,22 +387,28 @@ CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 CREATE UNIQUE INDEX "user_nim_key" ON "user"("nim");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "course_enrollment_course_id_user_id_key" ON "course_enrollment"("course_id", "user_id");
+CREATE INDEX "personal_assignment_user_id_idx" ON "personal_assignment"("user_id");
 
 -- CreateIndex
-CREATE INDEX "course_author_id_idx" ON "course"("author_id");
+CREATE UNIQUE INDEX "course_enrollment_user_id_course_id_key" ON "course_enrollment"("user_id", "course_id");
 
 -- CreateIndex
 CREATE INDEX "course_category_id_idx" ON "course"("category_id");
 
 -- CreateIndex
-CREATE INDEX "course_video_lesson_id_idx" ON "course_video"("lesson_id");
+CREATE INDEX "course_lesson_video_lesson_id_idx" ON "course_lesson_video"("lesson_id");
+
+-- CreateIndex
+CREATE INDEX "course_lesson_attachment_lesson_id_idx" ON "course_lesson_attachment"("lesson_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "course_like_user_id_course_id_key" ON "course_like"("user_id", "course_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "course_class_title_key" ON "course_class"("title");
+
+-- CreateIndex
+CREATE INDEX "course_class_assignment_completion_user_id_idx" ON "course_class_assignment_completion"("user_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "department_leader_id_key" ON "department"("leader_id");
@@ -392,16 +447,16 @@ ALTER TABLE "course_enrollment" ADD CONSTRAINT "course_enrollment_course_id_fkey
 ALTER TABLE "course_enrollment" ADD CONSTRAINT "course_enrollment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "course" ADD CONSTRAINT "course_author_id_fkey" FOREIGN KEY ("author_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "course" ADD CONSTRAINT "course_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "course_category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "course_lesson" ADD CONSTRAINT "course_lesson_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "course"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "course_video" ADD CONSTRAINT "course_video_lesson_id_fkey" FOREIGN KEY ("lesson_id") REFERENCES "course_lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "course_lesson_video" ADD CONSTRAINT "course_lesson_video_lesson_id_fkey" FOREIGN KEY ("lesson_id") REFERENCES "course_lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "course_lesson_attachment" ADD CONSTRAINT "course_lesson_attachment_lesson_id_fkey" FOREIGN KEY ("lesson_id") REFERENCES "course_lesson"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "course_like" ADD CONSTRAINT "course_like_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "course"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -416,10 +471,10 @@ ALTER TABLE "course_class" ADD CONSTRAINT "course_class_course_id_fkey" FOREIGN 
 ALTER TABLE "course_class_assignment" ADD CONSTRAINT "course_class_assignment_class_id_fkey" FOREIGN KEY ("class_id") REFERENCES "course_class"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CourseClassAssignmentCompletion" ADD CONSTRAINT "CourseClassAssignmentCompletion_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "course_class_assignment_completion" ADD CONSTRAINT "course_class_assignment_completion_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "CourseClassAssignmentCompletion" ADD CONSTRAINT "CourseClassAssignmentCompletion_assignment_id_fkey" FOREIGN KEY ("assignment_id") REFERENCES "course_class_assignment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "course_class_assignment_completion" ADD CONSTRAINT "course_class_assignment_completion_assignment_id_fkey" FOREIGN KEY ("assignment_id") REFERENCES "course_class_assignment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "course_schedule" ADD CONSTRAINT "course_schedule_course_id_fkey" FOREIGN KEY ("course_id") REFERENCES "course"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -440,13 +495,13 @@ ALTER TABLE "department_division" ADD CONSTRAINT "department_division_department
 ALTER TABLE "department_division" ADD CONSTRAINT "department_division_leader_id_fkey" FOREIGN KEY ("leader_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "department_division_enrollment" ADD CONSTRAINT "department_division_enrollment_division_id_fkey" FOREIGN KEY ("division_id") REFERENCES "department_division"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "department_division_enrollment" ADD CONSTRAINT "department_division_enrollment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "department_program" ADD CONSTRAINT "department_program_division_id_fkey" FOREIGN KEY ("division_id") REFERENCES "department"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "department_division_enrollment" ADD CONSTRAINT "department_division_enrollment_division_id_fkey" FOREIGN KEY ("division_id") REFERENCES "department_division"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "department_program" ADD CONSTRAINT "department_program_department_id_fkey" FOREIGN KEY ("department_id") REFERENCES "department"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "department_program_enrollment" ADD CONSTRAINT "department_program_enrollment_program_id_fkey" FOREIGN KEY ("program_id") REFERENCES "department_program"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -461,7 +516,10 @@ ALTER TABLE "report" ADD CONSTRAINT "report_user_id_fkey" FOREIGN KEY ("user_id"
 ALTER TABLE "division_privilege" ADD CONSTRAINT "division_privilege_division_id_fkey" FOREIGN KEY ("division_id") REFERENCES "department_division"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order" ADD CONSTRAINT "order_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "product_variant" ADD CONSTRAINT "product_variant_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order" ADD CONSTRAINT "order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "order" ADD CONSTRAINT "order_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "order" ADD CONSTRAINT "order_variant_id_fkey" FOREIGN KEY ("variant_id") REFERENCES "product_variant"("id") ON DELETE SET NULL ON UPDATE CASCADE;

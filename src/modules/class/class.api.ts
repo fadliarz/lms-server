@@ -53,7 +53,7 @@ export namespace $CourseClassAPI {
     export const generateUrl = (courseId: number, classId: number) =>
       `/courses/${courseId}/classes/${classId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

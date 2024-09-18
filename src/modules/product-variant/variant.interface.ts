@@ -123,5 +123,5 @@ export interface IProductVariantRepository {
   deleteVariant: (id: {
     variantId: number;
     resourceId?: ProductVariantResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

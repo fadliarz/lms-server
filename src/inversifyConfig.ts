@@ -302,6 +302,17 @@ import OrderRepository from "./modules/order/repository/order.repository";
 import OrderService from "./modules/order/service/order.service";
 import OrderController from "./modules/order/controller/order.controller";
 import OrderAuthorization from "./modules/order/authorization/order.authorization";
+import { CourseLessonAttachmentDITypes } from "./modules/attachment/attachment.type";
+import {
+  ICourseLessonAttachmentAuthorization,
+  ICourseLessonAttachmentController,
+  ICourseLessonAttachmentRepository,
+  ICourseLessonAttachmentService,
+} from "./modules/attachment/attachment.interface";
+import CourseLessonAttachmentRepository from "./modules/attachment/repository/attachment.repository";
+import CourseLessonAttachmentService from "./modules/attachment/service/attachment.service";
+import CourseLessonAttachmentController from "./modules/attachment/controller/attachment.controller";
+import CourseLessonAttachmentAuthorization from "./modules/attachment/authorization/attachment.authorization";
 
 const dIContainer = new Container();
 
@@ -486,6 +497,29 @@ dIContainer
 dIContainer
   .bind<ICourseLessonVideoAuthorization>(CourseLessonVideoDITypes.AUTHORIZATION)
   .to(CourseLessonVideoAuthorization);
+
+/**
+ * Course Lesson Attachment
+ *
+ */
+dIContainer
+  .bind<ICourseLessonAttachmentRepository>(
+    CourseLessonAttachmentDITypes.REPOSITORY,
+  )
+  .to(CourseLessonAttachmentRepository);
+dIContainer
+  .bind<ICourseLessonAttachmentService>(CourseLessonAttachmentDITypes.SERVICE)
+  .to(CourseLessonAttachmentService);
+dIContainer
+  .bind<ICourseLessonAttachmentController>(
+    CourseLessonAttachmentDITypes.CONTROLLER,
+  )
+  .to(CourseLessonAttachmentController);
+dIContainer
+  .bind<ICourseLessonAttachmentAuthorization>(
+    CourseLessonAttachmentDITypes.AUTHORIZATION,
+  )
+  .to(CourseLessonAttachmentAuthorization);
 
 /**
  * Course Class

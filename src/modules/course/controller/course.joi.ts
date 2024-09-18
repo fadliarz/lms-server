@@ -8,7 +8,6 @@ export const CreateCourseDtoJoi = Joi.object<$CourseAPI.CreateCourse.Dto>({
   categoryId: Joi.number().required(),
   image: Joi.string(),
   description: Joi.string(),
-  material: Joi.string(),
 });
 
 export const CreateCourseInstructorDtoJoi =
@@ -25,6 +24,7 @@ export const GetCourseByIdQueryJoi = Joi.object<$CourseAPI.GetCourseById.Query>(
 );
 
 export const GetCoursesQueryJoi = Joi.object<$CourseAPI.GetCourses.Query>({
+  category_id: Joi.array().items(Joi.number()),
   include_category: Joi.boolean(),
   pageSize: Joi.number(),
   pageNumber: Joi.number(),
@@ -73,7 +73,6 @@ export const UpdateCourseDtoJoi = Joi.object<$CourseAPI.UpdateCourse.Dto>({
   description: Joi.string(),
   image: Joi.string(),
   title: Joi.string(),
-  material: Joi.string(),
 });
 
 export const UpdateCourseStatusDtoJoi =

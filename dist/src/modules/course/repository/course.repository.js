@@ -41,16 +41,13 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
     getCourses(query) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.course.findMany(query
-                ? {
-                    skip: query.pageNumber && query.pageSize
+                ? Object.assign({ skip: query.pageNumber && query.pageSize
                         ? (query.pageNumber - 1) * query.pageSize
-                        : 0,
-                    take: query.pageSize || 0,
-                    include: {
+                        : 0, take: query.pageSize || 0, include: {
                         category: !!query.include_category,
-                    },
-                }
-                : undefined);
+                    } }, (query.category_id && query.category_id.length > 0
+                    ? { where: { category: { id: { in: query.category_id } } } }
+                    : {})) : undefined);
         });
     }
     getCourseById(id, query) {
@@ -68,7 +65,7 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
                                         title: true,
                                         description: true,
                                         totalVideos: true,
-                                        totalMaterials: true,
+                                        totalAttachments: true,
                                         videos: {
                                             select: {
                                                 id: true,
@@ -85,7 +82,7 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
                                         title: true,
                                         description: true,
                                         totalVideos: true,
-                                        totalMaterials: true,
+                                        totalAttachments: true,
                                     },
                                 }
                             : false,

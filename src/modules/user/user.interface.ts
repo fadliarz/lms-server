@@ -1,7 +1,7 @@
 import { PrivilegeModel, UserModel } from "./user.type";
 import { NextFunction, Request, Response } from "express";
 import { Cookie } from "../../common/constants/Cookie";
-import { CourseEnrollmentRoleModel, CourseModel } from "../course/course.type";
+import { CourseEnrollmentRoleModel } from "../course/course.type";
 import { $UserAPI } from "./user.api";
 
 export interface IUserAuthorization {
@@ -12,11 +12,15 @@ export interface IUserAuthorization {
 
   authorizeGetUserPermissions: (user: UserModel, targetUserId: number) => void;
   authorizeGetUserAssignments: (user: UserModel, targetUserId: number) => void;
-  authorizeGetUserEnrolledAsStudentCourses: (
+  authorizeGetUserEnrolledCourses: (
     user: UserModel,
     targetUserId: number,
   ) => void;
   authorizeGetUserManagedCourses: (
+    user: UserModel,
+    targetUserId: number,
+  ) => Promise<void>;
+  authorizeGetUserCourseEnrollmentStatusByCourseId: (
     user: UserModel,
     targetUserId: number,
   ) => Promise<void>;
@@ -94,12 +98,17 @@ export interface IUserController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  getUserEnrolledAsStudentCourses: (
+  getUserEnrolledCourses: (
     req: Request,
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
   getUserManagedCourses: (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => Promise<Response | void>;
+  getUserCourseEnrollmentStatusByCourseId: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -161,11 +170,6 @@ export interface IUserController {
     next: NextFunction,
   ) => Promise<Response | void>;
   updateUserRole: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
-  updateUserPhoneNumber: (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -233,18 +237,29 @@ export interface IUserService {
       userId: number;
     },
   ) => Promise<$UserAPI.GetUserAssignments.Response["data"]>;
-  getUserEnrolledAsStudentCourses: (
+  getUserEnrolledCourses: (
     user: UserModel,
     id: {
       userId: number;
     },
-  ) => Promise<$UserAPI.GetUserEnrolledAsStudentCourses.Response["data"]>;
+    query: $UserAPI.GetUserEnrolledCourses.Query,
+  ) => Promise<$UserAPI.GetUserEnrolledCourses.Response["data"]>;
   getUserManagedCourses: (
     user: UserModel,
     id: {
       userId: number;
     },
+    query: $UserAPI.GetUserManagedCourses.Query,
   ) => Promise<$UserAPI.GetUserManagedCourses.Response["data"]>;
+  getUserCourseEnrollmentStatusByCourseId: (
+    user: UserModel,
+    id: {
+      userId: number;
+      courseId: number;
+    },
+  ) => Promise<
+    $UserAPI.GetUserCourseEnrollmentStatusByCourseId.Response["data"]
+  >;
   getUserManagedDepartments: (
     user: UserModel,
     id: {
@@ -322,11 +337,6 @@ export interface IUserService {
     id: { userId: number },
     dto: $UserAPI.UpdateUserRole.Dto,
   ) => Promise<$UserAPI.UpdateUserRole.Response["data"]>;
-  updateUserPhoneNumber: (
-    user: UserModel,
-    id: { userId: number },
-    dto: $UserAPI.UpdateUserPhoneNumber.Dto,
-  ) => Promise<$UserAPI.UpdateUserPhoneNumber.Response["data"]>;
 
   /**
    * Delete
@@ -406,7 +416,14 @@ export interface IUserRepository {
     where: {
       role: CourseEnrollmentRoleModel[];
     },
-  ) => Promise<CourseModel[]>;
+    query?: $UserAPI.GetUserEnrolledCourses.Query,
+  ) => Promise<$UserAPI.GetUserEnrolledCourses.Response["data"]>;
+  getUserCourseEnrollmentStatusByCourseId: (id: {
+    userId: number;
+    courseId: number;
+  }) => Promise<
+    $UserAPI.GetUserCourseEnrollmentStatusByCourseId.Response["data"]
+  >;
   getUserOneCourseEnrollmentId: (
     id: {
       userId: number;

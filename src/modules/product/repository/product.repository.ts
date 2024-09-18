@@ -59,7 +59,12 @@ export default class ProductRepository
     return this.db.product.update({ where: { id: id.productId }, data });
   }
 
-  public async deleteProduct(id: { productId: number }): Promise<{}> {
-    return this.db.product.delete({ where: { id: id.productId }, select: {} });
+  public async deleteProduct(id: {
+    productId: number;
+  }): Promise<{ id: number }> {
+    return this.db.product.delete({
+      where: { id: id.productId },
+      select: { id: true },
+    });
   }
 }

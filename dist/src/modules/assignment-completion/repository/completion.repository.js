@@ -39,7 +39,7 @@ let CourseClassAssigmentCompletionRepository = class CourseClassAssigmentComplet
                             courseId: id.resourceId.courseId,
                         },
                     },
-                    select: {},
+                    select: { id: true },
                 });
                 if (assignment === null) {
                     throw new RecordNotFoundException_1.default();
@@ -57,11 +57,21 @@ let CourseClassAssigmentCompletionRepository = class CourseClassAssigmentComplet
             });
         });
     }
+    updateCompletion(id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.db.courseClassAssignmentCompletion.update({
+                where: this.getWhereObject(id),
+                data: dto,
+            });
+        });
+    }
     deleteCompletion(id) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.db.courseClassAssignmentCompletion.delete({
                 where: this.getWhereObject(id),
-                select: {},
+                select: {
+                    id: true,
+                },
             });
         });
     }

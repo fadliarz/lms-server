@@ -40,7 +40,7 @@ export default class CourseClassAssignmentCompletionAuthorization
     }
   }
 
-  public async authorizeDeleteCompletion(
+  public async authorizeUpdateCompletion(
     user: UserModel,
     completionId: number,
   ): Promise<void> {
@@ -67,5 +67,12 @@ export default class CourseClassAssignmentCompletionAuthorization
     if (!isAuthorized) {
       throw new AuthorizationException();
     }
+  }
+
+  public async authorizeDeleteCompletion(
+    user: UserModel,
+    completionId: number,
+  ): Promise<void> {
+    await this.authorizeUpdateCompletion(user, completionId);
   }
 }

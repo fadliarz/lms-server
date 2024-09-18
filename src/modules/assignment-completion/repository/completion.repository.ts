@@ -36,7 +36,7 @@ export default class CourseClassAssigmentCompletionRepository
             courseId: id.resourceId.courseId,
           },
         },
-        select: {},
+        select: { id: true },
       });
 
       if (assignment === null) {
@@ -58,13 +58,28 @@ export default class CourseClassAssigmentCompletionRepository
     });
   }
 
+  public async updateCompletion(
+    id: {
+      completionId: number;
+      resourceId?: CourseClassAssignmentCompletionResourceId;
+    },
+    dto: Partial<CourseClassAssignmentCompletionModel>,
+  ): Promise<CourseClassAssignmentCompletionModel> {
+    return this.db.courseClassAssignmentCompletion.update({
+      where: this.getWhereObject(id),
+      data: dto,
+    });
+  }
+
   public async deleteCompletion(id: {
     completionId: number;
     resourceId?: CourseClassAssignmentCompletionResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.courseClassAssignmentCompletion.delete({
       where: this.getWhereObject(id),
-      select: {},
+      select: {
+        id: true,
+      },
     });
   }
 

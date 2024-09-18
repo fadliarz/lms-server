@@ -66,7 +66,7 @@ export namespace $ProductVariantAPI {
     export const generateUrl = (productId: number, variantId: number) =>
       `/products/${productId}/variants/${variantId}`;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 }

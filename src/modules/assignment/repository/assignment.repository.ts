@@ -33,10 +33,10 @@ export default class CourseClassAssignmentRepository
             id: id.resourceId.courseId,
           },
         },
-        select: {},
+        select: { id: true },
       });
 
-      if (theClass === null) {
+      if (!theClass) {
         throw new RecordNotFoundException();
       }
     }
@@ -100,7 +100,7 @@ export default class CourseClassAssignmentRepository
   public async deleteAssignment(id: {
     assignmentId: number;
     resourceId: CourseClassAssignmentResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.courseClassAssignment.delete({
       where: this.getWhereObjectForSecondLevelOperation(id),
     });

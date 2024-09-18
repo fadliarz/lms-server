@@ -1,3 +1,5 @@
+import { AssignmentTaskTypeModel } from "../../common/shared.types";
+
 export const CourseClassAssignmentDITypes = {
   REPOSITORY: Symbol.for("COURSE_CLASS_ASSIGNMENT_REPOSITORY"),
   SERVICE: Symbol.for("COURSE_CLASS_ASSIGNMENT_SERVICE"),
@@ -10,8 +12,10 @@ export type CourseClassAssignmentModel = {
   title: string;
   submission: string;
   deadline: Date;
+  description: string | null;
   createdAt: Date;
   updatedAt: Date;
+  taskType: AssignmentTaskTypeModel;
   classId: number;
 };
 

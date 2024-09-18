@@ -37,16 +37,21 @@ var $UserAPI;
         GetUserAssignments.endpoint = user + "/assignments";
         GetUserAssignments.generateUrl = (userId) => root.concat("/", userId.toString(), "/assignments");
     })(GetUserAssignments = $UserAPI.GetUserAssignments || ($UserAPI.GetUserAssignments = {}));
-    let GetUserEnrolledAsStudentCourses;
-    (function (GetUserEnrolledAsStudentCourses) {
-        GetUserEnrolledAsStudentCourses.endpoint = user + "/enrolled-courses";
-        GetUserEnrolledAsStudentCourses.generateUrl = (userId) => `/users/${userId}/enrolled-courses`;
-    })(GetUserEnrolledAsStudentCourses = $UserAPI.GetUserEnrolledAsStudentCourses || ($UserAPI.GetUserEnrolledAsStudentCourses = {}));
+    let GetUserEnrolledCourses;
+    (function (GetUserEnrolledCourses) {
+        GetUserEnrolledCourses.endpoint = user + "/enrolled-courses";
+        GetUserEnrolledCourses.generateUrl = (userId) => `/users/${userId}/enrolled-courses`;
+    })(GetUserEnrolledCourses = $UserAPI.GetUserEnrolledCourses || ($UserAPI.GetUserEnrolledCourses = {}));
     let GetUserManagedCourses;
     (function (GetUserManagedCourses) {
         GetUserManagedCourses.endpoint = user + "/managed-courses";
         GetUserManagedCourses.generateUrl = (userId) => `/users/${userId}/managed-courses`;
     })(GetUserManagedCourses = $UserAPI.GetUserManagedCourses || ($UserAPI.GetUserManagedCourses = {}));
+    let GetUserCourseEnrollmentStatusByCourseId;
+    (function (GetUserCourseEnrollmentStatusByCourseId) {
+        GetUserCourseEnrollmentStatusByCourseId.endpoint = user + "/courses/:courseId/is-enrolled";
+        GetUserCourseEnrollmentStatusByCourseId.generateUrl = (userId, courseId) => `/users/${userId}/courses/${courseId}/is-enrolled`;
+    })(GetUserCourseEnrollmentStatusByCourseId = $UserAPI.GetUserCourseEnrollmentStatusByCourseId || ($UserAPI.GetUserCourseEnrollmentStatusByCourseId = {}));
     let GetUserEventAndCourseSchedules;
     (function (GetUserEventAndCourseSchedules) {
         GetUserEventAndCourseSchedules.endpoint = user + "/event-and-course-schedules";
@@ -111,11 +116,6 @@ var $UserAPI;
         UpdateUserRole.endpoint = user + "/role";
         UpdateUserRole.generateUrl = (userId) => root.concat("/", userId.toString(), "/role");
     })(UpdateUserRole = $UserAPI.UpdateUserRole || ($UserAPI.UpdateUserRole = {}));
-    let UpdateUserPhoneNumber;
-    (function (UpdateUserPhoneNumber) {
-        UpdateUserPhoneNumber.endpoint = user + "/phone";
-        UpdateUserPhoneNumber.generateUrl = (userId) => root.concat("/", userId.toString(), "/phone");
-    })(UpdateUserPhoneNumber = $UserAPI.UpdateUserPhoneNumber || ($UserAPI.UpdateUserPhoneNumber = {}));
     let DeleteUser;
     (function (DeleteUser) {
         DeleteUser.endpoint = user;

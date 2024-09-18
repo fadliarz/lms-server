@@ -80,13 +80,11 @@ export default class ProductVariantRepository
   public async deleteVariant(id: {
     variantId: number;
     resourceId?: ProductVariantResourceId;
-  }): Promise<{}> {
-    await this.db.productVariant.delete({
+  }): Promise<{ id: number }> {
+    return this.db.productVariant.delete({
       where: this.getWhereObject(id),
       select: { id: true },
     });
-
-    return {};
   }
 
   public async updateVariantStockWithIncrement(

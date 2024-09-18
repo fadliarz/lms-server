@@ -127,9 +127,9 @@ let DepartmentDivisionController = class DepartmentDivisionController {
             try {
                 const divisionId = this.validateDivisionId(req);
                 const resourceId = this.validateResourceId(req);
-                yield this.service.deleteDivision(divisionId, resourceId);
+                const result = yield this.service.deleteDivision(divisionId, resourceId);
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: {},
+                    data: result,
                 });
             }
             catch (error) {

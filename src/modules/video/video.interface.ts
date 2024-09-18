@@ -34,11 +34,6 @@ export interface ICourseLessonVideoController {
     res: Response,
     next: NextFunction,
   ) => Promise<Response | void>;
-  updateVideoSource: (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ) => Promise<Response | void>;
   deleteVideo: (
     req: Request,
     res: Response,
@@ -76,14 +71,6 @@ export interface ICourseLessonVideoService {
     },
     dto: $CourseLessonVideoAPI.UpdateVideo.Dto,
   ) => Promise<$CourseLessonVideoAPI.UpdateVideo.Response["data"]>;
-  updateVideoSource: (
-    user: UserModel,
-    id: {
-      videoId: number;
-      resourceId: CourseLessonVideoResourceId;
-    },
-    dto: $CourseLessonVideoAPI.UpdateVideo.Dto,
-  ) => Promise<$CourseLessonVideoAPI.UpdateVideoSource.Response["data"]>;
   deleteVideo: (
     user: UserModel,
     id: {
@@ -129,5 +116,5 @@ export interface ICourseLessonVideoRepository {
   deleteVideo: (id: {
     videoId: number;
     resourceId: CourseLessonVideoResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

@@ -62,12 +62,12 @@ let DepartmentDivisionEnrollmentController = class DepartmentDivisionEnrollmentC
     deleteEnrollment(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                yield this.service.deleteEnrollment((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
+                const result = yield this.service.deleteEnrollment((0, getRequestUserOrThrowAuthenticationException_1.default)(req), {
                     enrollmentId: this.validateEnrollmentId(req),
                     resourceId: this.validateResourceId(req),
                 });
                 return res.status(statusCode_1.StatusCode.SUCCESS).json({
-                    data: {},
+                    data: result,
                 });
             }
             catch (error) {

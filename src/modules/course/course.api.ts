@@ -19,7 +19,6 @@ export namespace $CourseAPI {
       image?: string;
       title: string;
       description?: string;
-      material?: string;
       categoryId?: number;
     };
     export type Response = {
@@ -43,6 +42,7 @@ export namespace $CourseAPI {
     export const endpoint = root;
     export const generateUrl = () => endpoint;
     export type Query = {
+      category_id?: number[];
       include_category?: boolean;
     } & PagingQuery;
     export type Response = {
@@ -70,7 +70,7 @@ export namespace $CourseAPI {
           | "description"
           | "totalVideos"
           | "totalDurations"
-          | "totalMaterials"
+          | "totalAttachments"
         > & {
           videos?: Pick<
             CourseLessonVideoModel,
@@ -98,7 +98,6 @@ export namespace $CourseAPI {
       image?: string;
       title?: string;
       description?: string;
-      material?: string;
     };
     export type Response = {
       data: CourseModel;
@@ -145,7 +144,7 @@ export namespace $CourseAPI {
     export const endpoint = course;
     export const generateUrl = (courseId: number) => `/courses/${courseId} `;
     export type Response = {
-      data: {};
+      data: { id: number };
     };
   }
 

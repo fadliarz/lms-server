@@ -65,12 +65,14 @@ export default class ScholarshipRepository
     });
   }
 
-  public async deleteScholarship(scholarshipId: number): Promise<{}> {
+  public async deleteScholarship(
+    scholarshipId: number,
+  ): Promise<{ id: number }> {
     return this.db.scholarship.delete({
       where: {
         id: scholarshipId,
       },
-      select: {},
+      select: { id: true },
     });
   }
 }

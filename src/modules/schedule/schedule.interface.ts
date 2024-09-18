@@ -92,5 +92,5 @@ export interface ICourseScheduleRepository {
   deleteSchedule: (id: {
     scheduleId: number;
     resourceId?: CourseScheduleResourceId["params"];
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

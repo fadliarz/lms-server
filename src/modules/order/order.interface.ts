@@ -153,5 +153,5 @@ export interface IOrderRepository {
   deleteOrder: (id: {
     orderId: number;
     resourceId?: OrderResourceId;
-  }) => Promise<{}>;
+  }) => Promise<{ id: number }>;
 }

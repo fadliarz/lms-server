@@ -52,6 +52,17 @@ let CourseClassAssignmentCompletionService = class CourseClassAssignmentCompleti
             }
         });
     }
+    updateCompletion(user, id, dto) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield this.authorization.authorizeUpdateCompletion(user, id.completionId);
+                return yield this.repository.updateCompletion(id, dto);
+            }
+            catch (error) {
+                throw (0, handleRepositoryError_1.default)(error);
+            }
+        });
+    }
     deleteCompletion(user, id) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

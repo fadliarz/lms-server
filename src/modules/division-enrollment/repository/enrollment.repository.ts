@@ -86,10 +86,10 @@ export default class DepartmentDivisionEnrollmentRepository
   public async deleteEnrollment(id: {
     enrollmentId: number;
     resourceId?: DepartmentDivisionEnrollmentResourceId;
-  }): Promise<{}> {
+  }): Promise<{ id: number }> {
     return this.db.departmentDivisionEnrollment.delete({
       where: this.getWhereObject(id),
-      select: {},
+      select: { id: true },
     });
   }
 

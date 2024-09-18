@@ -61,12 +61,12 @@ export default class DepartmentRepository
     });
   }
 
-  public async deleteDepartment(departmentId: number): Promise<{}> {
+  public async deleteDepartment(departmentId: number): Promise<{ id: number }> {
     return this.db.department.delete({
       where: {
         id: departmentId,
       },
-      select: {},
+      select: { id: true },
     });
   }
 }

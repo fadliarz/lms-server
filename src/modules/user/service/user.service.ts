@@ -149,24 +149,26 @@ export default class UserService extends BaseService implements IUserService {
     }
   }
 
-  public async getUserEnrolledAsStudentCourses(
+  public async getUserEnrolledCourses(
     user: UserModel,
     id: {
       userId: number;
     },
-  ): Promise<$UserAPI.GetUserEnrolledAsStudentCourses.Response["data"]> {
+    query: $UserAPI.GetUserEnrolledCourses.Query,
+  ): Promise<$UserAPI.GetUserEnrolledCourses.Response["data"]> {
     try {
-      this.authorization.authorizeGetUserEnrolledAsStudentCourses(
-        user,
-        id.userId,
-      );
+      this.authorization.authorizeGetUserEnrolledCourses(user, id.userId);
 
-      return await this.repository.getUserEnrolledCourses(id, {
-        role: [
-          CourseEnrollmentRoleModel.STUDENT,
-          CourseEnrollmentRoleModel.INSTRUCTOR,
-        ],
-      });
+      return await this.repository.getUserEnrolledCourses(
+        id,
+        {
+          role: [
+            CourseEnrollmentRoleModel.STUDENT,
+            CourseEnrollmentRoleModel.INSTRUCTOR,
+          ],
+        },
+        query,
+      );
     } catch (error: any) {
       throw handleRepositoryError(error);
     }
@@ -177,6 +179,7 @@ export default class UserService extends BaseService implements IUserService {
     id: {
       userId: number;
     },
+    query: $UserAPI.GetUserManagedCourses.Query,
   ): Promise<$UserAPI.GetUserManagedCourses.Response["data"]> {
     try {
       await this.authorization.authorizeGetUserManagedCourses(user, id.userId);
@@ -187,17 +190,42 @@ export default class UserService extends BaseService implements IUserService {
           PrivilegeModel.COURSE,
         );
       if (isAcademicDivision) {
-        return await this.globalRepository.course.getCourses();
+        return await this.globalRepository.course.getCourses(query);
       }
 
       const targetUser = await this.repository.getUserByIdOrThrow(id);
       if (isEqualOrIncludeRole(targetUser.role, UserRoleModel.ADMIN)) {
-        return await this.globalRepository.course.getCourses();
+        return await this.globalRepository.course.getCourses(query);
       }
 
-      return await this.repository.getUserEnrolledCourses(id, {
-        role: [CourseEnrollmentRoleModel.INSTRUCTOR],
-      });
+      return await this.repository.getUserEnrolledCourses(
+        id,
+        {
+          role: [CourseEnrollmentRoleModel.INSTRUCTOR],
+        },
+        query,
+      );
+    } catch (error: any) {
+      throw handleRepositoryError(error);
+    }
+  }
+
+  public async getUserCourseEnrollmentStatusByCourseId(
+    user: UserModel,
+    id: {
+      userId: number;
+      courseId: number;
+    },
+  ): Promise<
+    $UserAPI.GetUserCourseEnrollmentStatusByCourseId.Response["data"]
+  > {
+    try {
+      await this.authorization.authorizeGetUserCourseEnrollmentStatusByCourseId(
+        user,
+        id.userId,
+      );
+
+      return await this.repository.getUserCourseEnrollmentStatusByCourseId(id);
     } catch (error: any) {
       throw handleRepositoryError(error);
     }
@@ -426,24 +454,10 @@ export default class UserService extends BaseService implements IUserService {
     }
   }
 
-  public async updateUserPhoneNumber(
-    user: UserModel,
-    id: { userId: number },
-    dto: $UserAPI.UpdateUserPhoneNumber.Dto,
-  ): Promise<$UserAPI.UpdateUserPhoneNumber.Response["data"]> {
-    try {
-      this.authorization.authorizeUpdateUser(user, id.userId);
-
-      return await this.repository.updateUser(id, dto);
-    } catch (error: any) {
-      throw handleRepositoryError(error);
-    }
-  }
-
   public async deleteUser(
     user: UserModel,
     id: { userId: number },
-  ): Promise<{}> {
+  ): Promise<{ id: number }> {
     try {
       this.authorization.authorizeDeleteUser(user, id.userId);
 

@@ -165,11 +165,15 @@ export default class DepartmentController implements IDepartmentController {
     try {
       const departmentId = this.validateDepartmentId(req);
       const resourceId = this.validateResourceId(req);
-      await this.service.deleteDepartment(departmentId, resourceId);
 
-      res
-        .status(StatusCode.SUCCESS)
-        .json({ data: {} } satisfies $DepartmentAPI.DeleteDepartment.Response);
+      const result = await this.service.deleteDepartment(
+        departmentId,
+        resourceId,
+      );
+
+      res.status(StatusCode.SUCCESS).json({
+        data: result,
+      } satisfies $DepartmentAPI.DeleteDepartment.Response);
     } catch (error) {
       next(error);
     }
