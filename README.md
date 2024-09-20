@@ -16,7 +16,7 @@ logic in the application layer.
 5. PrismaORM
 6. Docker
 
-## Entity Relationship Diagram (ERD)
+## Entity Relationship Diagram (ERD)g
 
 ![ERD.png](uploads/ERD.png)
 
