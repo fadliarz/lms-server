@@ -32,8 +32,8 @@ export default class CourseRepository
   public async getCourses(
     query?: Partial<$CourseAPI.GetCourses.Query>,
   ): Promise<$CourseAPI.GetCourses.Response["data"]> {
-    return this.db.course.findMany(
-      query
+    return this.db.course.findMany({
+      ...(query
         ? {
             skip:
               query.pageNumber && query.pageSize
@@ -47,8 +47,8 @@ export default class CourseRepository
               ? { where: { category: { id: { in: query.category_id } } } }
               : {}),
           }
-        : {},
-    );
+        : {}),
+    });
   }
 
   public async getCourseById(
