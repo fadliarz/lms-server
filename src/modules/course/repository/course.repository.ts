@@ -39,9 +39,9 @@ export default class CourseRepository
             skip: (query.pageNumber - 1) * query.pageSize,
           }
         : {}),
-      include: {
-        category: !!query?.include_category,
-      },
+      ...(query?.category_id
+        ? { include: { category: query.include_category } }
+        : {}),
       ...(query?.category_id && query.category_id.length > 0
         ? { where: { category: { id: { in: query.category_id } } } }
         : {}),
