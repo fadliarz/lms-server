@@ -40,7 +40,7 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
     }
     getCourses(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.course.findMany(Object.assign(Object.assign(Object.assign({ skip: 0 }, ((query === null || query === void 0 ? void 0 : query.pageNumber) && query.pageSize
+            return this.db.course.findMany(Object.assign(Object.assign(Object.assign({}, ((query === null || query === void 0 ? void 0 : query.pageNumber) && query.pageSize
                 ? {
                     take: query.pageSize,
                     skip: (query.pageNumber - 1) * query.pageSize,
