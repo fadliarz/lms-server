@@ -33,11 +33,12 @@ export default class CourseRepository
     query?: Partial<$CourseAPI.GetCourses.Query>,
   ): Promise<$CourseAPI.GetCourses.Response["data"]> {
     return this.db.course.findMany({
-      skip:
-        query?.pageNumber && query.pageSize
-          ? (query.pageNumber - 1) * query.pageSize
-          : 0,
-      take: query?.pageSize || 0,
+      ...(query?.pageNumber && query.pageSize
+        ? {
+            take: query.pageSize,
+            skip: (query.pageNumber - 1) * query.pageSize,
+          }
+        : {}),
       include: {
         category: !!query?.include_category,
       },
