@@ -40,14 +40,16 @@ let CourseRepository = class CourseRepository extends BaseRepository_1.default {
     }
     getCourses(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.db.course.findMany(query
-                ? Object.assign({ skip: query.pageNumber && query.pageSize
-                        ? (query.pageNumber - 1) * query.pageSize
-                        : 0, take: query.pageSize || 0, include: {
-                        category: !!query.include_category,
-                    } }, (query.category_id && query.category_id.length > 0
-                    ? { where: { category: { id: { in: query.category_id } } } }
-                    : {})) : undefined);
+            return this.db.course.findMany(Object.assign(Object.assign(Object.assign({ skip: 0 }, ((query === null || query === void 0 ? void 0 : query.pageNumber) && query.pageSize
+                ? {
+                    take: query.pageSize,
+                    skip: (query.pageNumber - 1) * query.pageSize,
+                }
+                : {})), ((query === null || query === void 0 ? void 0 : query.category_id)
+                ? { include: { category: query.include_category } }
+                : {})), ((query === null || query === void 0 ? void 0 : query.category_id) && query.category_id.length > 0
+                ? { where: { category: { id: { in: query.category_id } } } }
+                : {})));
         });
     }
     getCourseById(id, query) {
