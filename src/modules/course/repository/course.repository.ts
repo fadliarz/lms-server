@@ -47,7 +47,7 @@ export default class CourseRepository
               ? { where: { category: { id: { in: query.category_id } } } }
               : {}),
           }
-        : undefined,
+        : {},
     );
   }
 
