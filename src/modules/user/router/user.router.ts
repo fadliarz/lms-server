@@ -88,7 +88,7 @@ export default function UserRouter(authenticationMiddleware: any) {
   router.get(
     $UserAPI.GetUserCourseEnrollmentStatusByCourseId.endpoint,
     authenticationMiddleware,
-    controller.getUserCourseEnrollmentStatusByCourseId,
+    controller.getUserCourseEnrollmentStatusByCourseId.bind(controller),
   );
 
   router.get(
