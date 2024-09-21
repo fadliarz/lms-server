@@ -33,20 +33,16 @@ export default class CourseRepository
     query?: Partial<$CourseAPI.GetCourses.Query>,
   ): Promise<$CourseAPI.GetCourses.Response["data"]> {
     return this.db.course.findMany({
-      ...(query
-        ? {
-            skip:
-              query.pageNumber && query.pageSize
-                ? (query.pageNumber - 1) * query.pageSize
-                : 0,
-            take: query.pageSize || 0,
-            include: {
-              category: !!query.include_category,
-            },
-            ...(query.category_id && query.category_id.length > 0
-              ? { where: { category: { id: { in: query.category_id } } } }
-              : {}),
-          }
+      skip:
+        query?.pageNumber && query.pageSize
+          ? (query.pageNumber - 1) * query.pageSize
+          : 0,
+      take: query?.pageSize || 0,
+      include: {
+        category: !!query?.include_category,
+      },
+      ...(query?.category_id && query.category_id.length > 0
+        ? { where: { category: { id: { in: query.category_id } } } }
         : {}),
     });
   }
