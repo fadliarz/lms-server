@@ -32,6 +32,10 @@ export default class CourseRepository
   public async getCourses(
     query?: Partial<$CourseAPI.GetCourses.Query>,
   ): Promise<$CourseAPI.GetCourses.Response["data"]> {
+    if (!query) {
+      return this.db.course.findMany();
+    }
+
     return this.db.course.findMany({
       ...(query?.pageNumber && query.pageSize
         ? {
