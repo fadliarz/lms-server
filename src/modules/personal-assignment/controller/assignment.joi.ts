@@ -1,6 +1,9 @@
 import Joi from "joi";
 import { $PersonalAssignmentAPI } from "../assignment.api";
-import { AssignmentTaskTypeModel } from "../../../common/shared.types";
+import {
+  AssignmentCompletionStatusModel,
+  AssignmentTaskTypeModel,
+} from "../../../common/shared.types";
 
 export const CreatePersonalAssignmentDtoJoi =
   Joi.object<$PersonalAssignmentAPI.CreateAssignment.Dto>({
@@ -11,7 +14,7 @@ export const CreatePersonalAssignmentDtoJoi =
     description: Joi.string(),
     taskType: Joi.valid(...Object.values(AssignmentTaskTypeModel)).required(),
     completionStatus: Joi.valid(
-      ...Object.values(AssignmentTaskTypeModel),
+      ...Object.values(AssignmentCompletionStatusModel),
     ).required(),
   });
 

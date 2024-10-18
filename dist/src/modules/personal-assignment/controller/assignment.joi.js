@@ -13,7 +13,7 @@ exports.CreatePersonalAssignmentDtoJoi = joi_1.default.object({
     deadline: joi_1.default.date().required(),
     description: joi_1.default.string(),
     taskType: joi_1.default.valid(...Object.values(shared_types_1.AssignmentTaskTypeModel)).required(),
-    completionStatus: joi_1.default.valid(...Object.values(shared_types_1.AssignmentTaskTypeModel)).required(),
+    completionStatus: joi_1.default.valid(...Object.values(shared_types_1.AssignmentCompletionStatusModel)).required(),
 });
 exports.UpdatePersonalAssignmentDtoJoi = joi_1.default.object({
     title: joi_1.default.string(),
