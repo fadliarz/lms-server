@@ -26,5 +26,5 @@ export const UpdatePersonalAssignmentDtoJoi =
     deadline: Joi.date(),
     description: Joi.string(),
     taskType: Joi.valid(...Object.values(AssignmentTaskTypeModel)),
-    completionStatus: Joi.valid(...Object.values(AssignmentTaskTypeModel)),
+    completionStatus: Joi.valid(...Object.values(AssignmentCompletionStatusModel)),
   });
