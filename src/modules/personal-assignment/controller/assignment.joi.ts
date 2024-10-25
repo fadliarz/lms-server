@@ -21,7 +21,7 @@ export const CreatePersonalAssignmentDtoJoi =
 export const UpdatePersonalAssignmentDtoJoi =
   Joi.object<$PersonalAssignmentAPI.UpdateAssignment.Dto>({
     title: Joi.string(),
-    course: Joi.string().required(),
+    course: Joi.string(),
     submission: Joi.string(),
     deadline: Joi.date(),
     description: Joi.string(),
