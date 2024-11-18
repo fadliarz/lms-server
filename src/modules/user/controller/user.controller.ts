@@ -549,7 +549,7 @@ export default class UserController implements IUserController {
   }
 
   private validateCourseId(req: Request, error?: Error): number {
-    const courseId = Number(req.params.userId);
+    const courseId = Number(req.params.courseId);
     if (isNaN(courseId)) {
       throw error || new NaNException("courseId");
     }

@@ -398,7 +398,7 @@ let UserController = class UserController {
         return userId;
     }
     validateCourseId(req, error) {
-        const courseId = Number(req.params.userId);
+        const courseId = Number(req.params.courseId);
         if (isNaN(courseId)) {
             throw error || new NaNException_1.default("courseId");
         }
