@@ -12,6 +12,7 @@ exports.CreateCourseDtoJoi = joi_1.default.object({
     categoryId: joi_1.default.number(),
     image: joi_1.default.string(),
     description: joi_1.default.string(),
+    status: joi_1.default.valid(...Object.values(course_type_1.CourseStatusModel)),
 });
 exports.CreateCourseInstructorDtoJoi = joi_1.default.object({
     userId: joi_1.default.number().required(),

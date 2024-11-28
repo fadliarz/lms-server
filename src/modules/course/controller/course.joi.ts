@@ -8,6 +8,7 @@ export const CreateCourseDtoJoi = Joi.object<$CourseAPI.CreateCourse.Dto>({
   categoryId: Joi.number(),
   image: Joi.string(),
   description: Joi.string(),
+  status: Joi.valid(...Object.values(CourseStatusModel)),
 });
 
 export const CreateCourseInstructorDtoJoi =
