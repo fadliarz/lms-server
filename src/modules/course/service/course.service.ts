@@ -40,10 +40,7 @@ export default class CourseService implements ICourseService {
     try {
       await this.authorization.authorizeCreateCourse(id.resourceId.user);
 
-      return await this.repository.createCourse({
-        ...dto,
-        authorId: id.resourceId.user.id,
-      });
+      return await this.repository.createCourse(dto);
     } catch (error: any) {
       throw handleRepositoryError(error);
     }

@@ -155,9 +155,7 @@ export interface ICourseService {
 }
 
 export interface ICourseRepository {
-  createCourse: (
-    data: { authorId: number } & $CourseAPI.CreateCourse.Dto,
-  ) => Promise<CourseModel>;
+  createCourse: (data: $CourseAPI.CreateCourse.Dto) => Promise<CourseModel>;
   getCourses: (
     query?: Partial<$CourseAPI.GetCourses.Query>,
   ) => Promise<$CourseAPI.GetCourses.Response["data"]>;

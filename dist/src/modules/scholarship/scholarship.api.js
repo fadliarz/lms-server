@@ -4,7 +4,7 @@ exports.$ScholarshipAPI = void 0;
 var $ScholarshipAPI;
 (function ($ScholarshipAPI) {
     const root = "/scholarships";
-    const scholarship = "root" + "/:scholarshipId";
+    const scholarship = root + "/:scholarshipId";
     let CreateScholarship;
     (function (CreateScholarship) {
         CreateScholarship.endpoint = root;

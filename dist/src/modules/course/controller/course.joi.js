@@ -9,7 +9,7 @@ const course_type_1 = require("../course.type");
 exports.CreateCourseDtoJoi = joi_1.default.object({
     code: joi_1.default.string().required(),
     title: joi_1.default.string().required(),
-    categoryId: joi_1.default.number().required(),
+    categoryId: joi_1.default.number(),
     image: joi_1.default.string(),
     description: joi_1.default.string(),
 });

@@ -32,7 +32,7 @@ let CourseService = class CourseService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield this.authorization.authorizeCreateCourse(id.resourceId.user);
-                return yield this.repository.createCourse(Object.assign(Object.assign({}, dto), { authorId: id.resourceId.user.id }));
+                return yield this.repository.createCourse(dto);
             }
             catch (error) {
                 throw (0, handleRepositoryError_1.default)(error);

@@ -3,7 +3,7 @@ import { ScholarshipFundingModel } from "../../common/shared.types";
 
 export namespace $ScholarshipAPI {
   const root = "/scholarships";
-  const scholarship = "root" + "/:scholarshipId";
+  const scholarship = root + "/:scholarshipId";
 
   export namespace CreateScholarship {
     export const endpoint = root;

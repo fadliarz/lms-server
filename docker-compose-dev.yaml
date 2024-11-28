@@ -22,6 +22,7 @@ services:
       - postgres
     networks:
       - lms-network
+      -
   postgres:
     container_name: lms-postgresql
     hostname: postgresql

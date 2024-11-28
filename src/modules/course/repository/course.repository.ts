@@ -22,7 +22,7 @@ export default class CourseRepository
   }
 
   public async createCourse(
-    data: { authorId: number } & $CourseAPI.CreateCourse.Dto,
+    data: $CourseAPI.CreateCourse.Dto,
   ): Promise<CourseModel> {
     return this.db.course.create({
       data,

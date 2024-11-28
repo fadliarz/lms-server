@@ -5,7 +5,7 @@ import { $CourseAPI } from "../course.api";
 export const CreateCourseDtoJoi = Joi.object<$CourseAPI.CreateCourse.Dto>({
   code: Joi.string().required(),
   title: Joi.string().required(),
-  categoryId: Joi.number().required(),
+  categoryId: Joi.number(),
   image: Joi.string(),
   description: Joi.string(),
 });

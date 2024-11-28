@@ -99,13 +99,17 @@ count-line:
 
 
 #
-# SEED
+# SEEDING
 #
-sync-dev:
-	npx @snaplet/seed sync
 
 snaplet-sync-prod:
-	npx @snaplet/seed --config ./prod/seed.config.ts sync
+	set POSTGRES_URL=postgres://default:30fRXznDjkbI@ep-solitary-firefly-a4f278w7.us-east-1.aws.neon.tech:5432/verceldb?sslmode=require && npx @snaplet/seed sync
+
+snaplet-sync-dev:
+	set POSTGRES_URL=postgresql://fadliarz:rootpassword@localhost:5432/lms && npx @snaplet/seed sync
+
+snaplet-seed:
+	set POSTGRES_URL=postgresql://fadliarz:rootpassword@localhost:5432/lms && npx tsx seed.ts
 
 snaplet-init-prod:
 	npx @snaplet/seed --config ./prod init
